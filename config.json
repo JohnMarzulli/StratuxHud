@@ -1,0 +1,13 @@
+{
+  "stratux_address": "192.168.10.1",
+  "distance_units": "statute",
+  "traffic_report_removal_minutes": 15,
+  "display": {
+    "reverse_roll": true,
+    "reverse_pitch": false,
+    "reverse_yaw": false
+  },
+  "ownship": "N701GV",
+  "data_source": "stratux",
+  "LOGFILE_DIRECTORY": "./"
+}
