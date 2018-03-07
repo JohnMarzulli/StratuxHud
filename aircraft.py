@@ -41,8 +41,12 @@ class StratuxCapabilities(object):
             self.ahrs_enabled = True
         else:
             url = "http://{0}/getSettings".format(stratux_address)
-            self.__capabilties_json__ = stratux_session.get(
-                url, timeout=2).json()
+
+            try:
+                self.__capabilties_json__ = stratux_session.get(
+                    url, timeout=2).json()
+            except:
+                self.__capabilties_json__ = []
 
             self.traffic_enabled = self.__get_capability__('UAT_Enabled')
             self.gps_enabled = self.__get_capability__('GPS_Enabled')
@@ -270,7 +274,7 @@ class AhrsStratux(object):
 
         new_ahrs_data.roll = self.__get_value__(ahrs_json, 'AHRSRoll', 0.0)
         new_ahrs_data.pitch = self.__get_value__(ahrs_json, 'AHRSPitch', 0.0)
-        new_ahrs_data.compass_heading = self.__get_value__(ahrs_json, 'AHRSMagHeading', 0.0) / 10.0
+        new_ahrs_data.compass_heading = self.__get_value__(ahrs_json, 'AHRSGyroHeading', 0.0) / 1000.0 #'AHRSMagHeading', 0.0) / 10.0
         #with_fallback__(ahrs_json, ['AHRSGyroHeading', 'AHRSMagHeading'], 0.0)
         new_ahrs_data.gps_heading = self.__get_value__(ahrs_json, 'GPSTrueCourse', 0.0)
         new_ahrs_data.alt = self.__get_value_with_fallback__(ahrs_json, ['GPSAltitudeMSL', 'BaroPressureAltitude'], None)

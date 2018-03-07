@@ -31,7 +31,6 @@ class HeadsUpDisplay(object):
 
     DEGREES_OF_PITCH = 90
     PITCH_DEGREES_DISPLAY_SCALER = 2.0
-    RADIANS_TO_DEGREES = 180.0 / math.pi
 
     def run(self):
         clock = pygame.time.Clock()
@@ -77,11 +76,15 @@ class HeadsUpDisplay(object):
             self.__render_g_load_and_skid__(orientation)
             self.__render_roll__(orientation)
             self.__render_adsb_traffic__(orientation)
+            self.__render_adsb_onscreen_targets__(orientation)
         else:
             # Should do this if the signal is lost...
             self.__render_ahrs_not_available__()
 
         # Change the frame buffer
+        flipped = pygame.transform.flip(
+            self.__backpage_framebuffer__, self.__configuration__.flip_horizonal, self.__configuration__.flip_vertical)
+        self.__backpage_framebuffer__.blit(flipped, [0, 0])
         pygame.display.flip()
 
         return True
@@ -97,7 +100,7 @@ class HeadsUpDisplay(object):
 
         altitude_delta = int(traffic.altitude - orientation.alt)
         slope = altitude_delta / traffic.distance
-        vertical_degrees_to_target = math.atan(slope) * HeadsUpDisplay.RADIANS_TO_DEGREES
+        vertical_degrees_to_target = math.degrees(math.atan(slope))
         vertical_degrees_to_target -= orientation.pitch
 
         # TODO - Double check ALL of this math...
@@ -161,7 +164,7 @@ class HeadsUpDisplay(object):
 
         return on_screen_reticle
 
-    def __render_target_reticle__(self, identifier, center_x, center_y, reticle_lines):
+    def __render_target_reticle__(self, identifier, center_x, center_y, reticle_lines, roll):
         """
         Renders a targetting reticle on the screen.
         Assumes the X/Y projection has already been performed.
@@ -177,11 +180,17 @@ class HeadsUpDisplay(object):
 
         pygame.draw.lines(self.__backpage_framebuffer__,
                           display.RED, True, reticle_lines, 2)
+        
+        # Move the identifer text away from the reticle
+        if center_y < self.__center__[1]:
+            text_y = center_y + border_space
+        else:
+            text_y = center_y - border_space
 
-        # self.__render_text__(identifier, display.RED,
-        #                      center_x, center_y)
+        self.__render_text__(identifier, display.YELLOW,
+                             center_x, text_y, roll)
 
-    def __render_text__(self, text, color, position_x, position_y, background_color=None):
+    def __render_text__(self, text, color, position_x, position_y, roll, background_color=None):
         """
         Renders the text with the results centered on the given
         position.
@@ -190,8 +199,11 @@ class HeadsUpDisplay(object):
         rendered_text = self.__font__.render(
             text, True, color, background_color)
         text_width, text_height = rendered_text.get_size()
+
+        text = pygame.transform.rotate(rendered_text, roll)
+
         self.__backpage_framebuffer__.blit(
-            rendered_text, (position_x - (text_width >> 1), position_y - (text_height >> 1)))
+            text, (position_x - (text_width >> 1), position_y - (text_height >> 1)))
 
         return text_width, text_height
 
@@ -233,7 +245,7 @@ class HeadsUpDisplay(object):
                     [line_x_left, self.__height__ * cardinal_direction_line_proportion], [line_x_left, 0]], 2)
 
                 self.__render_text__(str(to_the_left), display.GREEN,
-                                     line_x_left, heading_text_y,
+                                     line_x_left, heading_text_y, 0,
                                      display.BLACK)
 
             if (to_the_right % 90) == 0:
@@ -241,7 +253,7 @@ class HeadsUpDisplay(object):
                     [line_x_right, self.__height__ * cardinal_direction_line_proportion], [line_x_right, 0]], 2)
 
                 self.__render_text__(str(to_the_right), display.GREEN,
-                                     line_x_right, heading_text_y,
+                                     line_x_right, heading_text_y, 0,
                                      display.BLACK)
 
         # Render the text that is showing our AHRS and GPS headings
@@ -250,7 +262,7 @@ class HeadsUpDisplay(object):
                                                 compass, int(orientation.gps_heading))
         box_width, box_height = self.__render_text__(heading_text, display.GREEN,
                                                      self.__center__[
-                                                         0], compass_text_y,
+                                                         0], compass_text_y, 0,
                                                      display.BLACK)
 
         border_vertical_size = (box_height >> 1) + (box_height >> 2)
@@ -321,6 +333,97 @@ class HeadsUpDisplay(object):
         pygame.draw.lines(self.__backpage_framebuffer__, display.WHITE, False, [
             [self.__width__ - edge_reference_proportion, self.__center__[1]], [self.__width__, self.__center__[1]]], 2)
 
+    def __rotate_reticle__(self, reticle, roll):
+        """
+        Takes a series of line segments and rotates them (roll) about
+        the screen's center
+
+        Arguments:
+            reticle {list of tuples} -- The line segments
+            roll {float} -- The amount to rotate about the center by.
+
+        Returns:
+            list of lists -- The new list of line segments
+        """
+
+        # Takes the roll in degrees
+        # Example input..
+        # [
+        #     [center_x, center_y - size],
+        #     [center_x + size, center_y],
+        #     [center_x, center_y + size],
+        #     [center_x - size, center_y]
+        # ]
+
+        translated_points = []
+
+        roll_radians = math.radians(roll)
+        cos_roll = math.cos(roll_radians)
+        sin_roll = math.sin(roll_radians)
+        ox, oy = self.__center__
+
+        for x_y in reticle:
+            px, py = x_y
+
+            qx = ox + cos_roll * (px - ox) - sin_roll * (py - oy)
+            qy = oy + sin_roll * (px - ox) + cos_roll * (py - oy)
+
+            translated_points.append([qx, qy])
+
+        return translated_points
+
+    def __get_distance_string__(self, distance):
+        sm = "statute"
+        nm = "knots"
+        metric = "metric"
+
+        feet_to_nm = 6076.12
+        feet_to_sm = 5280.0
+        feet_to_km = 3280.84
+        feet_to_m = 3.28084
+        imperial_nearby = 3000.0
+
+        units = self.__configuration__.__get_config_value__(
+            Configuration.DISTANCE_UNITS_KEY, sm)
+
+        if units is not metric:
+            if distance < imperial_nearby:
+                return distance + "'"
+
+            if units is nm:
+                return "{0:.1f}NM".format(distance / feet_to_nm)
+
+            return "{0:.1f}SM".format(distance / feet_to_sm)
+        else:
+            conversion = distance / feet_to_km
+
+            if conversion > 0.5:
+                return "{0:.1f}km".format(conversion)
+
+            return "{0:.1f}m".format(distance / feet_to_m)
+
+        return "{0:.0f}'".format(distance)
+
+    def pad_right(self, text, longest):
+        delta = longest - len(text)
+
+        padded_text = text
+
+        for i in range(0, delta, 1):
+            padded_text += ' '
+
+        return padded_text
+
+    def pad_left(self, text, longest):
+        delta = longest - len(text)
+
+        padded_text = ''
+
+        for i in range(0, delta, 1):
+            padded_text += ' '
+
+        return padded_text + text
+
     def __render_adsb_traffic__(self, orientation):
         if self.traffic is None:
             return
@@ -338,19 +441,57 @@ class HeadsUpDisplay(object):
 
         # Render a list of traffic that we have positions
         # for, along with the tail number
-        y_pos = int(self.__font__.get_height() * 4)
+        y_pos = int(self.__detail_font__.get_height() * 4)
         x_pos = int(self.__width__ * 0.01)
 
+        max_identifier_length = 0
+        max_bearing_length = 0
+        max_altitude_length = 0
+        max_distance_length = 0
+        pre_padded_text = []
         for traffic in traffic_reports:
             identifier = traffic.get_identifer()
             altitude_delta = int(traffic.altitude - orientation.alt)
+            distance_text = self.__get_distance_string__(traffic.distance)
             delta_sign = ''
             if altitude_delta > 0:
                 delta_sign = '+'
-            traffic_report = "{0} - {1}deg - {2}' - {3}{4}'".format(identifier, int(
-                traffic.bearing), int(traffic.distance), delta_sign, altitude_delta)
+            altitude_text = "{0}{1}'".format(delta_sign, altitude_delta)
+            bearing_text = "{0:.0f}".format(traffic.bearing)
 
-            traffic_text_texture = self.__font__.render(
+            identifier_length = len(identifier)
+            bearing_length = len(bearing_text)
+            altitude_length = len(altitude_text)
+            distance_length = len(distance_text)
+
+            if identifier_length > max_identifier_length:
+                max_identifier_length = identifier_length
+
+            if bearing_length > max_bearing_length:
+                max_bearing_length = bearing_length
+
+            if altitude_length > max_altitude_length:
+                max_altitude_length = altitude_length
+
+            if distance_length > max_distance_length:
+                max_distance_length = distance_length
+
+            pre_padded_text.append(
+                [identifier, bearing_text, distance_text, altitude_text])
+
+        for report in pre_padded_text:
+            identifier = report[0]
+            bearing = report[1]
+            distance_text = report[2]
+            altitude = report[3]
+            traffic_report = "{0} {1} {2} {3}".format(self.pad_right(identifier, max_identifier_length),
+                                                      self.pad_left(
+                                                          bearing, max_bearing_length),
+                                                      self.pad_left(
+                                                          distance_text, max_distance_length),
+                                                      self.pad_left(altitude, max_altitude_length))
+
+            traffic_text_texture = self.__detail_font__.render(
                 traffic_report, True, display.WHITE, display.BLACK)
             text_width, text_height = traffic_text_texture.get_size()
             self.__backpage_framebuffer__.blit(
@@ -363,10 +504,7 @@ class HeadsUpDisplay(object):
                 orientation, traffic)
 
             # Render using the Above us bug
-            target_bug_scale = 0.01
-            on_screen_reticle_scale = 0.05
-            reticle = self.get_onscreen_reticle(
-                reticle_x, reticle_y, on_screen_reticle_scale)
+            target_bug_scale = 0.02
 
             bearing = (heading - traffic.bearing)
             if bearing < -180:
@@ -377,19 +515,53 @@ class HeadsUpDisplay(object):
             heading_bug_x = int(
                 self.__center__[0] - (bearing * pixels_per_degree))
 
-            if reticle_y < 0:
+            if reticle_y <= self.__top_border__:
                 reticle = self.get_above_reticle(
                     heading_bug_x, reticle_y, target_bug_scale)
-            elif reticle_y > self.__height__:
+            elif reticle_y >= self.__bottom_border__:
                 reticle = self.get_below_reticle(
                     heading_bug_x, reticle_y, target_bug_scale)
+            else:
+                continue
 
             self.__render_target_reticle__(
-                identifier, reticle_x, reticle_y, reticle)
+                identifier, reticle_x, reticle_y, reticle, 0)
 
             # Draw a line pointing to it.. for debugging purposes
             # pygame.draw.lines(self.__backpage_framebuffer__, display.RED, True, [
             #    self.__center__, [reticle_x, reticle_y]], 2)
+
+    def __render_adsb_onscreen_targets__(self, orientation):
+        if self.traffic is None:
+            return
+
+        # Get the traffic, and bail out of we have none
+        traffic_reports = self.traffic.TRAFFIC_MANAGER.get_traffic_with_position()
+
+        if traffic_reports is None:
+            return
+
+        for traffic in traffic_reports:
+            identifier = traffic.get_identifer()
+
+            # Find where to draw the reticle....
+            reticle_x, reticle_y = self.__get_traffic_projection__(
+                orientation, traffic)
+
+            # Render using the Above us bug
+            on_screen_reticle_scale = 0.05
+            reticle = self.get_onscreen_reticle(
+                reticle_x, reticle_y, on_screen_reticle_scale)
+
+            if reticle_y < self.__top_border__ or reticle_y > self.__bottom_border__:
+                continue
+            else:
+                reticle = self.__rotate_reticle__(reticle, orientation.roll)
+                reticle_x, reticle_y = self.__rotate_reticle__(
+                    [[reticle_x, reticle_y]], orientation.roll)[0]
+
+                self.__render_target_reticle__(
+                    identifier, reticle_x, reticle_y, reticle, orientation.roll)
 
     def __get_pixels_per_degree_y__(self):
         return (self.__height__ / HeadsUpDisplay.DEGREES_OF_PITCH) * HeadsUpDisplay.PITCH_DEGREES_DISPLAY_SCALER
@@ -408,13 +580,16 @@ class HeadsUpDisplay(object):
         px_per_deg_y = self.__get_pixels_per_degree_y__()
         pitch_offset = px_per_deg_y * (-pitch + hash_mark_angle)
 
-        center_x = int(
-            (ahrs_center_x - (pitch_offset * math.cos(math.radians(90 - roll)))) + 0.5)
-        center_y = int(
-            (ahrs_center_y - (pitch_offset * math.sin(math.radians(90 - roll)))) + 0.5)
+        roll_radians = math.radians(roll)
+        roll_delta_radians = math.radians(90 - roll)
 
-        x_len = int((length * math.cos(math.radians(roll))) + 0.5)
-        y_len = int((length * math.sin(math.radians(roll))) + 0.5)
+        center_x = int(
+            (ahrs_center_x - (pitch_offset * math.cos(roll_delta_radians))) + 0.5)
+        center_y = int(
+            (ahrs_center_y - (pitch_offset * math.sin(roll_delta_radians))) + 0.5)
+
+        x_len = int((length * math.cos(roll_radians)) + 0.5)
+        y_len = int((length * math.sin(roll_radians)) + 0.5)
 
         start_x = center_x - (x_len >> 1)
         end_x = center_x + (x_len >> 1)
@@ -440,12 +615,19 @@ class HeadsUpDisplay(object):
         pygame.mouse.set_visible(False)
 
         pygame.font.init()
-        self.__font__ = pygame.font.SysFont(None, int(self.__height__ / 20))
+
+        font_name = "consolas,arial,helvetica"
+
+        self.__font__ = pygame.font.SysFont(font_name, int(self.__height__ / 20.0), True, False)
+        self.__detail_font__ = pygame.font.SysFont(font_name, int(self.__height__ / 20.0), False, False)
 
         self.__aircraft__ = Aircraft()
 
         self.__center__ = (
             self.__width__ >> 1, self.__height__ >> 1)
+
+        self.__top_border__ = int(self.__height__ * 0.1)
+        self.__bottom_border__ = self.__height__ - self.__top_border__
 
     def __render_ahrs_not_available__(self):
         """

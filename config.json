@@ -5,9 +5,10 @@
   "display": {
     "reverse_roll": true,
     "reverse_pitch": false,
-    "reverse_yaw": false
+    "reverse_yaw": false,
+    "flip_horizontal": false,
+    "flip_vertical": false
   },
   "ownship": "N701GV",
-  "data_source": "stratux",
-  "LOGFILE_DIRECTORY": "./"
+  "data_source": "stratux"
 }

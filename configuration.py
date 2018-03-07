@@ -17,11 +17,14 @@ class Configuration(object):
     STRATUX_ADDRESS_KEY = "stratux_address"
     DATA_SOURCE_KEY = "data_source"
     DISPLAY_KEY = "display"
+    FLIP_HORIZONTAL_KEY = "flip_horizonal"
+    FLIP_VERTICAL_KEY = "flip_vertical"
     REVERSE_ROLL_KEY = "reverse_roll"
     REVERSE_PITCH_KEY = "reverse_pitch"
     REVERSE_YAW_KEY = "reverse_yaw"
     OWNSHIP_KEY = "ownship"
     MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT_KEY = "traffic_report_removal_minutes"
+    DISTANCE_UNITS_KEY = "distance_units"
 
     def __get_config_value__(self, key, default_value):
         """
@@ -100,4 +103,16 @@ class Configuration(object):
         self.ownship = self.__get_config_value__(Configuration.OWNSHIP_KEY, '')
         self.max_minutes_before_removal = self.__get_config_value__(Configuration.MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT_KEY, MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT)
         self.log_filename = "stratux_hud.log"
+        self.flip_horizonal = False
+        self.flip_vertical = False
+
+        try:
+            self.flip_horizonal = self.__configuration__[Configuration.DISPLAY_KEY][Configuration.FLIP_HORIZONTAL_KEY]
+        except:
+            pass
+        
+        try:
+            self.flip_vertical = self.__configuration__[Configuration.DISPLAY_KEY][Configuration.FLIP_VERTICAL_KEY]
+        except:
+            pass
 
