@@ -331,11 +331,15 @@ class AdsbTrafficClient(WebSocketClient):
         print "Attempting to reconnect..."
         try:
             self.close_connection()
+        except KeyboardInterrupt, SystemExit:
+            raise
         except:
             print "Issue trying to close_connection"
         
         try:
             self.connect()
+        except KeyboardInterrupt, SystemExit:
+            raise
         except:
             print "Issue trying to reopen connection."
 
@@ -362,6 +366,9 @@ class AdsbTrafficClient(WebSocketClient):
                 self.connect()
 
                 connected = True
+
+            except KeyboardInterrupt, SystemExit:
+                raise
             except:
                 print "Unable to connect... trying again."
                 time.sleep(0.5)
