@@ -35,10 +35,14 @@ class HeadsUpDisplay(object):
     def run(self):
         clock = pygame.time.Clock()
 
-        while self.tick(clock):
-            pass
+        try:
+            while self.tick(clock):
+                pass
+        finally:
+            pygame.display.quit()
+            pygame.quit()
 
-        pygame.quit()
+        sys.exit()
 
     def tick(self, clock):
         """
@@ -55,6 +59,19 @@ class HeadsUpDisplay(object):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return False
+
+        keys_pressed = pygame.key.get_pressed()
+        if keys_pressed[pygame.K_q] or keys_pressed[pygame.K_ESCAPE]:
+            return False
+
+        if keys_pressed[pygame.K_h]:
+            self.__show_heading__ = not self.__show_heading__
+
+        if keys_pressed[pygame.K_l]:
+            self.__show_list__ = not self.__show_list__
+
+        if keys_pressed[pygame.K_a]:
+            self.__show_ah__ = not self.__show_ah__
 
         orientation = self.__aircraft__.get_orientation()
 
@@ -212,6 +229,9 @@ class HeadsUpDisplay(object):
         Renders the current heading to the HUD.
         """
 
+        if not self.__show_heading__:
+            return
+
         cardinal_direction_line_proportion = 0.05
         compass = int(orientation.compass_heading)
         if compass is None or compass > 360 or compass < 0:
@@ -241,7 +261,7 @@ class HeadsUpDisplay(object):
                 int(pixels_per_degree * heading_strip)
 
             if (to_the_left % 90) == 0:
-                pygame.draw.lines(self.__backpage_framebuffer__, display.GREEN, True, [
+                pygame.draw.lines(self.__backpage_framebuffer__, display.GREEN, False, [
                     [line_x_left, self.__height__ * cardinal_direction_line_proportion], [line_x_left, 0]], 2)
 
                 self.__render_text__(str(to_the_left), display.GREEN,
@@ -249,7 +269,7 @@ class HeadsUpDisplay(object):
                                      display.BLACK)
 
             if (to_the_right % 90) == 0:
-                pygame.draw.lines(self.__backpage_framebuffer__, display.GREEN, True, [
+                pygame.draw.lines(self.__backpage_framebuffer__, display.GREEN, False, [
                     [line_x_right, self.__height__ * cardinal_direction_line_proportion], [line_x_right, 0]], 2)
 
                 self.__render_text__(str(to_the_right), display.GREEN,
@@ -283,7 +303,7 @@ class HeadsUpDisplay(object):
 
         altitude_text = str(int(orientation.alt)) + "' MSL"
         alt_texture = self.__font__.render(
-            altitude_text, True, display.WHITE, display.BLACK)
+            altitude_text, False, display.WHITE, display.BLACK)
         text_width, text_height = alt_texture.get_size()
         right_hand_side = int(0.9 * self.__width__)
         self.__backpage_framebuffer__.blit(
@@ -293,7 +313,7 @@ class HeadsUpDisplay(object):
         # G-loading and skids...
         g_load_text = "{0:.1f}Gs".format(orientation.g_load)
         texture = self.__font__.render(
-            g_load_text, True, display.WHITE, display.BLACK)
+            g_load_text, False, display.WHITE, display.BLACK)
         text_width, text_height = texture.get_size()
         right_hand_side = int(0.9 * self.__width__)
         self.__backpage_framebuffer__.blit(
@@ -306,7 +326,7 @@ class HeadsUpDisplay(object):
 
         roll_text = str(int(math.fabs(orientation.roll)))
         roll_texture = self.__font__.render(
-            roll_text, True, display.WHITE, display.BLACK)
+            roll_text, False, display.WHITE, display.BLACK)
         roll_texture = pygame.transform.rotate(roll_texture, orientation.roll)
         text_width, text_height = roll_texture.get_size()
         self.__backpage_framebuffer__.blit(
@@ -326,7 +346,7 @@ class HeadsUpDisplay(object):
                                     [int(width * 0.6),  self.__center__[1]]]
 
         pygame.draw.lines(self.__backpage_framebuffer__,
-                          display.GRAY, True, artificial_horizon_level, 2)
+                          display.GRAY, False, artificial_horizon_level, 2)
 
         pygame.draw.lines(self.__backpage_framebuffer__, display.WHITE, False, [
             [0, self.__center__[1]], [edge_reference_proportion, self.__center__[1]]], 2)
@@ -484,20 +504,23 @@ class HeadsUpDisplay(object):
             bearing = report[1]
             distance_text = report[2]
             altitude = report[3]
-            traffic_report = "{0} {1} {2} {3}".format(self.pad_right(identifier, max_identifier_length),
+
+
+            if self.__show_list__:
+                traffic_report = "{0} {1} {2} {3}".format(self.pad_right(identifier, max_identifier_length),
                                                       self.pad_left(
                                                           bearing, max_bearing_length),
                                                       self.pad_left(
                                                           distance_text, max_distance_length),
                                                       self.pad_left(altitude, max_altitude_length))
 
-            traffic_text_texture = self.__detail_font__.render(
-                traffic_report, True, display.WHITE, display.BLACK)
-            text_width, text_height = traffic_text_texture.get_size()
-            self.__backpage_framebuffer__.blit(
-                traffic_text_texture, (x_pos, y_pos))
+                traffic_text_texture = self.__detail_font__.render(
+                    traffic_report, False, display.WHITE, display.BLACK)
+                text_width, text_height = traffic_text_texture.get_size()
+                self.__backpage_framebuffer__.blit(
+                    traffic_text_texture, (x_pos, y_pos))
 
-            y_pos += int(1.5 * text_height)
+                y_pos += int(1.5 * text_height)
 
             # Now find where to draw the reticle....
             reticle_x, reticle_y = self.__get_traffic_projection__(
@@ -603,6 +626,10 @@ class HeadsUpDisplay(object):
         Initialize and create a new HUD.
         """
 
+        self.__show_ah__ = True
+        self.__show_heading__ = True
+        self.__show_list__ = True
+
         self.__configuration__ = Configuration(DEFAULT_CONFIG_FILE)
 
         adsb_traffic_address = "ws://{0}/traffic".format(
@@ -644,6 +671,9 @@ class HeadsUpDisplay(object):
         Render the pitch hash marks.
         """
 
+        if not self.__show_ah__:
+            return
+
         for reference_angle in range(-HeadsUpDisplay.DEGREES_OF_PITCH, HeadsUpDisplay.DEGREES_OF_PITCH + 1, 10):
             line_coords = self.__get_line_coords__(
                 pitch, roll, reference_angle)
@@ -657,10 +687,10 @@ class HeadsUpDisplay(object):
                 continue
 
             pygame.draw.lines(self.__backpage_framebuffer__,
-                              display.GREEN, True, line_coords, 2)
+                              display.GREEN, False, line_coords, 2)
 
             text = self.__font__.render(
-                str(reference_angle), True, display.WHITE, display.BLACK)
+                str(reference_angle), False, display.WHITE, display.BLACK)
             text = pygame.transform.rotate(text, roll)
             text_width, text_height = text.get_size()
             half_text_width = text_width >> 1

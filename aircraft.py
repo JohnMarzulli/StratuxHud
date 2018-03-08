@@ -23,6 +23,8 @@ class StratuxCapabilities(object):
         if key in self.__capabilties_json__:
             try:
                 return bool(self.__capabilties_json__[key])
+            except KeyboardInterrupt, SystemExit:
+                raise
             except:
                 return False
 
@@ -45,6 +47,9 @@ class StratuxCapabilities(object):
             try:
                 self.__capabilties_json__ = stratux_session.get(
                     url, timeout=2).json()
+
+            except KeyboardInterrupt, SystemExit:
+                raise
             except:
                 self.__capabilties_json__ = []
 
@@ -236,6 +241,9 @@ class AhrsStratux(object):
         if key in ahrs_json:
             try:
                 return ahrs_json[key]
+
+            except KeyboardInterrupt, SystemExit:
+                raise
             except:
                 return default
         
@@ -267,6 +275,9 @@ class AhrsStratux(object):
 
         try:
             ahrs_json = self.__stratux_session__.get(url, timeout=2).json()
+
+        except KeyboardInterrupt, SystemExit:
+            raise
         except:
             print "Issues decoding json"
 

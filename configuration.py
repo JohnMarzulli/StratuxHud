@@ -17,7 +17,7 @@ class Configuration(object):
     STRATUX_ADDRESS_KEY = "stratux_address"
     DATA_SOURCE_KEY = "data_source"
     DISPLAY_KEY = "display"
-    FLIP_HORIZONTAL_KEY = "flip_horizonal"
+    FLIP_HORIZONTAL_KEY = "flip_horizontal"
     FLIP_VERTICAL_KEY = "flip_vertical"
     REVERSE_ROLL_KEY = "reverse_roll"
     REVERSE_PITCH_KEY = "reverse_pitch"
