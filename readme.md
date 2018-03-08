@@ -6,3 +6,5 @@ https://s3.amazonaws.com/sunfounder/Raspberry/images/LCD-show.tar.gz
 pip install ws4py
 pip install pygame
 pip install requests
+
+https://www.raspberrypi.org/forums/viewtopic.php?t=160620
