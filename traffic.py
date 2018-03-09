@@ -11,6 +11,8 @@ import ws4py
 from ws4py.client.threadedclient import WebSocketClient
 import lib.recurring_task as recurring_task
 
+# TODO - More work around making this a BG process...
+
 class Traffic(object):
     TAIL_NUMBER_KEY = 'Tail'
     LATITUDE_KEY = 'Lat'
@@ -359,19 +361,19 @@ class AdsbTrafficClient(WebSocketClient):
         Runs the WS traffic connector.
         """
 
-        connected = False
+        #connected = False
 
-        while not connected:
-            try:
-                self.connect()
+        #while not connected:
+        try:
+            self.connect()
 
-                connected = True
+            #connected = True
 
-            except KeyboardInterrupt, SystemExit:
-                raise
-            except:
-                print "Unable to connect... trying again."
-                time.sleep(0.5)
+        except KeyboardInterrupt, SystemExit:
+            raise
+        except:
+            print "Unable to connect..." # trying again."
+            # time.sleep(0.5)
 
         recurring_task.RecurringTask('TrafficUpdate', 0.1, self.run_forever, start_immediate=False)
         # recurring_task.RecurringTask('TrafficDump', 1.0, self.__dump_traffic_diag__)

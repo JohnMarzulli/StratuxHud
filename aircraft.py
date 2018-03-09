@@ -393,6 +393,16 @@ class AhrsStratux(object):
 
 
 class Aircraft(object):
+    def update_orientation_in_background(self):
+        print "starting"
+        while True:
+            try:
+                self.__update_orientation__()
+            except KeyboardInterrupt:
+                raise
+            except:
+                print "error"
+
     def __init__(self):
         self.__configuration__ = configuration.Configuration(configuration.DEFAULT_CONFIG_FILE)
         self.ahrs_source = None
@@ -402,8 +412,11 @@ class Aircraft(object):
         elif self.__configuration__.data_source() == configuration.DataSourceNames.SIMULATION:
             self.ahrs_source = AhrsSimulation()
 
+        # orientation_update = threading.Thread(target=self.update_orientation_in_background)
+        # orientation_update.start()
+
         recurring_task.RecurringTask(
-            'UpdateAhrs', 1.0 / (configuration.MAX_FRAMERATE * 2), self.update_orientation)
+            'UpdateAhrs', 1.0 / (configuration.MAX_FRAMERATE * 2), self.__update_orientation__)
 
     def is_ahrs_available(self):
         """
@@ -415,13 +428,15 @@ class Aircraft(object):
     def get_orientation(self):
         return self.ahrs_source.ahrs_data
 
-    def update_orientation(self):
+    def __update_orientation__(self):
         if self.ahrs_source is not None:
             self.ahrs_source.update()
 
 
 if __name__ == '__main__':
+    import time
     plane = Aircraft()
 
     while True:
-        plane.update_orientation()
+        print str(plane.get_orientation().roll)
+        time.sleep(1.0 / 60.0)

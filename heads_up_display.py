@@ -12,6 +12,7 @@ import display
 import traffic
 from configuration import *
 from aircraft import Aircraft
+import hud_elements
 
 # TODO - Add the G-Meter
 # TODO - Disable functionality based on the enabled StratuxCapabilities
@@ -72,10 +73,23 @@ class HeadsUpDisplay(object):
 
         if keys_pressed[pygame.K_a]:
             self.__show_ah__ = not self.__show_ah__
-
+        
+        if keys_pressed[pygame.K_r]:
+            self.slowest_render = 0
+            self.slowest_orient = 0
+            
+        orient_start = datetime.datetime.now()
         orientation = self.__aircraft__.get_orientation()
 
+        orient_ms =int((datetime.datetime.now() - orient_start).total_seconds() * 1000)
+        if self.slowest_orient < orient_ms:
+            self.slowest_orient = orient_ms
+
+        orient_ms_text = "{0:3}ms / {1:3}ms".format(orient_ms, self.slowest_orient)
+
         self.__backpage_framebuffer__.fill(display.BLACK)
+
+        render_start = datetime.datetime.now()
 
         if self.__aircraft__.is_ahrs_available():
             # Order of drawing is important
@@ -86,17 +100,29 @@ class HeadsUpDisplay(object):
             # drawn with a black background
             # to overdraw the pitch lines
             # and improve readability
-            self.__render_level_reference__()
-            self.__render_pitch__(orientation.pitch, orientation.roll)
-            self.__render_heading__(orientation)
-            self.__render_altitude__(orientation)
-            self.__render_g_load_and_skid__(orientation)
-            self.__render_roll__(orientation)
-            self.__render_adsb_traffic__(orientation)
-            self.__render_adsb_onscreen_targets__(orientation)
+            # self.__render_level_reference__(orientation) # 2, 1ms
+            # self.__render_pitch__(orientation) # 24, 6ms
+            self.__render_heading__(orientation) # 18ms, 16ms, 12ms
+            # self.__render_altitude__(orientation)
+            # self.__render_g_load_and_skid__(orientation)
+            # self.__render_roll__(orientation)
+            # self.__render_adsb_traffic__(orientation)
+            # self.__render_adsb_onscreen_targets__(orientation)
         else:
             # Should do this if the signal is lost...
-            self.__render_ahrs_not_available__()
+            self.__render_ahrs_not_available__(orientation) # 1ms
+
+        render_time = int((datetime.datetime.now() - render_start).total_seconds() * 1000)
+        if self.slowest_render < render_time:
+            self.slowest_render = render_time
+
+        ms_render = "{0:3}ms / {1:3}ms".format(render_time, self.slowest_render)
+
+        debug_status_left = int(self.__width__ * 0.2)
+        debug_status_top = int(self.__height__ * 0.2)
+        self.__render_text__(ms_render, display.BLACK, debug_status_left, debug_status_top, 0, display.YELLOW)
+        debug_status_top += int(self.__font__.get_height() * 1.5)
+        self.__render_text__(orient_ms_text, display.BLACK, debug_status_left, debug_status_top, 0, display.YELLOW)
 
         # Change the frame buffer
         flipped = pygame.transform.flip(
@@ -124,8 +150,8 @@ class HeadsUpDisplay(object):
         compass = orientation.get_heading()
         horizontal_degrees_to_target = traffic.bearing - compass
 
-        screen_y = -vertical_degrees_to_target * self.__get_pixels_per_degree_y__()
-        screen_x = horizontal_degrees_to_target * self.__get_pixels_per_degree_y__()
+        screen_y = -vertical_degrees_to_target * self.__pixels_per_degree_y__
+        screen_x = horizontal_degrees_to_target * self.__pixels_per_degree_y__
 
         return self.__center__[0] + screen_x, self.__center__[1] + screen_y
 
@@ -231,70 +257,8 @@ class HeadsUpDisplay(object):
 
         if not self.__show_heading__:
             return
-
-        cardinal_direction_line_proportion = 0.05
-        compass = int(orientation.compass_heading)
-        if compass is None or compass > 360 or compass < 0:
-            compass = '---'
-
-        heading_text_y = int(self.__font__.get_height() * 2)
-        compass_text_y = int(self.__font__.get_height() * 3)
-
-        # Render a crude compass
-        # Render a heading strip along the top
-        pixels_per_degree = self.__width__ / 360.0
-
-        heading = orientation.get_heading()
-        for heading_strip in range(0, 180, 1):
-            to_the_left = int((heading - heading_strip) + 0.5)
-            to_the_right = int((heading + heading_strip) + 0.5)
-
-            if to_the_left < 0:
-                to_the_left += 360
-
-            if to_the_right > 360:
-                to_the_right -= 360
-
-            line_x_left = self.__center__[0] - \
-                int(pixels_per_degree * heading_strip)
-            line_x_right = self.__center__[0] + \
-                int(pixels_per_degree * heading_strip)
-
-            if (to_the_left % 90) == 0:
-                pygame.draw.lines(self.__backpage_framebuffer__, display.GREEN, False, [
-                    [line_x_left, self.__height__ * cardinal_direction_line_proportion], [line_x_left, 0]], 2)
-
-                self.__render_text__(str(to_the_left), display.GREEN,
-                                     line_x_left, heading_text_y, 0,
-                                     display.BLACK)
-
-            if (to_the_right % 90) == 0:
-                pygame.draw.lines(self.__backpage_framebuffer__, display.GREEN, False, [
-                    [line_x_right, self.__height__ * cardinal_direction_line_proportion], [line_x_right, 0]], 2)
-
-                self.__render_text__(str(to_the_right), display.GREEN,
-                                     line_x_right, heading_text_y, 0,
-                                     display.BLACK)
-
-        # Render the text that is showing our AHRS and GPS headings
-        cover_old_rendering_spaces = "     "
-        heading_text = "{0}{1} / {2}{0}".format(cover_old_rendering_spaces,
-                                                compass, int(orientation.gps_heading))
-        box_width, box_height = self.__render_text__(heading_text, display.GREEN,
-                                                     self.__center__[
-                                                         0], compass_text_y, 0,
-                                                     display.BLACK)
-
-        border_vertical_size = (box_height >> 1) + (box_height >> 2)
-
-        pygame.draw.lines(self.__backpage_framebuffer__, display.GREEN, True, [
-            [self.__center__[0] - (box_width >> 1),
-             compass_text_y - border_vertical_size],
-            [self.__center__[0] + (box_width >> 1),
-             compass_text_y - border_vertical_size],
-            [self.__center__[0] + (box_width >> 1),
-             compass_text_y + border_vertical_size],
-            [self.__center__[0] - (box_width >> 1), compass_text_y + border_vertical_size]], 2)
+        
+        self.__compass_element__.render(self.__backpage_framebuffer__, orientation)
 
     def __render_altitude__(self, orientation):
         """
@@ -332,26 +296,13 @@ class HeadsUpDisplay(object):
         self.__backpage_framebuffer__.blit(
             roll_texture, (self.__center__[0] - (text_width >> 1), self.__center__[1] - (text_height >> 1)))
 
-    def __render_level_reference__(self):
+    def __render_level_reference__(self, orientation):
         """
         Renders a "straight and level" line to the HUD.
         """
 
-        width = self.__width__
-        height = self.__height__
+        self.__level_reference_hud_element__.render(self.__backpage_framebuffer__, orientation)
 
-        edge_reference_proportion = int(width * 0.05)
-
-        artificial_horizon_level = [[int(width * 0.4),  self.__center__[1]],
-                                    [int(width * 0.6),  self.__center__[1]]]
-
-        pygame.draw.lines(self.__backpage_framebuffer__,
-                          display.GRAY, False, artificial_horizon_level, 2)
-
-        pygame.draw.lines(self.__backpage_framebuffer__, display.WHITE, False, [
-            [0, self.__center__[1]], [edge_reference_proportion, self.__center__[1]]], 2)
-        pygame.draw.lines(self.__backpage_framebuffer__, display.WHITE, False, [
-            [self.__width__ - edge_reference_proportion, self.__center__[1]], [self.__width__, self.__center__[1]]], 2)
 
     def __rotate_reticle__(self, reticle, roll):
         """
@@ -586,45 +537,13 @@ class HeadsUpDisplay(object):
                 self.__render_target_reticle__(
                     identifier, reticle_x, reticle_y, reticle, orientation.roll)
 
-    def __get_pixels_per_degree_y__(self):
-        return (self.__height__ / HeadsUpDisplay.DEGREES_OF_PITCH) * HeadsUpDisplay.PITCH_DEGREES_DISPLAY_SCALER
-
-    def __get_line_coords__(self, pitch=0, roll=0, hash_mark_angle=0):
-        """
-        Get the coordinate for the lines for a given pitch and roll.
-        """
-
-        if hash_mark_angle == 0:
-            length = self.__width__ * .2
-        elif (hash_mark_angle % 10) == 0:
-            length = self.__width__ * 0.1
-
-        ahrs_center_x, ahrs_center_y = self.__center__
-        px_per_deg_y = self.__get_pixels_per_degree_y__()
-        pitch_offset = px_per_deg_y * (-pitch + hash_mark_angle)
-
-        roll_radians = math.radians(roll)
-        roll_delta_radians = math.radians(90 - roll)
-
-        center_x = int(
-            (ahrs_center_x - (pitch_offset * math.cos(roll_delta_radians))) + 0.5)
-        center_y = int(
-            (ahrs_center_y - (pitch_offset * math.sin(roll_delta_radians))) + 0.5)
-
-        x_len = int((length * math.cos(roll_radians)) + 0.5)
-        y_len = int((length * math.sin(roll_radians)) + 0.5)
-
-        start_x = center_x - (x_len >> 1)
-        end_x = center_x + (x_len >> 1)
-        start_y = center_y + (y_len >> 1)
-        end_y = center_y - (y_len >> 1)
-
-        return [[start_x, start_y], [end_x, end_y]]
-
     def __init__(self):
         """
         Initialize and create a new HUD.
         """
+
+        self.slowest_render = 0
+        self.slowest_orient = 0
 
         self.__show_ah__ = True
         self.__show_heading__ = True
@@ -656,50 +575,31 @@ class HeadsUpDisplay(object):
         self.__top_border__ = int(self.__height__ * 0.1)
         self.__bottom_border__ = self.__height__ - self.__top_border__
 
-    def __render_ahrs_not_available__(self):
+        self.__pixels_per_degree_y__ = (self.__height__ / HeadsUpDisplay.DEGREES_OF_PITCH) * HeadsUpDisplay.PITCH_DEGREES_DISPLAY_SCALER
+
+        self.__level_reference_hud_element__ = hud_elements.LevelReference(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__))
+        self.__pitch_hud_element__ = hud_elements.ArtificialHorizon(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__))
+        self.__compass_element__ = hud_elements.CompassAndHeading(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__))
+        self.__ahrs_not_available_element__ = hud_elements.AhrsNotAvailable(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__))
+
+    def __render_ahrs_not_available__(self, orientation):
         """
         Render an "X" over the screen to indicate the AHRS is not
         available.
         """
-        pygame.draw.lines(self.__backpage_framebuffer__, display.RED, True, [
-            [0, 0], [self.__width__, self.__height__]], 10)
-        pygame.draw.lines(self.__backpage_framebuffer__, display.RED, True, [
-            [0, self.__height__], [self.__width__, 0]], 10)
 
-    def __render_pitch__(self, pitch, roll):
+        self.__ahrs_not_available_element__.render(self.__backpage_framebuffer__, orientation)
+
+
+    def __render_pitch__(self, orientation):
         """
         Render the pitch hash marks.
         """
 
         if not self.__show_ah__:
             return
-
-        for reference_angle in range(-HeadsUpDisplay.DEGREES_OF_PITCH, HeadsUpDisplay.DEGREES_OF_PITCH + 1, 10):
-            line_coords = self.__get_line_coords__(
-                pitch, roll, reference_angle)
-
-            # Perform some trivial clipping of the lines
-            # This also prevents early text rasterization
-            if line_coords[0][1] < 0 and line_coords[1][1] < 0:
-                continue
-
-            if line_coords[0][1] > self.__height__ and line_coords[1][1] > self.__height__:
-                continue
-
-            pygame.draw.lines(self.__backpage_framebuffer__,
-                              display.GREEN, False, line_coords, 2)
-
-            text = self.__font__.render(
-                str(reference_angle), False, display.WHITE, display.BLACK)
-            text = pygame.transform.rotate(text, roll)
-            text_width, text_height = text.get_size()
-            half_text_width = text_width >> 1
-            center_x = int(
-                ((line_coords[0][0] + line_coords[1][0]) >> 1) - half_text_width)
-            center_y = int(
-                ((line_coords[0][1] + line_coords[1][1]) >> 1) - half_text_width)
-
-            self.__backpage_framebuffer__.blit(text, (center_x, center_y))
+        
+        self.__pitch_hud_element__.render(self.__backpage_framebuffer__, orientation)
 
 
 if __name__ == '__main__':
