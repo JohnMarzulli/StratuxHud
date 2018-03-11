@@ -14,6 +14,16 @@ class RecurringTask(object):
     Object to control and handle a recurring task.
     """
 
+    def stop(self):
+        try:
+            if self.__last_task__ is not None:
+                self.pause()
+                self.__last_task__.cancel()
+            
+            return True
+        except:
+            return False
+
     def is_running(self):
         """
         Returns True if the task is running.
@@ -46,18 +56,22 @@ class RecurringTask(object):
         Runs the callback.
         """
 
-        if not self.__is_running__:
-            return False
+        self.__last_task__ = threading.Thread(target=self.__run_loop__)
+        self.__last_task__.start()
+    
+    def __run_loop__(self):
+        while True:
+            if self.__is_running__ and self.__task_callback__ is not None:
+                try:
+                    self.__task_callback__()
+                except:
+                    if self.__logger__ is not None:
+                        error_mesage = "EX(" + self.__task_name__ + ")=" + sys.exc_info()[0]
+                        self.__logger__.info(error_mesage)
+            
+            time.sleep(int(self.__task_interval__))
 
-        try:
-            self.__task_callback__()
-        except:
-            if self.__logger__ is not None:
-                error_mesage = "EX(" + self.__task_name__ + ")=" + sys.exc_info()[0]
-                self.__logger__.info(error_mesage)
 
-        if self.__is_running__:
-            threading.Timer(int(self.__task_interval__), self.__run_task__).start()
 
     def __init__(self, task_name, task_interval, task_callback, logger=None, start_immediate=False):
         """
@@ -70,6 +84,7 @@ class RecurringTask(object):
         self.__task_callback__ = task_callback
         self.__logger__ = logger
         self.__is_running__ = False
+        self.__last_task__ = None
 
         if start_immediate:
             self.start()

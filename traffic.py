@@ -11,7 +11,7 @@ import ws4py
 from ws4py.client.threadedclient import WebSocketClient
 import lib.recurring_task as recurring_task
 
-# TODO - More work around making this a BG process...
+# TODO - More work around making this a BG
 
 class Traffic(object):
     TAIL_NUMBER_KEY = 'Tail'
@@ -136,8 +136,11 @@ class Traffic(object):
         Applies the new data to the existing traffic.
         """
 
-        self.__json__.update(json_report)
-        self.__update_from_json__()
+        try:
+            self.__json__.update(json_report)
+            self.__update_from_json__()
+        except:
+            print "Issue in update()"
 
     def __init__(self, json_from_stratux):
         """
@@ -196,41 +199,47 @@ class Traffic(object):
         # u'Alt': 4000,
         # u'Speed': 177}
 
-        self.iaco_address = self.__json__[Traffic.ICAO_ADDR_KEY]
-        self.tail_number = self.__json__[Traffic.TAIL_NUMBER_KEY]
-        self.position_valid = self.__json__[Traffic.POSITION_VALID_KEY]
-        self.bearing_distance_valid = self.__json__[Traffic.BEARING_DISTANCE_VALID_KEY]
-        self.time_decoded = datetime.datetime.now()
+        try:
+            self.iaco_address = self.__json__[Traffic.ICAO_ADDR_KEY]
+            self.tail_number = self.__json__[Traffic.TAIL_NUMBER_KEY]
+            self.position_valid = self.__json__[Traffic.POSITION_VALID_KEY]
+            self.bearing_distance_valid = self.__json__[Traffic.BEARING_DISTANCE_VALID_KEY]
+            self.time_decoded = datetime.datetime.now()
 
-        if Traffic.LATITUDE_KEY in self.__json__:
-            self.latitude = self.__json__[Traffic.LATITUDE_KEY]
-        else:
-            self.latitude = None
+            if Traffic.LATITUDE_KEY in self.__json__:
+                self.latitude = self.__json__[Traffic.LATITUDE_KEY]
+            else:
+                self.latitude = None
 
-        if Traffic.LONGITUDE_KEY in self.__json__:
-            self.longitude = self.__json__[Traffic.LONGITUDE_KEY]
-        else:
-            self.longitude = None
-        
-        if Traffic.DISTANCE_KEY in self.__json__:
-            self.distance = float(self.__json__[Traffic.DISTANCE_KEY])
-        else:
-            self.distance = None
-        
-        if Traffic.BEARING_KEY in self.__json__:
-            self.bearing = float(self.__json__[Traffic.BEARING_KEY])
-        else:
-            self.bearing = None
+            if Traffic.LONGITUDE_KEY in self.__json__:
+                self.longitude = self.__json__[Traffic.LONGITUDE_KEY]
+            else:
+                self.longitude = None
+            
+            if Traffic.DISTANCE_KEY in self.__json__:
+                self.distance = float(self.__json__[Traffic.DISTANCE_KEY])
+            else:
+                self.distance = None
+            
+            if Traffic.BEARING_KEY in self.__json__:
+                self.bearing = float(self.__json__[Traffic.BEARING_KEY])
+            else:
+                self.bearing = None
 
-        if Traffic.ALTITUDE_KEY in self.__json__:
-            self.altitude = float(self.__json__[Traffic.ALTITUDE_KEY])
-        else:
-            self.altitude = None
+            if Traffic.ALTITUDE_KEY in self.__json__:
+                self.altitude = float(self.__json__[Traffic.ALTITUDE_KEY])
+            else:
+                self.altitude = None
+        except:
+            print "Exception while updating..."
 
 class TrafficManager(object):
     """
     Manager class that handles all of the position reports.
     """
+    
+    def clear(self):
+        self.traffic = {}
 
     def get_unreliable_traffic(self):
         """
@@ -240,13 +249,15 @@ class TrafficManager(object):
         traffic_without_position = []
 
         self.__lock__.acquire()
-        for identifier in self.__traffic__:
-            if not self.__traffic__[identifier].is_valid_report():
-                if self.__traffic__[identifier].get_identifer() is self.__configuration__.ownship:
-                    continue
+        try:
+            for identifier in self.traffic:
+                if not self.traffic[identifier].is_valid_report():
+                    if self.traffic[identifier].get_identifer() is self.__configuration__.ownship:
+                        continue
 
-                traffic_without_position.append(self.__traffic__[identifier])
-        self.__lock__.release()
+                    traffic_without_position.append(self.traffic[identifier])
+        finally:
+            self.__lock__.release()
 
         sorted_traffic = sorted(traffic_without_position, key=lambda traffic: traffic.get_identifer())
 
@@ -261,13 +272,15 @@ class TrafficManager(object):
         actionable_traffic = []
 
         self.__lock__.acquire()
-        for identifier in self.__traffic__:
-            if self.__traffic__[identifier].is_valid_report():
-                if self.__traffic__[identifier].get_identifer() is self.__configuration__.ownship:
-                    continue
+        try:
+            for identifier in self.traffic:
+                if self.traffic[identifier].is_valid_report():
+                    if self.traffic[identifier].get_identifer() is self.__configuration__.ownship:
+                        continue
 
-                actionable_traffic.append(self.__traffic__[identifier])
-        self.__lock__.release()
+                    actionable_traffic.append(self.traffic[identifier])
+        finally:
+            self.__lock__.release()
 
         sorted_traffic = sorted(actionable_traffic, key=lambda traffic: traffic.distance)
 
@@ -278,15 +291,15 @@ class TrafficManager(object):
         Updates or sets a traffic report.
         """
         self.__lock__.acquire()
-
-        traffic_report = Traffic(json_report)
-        identifier = str(traffic_report.iaco_address)
-        if traffic_report.iaco_address in self.__traffic__:
-            self.__traffic__[identifier].update(json_report)
-        else:
-            self.__traffic__[identifier] = traffic_report
-
-        self.__lock__.release()
+        try:
+            traffic_report = Traffic(json_report)
+            identifier = str(traffic_report.iaco_address)
+            if traffic_report.iaco_address in self.traffic:
+                self.traffic[identifier].update(json_report)
+            else:
+                self.traffic[identifier] = traffic_report
+        finally:
+            self.__lock__.release()
         
         if traffic_report is not None:
             return traffic_report.get_identifer()
@@ -299,19 +312,26 @@ class TrafficManager(object):
         """
 
         self.__lock__.acquire()
-        traffic_to_remove = []
-        for identifier in self.__traffic__:
-            if self.__traffic__[identifier].get_age() > (configuration.MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT * 60):
-                print "Pruning {0}".format(identifier)
-                traffic_to_remove.append(identifier)
+        try:
+            traffic_to_remove = []
+            for identifier in self.traffic:
+                traffic_age = self.traffic[identifier].get_age()
+                nice_name = self.traffic[identifier].get_identifer()
+                # print "{0} is {1}s old".format(nice_name, traffic_age)
+                if traffic_age > (self.__configuration__.max_minutes_before_removal * 60):
+                    # print "Pruning {0}/{1}".format(nice_name, identifier)
+                    traffic_to_remove.append(identifier)
 
-        for identifier_to_remove in traffic_to_remove:
-            del self.__traffic__[identifier_to_remove]
-        self.__lock__.release()
+            for identifier_to_remove in traffic_to_remove:
+                del self.traffic[identifier_to_remove]
+        except:
+            print "Issue on prune"
+        finally:
+            self.__lock__.release()
 
     def __init__(self):
         # Trafic held by tail number
-        self.__traffic__ = {}
+        self.traffic = {}
         self.__configuration__ = configuration.Configuration(configuration.DEFAULT_CONFIG_FILE)
         self.__lock__ = threading.Lock()
 
@@ -324,10 +344,19 @@ class AdsbTrafficClient(WebSocketClient):
 
     TRAFFIC_MANAGER = TrafficManager()
 
+    def shutdown(self):
+        try:
+            self.__update_task__.stop()
+            self.__prune_task__.stop()
+            self.close_connection()
+        except:
+            print "Issue on shutdown"
+
     def opened(self):
         print "WebSocket opened to Stratux"
 
     def closed(self, code, reason=None):
+        AdsbTrafficClient.TRAFFIC_MANAGER.clear()
         print "Closed down", code, reason
 
         print "Attempting to reconnect..."
@@ -375,7 +404,8 @@ class AdsbTrafficClient(WebSocketClient):
             print "Unable to connect..." # trying again."
             # time.sleep(0.5)
 
-        recurring_task.RecurringTask('TrafficUpdate', 0.1, self.run_forever, start_immediate=False)
+        self.__update_task__ = recurring_task.RecurringTask('TrafficUpdate', 0.1, self.run_forever, start_immediate=False)
+        self.__prune_task__ = recurring_task.RecurringTask('PruneTraffic', 10, AdsbTrafficClient.TRAFFIC_MANAGER.prune_traffic_reports)
         # recurring_task.RecurringTask('TrafficDump', 1.0, self.__dump_traffic_diag__)
 
 if __name__ == '__main__':
@@ -403,6 +433,5 @@ if __name__ == '__main__':
             
             print "---------------"
             
-            AdsbTrafficClient.TRAFFIC_MANAGER.prune_traffic_reports()
     except KeyboardInterrupt:
-           ws.close()
+           ws.shutdown()
