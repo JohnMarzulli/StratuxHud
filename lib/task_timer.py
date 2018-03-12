@@ -1,12 +1,12 @@
 import datetime
 import time
-import queue
+import Queue
 
 
 class TaskTimer(object):
     def __init__(self, task_name):
         self.__max_running_average__ = 120
-        self.__running_average__ = queue.Queue(self.__max_running_average__)
+        self.__running_average__ = Queue.Queue(self.__max_running_average__)
         self.__running_sum__ = 0.0
         self.__running_average_count__ = 0
         self.__start_time__ = None

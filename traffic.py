@@ -343,8 +343,19 @@ class AdsbTrafficClient(WebSocketClient):
     """
 
     TRAFFIC_MANAGER = TrafficManager()
+    IS_CONNECTED = False
+    INSTANCE = None
+    LAST_MESSAGE_RECEIVED = None
+
+    def __init__(self, socket_address):
+        WebSocketClient.__init__(self, socket_address, heartbeat_freq=30)
+
+        self.__update_task__ = None
+        self.__prune_task__ = None
+        self.__manage_connection_task__ = None
 
     def shutdown(self):
+        AdsbTrafficClient.IS_CONNECTED = False
         try:
             self.__update_task__.stop()
             self.__prune_task__.stop()
@@ -353,9 +364,13 @@ class AdsbTrafficClient(WebSocketClient):
             print "Issue on shutdown"
 
     def opened(self):
+        AdsbTrafficClient.IS_CONNECTED = True
         print "WebSocket opened to Stratux"
+        if AdsbTrafficClient.INSTANCE is None:
+            AdsbTrafficClient.INSTANCE = self
 
     def closed(self, code, reason=None):
+        AdsbTrafficClient.IS_CONNECTED = False
         AdsbTrafficClient.TRAFFIC_MANAGER.clear()
         print "Closed down", code, reason
 
@@ -366,15 +381,10 @@ class AdsbTrafficClient(WebSocketClient):
             raise
         except:
             print "Issue trying to close_connection"
-        
-        try:
-            self.connect()
-        except KeyboardInterrupt, SystemExit:
-            raise
-        except:
-            print "Issue trying to reopen connection."
 
     def received_message(self, m):
+        AdsbTrafficClient.IS_CONNECTED = True
+        AdsbTrafficClient.LAST_MESSAGE_RECEIVED = datetime.datetime.now() 
         adsb_traffic = json.loads(m.data)
         AdsbTrafficClient.TRAFFIC_MANAGER.handle_traffic_report(adsb_traffic)
     
@@ -390,23 +400,42 @@ class AdsbTrafficClient(WebSocketClient):
         Runs the WS traffic connector.
         """
 
-        #connected = False
+        #try:
+        #    self.connect()
+        #except KeyboardInterrupt, SystemExit:
+        #    raise
+        #except:
+        #    print "Unable to connect..." # trying again."
 
-        #while not connected:
-        try:
-            self.connect()
-
-            #connected = True
-
-        except KeyboardInterrupt, SystemExit:
-            raise
-        except:
-            print "Unable to connect..." # trying again."
-            # time.sleep(0.5)
-
+        self.__manage_connection_task__ = recurring_task.RecurringTask('ManageConnection', 2, ManageConnection, start_immediate=False)
         self.__update_task__ = recurring_task.RecurringTask('TrafficUpdate', 0.1, self.run_forever, start_immediate=False)
         self.__prune_task__ = recurring_task.RecurringTask('PruneTraffic', 10, AdsbTrafficClient.TRAFFIC_MANAGER.prune_traffic_reports)
+        
         # recurring_task.RecurringTask('TrafficDump', 1.0, self.__dump_traffic_diag__)
+
+def ManageConnection():
+    if AdsbTrafficClient.IS_CONNECTED:
+        disconnected = AdsbTrafficClient.INSTANCE.terminated or AdsbTrafficClient.INSTANCE.client_terminated
+        print "connected: {0}".format(not disconnected)
+        AdsbTrafficClient.IS_CONNECTED = not disconnected
+    else:
+        print "CON_ERR"
+    
+    if AdsbTrafficClient.LAST_MESSAGE_RECEIVED is not None:
+        time_since = (datetime.datetime.now() - AdsbTrafficClient.LAST_MESSAGE_RECEIVED).total_seconds()
+
+        if time_since > 60:
+            try:
+                AdsbTrafficClient.INSTANCE.close_connection()
+            except:
+        
+                AdsbTrafficClient.IS_CONNECTED = False
+
+    if not AdsbTrafficClient.IS_CONNECTED and AdsbTrafficClient.INSTANCE is not None:
+        try:
+            AdsbTrafficClient.INSTANCE.connect()
+        except:
+            print "Error trying to reestablish connection"
 
 if __name__ == '__main__':
     import time

@@ -352,7 +352,7 @@ class AdsbElement(object):
 
         if units is not metric:
             if distance < imperial_nearby:
-                return str(distance) + "'"
+                return "{0:.0f}".format(distance) + "'"
 
             if units is nm:
                 return "{0:.1f}NM".format(distance / feet_to_nm)

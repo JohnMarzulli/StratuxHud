@@ -6,7 +6,7 @@
     "reverse_roll": true,
     "reverse_pitch": false,
     "reverse_yaw": false,
-    "flip_horizontal": false,
+    "flip_horizontal": true,
     "flip_vertical": false
   },
   "ownship": "N701GV",
