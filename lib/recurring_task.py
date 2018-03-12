@@ -65,9 +65,11 @@ class RecurringTask(object):
                 try:
                     self.__task_callback__()
                 except:
+                    error_mesage = "EX(" + self.__task_name__ + ")" #+ sys.exc_info()[0]
                     if self.__logger__ is not None:
-                        error_mesage = "EX(" + self.__task_name__ + ")=" + sys.exc_info()[0]
                         self.__logger__.info(error_mesage)
+                    else:
+                        print error_mesage
             
             time.sleep(int(self.__task_interval__))
 

@@ -22,7 +22,7 @@ class TaskTimer(object):
         self.fastest = None
         self.slowest = None
         self.average = 0.0
-        self.__running_average__ = queue.Queue(self.__max_running_average__)
+        self.__running_average__ = Queue.Queue(self.__max_running_average__)
         self.__running_sum__ = 0.0
         self.__running_average_count__ = 0.0
 

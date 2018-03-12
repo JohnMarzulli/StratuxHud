@@ -41,7 +41,7 @@ class HeadsUpDisplay(object):
             while self.tick(clock):
                 pass
         finally:
-            self.traffic.shutdown()
+            self.__connection_manager__.shutdown()
             pygame.display.quit()
             
             # pygame.quit()
@@ -98,6 +98,16 @@ class HeadsUpDisplay(object):
                 self.__roll_element__.render(self.__backpage_framebuffer__, orientation) # 1ms, 1ms (better quality) 
                 self.__adsb_traffic_text_element__.render(self.__backpage_framebuffer__, orientation) #1.5ms/plane
                 self.__adsb_onscreen_targets_elements__.render(self.__backpage_framebuffer__, orientation)
+
+                # print '--------------'
+                # print self.__level_reference_hud_element__.task_timer.to_string()
+                # print self.__pitch_hud_element__.task_timer.to_string()
+                # print self.__compass_element__.task_timer.to_string()
+                # print self.__altitude_element__.task_timer.to_string()
+                # print self.__skid_and_g_element__.task_timer.to_string()
+                # print self.__roll_element__.task_timer.to_string()
+                # print self.__adsb_traffic_text_element__.task_timer.to_string()
+                # print self.__adsb_onscreen_targets_elements__.task_timer.to_string()
             except:
                 pass
         else:
@@ -119,50 +129,6 @@ class HeadsUpDisplay(object):
         pygame.display.flip()
 
         return True
-
-    def __get_traffic_projection__(self, orientation, traffic):
-        """
-        Attempts to figure out where the traffic reticle should be rendered.
-        Returns value within screen space
-        """
-
-        # Assumes traffic.position_valid
-        # TODO - Account for aircraft roll...
-
-        altitude_delta = int(traffic.altitude - orientation.alt)
-        slope = altitude_delta / traffic.distance
-        vertical_degrees_to_target = math.degrees(math.atan(slope))
-        vertical_degrees_to_target -= orientation.pitch
-
-        # TODO - Double check ALL of this math...
-        compass = orientation.get_heading()
-        horizontal_degrees_to_target = traffic.bearing - compass
-
-        screen_y = -vertical_degrees_to_target * self.__pixels_per_degree_y__
-        screen_x = horizontal_degrees_to_target * self.__pixels_per_degree_y__
-
-        return self.__center__[0] + screen_x, self.__center__[1] + screen_y
-
-    def get_above_reticle(self, center_x, center_y, scale):
-        """Generates the coordinates for a reticle indicating
-        traffic is above use.
-
-        Arguments:
-            center_x {int} -- Center X screen position
-            center_y {int} -- Center Y screen position
-            scale {float} -- The scale of the reticle relative to the screen.
-        """
-
-        size = int(self.__height__ * scale)
-
-        above_reticle = [
-            [center_x - size, 0 + size],
-            [center_x, 0],
-            [center_x + size, 0 + size]
-        ]
-
-        return above_reticle
-
 
     def __render_text__(self, text, color, position_x, position_y, roll, background_color=None):
         """
@@ -194,8 +160,7 @@ class HeadsUpDisplay(object):
 
         adsb_traffic_address = "ws://{0}/traffic".format(
             self.__configuration__.stratux_address())
-        self.traffic = traffic.AdsbTrafficClient(adsb_traffic_address)
-        self.traffic.run_in_background()
+        self.__connection_manager__ = traffic.ConnectionManager(adsb_traffic_address)
 
         self.__backpage_framebuffer__, screen_size = display.display_init()  # args.debug)
         self.__width__, self.__height__ = screen_size
@@ -209,12 +174,6 @@ class HeadsUpDisplay(object):
         self.__detail_font__ = pygame.font.SysFont(font_name, int(self.__height__ / 20.0), False, False)
 
         self.__aircraft__ = Aircraft()
-
-        self.__center__ = (
-            self.__width__ >> 1, self.__height__ >> 1)
-
-        self.__top_border__ = int(self.__height__ * 0.1)
-        self.__bottom_border__ = self.__height__ - self.__top_border__
 
         self.__pixels_per_degree_y__ = (self.__height__ / HeadsUpDisplay.DEGREES_OF_PITCH) * HeadsUpDisplay.PITCH_DEGREES_DISPLAY_SCALER
 

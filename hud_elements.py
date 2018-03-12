@@ -1,6 +1,7 @@
 import display
 import pygame
 import math
+from lib.task_timer import TaskTimer
 
 from traffic import AdsbTrafficClient
 from configuration import Configuration
@@ -20,9 +21,11 @@ for degrees in range(-360, 361):
     __sin_radians_by_degrees__[degrees] = math.sin(radians)
     __cos_radians_by_degrees__[degrees] = math.cos(radians)
 
+TRAFFIC_TEXT_CACHE = {}
 
 class AhrsNotAvailable(object):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
+        self.task_timer = TaskTimer('AhrsNotAvailable')
         self.__not_available_lines__ = []
 
         width, height = framebuffer_size
@@ -38,14 +41,16 @@ class AhrsNotAvailable(object):
         available.
         """
 
+        self.task_timer.start()
         pygame.draw.line(framebuffer, self.__na_color__, self.__not_available_lines__[
                          0][0], self.__not_available_lines__[0][1], self.__na_line_width__)
         pygame.draw.line(framebuffer, self.__na_color__, self.__not_available_lines__[
                          1][0], self.__not_available_lines__[1][1], self.__na_line_width__)
-
+        self.task_timer.stop()
 
 class LevelReference(object):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
+        self.task_timer = TaskTimer('LevelReference')
         self.level_reference_lines = []
 
         width = framebuffer_size[0]
@@ -68,13 +73,16 @@ class LevelReference(object):
         Renders a "straight and level" line to the HUD.
         """
 
+        self.task_timer.start()
         for line in self.level_reference_lines:
             pygame.draw.lines(framebuffer,
                               display.GRAY, False, line, 2)
+        self.task_timer.stop()
 
 
 class ArtificialHorizon(object):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
+        self.task_timer = TaskTimer('ArtificialHorizon')
         self.__pitch_elements__ = {}
         self.__framebuffer_size__ = framebuffer_size
         self.__center__ = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
@@ -94,6 +102,7 @@ class ArtificialHorizon(object):
         Render the pitch hash marks.
         """
 
+        self.task_timer.start()
         for reference_angle in self.__pitch_elements__:
             line_coords, line_center = self.__get_line_coords__(
                 int(orientation.pitch), int(orientation.roll), reference_angle)
@@ -112,6 +121,7 @@ class ArtificialHorizon(object):
             center_x, center_y = line_center
 
             framebuffer.blit(text, (center_x - half_x, center_y - half_y))
+        self.task_timer.stop()
 
     def __get_line_coords__(self, pitch=0, roll=0, hash_mark_angle=0):
         """
@@ -150,6 +160,7 @@ class ArtificialHorizon(object):
 
 class CompassAndHeading(object):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
+        self.task_timer = TaskTimer('CompassAndHeading')
         self.__framebuffer_size__ = framebuffer_size
         self.__center__ = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
         self.__long_line_width__ = self.__framebuffer_size__[0] * 0.2
@@ -194,6 +205,9 @@ class CompassAndHeading(object):
         """
         Renders the current heading to the HUD.
         """
+
+        self.task_timer.start()
+
         compass = int(orientation.compass_heading)
         if compass is None or compass > 360 or compass < 0:
             compass = '---'
@@ -248,6 +262,8 @@ class CompassAndHeading(object):
 
         pygame.draw.lines(framebuffer, display.GREEN, True,
                           self.__heading_text_box_lines__, 2)
+        
+        self.task_timer.stop()
 
     def __render_heading__(self, framebuffer, heading, position_x, position_y):
         """
@@ -266,6 +282,7 @@ class CompassAndHeading(object):
 
 class Altitude(object):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
+        self.task_timer = TaskTimer('Altitude')
         self.__font__ = font
         center_y = framebuffer_size[1] >> 2
         text_half_height = int(font.get_height()) >> 1
@@ -273,7 +290,7 @@ class Altitude(object):
         self.__rhs__ = int(0.9 * framebuffer_size[0])
 
     def render(self, framebuffer, orientation):
-
+        self.task_timer.start()
         altitude_text = str(int(orientation.alt)) + "' MSL"
         alt_texture = self.__font__.render(
             altitude_text, True, display.WHITE, display.BLACK)
@@ -281,10 +298,11 @@ class Altitude(object):
 
         framebuffer.blit(
             alt_texture, (self.__rhs__ - text_width, self.__text_y_pos__))
-
+        self.task_timer.stop()
 
 class SkidAndGs(object):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
+        self.task_timer = TaskTimer('SkidAndGs')
         self.__font__ = font
         center_y = framebuffer_size[1] >> 2
         text_half_height = int(font.get_height()) >> 1
@@ -293,6 +311,7 @@ class SkidAndGs(object):
         self.__rhs__ = int(0.9 * framebuffer_size[0])
 
     def render(self, framebuffer, orientation):
+        self.task_timer.start()
         g_load_text = "{0:.1f}Gs".format(orientation.g_load)
         texture = self.__font__.render(
             g_load_text, True, display.WHITE, display.BLACK)
@@ -300,10 +319,12 @@ class SkidAndGs(object):
 
         framebuffer.blit(
             texture, (self.__rhs__ - text_width, self.__text_y_pos__))
+        self.task_timer.stop()
 
 
 class RollIndicator(object):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
+        self.task_timer = TaskTimer('RollIndicator')
         self.__roll_elements__ = {}
         self.__framebuffer_size__ = framebuffer_size
         self.__center__ = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
@@ -318,13 +339,14 @@ class RollIndicator(object):
                 text, (size_x >> 1, size_y >> 1))
 
     def render(self, framebuffer, orientation):
+        self.task_timer.start()
         roll = int(orientation.roll)
         roll_texture, texture_size = self.__roll_elements__[roll]
         roll_texture = pygame.transform.rotate(roll_texture, roll)
         text_half_width, text_half_height = texture_size
         framebuffer.blit(
             roll_texture, (self.__center__[0] - text_half_width, self.__text_y_pos__))
-
+        self.task_timer.stop()
 
 class AdsbElement(object):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, configuration):
@@ -522,6 +544,7 @@ class AdsbListing(AdsbElement):
         AdsbElement.__init__(
             self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, configuration)
 
+        self.task_timer = TaskTimer('AdsbListing')
         self.__listing_text_start_y__ = int(self.__font__.get_height() * 4)
         self.__listing_text_start_x__ = int(
             self.__framebuffer_size__[0] * 0.01)
@@ -596,12 +619,14 @@ class AdsbListing(AdsbElement):
     def render(self, framebuffer, orientation):
         # Render a heading strip along the top
 
+        self.task_timer.start()
         heading = orientation.get_heading()
 
         # Get the traffic, and bail out of we have none
         traffic_reports = AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
 
         if traffic_reports is None:
+            self.task_timer.stop()
             return
 
         # Render a list of traffic that we have positions
@@ -643,8 +668,8 @@ class AdsbListing(AdsbElement):
 
             is_onscreen_x = reticle_x >= 0 and reticle_x < self.__width__
             is_onscreen_y = reticle_y >= self.__top_border__ and reticle_y <= self.__bottom_border__
-            is_top = reticle_y <= self.__center__[
-                1] or reticle_y >= self.__bottom_border__
+            is_top = reticle_y <= self.__center__[1] \
+                or reticle_y >= self.__bottom_border__
 
             if is_onscreen_x and is_onscreen_y:
                 continue
@@ -659,12 +684,15 @@ class AdsbListing(AdsbElement):
 
             self.__render_heading_bug__(
                 framebuffer, traffic_report.get_identifer(), heading_bug_x, reticle, reticle_text_y_pos)
+        self.task_timer.stop()
 
 
 class AdsbOnScreenReticles(AdsbElement):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, configuration):
         AdsbElement.__init__(
             self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, configuration)
+        
+        self.task_timer = TaskTimer('AdsbOnScreenReticles')
 
         self.__listing_text_start_y__ = int(self.__font__.get_height() * 4)
         self.__listing_text_start_x__ = int(
@@ -676,10 +704,12 @@ class AdsbOnScreenReticles(AdsbElement):
         self.__bottom_border__ = self.__height__ - self.__top_border__
 
     def render(self, framebuffer, orientation):
+        self.task_timer.start()
         # Get the traffic, and bail out of we have none
         traffic_reports = AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
 
         if traffic_reports is None:
+            self.task_timer.stop()
             return
 
         for traffic in traffic_reports:
@@ -718,6 +748,7 @@ class AdsbOnScreenReticles(AdsbElement):
 
                 self.__render_target_reticle__(
                     framebuffer, identifier, reticle_x, reticle_y, reticle, orientation.roll, reticle_size_px)
+        self.task_timer.stop()
 
     def __render_target_reticle__(self, framebuffer, identifier, center_x, center_y, reticle_lines, roll, reticle_size_px):
         """
@@ -741,21 +772,28 @@ class AdsbOnScreenReticles(AdsbElement):
             text_y = center_y + border_space
         else:
             text_y = center_y - border_space
+    
 
-        self.__render_text__(framebuffer, identifier, display.YELLOW,
-                             center_x, text_y, roll)
+        if identifier in TRAFFIC_TEXT_CACHE:
+            texture, texture_size = TRAFFIC_TEXT_CACHE[identifier]
+            text_width, text_height = texture_size
+        else:
+            texture = self.__font__.render(identifier, True, display.YELLOW, display.BLACK)
+            text_width, text_height = texture.get_size()
+            TRAFFIC_TEXT_CACHE[identifier] = texture, (text_width, text_height)
 
-    def __render_text__(self, framebuffer, text, color, position_x, position_y, roll, background_color=None):
+        self.__render_texture__(framebuffer, (center_x, center_y), texture, (text_width, text_height), roll)
+
+    def __render_texture__(self, framebuffer, position, texture, texture_size, roll):
         """
         Renders the text with the results centered on the given
         position.
         """
 
-        rendered_text = self.__font__.render(
-            text, True, color, background_color)
-        text_width, text_height = rendered_text.get_size()
+        position_x, position_y = position
+        text_width, text_height = texture_size
 
-        text = pygame.transform.rotate(rendered_text, roll)
+        text = pygame.transform.rotate(texture, roll)
 
         framebuffer.blit(
             text, (position_x - (text_width >> 1), position_y - (text_height >> 1)))

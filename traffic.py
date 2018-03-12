@@ -8,10 +8,13 @@ import time
 import threading
 import json
 import ws4py
+import socket
 from ws4py.client.threadedclient import WebSocketClient
+from ws4py.streaming import Stream
 import lib.recurring_task as recurring_task
 
 # TODO - More work around making this a BG
+
 
 class Traffic(object):
     TAIL_NUMBER_KEY = 'Tail'
@@ -77,7 +80,7 @@ class Traffic(object):
         """
         delta = datetime.datetime.now() - self.time_decoded
         return delta.total_seconds()
-    
+
     def get_identifer(self):
         """
         Returns the identifier to use of the traffic
@@ -85,9 +88,8 @@ class Traffic(object):
 
         if self.tail_number is not None and len(self.tail_number) > 1:
             return self.tail_number
-        
-        return self.iaco_address
 
+        return self.iaco_address
 
     def get_bearing(self, starting_lat, starting_lon):
         """
@@ -128,9 +130,10 @@ class Traffic(object):
         a = math.sin(dlat / 2)**2 + math.cos(lat1) * \
             math.cos(lat2) * math.sin(dlon / 2)**2
         c = 2 * math.asin(math.sqrt(a))
-        r = configuration.EARTH_RADIUS_STATUTE_MILES  # Radius of earth. Can change with units
+        # Radius of earth. Can change with units
+        r = configuration.EARTH_RADIUS_STATUTE_MILES
         return c * r
-    
+
     def update(self, json_report):
         """
         Applies the new data to the existing traffic.
@@ -203,7 +206,8 @@ class Traffic(object):
             self.iaco_address = self.__json__[Traffic.ICAO_ADDR_KEY]
             self.tail_number = self.__json__[Traffic.TAIL_NUMBER_KEY]
             self.position_valid = self.__json__[Traffic.POSITION_VALID_KEY]
-            self.bearing_distance_valid = self.__json__[Traffic.BEARING_DISTANCE_VALID_KEY]
+            self.bearing_distance_valid = self.__json__[
+                Traffic.BEARING_DISTANCE_VALID_KEY]
             self.time_decoded = datetime.datetime.now()
 
             if Traffic.LATITUDE_KEY in self.__json__:
@@ -215,12 +219,12 @@ class Traffic(object):
                 self.longitude = self.__json__[Traffic.LONGITUDE_KEY]
             else:
                 self.longitude = None
-            
+
             if Traffic.DISTANCE_KEY in self.__json__:
                 self.distance = float(self.__json__[Traffic.DISTANCE_KEY])
             else:
                 self.distance = None
-            
+
             if Traffic.BEARING_KEY in self.__json__:
                 self.bearing = float(self.__json__[Traffic.BEARING_KEY])
             else:
@@ -233,11 +237,12 @@ class Traffic(object):
         except:
             print "Exception while updating..."
 
+
 class TrafficManager(object):
     """
     Manager class that handles all of the position reports.
     """
-    
+
     def clear(self):
         self.traffic = {}
 
@@ -259,7 +264,8 @@ class TrafficManager(object):
         finally:
             self.__lock__.release()
 
-        sorted_traffic = sorted(traffic_without_position, key=lambda traffic: traffic.get_identifer())
+        sorted_traffic = sorted(traffic_without_position,
+                                key=lambda traffic: traffic.get_identifer())
 
         return sorted_traffic
 
@@ -282,7 +288,8 @@ class TrafficManager(object):
         finally:
             self.__lock__.release()
 
-        sorted_traffic = sorted(actionable_traffic, key=lambda traffic: traffic.distance)
+        sorted_traffic = sorted(
+            actionable_traffic, key=lambda traffic: traffic.distance)
 
         return sorted_traffic
 
@@ -300,10 +307,10 @@ class TrafficManager(object):
                 self.traffic[identifier] = traffic_report
         finally:
             self.__lock__.release()
-        
+
         if traffic_report is not None:
             return traffic_report.get_identifer()
-        
+
         return None
 
     def prune_traffic_reports(self):
@@ -316,7 +323,7 @@ class TrafficManager(object):
             traffic_to_remove = []
             for identifier in self.traffic:
                 traffic_age = self.traffic[identifier].get_age()
-                nice_name = self.traffic[identifier].get_identifer()
+                # nice_name = self.traffic[identifier].get_identifer()
                 # print "{0} is {1}s old".format(nice_name, traffic_age)
                 if traffic_age > (self.__configuration__.max_minutes_before_removal * 60):
                     # print "Pruning {0}/{1}".format(nice_name, identifier)
@@ -332,8 +339,11 @@ class TrafficManager(object):
     def __init__(self):
         # Trafic held by tail number
         self.traffic = {}
-        self.__configuration__ = configuration.Configuration(configuration.DEFAULT_CONFIG_FILE)
+        self.__configuration__ = configuration.Configuration(
+            configuration.DEFAULT_CONFIG_FILE)
         self.__lock__ = threading.Lock()
+        self.__prune_task__ = recurring_task.RecurringTask(
+                'PruneTraffic', 10, self.prune_traffic_reports)
 
 
 class AdsbTrafficClient(WebSocketClient):
@@ -343,35 +353,49 @@ class AdsbTrafficClient(WebSocketClient):
     """
 
     TRAFFIC_MANAGER = TrafficManager()
-    IS_CONNECTED = False
     INSTANCE = None
-    LAST_MESSAGE_RECEIVED = None
 
     def __init__(self, socket_address):
-        WebSocketClient.__init__(self, socket_address, heartbeat_freq=30)
+        WebSocketClient.__init__(self, socket_address, heartbeat_freq=1)
 
+        self.create_time = datetime.datetime.now()
         self.__update_task__ = None
-        self.__prune_task__ = None
+        self.__keepalive_task__ = None
         self.__manage_connection_task__ = None
+        self.last_message_received_time = None
+        self.is_connected = False
+        self.is_connecting = False
+        self.connect()
 
     def shutdown(self):
-        AdsbTrafficClient.IS_CONNECTED = False
+        self.is_connected = False
+        self.is_connecting = False
         try:
             self.__update_task__.stop()
+        except:
+            pass
+        try:
             self.__prune_task__.stop()
+        except:
+            pass
+        try:
+            self.__keepalive_task__.stop()
+        except:
+            pass
+        try:
             self.close_connection()
         except:
             print "Issue on shutdown"
 
     def opened(self):
-        AdsbTrafficClient.IS_CONNECTED = True
+        self.is_connected = True
+        self.is_connecting = False
         print "WebSocket opened to Stratux"
-        if AdsbTrafficClient.INSTANCE is None:
-            AdsbTrafficClient.INSTANCE = self
 
     def closed(self, code, reason=None):
-        AdsbTrafficClient.IS_CONNECTED = False
-        AdsbTrafficClient.TRAFFIC_MANAGER.clear()
+        self.is_connected = False
+        self.is_connecting = False
+
         print "Closed down", code, reason
 
         print "Attempting to reconnect..."
@@ -383,11 +407,17 @@ class AdsbTrafficClient(WebSocketClient):
             print "Issue trying to close_connection"
 
     def received_message(self, m):
-        AdsbTrafficClient.IS_CONNECTED = True
-        AdsbTrafficClient.LAST_MESSAGE_RECEIVED = datetime.datetime.now() 
-        adsb_traffic = json.loads(m.data)
-        AdsbTrafficClient.TRAFFIC_MANAGER.handle_traffic_report(adsb_traffic)
-    
+        self.is_connected = True
+        self.is_connecting = False
+        self.last_message_received_time = datetime.datetime.now()
+
+        try:
+            adsb_traffic = json.loads(m.data)
+            AdsbTrafficClient.TRAFFIC_MANAGER.handle_traffic_report(adsb_traffic)
+            self.send('ACK')
+        except:
+            print "Issue decoding JSON"
+
     def __dump_traffic_diag__(self):
         diag_traffic = AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
 
@@ -395,58 +425,88 @@ class AdsbTrafficClient(WebSocketClient):
             for traffic in diag_traffic:
                 print "{0} - {1} - {2}".format(traffic.get_identifer(), traffic.bearing, traffic.distance)
     
+    def __keep_alive__(self):
+        try:
+            self.send(str(datetime.datetime.now))
+        except:
+            print "Issue on __keep_alive__"
+
     def run_in_background(self):
         """
         Runs the WS traffic connector.
         """
 
-        #try:
+        # try:
         #    self.connect()
-        #except KeyboardInterrupt, SystemExit:
+        # except KeyboardInterrupt, SystemExit:
         #    raise
-        #except:
+        # except:
         #    print "Unable to connect..." # trying again."
 
-        self.__manage_connection_task__ = recurring_task.RecurringTask('ManageConnection', 2, ManageConnection, start_immediate=False)
-        self.__update_task__ = recurring_task.RecurringTask('TrafficUpdate', 0.1, self.run_forever, start_immediate=False)
-        self.__prune_task__ = recurring_task.RecurringTask('PruneTraffic', 10, AdsbTrafficClient.TRAFFIC_MANAGER.prune_traffic_reports)
+        self.__update_task__ = recurring_task.RecurringTask(
+            'TrafficUpdate', 0.1, self.run_forever, start_immediate=False)
         
+        self.__keepalive_task__ = recurring_task.RecurringTask(
+            'KeepAlive', 1, self.__keep_alive__, start_immediate=False)
+        
+
         # recurring_task.RecurringTask('TrafficDump', 1.0, self.__dump_traffic_diag__)
 
-def ManageConnection():
-    if AdsbTrafficClient.IS_CONNECTED:
-        disconnected = AdsbTrafficClient.INSTANCE.terminated or AdsbTrafficClient.INSTANCE.client_terminated
-        print "connected: {0}".format(not disconnected)
-        AdsbTrafficClient.IS_CONNECTED = not disconnected
-    else:
-        print "CON_ERR"
-    
-    if AdsbTrafficClient.LAST_MESSAGE_RECEIVED is not None:
-        time_since = (datetime.datetime.now() - AdsbTrafficClient.LAST_MESSAGE_RECEIVED).total_seconds()
 
-        if time_since > 60:
-            try:
-                AdsbTrafficClient.INSTANCE.close_connection()
-            except:
+class ConnectionManager(object):
+    def __init__(self, socket_address):
+        self.__manage_connection_task__ = None
+        self.__socket_address__ = socket_address
+        self.__manage_connection_task__ = recurring_task.RecurringTask(
+            'ManageConnection', 2, self.__manage_connection__, start_immediate=False)
+
+    def __manage_connection__(self):
+        while True:
+            create =  AdsbTrafficClient.INSTANCE is None
+            restart = False
+            if AdsbTrafficClient.INSTANCE is not None:
+                connection_uptime = (datetime.datetime.now() - AdsbTrafficClient.INSTANCE.create_time).total_seconds()
+
+                if AdsbTrafficClient.INSTANCE.last_message_received_time is not None:
+                    time_since_last_msg = (datetime.datetime.now() - AdsbTrafficClient.INSTANCE.last_message_received_time).total_seconds()
+
+                    if time_since_last_msg > 30:
+                        print "{0:.1f} seconds connection uptime".format(connection_uptime)
+                        print "{0:.1f} since last msg".format(time_since_last_msg)
+                        restart = not AdsbTrafficClient.INSTANCE.is_connecting
+                
+                restart |= not (AdsbTrafficClient.INSTANCE.is_connected or AdsbTrafficClient.INSTANCE.is_connecting)
+
+                if restart:
+                    print "SHUTTING DOWN EXISTING CONNECTION"
+                    AdsbTrafficClient.INSTANCE.shutdown()
+                    create = True
+            
+            if create:
+                print "ATTEMPTING TO CONNECT"
+                AdsbTrafficClient.INSTANCE = AdsbTrafficClient(self.__socket_address__)
+                AdsbTrafficClient.INSTANCE.run_in_background()
+                time.sleep(30)
+
+    def shutdown(self):
+        if self.__manage_connection_task__ is not None:
+            self.__manage_connection_task__.stop()
         
-                AdsbTrafficClient.IS_CONNECTED = False
+        if AdsbTrafficClient.INSTANCE is not None:
+            AdsbTrafficClient.INSTANCE.shutdown()
 
-    if not AdsbTrafficClient.IS_CONNECTED and AdsbTrafficClient.INSTANCE is not None:
-        try:
-            AdsbTrafficClient.INSTANCE.connect()
-        except:
-            print "Error trying to reestablish connection"
 
 if __name__ == '__main__':
     import time
 
     try:
-        CONFIGURATION = configuration.Configuration(configuration.DEFAULT_CONFIG_FILE)
+        CONFIGURATION = configuration.Configuration(
+            configuration.DEFAULT_CONFIG_FILE)
 
-        adsb_traffic_address= "ws://{0}/traffic".format(
+        adsb_traffic_address = "ws://{0}/traffic".format(
             CONFIGURATION.stratux_address())
-        ws = AdsbTrafficClient(adsb_traffic_address)
-        ws.run_in_background()
+        connection_manager = ConnectionManager(adsb_traffic_address)
+
 
         while True:
             time.sleep(5)
@@ -459,8 +519,8 @@ if __name__ == '__main__':
             reports = AdsbTrafficClient.TRAFFIC_MANAGER.get_unreliable_traffic()
             for traffic_report in reports:
                 print "    {0}".format(traffic_report.get_identifer())
-            
+
             print "---------------"
-            
+
     except KeyboardInterrupt:
-           ws.shutdown()
+        connection_manager.shutdown()
