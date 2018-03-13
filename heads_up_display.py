@@ -14,6 +14,7 @@ from configuration import *
 from aircraft import Aircraft
 import hud_elements
 from lib.task_timer import TaskTimer
+from lib.recurring_task import RecurringTask
 
 # TODO - Add the G-Meter
 # TODO - Disable functionality based on the enabled StratuxCapabilities
@@ -43,7 +44,7 @@ class HeadsUpDisplay(object):
         finally:
             self.__connection_manager__.shutdown()
             pygame.display.quit()
-            
+            self.__render_perf__()
             # pygame.quit()
 
         sys.exit()
@@ -90,24 +91,11 @@ class HeadsUpDisplay(object):
             # to overdraw the pitch lines
             # and improve readability
             try:
-                self.__level_reference_hud_element__.render(self.__backpage_framebuffer__, orientation) # 2, 1ms
-                self.__pitch_hud_element__.render(self.__backpage_framebuffer__, orientation) # 24, 6ms
-                self.__compass_element__.render(self.__backpage_framebuffer__, orientation) # 18ms, 16ms, 12ms
-                self.__altitude_element__.render(self.__backpage_framebuffer__, orientation) # 1ms, 1ms (better quality)
-                self.__skid_and_g_element__.render(self.__backpage_framebuffer__, orientation) # 1ms, 1ms (better quality)
-                self.__roll_element__.render(self.__backpage_framebuffer__, orientation) # 1ms, 1ms (better quality) 
-                self.__adsb_traffic_text_element__.render(self.__backpage_framebuffer__, orientation) #1.5ms/plane
-                self.__adsb_onscreen_targets_elements__.render(self.__backpage_framebuffer__, orientation)
+                hud_elements.HudDataCache.update_traffic_reports()
 
-                # print '--------------'
-                # print self.__level_reference_hud_element__.task_timer.to_string()
-                # print self.__pitch_hud_element__.task_timer.to_string()
-                # print self.__compass_element__.task_timer.to_string()
-                # print self.__altitude_element__.task_timer.to_string()
-                # print self.__skid_and_g_element__.task_timer.to_string()
-                # print self.__roll_element__.task_timer.to_string()
-                # print self.__adsb_traffic_text_element__.task_timer.to_string()
-                # print self.__adsb_onscreen_targets_elements__.task_timer.to_string()
+                for hud_element in self.__data_available_elements__:
+                    hud_element.render(self.__backpage_framebuffer__, orientation)
+
             except:
                 pass
         else:
@@ -171,22 +159,42 @@ class HeadsUpDisplay(object):
         font_name = "consolas,arial,helvetica"
 
         self.__font__ = pygame.font.SysFont(font_name, int(self.__height__ / 20.0), True, False)
-        self.__detail_font__ = pygame.font.SysFont(font_name, int(self.__height__ / 20.0), False, False)
+        self.__detail_font__ = pygame.font.SysFont(font_name, int(self.__height__ / 25.0), False, False)
+        self.__loading_font__ = pygame.font.SysFont(font_name, int(self.__height__ / 4.0), True, False)
+        self.__show_boot_screen__()
 
         self.__aircraft__ = Aircraft()
 
         self.__pixels_per_degree_y__ = (self.__height__ / HeadsUpDisplay.DEGREES_OF_PITCH) * HeadsUpDisplay.PITCH_DEGREES_DISPLAY_SCALER
 
         self.__ahrs_not_available_element__ = hud_elements.AhrsNotAvailable(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__))
-        self.__level_reference_hud_element__ = hud_elements.LevelReference(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__))
-        self.__pitch_hud_element__ = hud_elements.ArtificialHorizon(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__))
-        self.__compass_element__ = hud_elements.CompassAndHeading(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__))
-        self.__altitude_element__ = hud_elements.Altitude(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__))
-        self.__skid_and_g_element__ = hud_elements.SkidAndGs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__))
-        self.__roll_element__ = hud_elements.RollIndicator(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__))
-        self.__adsb_traffic_text_element__ = hud_elements.AdsbListing(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__), self.__configuration__)
-        self.__adsb_onscreen_targets_elements__ = hud_elements.AdsbOnScreenReticles(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__), self.__configuration__)
-        
+
+        self.__data_available_elements__ = [
+            hud_elements.LevelReference(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__)),
+            hud_elements.ArtificialHorizon(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__)),
+            hud_elements.CompassAndHeading(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__)),
+            hud_elements.Altitude(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__)),
+            hud_elements.SkidAndGs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__)),
+            hud_elements.RollIndicator(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__)),
+            hud_elements.AdsbListing(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, self.__detail_font__, (self.__width__, self.__height__), self.__configuration__),
+            hud_elements.AdsbOnScreenReticles(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__), self.__configuration__)
+        ]
+
+        self.__perf_task__ = RecurringTask("PerfData", 5, self.__render_perf__)
+
+    def __show_boot_screen__(self):
+        texture = self.__loading_font__.render("BOOTING", True, display.RED)
+        text_width, text_height = texture.get_size()
+        self.__backpage_framebuffer__.blit(texture, ((self.__width__ >> 1) - (text_width >> 1), (self.__height__ >> 1) - (text_height >> 1)))
+        flipped = pygame.transform.flip(
+            self.__backpage_framebuffer__, self.__configuration__.flip_horizonal, self.__configuration__.flip_vertical)
+        self.__backpage_framebuffer__.blit(flipped, [0, 0])
+        pygame.display.flip()
+    
+    def __render_perf__(self):
+        print '--------------'
+        for element in self.__data_available_elements__:
+            print element.task_timer.to_string()
 
 if __name__ == '__main__':
     hud = HeadsUpDisplay()

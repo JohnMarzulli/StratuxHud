@@ -414,7 +414,7 @@ class AdsbTrafficClient(WebSocketClient):
         try:
             adsb_traffic = json.loads(m.data)
             AdsbTrafficClient.TRAFFIC_MANAGER.handle_traffic_report(adsb_traffic)
-            self.send('ACK')
+            self.send(str(0xa))
         except:
             print "Issue decoding JSON"
 
@@ -427,7 +427,7 @@ class AdsbTrafficClient(WebSocketClient):
     
     def __keep_alive__(self):
         try:
-            self.send(str(datetime.datetime.now))
+            self.send(str(0xa))
         except:
             print "Issue on __keep_alive__"
 
@@ -435,13 +435,6 @@ class AdsbTrafficClient(WebSocketClient):
         """
         Runs the WS traffic connector.
         """
-
-        # try:
-        #    self.connect()
-        # except KeyboardInterrupt, SystemExit:
-        #    raise
-        # except:
-        #    print "Unable to connect..." # trying again."
 
         self.__update_task__ = recurring_task.RecurringTask(
             'TrafficUpdate', 0.1, self.run_forever, start_immediate=False)
@@ -455,6 +448,7 @@ class AdsbTrafficClient(WebSocketClient):
 
 class ConnectionManager(object):
     def __init__(self, socket_address):
+        self.__is_shutting_down__ = False
         self.__manage_connection_task__ = None
         self.__socket_address__ = socket_address
         self.__manage_connection_task__ = recurring_task.RecurringTask(
@@ -462,19 +456,13 @@ class ConnectionManager(object):
 
     def __manage_connection__(self):
         while True:
+            if self.__is_shutting_down__:
+                continue
+
             create =  AdsbTrafficClient.INSTANCE is None
             restart = False
             if AdsbTrafficClient.INSTANCE is not None:
-                connection_uptime = (datetime.datetime.now() - AdsbTrafficClient.INSTANCE.create_time).total_seconds()
-
-                if AdsbTrafficClient.INSTANCE.last_message_received_time is not None:
-                    time_since_last_msg = (datetime.datetime.now() - AdsbTrafficClient.INSTANCE.last_message_received_time).total_seconds()
-
-                    if time_since_last_msg > 30:
-                        print "{0:.1f} seconds connection uptime".format(connection_uptime)
-                        print "{0:.1f} since last msg".format(time_since_last_msg)
-                        restart = not AdsbTrafficClient.INSTANCE.is_connecting
-                
+                restart |= self.__is_connection_silently_timed_out__()
                 restart |= not (AdsbTrafficClient.INSTANCE.is_connected or AdsbTrafficClient.INSTANCE.is_connecting)
 
                 if restart:
@@ -487,14 +475,27 @@ class ConnectionManager(object):
                 AdsbTrafficClient.INSTANCE = AdsbTrafficClient(self.__socket_address__)
                 AdsbTrafficClient.INSTANCE.run_in_background()
                 time.sleep(30)
+            else:
+                time.sleep(1)
 
     def shutdown(self):
+        self.__is_shutting_down__ = True
         if self.__manage_connection_task__ is not None:
             self.__manage_connection_task__.stop()
         
         if AdsbTrafficClient.INSTANCE is not None:
             AdsbTrafficClient.INSTANCE.shutdown()
 
+    def __is_connection_silently_timed_out__(self):
+        if AdsbTrafficClient.INSTANCE.last_message_received_time is not None:
+            connection_uptime = (datetime.datetime.now() - AdsbTrafficClient.INSTANCE.create_time).total_seconds()
+            time_since_last_msg = (datetime.datetime.now() - AdsbTrafficClient.INSTANCE.last_message_received_time).total_seconds()
+
+            if time_since_last_msg > 10:
+                print "{0:.1f} seconds connection uptime".format(connection_uptime)
+                print "{0:.1f} since last msg".format(time_since_last_msg)
+                return not AdsbTrafficClient.INSTANCE.is_connecting
+        return False
 
 if __name__ == '__main__':
     import time

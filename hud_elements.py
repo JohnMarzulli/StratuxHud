@@ -14,6 +14,8 @@ feet_to_sm = 5280.0
 feet_to_km = 3280.84
 feet_to_m = 3.28084
 imperial_nearby = 3000.0
+imperial_occlude = feet_to_sm * 5
+imperial_faraway = feet_to_sm * 2 
 imperial_superclose = feet_to_sm / 4.0
 
 for degrees in range(-360, 361):
@@ -21,7 +23,39 @@ for degrees in range(-360, 361):
     __sin_radians_by_degrees__[degrees] = math.sin(radians)
     __cos_radians_by_degrees__[degrees] = math.cos(radians)
 
-TRAFFIC_TEXT_CACHE = {}
+def get_reticle_size(distance, min_reticle_size=0.05, max_reticle_size=0.20):
+    on_screen_reticle_scale = min_reticle_size # 0.05
+
+    if distance <= imperial_superclose:
+        on_screen_reticle_scale = max_reticle_size
+    elif distance >= imperial_faraway:
+        on_screen_reticle_scale = min_reticle_size
+    else:
+        delta = distance - imperial_superclose
+        scale_distance = imperial_faraway - imperial_superclose
+        ratio = delta / scale_distance
+        reticle_range = max_reticle_size - min_reticle_size
+
+        on_screen_reticle_scale = min_reticle_size + (reticle_range  * (1.0 - ratio))
+    
+    return on_screen_reticle_scale
+
+class HudDataCache(object):
+    TRAFFIC_TEXT_CACHE = {}
+    RELIABLE_TRAFFIC_REPORTS = []
+
+    @staticmethod
+    def update_traffic_reports():
+        HudDataCache.RELIABLE_TRAFFIC_REPORTS = AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
+    
+    @staticmethod
+    def get_identifier_texture(identifier, font):
+        if identifier not in HudDataCache.TRAFFIC_TEXT_CACHE:
+            texture = font.render(identifier, True, display.YELLOW)
+            text_width, text_height = texture.get_size()
+            HudDataCache.TRAFFIC_TEXT_CACHE[identifier] = texture, (text_width, text_height)
+        
+        return HudDataCache.TRAFFIC_TEXT_CACHE[identifier]
 
 class AhrsNotAvailable(object):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
@@ -96,16 +130,67 @@ class ArtificialHorizon(object):
             size_x, size_y = text.get_size()
             self.__pitch_elements__[reference_angle] = (
                 text, (size_x >> 1, size_y >> 1))
+        
+    #     self.__ah_lookup__ = self.__build_ah_lookup__()
+    
+    # def __build_ah_lookup__(self):
+    #     ah_lookup = {}
+    #     for pitch in range(-90, 91, 1):
+    #         print "{0}..".format(pitch)
+    #         ah_lookup[pitch] = self.__build_lookup_for_pitch__(pitch)
+        
+    #     return ah_lookup
+    
+    # def __build_lookup_for_pitch__(self, pitch):
+    #     ah_lookup = {}
+    #     for roll in range(-90, 91, 1):
+    #         ah_lookup[roll] = self.__build_lookup_for_pitch_and_roll__(pitch, roll)
+        
+    #     return ah_lookup
+    
+    # def __build_lookup_for_pitch_and_roll__(self, pitch, roll):
+    #     ah_lookup = []
+    #     for reference_angle in self.__pitch_elements__:
+    #         line_coords, line_center = self.__get_line_coords__(pitch, roll, reference_angle)
+
+    #         if line_center[1] < 0 or line_center[1] > self.__framebuffer_size__[1]:
+    #             continue
+
+    #         ah_lookup.append((line_coords, line_center, reference_angle))
+        
+    #     return ah_lookup
+
+
+    # def __new_render__(self, framebuffer, orientation):
+    #     """
+    #     Render the pitch hash marks.
+    #     """
+
+    #     self.task_timer.start()
+
+    #     pitch = int(orientation.pitch)
+    #     roll = int(orientation.roll)
+        
+    #     for render_element in self.__ah_lookup__[pitch][roll]:
+    #         line_coords, line_center, reference_angle = render_element
+
+    #         pygame.draw.lines(framebuffer,
+    #                           display.GREEN, False, line_coords, 2)
+
+    #         text, half_size = self.__pitch_elements__[reference_angle]
+    #         text = pygame.transform.rotate(text, orientation.roll)
+    #         half_x, half_y = half_size
+    #         center_x, center_y = line_center
+
+    #         framebuffer.blit(text, (center_x - half_x, center_y - half_y))
+        
+    #     self.task_timer.stop()
 
     def render(self, framebuffer, orientation):
-        """
-        Render the pitch hash marks.
-        """
-
         self.task_timer.start()
+
         for reference_angle in self.__pitch_elements__:
-            line_coords, line_center = self.__get_line_coords__(
-                int(orientation.pitch), int(orientation.roll), reference_angle)
+            line_coords, line_center = self.__get_line_coords__(orientation.pitch, orientation.roll, reference_angle)
 
             # Perform some trivial clipping of the lines
             # This also prevents early text rasterization
@@ -123,19 +208,22 @@ class ArtificialHorizon(object):
             framebuffer.blit(text, (center_x - half_x, center_y - half_y))
         self.task_timer.stop()
 
-    def __get_line_coords__(self, pitch=0, roll=0, hash_mark_angle=0):
+    def __get_line_coords__(self, pitch, roll, reference_angle):
         """
         Get the coordinate for the lines for a given pitch and roll.
         """
 
-        if hash_mark_angle == 0:
+        if reference_angle == 0:
             length = self.__long_line_width__
         else:
             length = self.__short_line_width__
+        
+        pitch = int(pitch)
+        roll = int(roll)
 
         ahrs_center_x, ahrs_center_y = self.__center__
         pitch_offset = self.__pixels_per_degree_y__ * \
-            (-pitch + hash_mark_angle)
+            (-pitch + reference_angle)
 
         roll_delta = 90 - roll
 
@@ -155,7 +243,7 @@ class ArtificialHorizon(object):
         start_y = center_y + half_y_len
         end_y = center_y - half_y_len
 
-        return [[start_x, start_y], [end_x, end_y]], (center_x, center_y)
+        return [[int(start_x), int(start_y)], [int(end_x), int(end_y)]], (int(center_x), int(center_y))
 
 
 class CompassAndHeading(object):
@@ -178,48 +266,40 @@ class CompassAndHeading(object):
 
         self.__heading_text__ = {}
         for heading in range(-1, 361):
-            self.__heading_text__[heading] = self.__font__.render(
-                str(heading), True, display.GREEN, display.BLACK)
+            texture = self.__font__.render(str(heading), True, display.GREEN, display.BLACK)
+            width, height = texture.get_size()
+            self.__heading_text__[heading] = texture, (width >> 1, height >> 1)
 
         text_height = font.get_height()
         border_vertical_size = (text_height >> 1) + (text_height >> 2)
-        half_width = int(self.__heading_text__[360].get_size()[0] * 2.5)
+        half_width = int(self.__heading_text__[360][1][0] * 3.5)
 
-        center_x = self.__center__[0]
+        self.__center_x__ = self.__center__[0]
 
         self.__heading_text_box_lines__ = [
-            [center_x - half_width,
+            [self.__center_x__ - half_width,
              self.compass_text_y - border_vertical_size],
-            [center_x + half_width,
+            [self.__center_x__ + half_width,
              self.compass_text_y - border_vertical_size],
-            [center_x + half_width,
+            [self.__center_x__ + half_width,
              self.compass_text_y + border_vertical_size],
-            [center_x - half_width, self.compass_text_y + border_vertical_size]]
+            [self.__center_x__ - half_width, self.compass_text_y + border_vertical_size]]
 
-        self.__heading_strip__ = {}
+        self.__heading_strip_offset__ = {}
         for heading in range(0, 181):
-            self.__heading_strip__[heading] = int(
+            self.__heading_strip_offset__[heading] = int(
                 self.pixels_per_degree_x * heading)
+        
+        self.__heading_strip__ = {}
 
-    def render(self, framebuffer, orientation):
-        """
-        Renders the current heading to the HUD.
-        """
-
-        self.task_timer.start()
-
-        compass = int(orientation.compass_heading)
-        if compass is None or compass > 360 or compass < 0:
-            compass = '---'
-
-        # Render a crude compass
-        # Render a heading strip along the top
-
-        center_x = self.__center__[0]
-
-        heading = int(orientation.get_heading())
-        for heading_strip in self.__heading_strip__:
-            position_x = self.__heading_strip__[heading_strip]
+        for heading in range(0, 361):
+            self.__heading_strip__[heading] = self.__generate_heading_strip__(heading)
+        
+        self.__render_heading_mark_timer__ = TaskTimer("HeadingRender")
+    
+    def __generate_heading_strip__(self, heading):
+        things_to_render = []
+        for heading_strip in self.__heading_strip_offset__:
             to_the_left = (heading - heading_strip)
             to_the_right = (heading + heading_strip)
 
@@ -229,26 +309,44 @@ class CompassAndHeading(object):
             if to_the_right > 360:
                 to_the_right -= 360
 
-            if (to_the_left % 90) == 0:
-                line_x_left = center_x - position_x
-                pygame.draw.line(framebuffer, display.GREEN,
-                                 [line_x_left, self.line_height], [line_x_left, 0], 2)
-
-                self.__render_heading__(
-                    framebuffer, to_the_left, line_x_left, self.heading_text_y)
+            if (to_the_left == 0) or ((to_the_left % 90) == 0):
+                line_x_left = self.__center_x__ - self.__heading_strip_offset__[heading_strip]
+                things_to_render.append([line_x_left, to_the_left])
 
             if to_the_left == to_the_right:
                 continue
 
             if (to_the_right % 90) == 0:
-                line_x_right = center_x + position_x
-                pygame.draw.line(framebuffer, display.GREEN,
-                                 [line_x_right, self.line_height], [line_x_right, 0], 2)
+                line_x_right = self.__center_x__ + self.__heading_strip_offset__[heading_strip]
+                things_to_render.append([line_x_right, to_the_right])
+        
+        return things_to_render
+    
+    def __render_heading_mark__(self, framebuffer, x_pos, heading):
+        pygame.draw.line(framebuffer, display.GREEN,
+                         [x_pos, self.line_height], [x_pos, 0], 2)
 
-                self.__render_heading__(
-                    framebuffer, to_the_right, line_x_right, self.heading_text_y)
+        self.__render_heading_text__(framebuffer, heading, x_pos, self.heading_text_y)
+
+    def render(self, framebuffer, orientation):
+        """
+        Renders the current heading to the HUD.
+        """
+
+        self.task_timer.start()
+
+        # Render a crude compass
+        # Render a heading strip along the top
+
+        heading = int(orientation.get_heading())
+        
+        for heading_mark_to_render in self.__heading_strip__[heading]:
+            self.__render_heading_mark__(framebuffer, heading_mark_to_render[0], heading_mark_to_render[1])
 
         # Render the text that is showing our AHRS and GPS headings
+        compass = int(orientation.compass_heading)
+        if compass is None or compass > 360 or compass < 0:
+            compass = '---'
         cover_old_rendering_spaces = "     "
         heading_text = "{0}{1} | {2}{0}".format(cover_old_rendering_spaces,
                                                 compass, int(orientation.gps_heading))
@@ -258,26 +356,22 @@ class CompassAndHeading(object):
         text_width, text_height = rendered_text.get_size()
 
         framebuffer.blit(
-            rendered_text, (center_x - (text_width >> 1), self.compass_text_y - (text_height >> 1)))
+            rendered_text, (self.__center_x__ - (text_width >> 1), self.compass_text_y - (text_height >> 1)))
 
         pygame.draw.lines(framebuffer, display.GREEN, True,
                           self.__heading_text_box_lines__, 2)
-        
         self.task_timer.stop()
 
-    def __render_heading__(self, framebuffer, heading, position_x, position_y):
+    def __render_heading_text__(self, framebuffer, heading, position_x, position_y):
         """
         Renders the text with the results centered on the given
         position.
         """
 
-        rendered_text = self.__heading_text__[heading]
-        text_width, text_height = rendered_text.get_size()
+        rendered_text, half_size = self.__heading_text__[heading]
 
         framebuffer.blit(
-            rendered_text, (position_x - (text_width >> 1), position_y - (text_height >> 1)))
-
-        return text_width, text_height
+            rendered_text, (position_x - half_size[0], position_y - half_size[1]))
 
 
 class Altitude(object):
@@ -390,26 +484,6 @@ class AdsbElement(object):
 
         return "{0:.0f}'".format(distance)
 
-    def pad_right(self, text, longest):
-        delta = longest - len(text)
-
-        padded_text = text
-
-        for i in range(0, delta, 1):
-            padded_text += ' '
-
-        return padded_text
-
-    def pad_left(self, text, longest):
-        delta = longest - len(text)
-
-        padded_text = ''
-
-        for i in range(0, delta, 1):
-            padded_text += ' '
-
-        return padded_text + text
-
     def __get_traffic_projection__(self, orientation, traffic):
         """
         Attempts to figure out where the traffic reticle should be rendered.
@@ -494,9 +568,8 @@ class AdsbElement(object):
 
         pygame.draw.polygon(framebuffer, display.RED, reticle_lines)
 
-        rendered_text = self.__font__.render(
-            str(identifier), True, display.YELLOW)
-        text_width, text_height = rendered_text.get_size()
+        texture, texture_size = HudDataCache.get_identifier_texture(identifier, self.__font__)
+        text_width, text_height = texture_size
 
         if reticle_text_y_pos < self.__center__[1]:
             text_y = reticle_text_y_pos
@@ -504,7 +577,7 @@ class AdsbElement(object):
             text_y = reticle_text_y_pos - text_height
 
         framebuffer.blit(
-            rendered_text, (center_x - (text_width >> 1), text_y))
+            texture, (center_x - (text_width >> 1), text_y))
 
     def __render_target_reticle__(self, framebuffer, identifier, center_x, center_y, reticle_lines, roll):
         """
@@ -537,13 +610,30 @@ class AdsbElement(object):
 
         framebuffer.blit(
             text, (center_x - (text_width >> 1), text_y - (text_height >> 1)))
+    
+    def __render_texture__(self, framebuffer, position, texture, texture_size, roll):
+        """
+        Renders the text with the results centered on the given
+        position.
+        """
+
+        position_x, position_y = position
+        text_width, text_height = texture_size
+
+        text = pygame.transform.rotate(texture, roll)
+
+        framebuffer.blit(
+            text, (position_x - (text_width >> 1), position_y - (text_height >> 1)))
+
+        return text_width, text_height
 
 
 class AdsbListing(AdsbElement):
-    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, configuration):
+    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, detail_font, framebuffer_size, configuration):
         AdsbElement.__init__(
             self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, configuration)
 
+        self.__detail_font__ = detail_font
         self.task_timer = TaskTimer('AdsbListing')
         self.__listing_text_start_y__ = int(self.__font__.get_height() * 4)
         self.__listing_text_start_x__ = int(
@@ -563,18 +653,21 @@ class AdsbListing(AdsbElement):
 
         report_count = 0
         for traffic in traffic_reports:
+            # Do not list traffic too far away
+            if traffic.distance > imperial_occlude:
+                continue
             report_count += 1
 
             if report_count > self.__max_reports__:
                 break
 
             identifier = str(traffic.get_identifer())
-            altitude_delta = int(traffic.altitude - orientation.alt)
+            altitude_delta = int((traffic.altitude - orientation.alt) / 100.0 )
             distance_text = self.__get_distance_string__(traffic.distance)
             delta_sign = ''
             if altitude_delta > 0:
                 delta_sign = '+'
-            altitude_text = "{0}{1}'".format(delta_sign, altitude_delta)
+            altitude_text = "{0}{1}".format(delta_sign, altitude_delta)
             bearing_text = "{0:.0f}".format(traffic.bearing)
 
             identifier_length = len(identifier)
@@ -607,11 +700,11 @@ class AdsbListing(AdsbElement):
             iaco = report[4]
 
             # if self.__show_list__:
-            traffic_report = "{0} {1:3} {2} {3}".format(self.pad_right(str(identifier), max_identifier_length),
-                                                        bearing,
-                                                        self.pad_left(
-                                                        distance_text, max_distance_length),
-                                                        self.pad_left(altitude, max_altitude_length))
+            traffic_report = "{0} {1} {2} {3}".format(
+                                                        identifier.ljust(max_identifier_length),
+                                                        bearing.rjust(3),
+                                                        distance_text.rjust(max_distance_length),
+                                                        altitude.rjust(max_altitude_length))
             out_padded_reports.append((iaco, traffic_report))
 
         return out_padded_reports
@@ -623,7 +716,7 @@ class AdsbListing(AdsbElement):
         heading = orientation.get_heading()
 
         # Get the traffic, and bail out of we have none
-        traffic_reports = AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
+        traffic_reports = HudDataCache.RELIABLE_TRAFFIC_REPORTS
 
         if traffic_reports is None:
             self.task_timer.stop()
@@ -639,7 +732,7 @@ class AdsbListing(AdsbElement):
             traffic_reports, orientation)
 
         for identifier, traffic_report in padded_traffic_reports:
-            traffic_text_texture = self.__font__.render(
+            traffic_text_texture = self.__detail_font__.render(
                 traffic_report, True, display.WHITE, display.BLACK)
 
             framebuffer.blit(
@@ -668,8 +761,7 @@ class AdsbListing(AdsbElement):
 
             is_onscreen_x = reticle_x >= 0 and reticle_x < self.__width__
             is_onscreen_y = reticle_y >= self.__top_border__ and reticle_y <= self.__bottom_border__
-            is_top = reticle_y <= self.__center__[1] \
-                or reticle_y >= self.__bottom_border__
+            is_top = reticle_y <= self.__center__[1]
 
             if is_onscreen_x and is_onscreen_y:
                 continue
@@ -706,13 +798,17 @@ class AdsbOnScreenReticles(AdsbElement):
     def render(self, framebuffer, orientation):
         self.task_timer.start()
         # Get the traffic, and bail out of we have none
-        traffic_reports = AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
+        traffic_reports = HudDataCache.RELIABLE_TRAFFIC_REPORTS
 
         if traffic_reports is None:
             self.task_timer.stop()
             return
 
         for traffic in traffic_reports:
+            # Do not render reticles for things to far away
+            if traffic.distance > imperial_occlude:
+                continue
+
             identifier = traffic.get_identifer()
 
             # Find where to draw the reticle....
@@ -720,26 +816,12 @@ class AdsbOnScreenReticles(AdsbElement):
                 orientation, traffic)
 
             # Render using the Above us bug
-            min_reticle_size = 0.02
-            max_reticle_size = 0.1
-            on_screen_reticle_scale = min_reticle_size # 0.05
-
-            if traffic.distance < imperial_superclose:
-                on_screen_reticle_scale = max_reticle_size
-            if traffic.distance > (2 * feet_to_sm):
-                on_screen_reticle_scale = min_reticle_size
-            else:
-                delta = traffic.distance - imperial_superclose
-                scale_distance = (2.0 * feet_to_sm) - imperial_superclose
-                ratio = delta / scale_distance
-
-                reticle_range = max_reticle_size - min_reticle_size
-                on_screen_reticle_scale = min_reticle_size + (ratio * reticle_range)
-
+            on_screen_reticle_scale = get_reticle_size(traffic.distance)
             reticle, reticle_size_px = self.get_onscreen_reticle(
                 reticle_x, reticle_y, on_screen_reticle_scale)
 
-            if reticle_y < self.__top_border__ or reticle_y > self.__bottom_border__:
+            if reticle_y < self.__top_border__ or reticle_y > self.__bottom_border__ or \
+                reticle_x < 0 or reticle_x > self.__width__:
                 continue
             else:
                 reticle = self.__rotate_reticle__(reticle, orientation.roll)
@@ -765,40 +847,17 @@ class AdsbOnScreenReticles(AdsbElement):
             center_y = int(self.__height__ - border_space)
 
         pygame.draw.lines(framebuffer,
-                          display.RED, True, reticle_lines, 2)
+                          display.RED, True, reticle_lines, 4)
         
         # Move the identifer text away from the reticle
         if center_y < self.__center__[1]:
-            text_y = center_y + border_space
+            center_y = center_y + border_space
         else:
-            text_y = center_y - border_space
+            center_y = center_y - border_space
     
+        texture, texture_size = HudDataCache.get_identifier_texture(identifier, self.__font__)
 
-        if identifier in TRAFFIC_TEXT_CACHE:
-            texture, texture_size = TRAFFIC_TEXT_CACHE[identifier]
-            text_width, text_height = texture_size
-        else:
-            texture = self.__font__.render(identifier, True, display.YELLOW, display.BLACK)
-            text_width, text_height = texture.get_size()
-            TRAFFIC_TEXT_CACHE[identifier] = texture, (text_width, text_height)
-
-        self.__render_texture__(framebuffer, (center_x, center_y), texture, (text_width, text_height), roll)
-
-    def __render_texture__(self, framebuffer, position, texture, texture_size, roll):
-        """
-        Renders the text with the results centered on the given
-        position.
-        """
-
-        position_x, position_y = position
-        text_width, text_height = texture_size
-
-        text = pygame.transform.rotate(texture, roll)
-
-        framebuffer.blit(
-            text, (position_x - (text_width >> 1), position_y - (text_height >> 1)))
-
-        return text_width, text_height
+        self.__render_texture__(framebuffer, (center_x, center_y), texture, texture_size, roll)
 
     def __rotate_reticle__(self, reticle, roll):
         """
@@ -839,3 +898,6 @@ class AdsbOnScreenReticles(AdsbElement):
 
         return translated_points
 
+if __name__ == '__main__':
+    for distance in range(0, int(2.5 * feet_to_sm), int(feet_to_sm / 10.0)):
+        print "{0}' -> {1}".format(distance, get_reticle_size(distance))
