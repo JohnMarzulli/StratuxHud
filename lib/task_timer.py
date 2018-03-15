@@ -59,10 +59,18 @@ class TaskTimer(object):
             self.fastest = self.last
 
     def to_string(self):
-        return "{0}: {1:3.1f}, m={2:3.1f}, s={3:3.1f}".format(self.task_name,
-                                                                self.last,
-                                                                self.average,
-                                                                self.slowest)
+        if self.last is None:
+            return "{0}: NO DATA".format(self.task_name)
+
+        slowest_text = "{0:.1f}".format(self.slowest)
+        slowest_length = len(slowest_text)
+
+        last_text = "{0:.1f}".format(self.last).rjust(slowest_length)
+        average_text = "{0:.1f}".format(self.average).rjust(slowest_length)
+        return "{0}: {1}, m={2}, s={3}".format(self.task_name,
+                                                last_text,
+                                                average_text,
+                                                slowest_text)
 
 if __name__ == '__main__':
     timer = TaskTimer("test")

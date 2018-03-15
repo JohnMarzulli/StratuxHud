@@ -119,6 +119,21 @@ class AhrsData(object):
     Class to hold the AHRS data
     """
 
+    def __is_compass_heading_valid__(self):
+        return self.compass_heading is not None and self.compass_heading <= 360
+
+    def get_onscreen_projection_heading(self):
+        if self.__is_compass_heading_valid__():
+            return int(self.compass_heading)
+
+        return int(self.gps_heading)
+
+    def get_onscreen_projection_display_heading(self):
+        if self.__is_compass_heading_valid__():
+            return int(self.compass_heading)
+
+        return '---'
+
     def get_heading(self):
         if self.compass_heading is None or self.compass_heading > 360 or self.compass_heading < 0 or self.compass_heading is '':
             return self.gps_heading
@@ -213,7 +228,7 @@ class AhrsSimulation(object):
 
         self.pitch_simulator = SimulatedValue(1, 30, -1)
         self.roll_simulator = SimulatedValue(5, 60, 1)
-        self.yaw_simulator = SimulatedValue(5, 60, 1)
+        self.yaw_simulator = SimulatedValue(5, 60, 1, 30, 180)
         self.speed_simulator = SimulatedValue(5, 10, 1, 85)
         self.alt_simulator = SimulatedValue(10, 300, -1, 2500)
 
@@ -228,12 +243,12 @@ class AhrsStratux(object):
     def __get_value__(self, ahrs_json, key, default):
         """
         Safely return the value from the AHRS blob
-        
+
         Arguments:
             ahrs_json {[type]} -- [description]
             key {[type]} -- [description]
             default {[type]} -- [description]
-        
+
         Returns:
             [type] -- [description]
         """
@@ -246,21 +261,20 @@ class AhrsStratux(object):
                 raise
             except:
                 return default
-        
+
         return default
-    
+
     def __get_value_with_fallback__(self, ahrs_json, keys, default):
         if keys is None:
             return default
-                
+
         for key in keys:
             value = self.__get_value__(ahrs_json, key, default)
 
             if value is not default:
                 return value
-        
-        return default
 
+        return default
 
     def update(self):
         """
@@ -269,7 +283,6 @@ class AhrsStratux(object):
 
         new_ahrs_data = AhrsData()
 
-        #try:
         url = "http://{0}/getSituation".format(
             self.__configuration__.stratux_address())
 
@@ -285,17 +298,22 @@ class AhrsStratux(object):
 
         new_ahrs_data.roll = self.__get_value__(ahrs_json, 'AHRSRoll', 0.0)
         new_ahrs_data.pitch = self.__get_value__(ahrs_json, 'AHRSPitch', 0.0)
-        new_ahrs_data.compass_heading = self.__get_value__(ahrs_json, 'AHRSGyroHeading', 0.0) / 1000.0 #'AHRSMagHeading', 0.0) / 10.0
-        #with_fallback__(ahrs_json, ['AHRSGyroHeading', 'AHRSMagHeading'], 0.0)
-        new_ahrs_data.gps_heading = self.__get_value__(ahrs_json, 'GPSTrueCourse', 0.0)
-        new_ahrs_data.alt = self.__get_value_with_fallback__(ahrs_json, ['GPSAltitudeMSL', 'BaroPressureAltitude'], None)
+        # new_ahrs_data.compass_heading = self.__get_value__(ahrs_json, 'AHRSGyroHeading', 0.0) / 1000.0 #'AHRSMagHeading', 0.0) / 10.0
+        new_ahrs_data.compass_heading = self.__get_value__(
+            ahrs_json, 'AHRSGyroHeading', 1080)  # anything above 360 indicates "not available"
+        new_ahrs_data.gps_heading = self.__get_value__(
+            ahrs_json, 'GPSTrueCourse', 0.0)
+        new_ahrs_data.alt = self.__get_value_with_fallback__(
+            ahrs_json, ['GPSAltitudeMSL', 'BaroPressureAltitude'], None)
         new_ahrs_data.position = (
             ahrs_json['GPSLatitude'], ahrs_json['GPSLongitude'])
-        new_ahrs_data.vertical_speed = self.__get_value__(ahrs_json, 'GPSVerticalSpeed', 0.0)
-        new_ahrs_data.groundspeed = self.__get_value__(ahrs_json, 'GPSGroundSpeed', 0.0)
+        new_ahrs_data.vertical_speed = self.__get_value__(
+            ahrs_json, 'GPSVerticalSpeed', 0.0)
+        new_ahrs_data.groundspeed = self.__get_value__(
+            ahrs_json, 'GPSGroundSpeed', 0.0)
         new_ahrs_data.g_load = self.__get_value__(ahrs_json, 'AHRSGLoad', 1.0)
         self.data_source_available = True
-        #except:
+        # except:
         #    self.data_source_available = False
 
         self.__set_ahrs_data__(new_ahrs_data)
@@ -349,21 +367,22 @@ class AhrsStratux(object):
 
         self.__lock__.acquire(True)
 
-        self.ahrs_data = new_ahrs_data
+        try:
+            self.ahrs_data = new_ahrs_data
 
-        if new_ahrs_data.roll != None:
-            if self.__configuration__.reverse_roll():
-                self.ahrs_data.roll = 0.0 - new_ahrs_data.roll
-            else:
-                self.ahrs_data.roll = new_ahrs_data.roll
+            if new_ahrs_data.roll != None:
+                if self.__configuration__.reverse_roll():
+                    self.ahrs_data.roll = 0.0 - new_ahrs_data.roll
+                else:
+                    self.ahrs_data.roll = new_ahrs_data.roll
 
-        if new_ahrs_data.pitch != None:
-            if self.__configuration__.reverse_pitch():
-                self.ahrs_data.pitch = 0.0 - new_ahrs_data.pitch
-            else:
-                self.ahrs_data.pitch = new_ahrs_data.pitch
-
-        self.__lock__.release()
+            if new_ahrs_data.pitch != None:
+                if self.__configuration__.reverse_pitch():
+                    self.ahrs_data.pitch = 0.0 - new_ahrs_data.pitch
+                else:
+                    self.ahrs_data.pitch = new_ahrs_data.pitch
+        finally:
+            self.__lock__.release()
 
     def __update_capabilities__(self):
         """
@@ -373,9 +392,11 @@ class AhrsStratux(object):
         available.
         """
         self.__lock__.acquire()
-        self.capabilities = StratuxCapabilities(
-            self.__configuration__.stratux_address(), self.__stratux_session__)
-        self.__lock__.release()
+        try:
+            self.capabilities = StratuxCapabilities(
+                self.__configuration__.stratux_address(), self.__stratux_session__)
+        finally:
+            self.__lock__.release()
 
     def __init__(self, configuration):
         self.__configuration__ = configuration
@@ -403,17 +424,15 @@ class Aircraft(object):
             except:
                 print "error"
 
-    def __init__(self):
-        self.__configuration__ = configuration.Configuration(configuration.DEFAULT_CONFIG_FILE)
+    def __init__(self, force_simulation=False):
+        self.__configuration__ = configuration.Configuration(
+            configuration.DEFAULT_CONFIG_FILE)
         self.ahrs_source = None
 
-        if self.__configuration__.data_source() == configuration.DataSourceNames.STRATUX:
-            self.ahrs_source = AhrsStratux(self.__configuration__)
-        elif self.__configuration__.data_source() == configuration.DataSourceNames.SIMULATION:
+        if force_simulation or self.__configuration__.data_source() == configuration.DataSourceNames.SIMULATION:
             self.ahrs_source = AhrsSimulation()
-
-        # orientation_update = threading.Thread(target=self.update_orientation_in_background)
-        # orientation_update.start()
+        elif self.__configuration__.data_source() == configuration.DataSourceNames.STRATUX:
+            self.ahrs_source = AhrsStratux(self.__configuration__)
 
         recurring_task.RecurringTask(
             'UpdateAhrs', 1.0 / (configuration.MAX_FRAMERATE * 2), self.__update_orientation__)

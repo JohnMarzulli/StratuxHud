@@ -514,7 +514,7 @@ if __name__ == '__main__':
             print "position_valid:"
             reports = AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
             for traffic_report in reports:
-                print "    {0}".format(traffic_report.get_identifer())
+                print "    {0} {1} {2}".format(traffic_report.get_identifer(), traffic_report.bearing, traffic_report.distance)
 
             print "Other:"
             reports = AdsbTrafficClient.TRAFFIC_MANAGER.get_unreliable_traffic()

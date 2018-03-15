@@ -21,6 +21,7 @@ GREEN = (0, 255,   0)
 RED = (255,   0,   0)
 YELLOW = (255, 255, 0)
 
+
 def display_init():
     """
     Initializes PyGame to run on the current screen.
@@ -53,10 +54,20 @@ def display_init():
             raise Exception('No suitable video driver found!')
 
         size = DEFAULT_SCREEN_SIZE
-        screen_mode = pygame.RESIZABLE
-        if not local_debug.is_debug():
-            screen_mode = pygame.FULLSCREEN
+        screen_mode = pygame.HWACCEL  # | pygame.HWSURFACE | pygame.DOUBLEBUF
+        # NOTE - HWSURFACE and DOUBLEBUF cause problems...
+        # DOUBLEBUF
+        # https://stackoverflow.com/questions/6395923/any-way-to-speed-up-python-and-pygame
+        # pygame.event.set_allowed([QUIT, KEYDOWN, KEYUP])
+        # TODO - Use "convert" on text without ALPHA...
+        # https://en.wikipedia.org/wiki/PyPy
+
+        if local_debug.is_debug():
+            screen_mode |= pygame.RESIZABLE
+        else:
+            screen_mode |= pygame.FULLSCREEN
             size = pygame.display.Info().current_w, pygame.display.Info().current_h
+
         screen = pygame.display.set_mode(size, screen_mode)
 
     return screen, size
