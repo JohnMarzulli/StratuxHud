@@ -60,67 +60,68 @@ class HeadsUpDisplay(object):
             bool -- True if the code should run for another tick.
         """
 
-        clock.tick(MAX_FRAMERATE)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+        try:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return False
+
+            keys_pressed = pygame.key.get_pressed()
+            if keys_pressed[pygame.K_q] or keys_pressed[pygame.K_ESCAPE]:
                 return False
 
-        keys_pressed = pygame.key.get_pressed()
-        if keys_pressed[pygame.K_q] or keys_pressed[pygame.K_ESCAPE]:
-            return False
+            if keys_pressed[pygame.K_r]:
+                self.render_perf.reset()
+                self.orient_perf.reset()
 
-        if keys_pressed[pygame.K_r]:
-            self.render_perf.reset()
-            self.orient_perf.reset()
+            self.orient_perf.start()
+            orientation = self.__aircraft__.get_orientation()
+            self.orient_perf.stop()
 
-        self.orient_perf.start()
-        orientation = self.__aircraft__.get_orientation()
-        self.orient_perf.stop()
+            self.__backpage_framebuffer__.fill(display.BLACK)
 
-        self.__backpage_framebuffer__.fill(display.BLACK)
+            self.render_perf.start()
 
-        self.render_perf.start()
+            if self.__aircraft__.is_ahrs_available():
+                # Order of drawing is important
+                # The pitch lines are drawn before the other
+                # referenence information so they will be pushed to the
+                # background.
+                # The reference text is also intentionally
+                # drawn with a black background
+                # to overdraw the pitch lines
+                # and improve readability
+                try:
+                    hud_elements.HudDataCache.update_traffic_reports()
 
-        if self.__aircraft__.is_ahrs_available():
-            # Order of drawing is important
-            # The pitch lines are drawn before the other
-            # referenence information so they will be pushed to the
-            # background.
-            # The reference text is also intentionally
-            # drawn with a black background
-            # to overdraw the pitch lines
-            # and improve readability
-            try:
-                hud_elements.HudDataCache.update_traffic_reports()
+                    for hud_element in self.__data_available_elements__:
+                        try:
+                            hud_element.render(
+                                self.__backpage_framebuffer__, orientation)
+                        except:
+                            pass
+                except:
+                    pass
+            else:
+                # Should do this if the signal is lost...
+                self.__ahrs_not_available_element__.render(
+                    self.__backpage_framebuffer__, orientation)  # 1ms
 
-                for hud_element in self.__data_available_elements__:
-                    try:
-                        hud_element.render(
-                            self.__backpage_framebuffer__, orientation)
-                    except:
-                        pass
-            except:
-                pass
-        else:
-            # Should do this if the signal is lost...
-            self.__ahrs_not_available_element__.render(
-                self.__backpage_framebuffer__, orientation)  # 1ms
+            self.render_perf.stop()
 
-        self.render_perf.stop()
-
-        # debug_status_left = int(self.__width__ * 0.2)
-        # debug_status_top = int(self.__height__ * 0.2)
-        # render_perf_text = self.render_perf.to_string()
-        # orient_perf_text = self.orient_perf.to_string().ljust(len(render_perf_text))
-        # self.__render_text__(render_perf_text, display.BLACK, debug_status_left, debug_status_top, 0, display.YELLOW)
-        # debug_status_top += int(self.__font__.get_height() * 1.1)
-        # self.__render_text__(orient_perf_text, display.BLACK, debug_status_left, debug_status_top, 0, display.YELLOW)
-
-        # Change the frame buffer
-        flipped = pygame.transform.flip(
-            self.__backpage_framebuffer__, self.__configuration__.flip_horizonal, self.__configuration__.flip_vertical)
-        self.__backpage_framebuffer__.blit(flipped, [0, 0])
-        pygame.display.flip()
+            # debug_status_left = int(self.__width__ * 0.2)
+            # debug_status_top = int(self.__height__ * 0.2)
+            # render_perf_text = self.render_perf.to_string()
+            # orient_perf_text = self.orient_perf.to_string().ljust(len(render_perf_text))
+            # self.__render_text__(render_perf_text, display.BLACK, debug_status_left, debug_status_top, 0, display.YELLOW)
+            # debug_status_top += int(self.__font__.get_height() * 1.1)
+            # self.__render_text__(orient_perf_text, display.BLACK, debug_status_left, debug_status_top, 0, display.YELLOW)
+        finally:
+            # Change the frame buffer
+            flipped = pygame.transform.flip(
+                self.__backpage_framebuffer__, self.__configuration__.flip_horizonal, self.__configuration__.flip_vertical)
+            self.__backpage_framebuffer__.blit(flipped, [0, 0])
+            pygame.display.flip()
+            clock.tick(MAX_FRAMERATE)
 
         return True
 
@@ -165,7 +166,7 @@ class HeadsUpDisplay(object):
         font_name = "consolas,arial,helvetica"
 
         self.__font__ = pygame.font.SysFont(
-            font_name, int(self.__height__ / 15.0), True, False)
+            font_name, int(self.__height__ / 12.0), True, False)
         self.__detail_font__ = pygame.font.SysFont(
             font_name, int(self.__height__ / 20.0), False, False)
         self.__loading_font__ = pygame.font.SysFont(
@@ -194,7 +195,7 @@ class HeadsUpDisplay(object):
             hud_elements.RollIndicator(
                 HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__)),
             hud_elements.AdsbListing(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__,
-                                     self.__detail_font__, (self.__width__, self.__height__), self.__configuration__),
+                                     (self.__width__, self.__height__), self.__configuration__),
             hud_elements.AdsbOnScreenReticles(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
                                               self.__font__, (self.__width__, self.__height__), self.__configuration__)
         ]
