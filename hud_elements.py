@@ -46,23 +46,39 @@ def get_reticle_size(distance, min_reticle_size=0.05, max_reticle_size=0.20):
 
 
 class HudDataCache(object):
-    TRAFFIC_TEXT_CACHE = {}
+    TEXT_TEXTURE_CACHE = {}
     RELIABLE_TRAFFIC_REPORTS = []
+    __CACHE_ENTRY_LAST_USED__ = {}
+    __CACHE_INVALIDATION_TIME__ = 60 * 5
 
     @staticmethod
     def update_traffic_reports():
         HudDataCache.RELIABLE_TRAFFIC_REPORTS = AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
 
-    @staticmethod
-    def get_identifier_texture(identifier, font):
-        if identifier not in HudDataCache.TRAFFIC_TEXT_CACHE:
-            texture = font.render(
-                identifier, True, display.YELLOW, display.BLACK)  # .convert()
-            text_width, text_height = texture.get_size()
-            HudDataCache.TRAFFIC_TEXT_CACHE[identifier] = texture, (
-                text_width, text_height)
+        # The second hardest problem in comp-sci...
+        textures_to_purge = []
+        for texture_key in HudDataCache.__CACHE_ENTRY_LAST_USED__:
+            lsu = HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_key]
+            time_since_last_use = (
+                datetime.datetime.now() - lsu).total_seconds()
+            if time_since_last_use > HudDataCache.__CACHE_INVALIDATION_TIME__:
+                textures_to_purge.append(texture_key)
 
-        return HudDataCache.TRAFFIC_TEXT_CACHE[identifier]
+        for texture_to_purge in textures_to_purge:
+            del HudDataCache.TEXT_TEXTURE_CACHE[texture_to_purge]
+            del HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_to_purge]
+
+    @staticmethod
+    def get_cached_text_texture(text, font):
+        if text not in HudDataCache.TEXT_TEXTURE_CACHE:
+            texture = font.render(
+                text, True, display.YELLOW, display.BLACK)  # .convert()
+            # text_width, text_height = texture.get_size()
+            HudDataCache.TEXT_TEXTURE_CACHE[text] = texture #, (
+                # text_width, text_height)
+
+        HudDataCache.__CACHE_ENTRY_LAST_USED__[text] = datetime.datetime.now()
+        return HudDataCache.TEXT_TEXTURE_CACHE[text]
 
 
 class AhrsNotAvailable(object):
@@ -136,7 +152,7 @@ def get_heading_bug_x(heading, bearing, degrees_per_pixel):
 
 def get_onscreen_traffic_projection__(heading, pitch, roll, bearing, distance, altitude_delta, pixels_per_degree):
     """
-    Attempts to figure out where the traffic reticle should be rendered.
+    empts to figure out where the traffic reticle should be rendered.
     Returns value RELATIVE to the screen center.
     """
 
@@ -485,6 +501,7 @@ class RollIndicator(object):
         self.__framebuffer_size__ = framebuffer_size
         self.__center__ = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
         half_texture_height = int(font.get_height()) >> 1
+        self.__font__ = font
         self.__text_y_pos__ = self.__center__[1] - half_texture_height
 
         for reference_angle in range(-180, 181):
@@ -497,10 +514,16 @@ class RollIndicator(object):
     def render(self, framebuffer, orientation):
         self.task_timer.start()
         roll = int(orientation.roll)
+        pitch = int(orientation.pitch)
+        pitch_direction = ''
+        if pitch > 0:
+            pitch_direction = '+'
+        attitude_text = "{0}{1:3} | {2:3}".format(pitch_direction, pitch, roll)
 
-        roll_texture, texture_size = self.__roll_elements__[roll]
-        roll_texture = pygame.transform.rotate(roll_texture, roll)
+        roll_texture = self.__font__.render(attitude_text, True, display.BLACK, display.WHITE)
+        texture_size = roll_texture.get_size()
         text_half_width, text_half_height = texture_size
+        text_half_width = int(text_half_width / 2)
         framebuffer.blit(
             roll_texture, (self.__center__[0] - text_half_width, self.__text_y_pos__))
         self.task_timer.stop()
@@ -649,39 +672,36 @@ class AdsbElement(object):
     def __render_heading_bug__(self, framebuffer,
                                identifier_text,
                                additional_info_text,
-                               center_x, target_bug_scale, is_top):
+                               center_x, target_bug_scale, is_on_ground):
         """
         Renders a targetting reticle on the screen.
         Assumes the X/Y projection has already been performed.
         """
 
         # Only draw the ones that would not be on the screen
-        if is_top:
-            reticle, reticle_edge_positon_y = self.get_above_reticle(
-                center_x, target_bug_scale)
-        else:
-            reticle, reticle_edge_positon_y = self.get_below_reticle(
-                center_x, target_bug_scale)
+        reticle, reticle_edge_positon_y = self.get_below_reticle(
+            center_x, target_bug_scale)
 
-        pygame.draw.polygon(framebuffer, display.RED, reticle)
+        bug_color = display.RED
 
-        texture, texture_size = HudDataCache.get_identifier_texture(
+        if is_on_ground:
+            bug_color = display.BLUE
+
+        pygame.draw.polygon(framebuffer, bug_color, reticle)
+
+        texture = HudDataCache.get_cached_text_texture(
             identifier_text, self.__font__)
-        text_width, text_height = texture_size
+        text_width, text_height = texture.get_size()
 
         additional_info_textures = [texture]
         for additional_text in additional_info_text:
-            additional_info_textures.append(self.__font__.render(
-                additional_text, True, display.YELLOW, display.BLACK))
+            additional_info_textures.append(
+                HudDataCache.get_cached_text_texture(additional_text, self.__font__))
 
         info_spacing = 1.2
 
-        if is_top:
-            info_position_y = reticle_edge_positon_y + \
-                (text_height >> 1) + int(text_height * (1.0 - info_spacing))
-        else:
-            info_position_y = reticle_edge_positon_y - \
-                int((len(additional_info_textures) * info_spacing) * text_height)
+        info_position_y = reticle_edge_positon_y - \
+            int((len(additional_info_textures) * info_spacing) * text_height)
 
         self.__render_info_text__(
             additional_info_textures, center_x, framebuffer, info_position_y, info_spacing)
@@ -754,12 +774,12 @@ class AdsbElement(object):
         return text_width, text_height
 
 
-class AdsbListing(AdsbElement):
+class AdsbTargetBugs(AdsbElement):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, configuration):
         AdsbElement.__init__(
             self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, configuration)
 
-        self.task_timer = TaskTimer('AdsbListing')
+        self.task_timer = TaskTimer('AdsbTargetBugs')
         self.__listing_text_start_y__ = int(self.__font__.get_height() * 4)
         self.__listing_text_start_x__ = int(
             self.__framebuffer_size__[0] * 0.01)
@@ -790,6 +810,15 @@ class AdsbListing(AdsbElement):
         for traffic_report in traffic_bug_reports:
             if traffic_report.distance > imperial_occlude:
                 continue
+            
+            try:
+                altitude_delta = int((traffic_report.altitude - orientation.alt) / 100.0)
+                
+                # TEST - Ignore stuff crazy separated
+                if math.fabs(altitude_delta) > 50:
+                    continue
+            finally:
+                pass
 
             # Now find where to draw the reticle....
             reticle_x, reticle_y = self.__get_traffic_projection__(
@@ -798,13 +827,6 @@ class AdsbListing(AdsbElement):
             # Render using the Above us bug
             # target_bug_scale = 0.04
             target_bug_scale = get_reticle_size(traffic_report.distance)
-
-            is_onscreen_x = reticle_x >= 0 and reticle_x < self.__width__
-            is_onscreen_y = reticle_y >= self.__top_border__ and reticle_y <= self.__bottom_border__
-            is_top = reticle_y <= self.__center__[1]
-
-            if is_onscreen_x and is_onscreen_y:
-                continue
 
             heading_bug_x = get_heading_bug_x(
                 heading, traffic_report.bearing, self.__pixels_per_degree_x__)
@@ -817,7 +839,127 @@ class AdsbListing(AdsbElement):
                                         additional_info_text,
                                         heading_bug_x,
                                         target_bug_scale,
-                                        is_top)
+                                        traffic_report.is_on_ground())
+        self.task_timer.stop()
+
+class AdsbTrafficListing(AdsbElement):
+    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, configuration):
+        AdsbElement.__init__(
+            self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, configuration)
+
+        self.task_timer = TaskTimer('AdsbTargetBugs')
+        self.__listing_text_start_y__ = int(self.__font__.get_height() * 4)
+        self.__listing_text_start_x__ = int(
+            self.__framebuffer_size__[0] * 0.01)
+        self.__next_line_distance__ = int(font.get_height() * 1.5)
+        self.__max_reports__ = int(
+            (self.__height__ - self.__listing_text_start_y__) / self.__next_line_distance__)
+        self.__top_border__ = int(self.__height__ * 0.2)
+        self.__bottom_border__ = self.__height__ - int(self.__height__ * 0.1)
+
+    def __get_padded_traffic_reports__(self, traffic_reports, orientation):
+        max_identifier_length = 0
+        max_bearing_length = 0
+        max_altitude_length = 0
+        max_distance_length = 0
+        pre_padded_text = []
+
+        max_identifier_length, max_distance_length, max_altitude_length = self.__get_pre_padded_text_reports__(
+            traffic_reports, orientation, max_identifier_length, max_bearing_length, max_altitude_length, max_distance_length, pre_padded_text)
+
+        out_padded_reports = []
+
+        for report in pre_padded_text:
+            identifier = report[0]
+            bearing = report[1]
+            distance_text = report[2]
+            altitude = report[3]
+            iaco = report[4]
+
+            # if self.__show_list__:
+            traffic_report = "{0} {1} {2} {3}".format(
+                identifier.ljust(max_identifier_length),
+                bearing.rjust(3),
+                distance_text.rjust(max_distance_length),
+                altitude.rjust(max_altitude_length))
+            out_padded_reports.append((iaco, traffic_report))
+
+        return out_padded_reports
+
+    def __get_pre_padded_text_reports__(self, traffic_reports, orientation, max_identifier_length, max_bearing_length, max_altitude_length, max_distance_length, pre_padded_text):
+        report_count = 0
+        for traffic in traffic_reports:
+            # Do not list traffic too far away
+            if traffic.distance > imperial_occlude or traffic.is_on_ground():
+                continue
+
+            report_count += 1
+
+            if report_count > self.__max_reports__:
+                break
+
+            identifier = str(traffic.get_identifer())
+            altitude_delta = int((traffic.altitude - orientation.alt) / 100.0)
+            distance_text = self.__get_distance_string__(traffic.distance)
+            delta_sign = ''
+            if altitude_delta > 0:
+                delta_sign = '+'
+            altitude_text = "{0}{1}".format(delta_sign, altitude_delta)
+            bearing_text = "{0:.0f}".format(traffic.bearing)
+
+            identifier_length = len(identifier)
+            bearing_length = len(bearing_text)
+            altitude_length = len(altitude_text)
+            distance_length = len(distance_text)
+
+            if identifier_length > max_identifier_length:
+                max_identifier_length = identifier_length
+
+            if bearing_length > max_bearing_length:
+                max_bearing_length = bearing_length
+
+            if altitude_length > max_altitude_length:
+                max_altitude_length = altitude_length
+
+            if distance_length > max_distance_length:
+                max_distance_length = distance_length
+
+            pre_padded_text.append(
+                [identifier, bearing_text, distance_text, altitude_text, traffic.iaco_address])
+        return max_identifier_length, max_distance_length, max_altitude_length
+
+    def render(self, framebuffer, orientation):
+        # Render a heading strip along the top
+
+        self.task_timer.start()
+
+        # Get the traffic, and bail out of we have none
+        traffic_reports = HudDataCache.RELIABLE_TRAFFIC_REPORTS
+
+        if traffic_reports is None:
+            self.task_timer.stop()
+            return
+
+        # Render a list of traffic that we have positions
+        # for, along with the tail number
+
+        y_pos = self.__listing_text_start_y__
+        x_pos = self.__listing_text_start_x__
+
+        padded_traffic_reports = self.__get_padded_traffic_reports__(
+            traffic_reports, orientation)
+
+        if len(padded_traffic_reports) == 0:
+            framebuffer.blit(HudDataCache.get_cached_text_texture("NO TRAFFIC", self.__font__),
+                (x_pos, y_pos))
+
+        for identifier, traffic_report in padded_traffic_reports:
+            traffic_text_texture = HudDataCache.get_cached_text_texture(traffic_report, self.__font__)
+
+            framebuffer.blit(
+                traffic_text_texture, (x_pos, y_pos))
+
+            y_pos += self.__next_line_distance__
         self.task_timer.stop()
 
 
@@ -850,6 +992,9 @@ class AdsbOnScreenReticles(AdsbElement):
             # Do not render reticles for things to far away
             if traffic.distance > imperial_occlude:
                 continue
+            
+            if traffic.is_on_ground():
+                continue
 
             identifier = traffic.get_identifer()
 
@@ -866,7 +1011,6 @@ class AdsbOnScreenReticles(AdsbElement):
                     reticle_x < 0 or reticle_x > self.__width__:
                 continue
             else:
-                reticle = self.__rotate_reticle__(reticle, orientation.roll)
                 reticle_x, reticle_y = self.__rotate_reticle__(
                     [[reticle_x, reticle_y]], orientation.roll)[0]
 
@@ -891,17 +1035,18 @@ class AdsbOnScreenReticles(AdsbElement):
         pygame.draw.lines(framebuffer,
                           display.RED, True, reticle_lines, 4)
 
+        # TEST - Do not render the tail number
         # Move the identifer text away from the reticle
-        if center_y < self.__center__[1]:
-            center_y = center_y + border_space
-        else:
-            center_y = center_y - border_space
+        # if center_y < self.__center__[1]:
+        #     center_y = center_y + border_space
+        # else:
+        #     center_y = center_y - border_space
 
-        texture, texture_size = HudDataCache.get_identifier_texture(
-            identifier, self.__font__)
+        # texture, texture_size = HudDataCache.get_cached_text_texture(
+        #     identifier, self.__font__)
 
-        self.__render_texture__(
-            framebuffer, (center_x, center_y), texture, texture_size, roll)
+        # self.__render_texture__(
+        #     framebuffer, (center_x, center_y), texture, texture_size, roll)
 
     def __rotate_reticle__(self, reticle, roll):
         """
@@ -927,7 +1072,7 @@ class AdsbOnScreenReticles(AdsbElement):
 
         translated_points = []
 
-        int_roll = int(roll)
+        int_roll = int(-roll)
         cos_roll = __cos_radians_by_degrees__[int_roll]
         sin_roll = __sin_radians_by_degrees__[int_roll]
         ox, oy = self.__center__

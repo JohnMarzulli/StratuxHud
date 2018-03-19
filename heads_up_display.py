@@ -7,9 +7,11 @@ import sys
 import random
 import argparse
 import datetime
+import requests
 import pygame
 import display
 import traffic
+import lib.utilities as utilities
 from configuration import *
 from aircraft import Aircraft
 import hud_elements
@@ -34,6 +36,24 @@ class HeadsUpDisplay(object):
 
     DEGREES_OF_PITCH = 90
     PITCH_DEGREES_DISPLAY_SCALER = 2.0
+
+    def __level_ahrs__(self):
+        url = "http://{0}/cageAHRS".format(
+            self.__configuration__.stratux_address())
+
+        try:
+            requests.Session().post(url, timeout=2)
+        except:
+            pass
+    
+    def __shutdown_stratux__(self):
+        url = "http://{0}/shutdown".format(
+            self.__configuration__.stratux_address())
+
+        try:
+            requests.Session().post(url, timeout=2)
+        except:
+            pass
 
     def run(self):
         clock = pygame.time.Clock()
@@ -63,15 +83,32 @@ class HeadsUpDisplay(object):
         try:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    utilities.shutdown()
                     return False
+                if event.type == pygame.KEYUP:
+                    if event.key in [pygame.K_q, pygame.K_ESCAPE]:
+                        utilities.shutdown(0)
+                        self.__shutdown_stratux__()
+                        return False
+                    
+                    if event.key in [pygame.K_KP_PLUS, pygame.K_PLUS]:
+                        self.__view_index__ += 1
+                    
+                    if event.key in [pygame.K_KP_MINUS, pygame.K_MINUS]:
+                        self.__view_index__ -= 1
 
-            keys_pressed = pygame.key.get_pressed()
-            if keys_pressed[pygame.K_q] or keys_pressed[pygame.K_ESCAPE]:
-                return False
+                    if event.key in [pygame.K_r]:
+                        self.render_perf.reset()
+                        self.orient_perf.reset()
+                    
+                    if event.key in [pygame.K_BACKSPACE]:
+                        self.__level_ahrs__()
 
-            if keys_pressed[pygame.K_r]:
-                self.render_perf.reset()
-                self.orient_perf.reset()
+            if self.__view_index__ >= (len(self.__hud__views__)):
+                self.__view_index__ = 0
+
+            if self.__view_index__ < 0:
+                self.__view_index__ = (len(self.__hud__views__) - 1)
 
             self.orient_perf.start()
             orientation = self.__aircraft__.get_orientation()
@@ -93,7 +130,7 @@ class HeadsUpDisplay(object):
                 try:
                     hud_elements.HudDataCache.update_traffic_reports()
 
-                    for hud_element in self.__data_available_elements__:
+                    for hud_element in self.__hud__views__[self.__view_index__]:
                         try:
                             hud_element.render(
                                 self.__backpage_framebuffer__, orientation)
@@ -180,8 +217,22 @@ class HeadsUpDisplay(object):
 
         self.__ahrs_not_available_element__ = hud_elements.AhrsNotAvailable(
             HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__))
+        
+        traffic_only_view = [
+            hud_elements.CompassAndHeadingBottomElement(
+                HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__)),
+            hud_elements.AdsbTargetBugs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__,
+                                     (self.__width__, self.__height__), self.__configuration__),
+            hud_elements.AdsbOnScreenReticles(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
+                                              self.__font__, (self.__width__, self.__height__), self.__configuration__)
+        ]
 
-        self.__data_available_elements__ = [
+        traffic_listing_view = [
+            hud_elements.AdsbTrafficListing(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__,
+                                     (self.__width__, self.__height__), self.__configuration__)
+        ]
+
+        ahrs_view = [
             hud_elements.LevelReference(
                 HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__)),
             hud_elements.ArtificialHorizon(
@@ -194,11 +245,15 @@ class HeadsUpDisplay(object):
                                    self.__font__, (self.__width__, self.__height__)),
             hud_elements.RollIndicator(
                 HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__)),
-            hud_elements.AdsbListing(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__,
-                                     (self.__width__, self.__height__), self.__configuration__),
-            hud_elements.AdsbOnScreenReticles(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
-                                              self.__font__, (self.__width__, self.__height__), self.__configuration__)
         ]
+
+        self.__hud__views__ = [
+            traffic_only_view,
+            ahrs_view,
+            traffic_listing_view
+        ]
+
+        self.__view_index__ = 0
 
         self.__perf_task__ = RecurringTask("PerfData", 5, self.__render_perf__)
 
@@ -214,7 +269,7 @@ class HeadsUpDisplay(object):
 
     def __render_perf__(self):
         print '--------------'
-        for element in self.__data_available_elements__:
+        for element in self.__hud__views__[self.__view_index__]:
             print element.task_timer.to_string()
 
 
