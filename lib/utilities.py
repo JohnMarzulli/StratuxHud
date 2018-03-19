@@ -143,13 +143,13 @@ def restart():
                          shell=True, stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT)
 
-def shutdown():
+def shutdown(seconds = 30):
     """
     Shuts down the Pi.
     """
 
     if not local_debug.is_debug():
-        subprocess.Popen(["sudo shutdown -h 30"],
+        subprocess.Popen(["sudo shutdown -h {0}".format(int(seconds))],
                          shell=True, stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT)
 
