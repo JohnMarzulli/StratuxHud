@@ -73,6 +73,15 @@ class Traffic(object):
 
     def is_valid_report(self):
         return self.position_valid and self.bearing_distance_valid
+    
+    def is_on_ground(self):
+        try:
+            if 'OnGround' in self.__json__:
+                return bool(self.__json__['OnGround'])
+        except:
+            pass
+        
+        return False
 
     def get_age(self):
         """
@@ -257,7 +266,7 @@ class TrafficManager(object):
         try:
             for identifier in self.traffic:
                 if not self.traffic[identifier].is_valid_report():
-                    if self.traffic[identifier].get_identifer() is self.__configuration__.ownship:
+                    if self.__configuration__.ownship in str(self.traffic[identifier].get_identifer()):
                         continue
 
                     traffic_without_position.append(self.traffic[identifier])
@@ -281,7 +290,7 @@ class TrafficManager(object):
         try:
             for identifier in self.traffic:
                 if self.traffic[identifier].is_valid_report():
-                    if self.traffic[identifier].get_identifer() is self.__configuration__.ownship:
+                    if self.__configuration__.ownship in str(self.traffic[identifier].get_identifer()):
                         continue
 
                     actionable_traffic.append(self.traffic[identifier])
