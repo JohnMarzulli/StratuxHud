@@ -12,6 +12,7 @@ import pygame
 import display
 import traffic
 import lib.utilities as utilities
+import lib.local_debug as local_debug
 from configuration import *
 from aircraft import Aircraft
 import hud_elements
@@ -88,7 +89,8 @@ class HeadsUpDisplay(object):
                 if event.type == pygame.KEYUP:
                     if event.key in [pygame.K_q, pygame.K_ESCAPE]:
                         utilities.shutdown(0)
-                        self.__shutdown_stratux__()
+                        if not local_debug.is_debug():
+                            self.__shutdown_stratux__()
                         return False
                     
                     if event.key in [pygame.K_KP_PLUS, pygame.K_PLUS]:
@@ -103,6 +105,9 @@ class HeadsUpDisplay(object):
                     
                     if event.key in [pygame.K_BACKSPACE]:
                         self.__level_ahrs__()
+                    
+                    if event.key in [pygame.K_EQUALS, pygame.K_KP_EQUALS]:
+                        self.__render_perf__ = not self.__render_perf__
 
             if self.__view_index__ >= (len(self.__hud__views__)):
                 self.__view_index__ = 0
@@ -145,13 +150,23 @@ class HeadsUpDisplay(object):
 
             self.render_perf.stop()
 
-            # debug_status_left = int(self.__width__ * 0.2)
-            # debug_status_top = int(self.__height__ * 0.2)
-            # render_perf_text = self.render_perf.to_string()
-            # orient_perf_text = self.orient_perf.to_string().ljust(len(render_perf_text))
-            # self.__render_text__(render_perf_text, display.BLACK, debug_status_left, debug_status_top, 0, display.YELLOW)
-            # debug_status_top += int(self.__font__.get_height() * 1.1)
-            # self.__render_text__(orient_perf_text, display.BLACK, debug_status_left, debug_status_top, 0, display.YELLOW)
+            if self.__render_perf__ or len(self.__hud__views__[self.__view_index__]) == 0:
+                debug_status_left = int(self.__width__ >> 1)
+                debug_status_top = int(self.__height__ * 0.2)
+                render_perf_text = self.render_perf.to_string()
+                orient_perf_text = self.orient_perf.to_string()
+
+                perf_len = len(render_perf_text)
+                orient_len = len(orient_perf_text)
+
+                if perf_len > orient_len:
+                    orient_perf_text = orient_perf_text.ljust(perf_len)
+                else:
+                    render_perf_text = render_perf_text.ljust(orient_len)
+
+                self.__render_text__(render_perf_text, display.BLACK, debug_status_left, debug_status_top, 0, display.YELLOW)
+                debug_status_top += int(self.__font__.get_height() * 1.1)
+                self.__render_text__(orient_perf_text, display.BLACK, debug_status_left, debug_status_top, 0, display.YELLOW)
         finally:
             # Change the frame buffer
             flipped = pygame.transform.flip(
@@ -199,15 +214,21 @@ class HeadsUpDisplay(object):
         pygame.mouse.set_visible(False)
 
         pygame.font.init()
+        self.__render_perf__ = False
 
-        font_name = "consolas,arial,helvetica"
+        # ",,"
+        font_name = "consolas,monaco,courier,arial,helvetica"
 
-        self.__font__ = pygame.font.SysFont(
-            font_name, int(self.__height__ / 12.0), True, False)
-        self.__detail_font__ = pygame.font.SysFont(
-            font_name, int(self.__height__ / 20.0), False, False)
+        font_size_std = int(self.__height__ / 10.0)
+        font_size_detail = int(self.__height__ / 12.0)
+        font_size_loading = int(self.__height__ / 4.0)
+
+        self.__font__ = pygame.font.Font(
+            "./assets/fonts/LiberationMono-Bold.ttf", font_size_std)
+        self.__detail_font__ = pygame.font.Font(
+            "./assets/fonts/LiberationMono-Bold.ttf", font_size_detail)
         self.__loading_font__ = pygame.font.SysFont(
-            font_name, int(self.__height__ / 4.0), True, False)
+            font_name, font_size_loading, True, False)
         self.__show_boot_screen__()
 
         self.__aircraft__ = Aircraft()
@@ -217,40 +238,47 @@ class HeadsUpDisplay(object):
 
         self.__ahrs_not_available_element__ = hud_elements.AhrsNotAvailable(
             HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__))
+
+
+        bottom_compass_element = hud_elements.CompassAndHeadingBottomElement(
+                HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__, (self.__width__, self.__height__))
+        adsb_target_bug_element = hud_elements.AdsbTargetBugs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__,
+                                     (self.__width__, self.__height__), self.__configuration__)
+        adsb_onscreen_reticle_element = hud_elements.AdsbOnScreenReticles(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
+                                              self.__font__, (self.__width__, self.__height__), self.__configuration__)
         
         traffic_only_view = [
-            hud_elements.CompassAndHeadingBottomElement(
-                HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__)),
-            hud_elements.AdsbTargetBugs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__,
-                                     (self.__width__, self.__height__), self.__configuration__),
-            hud_elements.AdsbOnScreenReticles(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
-                                              self.__font__, (self.__width__, self.__height__), self.__configuration__)
+            bottom_compass_element,
+            adsb_target_bug_element,
+            adsb_onscreen_reticle_element
         ]
 
         traffic_listing_view = [
-            hud_elements.AdsbTrafficListing(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__,
+            hud_elements.AdsbTrafficListing(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__,
                                      (self.__width__, self.__height__), self.__configuration__)
         ]
 
         ahrs_view = [
             hud_elements.LevelReference(
-                HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__)),
+                HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__, (self.__width__, self.__height__)),
             hud_elements.ArtificialHorizon(
-                HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__)),
-            hud_elements.CompassAndHeadingBottomElement(
-                HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__)),
+                HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__, (self.__width__, self.__height__)),
+            bottom_compass_element,
             hud_elements.Altitude(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
-                                  self.__font__, (self.__width__, self.__height__)),
+                                  self.__detail_font__, (self.__width__, self.__height__)),
             hud_elements.SkidAndGs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
-                                   self.__font__, (self.__width__, self.__height__)),
+                                   self.__detail_font__, (self.__width__, self.__height__)),
             hud_elements.RollIndicator(
                 HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__)),
         ]
 
+        blank_view = []
+
         self.__hud__views__ = [
             traffic_only_view,
             ahrs_view,
-            traffic_listing_view
+            traffic_listing_view,
+            blank_view
         ]
 
         self.__view_index__ = 0

@@ -292,7 +292,7 @@ class AhrsStratux(object):
         except KeyboardInterrupt, SystemExit:
             raise
         except:
-            print "Issues decoding json"
+            self.data_source_available = False
 
             return
 

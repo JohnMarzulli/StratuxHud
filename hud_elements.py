@@ -72,7 +72,7 @@ class HudDataCache(object):
     def get_cached_text_texture(text, font):
         if text not in HudDataCache.TEXT_TEXTURE_CACHE:
             texture = font.render(
-                text, True, display.YELLOW, display.BLACK)  # .convert()
+                text, True, display.BLACK, display.YELLOW )  # .convert()
             # text_width, text_height = texture.get_size()
             HudDataCache.TEXT_TEXTURE_CACHE[text] = texture #, (
                 # text_width, text_height)
@@ -135,7 +135,7 @@ class LevelReference(object):
         self.task_timer.start()
         for line in self.level_reference_lines:
             pygame.draw.lines(framebuffer,
-                              display.GRAY, False, line, 2)
+                              display.WHITE, False, line, 6)
         self.task_timer.stop()
 
 
@@ -177,8 +177,8 @@ class ArtificialHorizon(object):
         self.__pitch_elements__ = {}
         self.__framebuffer_size__ = framebuffer_size
         self.__center__ = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
-        self.__long_line_width__ = self.__framebuffer_size__[0] * 0.2
-        self.__short_line_width__ = self.__framebuffer_size__[0] * 0.1
+        self.__long_line_width__ = self.__framebuffer_size__[0] * 0.4
+        self.__short_line_width__ = self.__framebuffer_size__[0] * 0.2
         self.__pixels_per_degree_y__ = pixels_per_degree_y
         self.__height__ = framebuffer_size[1]
 
@@ -202,7 +202,7 @@ class ArtificialHorizon(object):
                 continue
 
             pygame.draw.lines(framebuffer,
-                              display.GREEN, False, line_coords, 2)
+                              display.GREEN, False, line_coords, 4)
 
             text, half_size = self.__pitch_elements__[reference_angle]
             text = pygame.transform.rotate(text, orientation.roll)
@@ -259,11 +259,11 @@ class CompassAndHeadingTopElement(object):
         self.__short_line_width__ = self.__framebuffer_size__[0] * 0.1
         self.__pixels_per_degree_y__ = pixels_per_degree_y
 
-        self.heading_text_y = int(font.get_height() * 2)
-        self.compass_text_y = int(font.get_height() * 3)
+        self.heading_text_y = int(font.get_height())
+        self.compass_text_y = int(font.get_height())
 
         self.pixels_per_degree_x = framebuffer_size[0] / 360.0
-        cardinal_direction_line_proportion = 0.05
+        cardinal_direction_line_proportion = 0.2
         self.line_height = int(
             framebuffer_size[1] * cardinal_direction_line_proportion)
         self.__font__ = font
@@ -332,10 +332,10 @@ class CompassAndHeadingTopElement(object):
 
     def __render_heading_mark__(self, framebuffer, x_pos, heading):
         pygame.draw.line(framebuffer, display.GREEN,
-                         [x_pos, self.line_height], [x_pos, 0], 2)
+                         [x_pos, self.line_height], [x_pos, 0], 4)
 
         self.__render_heading_text__(
-            framebuffer, heading, x_pos, self.heading_text_y)
+            framebuffer, heading, x_pos, self.compass_text_y)
 
     def render(self, framebuffer, orientation):
         """
@@ -354,7 +354,7 @@ class CompassAndHeadingTopElement(object):
                 framebuffer, heading_mark_to_render[0], heading_mark_to_render[1])
 
         # Render the text that is showing our AHRS and GPS headings
-        cover_old_rendering_spaces = "  "
+        cover_old_rendering_spaces = " "
         heading_text = "{0}{1} | {2}{0}".format(cover_old_rendering_spaces,
                                                 str(orientation.get_onscreen_projection_display_heading()).rjust(
                                                     3),
@@ -365,7 +365,7 @@ class CompassAndHeadingTopElement(object):
         text_width, text_height = rendered_text.get_size()
 
         framebuffer.blit(
-            rendered_text, (self.__center_x__ - (text_width >> 1), self.compass_text_y - (text_height >> 1)))
+            rendered_text, (self.__center_x__ - (text_width >> 1), self.compass_text_y + text_height << 1))
 
         pygame.draw.lines(framebuffer, display.GREEN, True,
                           self.__heading_text_box_lines__, 2)
@@ -391,26 +391,28 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
         self.__line_bottom__ = framebuffer_size[1]
         self.heading_text_y = self.__line_top__ - (font.get_height() * 1.2)
 
-        self.compass_text_y = self.__line_bottom__ - \
-            int(font.get_height() * 3.5)
+        self.compass_text_y = framebuffer_size[1] - \
+            int(font.get_height() * 2)
+        self.__border_width__ = 4
         text_height = font.get_height()
         border_vertical_size = (text_height >> 1) + (text_height >> 2)
+        vertical_alignment_offset = int((border_vertical_size / 2.0 ) + 0.5) + self.__border_width__
         half_width = int(self.__heading_text__[360][1][0] * 3.5)
         self.__heading_text_box_lines__ = [
             [self.__center_x__ - half_width,
-             self.compass_text_y - border_vertical_size],
+             self.compass_text_y - border_vertical_size + vertical_alignment_offset],
             [self.__center_x__ + half_width,
-             self.compass_text_y - border_vertical_size],
+             self.compass_text_y - border_vertical_size + vertical_alignment_offset],
             [self.__center_x__ + half_width,
-             self.compass_text_y + border_vertical_size],
-            [self.__center_x__ - half_width, self.compass_text_y + border_vertical_size]]
+             self.compass_text_y + border_vertical_size + vertical_alignment_offset],
+            [self.__center_x__ - half_width, self.compass_text_y + border_vertical_size + vertical_alignment_offset]]
 
     def __render_heading_mark__(self, framebuffer, x_pos, heading):
         pygame.draw.line(framebuffer, display.GREEN,
-                         [x_pos, self.__line_top__], [x_pos, self.__line_bottom__], 2)
+                         [x_pos, self.__line_top__], [x_pos, self.__line_bottom__], self.__border_width__)
 
         self.__render_heading_text__(
-            framebuffer, heading, x_pos, self.heading_text_y)
+            framebuffer, heading, x_pos, self.compass_text_y)
 
     def render(self, framebuffer, orientation):
         """
@@ -444,10 +446,9 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
 
         pygame.draw.polygon(framebuffer, display.GREEN,
                             self.__heading_text_box_lines__)
-        # pygame.draw.lines(framebuffer, display.GREEN, True,
-        #                  self.__heading_text_box_lines__, 2)
+
         framebuffer.blit(
-            rendered_text, (self.__center_x__ - (text_width >> 1), self.compass_text_y - (text_height >> 1)))
+            rendered_text, (self.__center_x__ - (text_width >> 1), self.compass_text_y))
         self.task_timer.stop()
 
 
@@ -625,14 +626,15 @@ class AdsbElement(object):
         """
 
         size = int(self.__height__ * scale)
+        bug_vertical_offset = self.__font__.get_height() << 1 # int(self.__height__ * 0.25)
 
         below_reticle = [
-            [center_x - (size >> 2), self.__height__ - size],
-            [center_x, self.__height__],
-            [center_x + (size >> 2), self.__height__ - size]
+            [center_x - (size >> 2), self.__height__ - size - bug_vertical_offset],
+            [center_x, self.__height__ - bug_vertical_offset],
+            [center_x + (size >> 2), self.__height__ - size - bug_vertical_offset]
         ]
 
-        return below_reticle, self.__height__ - size
+        return below_reticle, below_reticle[2][1] # self.__height__ - size - bug_vertical_offset
 
     def get_onscreen_reticle(self, center_x, center_y, scale):
         size = int(self.__height__ * scale)
@@ -694,14 +696,42 @@ class AdsbElement(object):
         text_width, text_height = texture.get_size()
 
         additional_info_textures = [texture]
+        widest_texture = text_width
         for additional_text in additional_info_text:
-            additional_info_textures.append(
-                HudDataCache.get_cached_text_texture(additional_text, self.__font__))
+            info_texture = HudDataCache.get_cached_text_texture(additional_text, self.__font__)
+            additional_info_textures.append(info_texture)
+            info_size_x, info_size_y = info_texture.get_size()
+            if widest_texture < info_size_x:
+                widest_texture = info_size_x
 
         info_spacing = 1.2
 
         info_position_y = reticle_edge_positon_y - \
             int((len(additional_info_textures) * info_spacing) * text_height)
+        
+        edge_left = (center_x - (widest_texture >> 1))
+        edge_right = (center_x + (widest_texture >> 1))
+
+        if edge_left < 0:
+            edge_right += math.fabs(edge_left)
+            edge_left = 0
+        
+        if edge_right > self.__framebuffer_size__[0]:
+            diff = edge_right - self.__framebuffer_size__[0]
+            edge_left -= diff
+            edge_right = self.__framebuffer_size__[0]
+        
+        pixel_border_size = 4
+        fill_top_left = [edge_left - pixel_border_size, info_position_y - pixel_border_size]
+        fill_top_right = [edge_right + pixel_border_size, fill_top_left[1]]
+        fill_bottom_right = [fill_top_right[0], info_position_y + pixel_border_size + int((len(additional_info_text) + 1) * info_spacing * text_height)]
+        fill_bottom_left = [fill_top_left[0], fill_bottom_right[1]]
+
+        pygame.draw.polygon(framebuffer, display.YELLOW,
+                            [fill_top_left, fill_top_right, fill_bottom_right, fill_bottom_left])
+        
+        pygame.draw.lines(framebuffer,
+                          display.BLACK, True, [fill_top_left, fill_top_right, fill_bottom_right, fill_bottom_left], 6)
 
         self.__render_info_text__(
             additional_info_textures, center_x, framebuffer, info_position_y, info_spacing)
@@ -848,7 +878,7 @@ class AdsbTrafficListing(AdsbElement):
             self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, configuration)
 
         self.task_timer = TaskTimer('AdsbTargetBugs')
-        self.__listing_text_start_y__ = int(self.__font__.get_height() * 4)
+        self.__listing_text_start_y__ = int(self.__font__.get_height() * 2)
         self.__listing_text_start_x__ = int(
             self.__framebuffer_size__[0] * 0.01)
         self.__next_line_distance__ = int(font.get_height() * 1.5)
@@ -1033,7 +1063,9 @@ class AdsbOnScreenReticles(AdsbElement):
             center_y = int(self.__height__ - border_space)
 
         pygame.draw.lines(framebuffer,
-                          display.RED, True, reticle_lines, 4)
+                          display.BLACK, True, reticle_lines, 20)
+        pygame.draw.lines(framebuffer,
+                          display.RED, True, reticle_lines, 10)
 
         # TEST - Do not render the tail number
         # Move the identifer text away from the reticle
