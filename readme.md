@@ -12,4 +12,4 @@ https://www.raspberrypi.org/forums/viewtopic.php?t=160620
 Teleprompter sample: https://telepromptermirror.com/sample/
 
 
-![With teleprompter glass in flight](https://github.com/JohnMarzulli/StratuxHud/blob/performance_updates/media/in_flight.jpg)
+![With teleprompter glass in flight](https://github.com/JohnMarzulli/StratuxHud/blob/master/media/in_flight.jpg)
