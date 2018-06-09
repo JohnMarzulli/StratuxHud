@@ -21,7 +21,7 @@ from lib.recurring_task import RecurringTask
 
 # TODO - Add the G-Meter
 # TODO - Disable functionality based on the enabled StratuxCapabilities
-# TODO - Check for the key existance anyway... cross update the capabilties
+# TODO - Check for the key existence anyway... cross update the capabilities
 # TODO - Add roll indicator
 
 # Traffic description in https://github.com/cyoung/stratux/blob/master/notes/app-vendor-integration.md
