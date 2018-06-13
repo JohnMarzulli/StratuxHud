@@ -1,5 +1,6 @@
 import math
 import pickle
+
 import display
 from heads_up_display import HeadsUpDisplay
 
@@ -9,10 +10,11 @@ __cos_radians_by_degrees__ = {}
 __width__ = 800
 __height__ = 480
 __screen_size__ = (__width__, __height__)
-__center__ = (__screen_size__[0] >> 1, __screen_size__[1] >> 1 )
+__center__ = (__screen_size__[0] >> 1, __screen_size__[1] >> 1)
 __long_line_width__ = __width__ * 0.2
 __short_line_width__ = __width__ * 0.1
-__pixels_per_degree_y__ = (__height__ / HeadsUpDisplay.DEGREES_OF_PITCH) * HeadsUpDisplay.PITCH_DEGREES_DISPLAY_SCALER
+__pixels_per_degree_y__ = (__height__ / HeadsUpDisplay.DEGREES_OF_PITCH) * \
+    HeadsUpDisplay.PITCH_DEGREES_DISPLAY_SCALER
 __pitch_elements__ = {}
 degrees_of_pitch = 90
 
@@ -23,32 +25,37 @@ for degrees in range(-360, 361):
     __sin_radians_by_degrees__[degrees] = math.sin(radians)
     __cos_radians_by_degrees__[degrees] = math.cos(radians)
 
+
 def __build_ah_lookup__():
     ah_lookup = {}
     for pitch in range(-90, 91, 1):
-        print "{0}..".format(pitch)
+        print("{0}..".format(pitch))
         ah_lookup[pitch] = __build_lookup_for_pitch__(pitch)
-    
+
     return ah_lookup
+
 
 def __build_lookup_for_pitch__(pitch):
     ah_lookup = {}
     for roll in range(-90, 91, 1):
         ah_lookup[roll] = __build_lookup_for_pitch_and_roll__(pitch, roll)
-    
+
     return ah_lookup
+
 
 def __build_lookup_for_pitch_and_roll__(pitch, roll):
     ah_lookup = []
     for reference_angle in range(-degrees_of_pitch, degrees_of_pitch + 1, 10):
-        line_coords, line_center = __get_line_coords__(pitch, roll, reference_angle)
+        line_coords, line_center = __get_line_coords__(
+            pitch, roll, reference_angle)
 
         if line_center[1] < 0 or line_center[1] > __height__:
             continue
 
         ah_lookup.append((line_coords, line_center, reference_angle))
-    
+
     return ah_lookup
+
 
 def __get_line_coords__(pitch, roll, reference_angle):
     """
@@ -59,7 +66,7 @@ def __get_line_coords__(pitch, roll, reference_angle):
         length = __long_line_width__
     else:
         length = __short_line_width__
-    
+
     pitch = int(pitch)
     roll = int(roll)
 
@@ -86,6 +93,7 @@ def __get_line_coords__(pitch, roll, reference_angle):
     end_y = center_y - half_y_len
 
     return [[int(start_x), int(start_y)], [int(end_x), int(end_y)]], (int(center_x), int(center_y))
+
 
 if __name__ == '__main__':
     generated_ah = __build_ah_lookup__()

@@ -1,6 +1,6 @@
 import json
 
-EARTH_RADIUS_NATUICAL_MILES = 3440
+EARTH_RADIUS_NAUTICAL_MILES = 3440
 EARTH_RADIUS_STATUTE_MILES = 3956
 EARTH_RADIUS_KILOMETERS_MILES = 6371
 MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT = 2
@@ -11,6 +11,7 @@ DEFAULT_CONFIG_FILE = "./config.json"
 class DataSourceNames(object):
     STRATUX = "stratux"
     SIMULATION = "simulation"
+
 
 class Configuration(object):
     DEFAULT_NETWORK_IP = "192.168.10.1"
@@ -33,9 +34,9 @@ class Configuration(object):
 
         if self.__configuration__ is not None and key in self.__configuration__:
             return self.__configuration__[key]
-        
+
         return default_value
-    
+
     def __get_display_settings__(self):
         return self.__get_config_value__(Configuration.DISPLAY_KEY, None)
 
@@ -47,9 +48,9 @@ class Configuration(object):
 
         if not display_settings:
             return True
-        
+
         return display_settings[Configuration.REVERSE_ROLL_KEY]
-    
+
     def reverse_pitch(self):
         """
         Should the pitch be reversed?
@@ -58,9 +59,9 @@ class Configuration(object):
 
         if not display_settings:
             return False
-        
+
         return display_settings[Configuration.REVERSE_PITCH_KEY]
-    
+
     def reverse_yaw(self):
         """
         Should the yaw be reversed?
@@ -69,7 +70,7 @@ class Configuration(object):
 
         if not display_settings:
             return True
-        
+
         return display_settings[Configuration.REVERSE_YAW_KEY]
 
     def data_source(self):
@@ -79,14 +80,12 @@ class Configuration(object):
 
         return self.__get_config_value__(Configuration.DATA_SOURCE_KEY, DataSourceNames.STRATUX)
 
-
     def stratux_address(self):
         """
         Returns the stratux address.
         """
 
         return self.__get_config_value__(Configuration.STRATUX_ADDRESS_KEY, Configuration.DEFAULT_NETWORK_IP)
-
 
     def __load_configuration__(self, json_config_file):
         """
@@ -101,18 +100,20 @@ class Configuration(object):
     def __init__(self, json_config_file):
         self.__configuration__ = self.__load_configuration__(json_config_file)
         self.ownship = self.__get_config_value__(Configuration.OWNSHIP_KEY, '')
-        self.max_minutes_before_removal = self.__get_config_value__(Configuration.MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT_KEY, MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT)
+        self.max_minutes_before_removal = self.__get_config_value__(
+            Configuration.MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT_KEY, MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT)
         self.log_filename = "stratux_hud.log"
-        self.flip_horizonal = False
+        self.flip_horizontal = False
         self.flip_vertical = False
 
         try:
-            self.flip_horizonal = self.__configuration__[Configuration.DISPLAY_KEY][Configuration.FLIP_HORIZONTAL_KEY]
-        except:
-            pass
-        
-        try:
-            self.flip_vertical = self.__configuration__[Configuration.DISPLAY_KEY][Configuration.FLIP_VERTICAL_KEY]
+            self.flip_horizontal = self.__configuration__[
+                Configuration.DISPLAY_KEY][Configuration.FLIP_HORIZONTAL_KEY]
         except:
             pass
 
+        try:
+            self.flip_vertical = self.__configuration__[
+                Configuration.DISPLAY_KEY][Configuration.FLIP_VERTICAL_KEY]
+        except:
+            pass

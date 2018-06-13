@@ -1,15 +1,17 @@
-import requests
-import random
-import math
-import configuration
 import datetime
+import math
+import random
 import threading
+
+import requests
+
+import configuration
 import lib.recurring_task as recurring_task
 
 
 class StratuxCapabilities(object):
     """
-    Get the capabilties of the Stratux, so we know what can be used
+    Get the capabilities of the Stratux, so we know what can be used
     in the HUD.
     """
 
@@ -17,12 +19,12 @@ class StratuxCapabilities(object):
         if key is None:
             return False
 
-        if self.__capabilties_json__ is None:
+        if self.__capabilities_json__ is None:
             return False
 
-        if key in self.__capabilties_json__:
+        if key in self.__capabilities_json__:
             try:
-                return bool(self.__capabilties_json__[key])
+                return bool(self.__capabilities_json__[key])
             except KeyboardInterrupt, SystemExit:
                 raise
             except:
@@ -36,7 +38,7 @@ class StratuxCapabilities(object):
         """
 
         if stratux_address is None or simulation_mode:
-            self.__capabilties_json__ = None
+            self.__capabilities_json__ = None
             self.traffic_enabled = False
             self.gps_enabled = False
             self.barometric_enabled = True
@@ -45,13 +47,13 @@ class StratuxCapabilities(object):
             url = "http://{0}/getSettings".format(stratux_address)
 
             try:
-                self.__capabilties_json__ = stratux_session.get(
+                self.__capabilities_json__ = stratux_session.get(
                     url, timeout=2).json()
 
             except KeyboardInterrupt, SystemExit:
                 raise
             except:
-                self.__capabilties_json__ = []
+                self.__capabilities_json__ = []
 
             self.traffic_enabled = self.__get_capability__('UAT_Enabled')
             self.gps_enabled = self.__get_capability__('GPS_Enabled')
@@ -386,7 +388,7 @@ class AhrsStratux(object):
 
     def __update_capabilities__(self):
         """
-        Check occassionally to see if the settings
+        Check occasionally to see if the settings
         for the Stratux have been changed that would
         affect what we should show and what is actually
         available.
@@ -408,21 +410,21 @@ class AhrsStratux(object):
         self.capabilities = StratuxCapabilities(
             self.__configuration__.stratux_address(), self.__stratux_session__)
         recurring_task.RecurringTask(
-            'UpdateCapabilties', 15, self.__update_capabilities__)
+            'UpdateCapabilities', 15, self.__update_capabilities__)
 
         self.__lock__ = threading.Lock()
 
 
 class Aircraft(object):
     def update_orientation_in_background(self):
-        print "starting"
+        print("starting")
         while True:
             try:
                 self.__update_orientation__()
             except KeyboardInterrupt:
                 raise
             except:
-                print "error"
+                print("error")
 
     def __init__(self, force_simulation=False):
         self.__configuration__ = configuration.Configuration(
@@ -457,5 +459,5 @@ if __name__ == '__main__':
     plane = Aircraft()
 
     while True:
-        print str(plane.get_orientation().roll)
+        print(str(plane.get_orientation().roll))
         time.sleep(1.0 / 60.0)

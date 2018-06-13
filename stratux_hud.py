@@ -36,10 +36,10 @@ Main entry code for Stratux HUD
 
 import logging
 import logging.handlers
-import configuration
-from lib.logger import Logger
-import heads_up_display
 
+import configuration
+import heads_up_display
+from lib.logger import Logger
 
 CONFIGURATION = configuration.Configuration(configuration.DEFAULT_CONFIG_FILE)
 

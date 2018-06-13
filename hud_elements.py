@@ -1,24 +1,22 @@
-import display
-import pygame
-import math
 import datetime
-from lib.task_timer import TaskTimer
+import math
+
+import pygame
 
 import aircraft
+import display
+import units
+from configuration import DEFAULT_CONFIG_FILE, Configuration
+from lib.task_timer import TaskTimer
 from traffic import AdsbTrafficClient, Traffic
-from configuration import Configuration, DEFAULT_CONFIG_FILE
 
 __sin_radians_by_degrees__ = {}
 __cos_radians_by_degrees__ = {}
 
-feet_to_nm = 6076.12
-feet_to_sm = 5280.0
-feet_to_km = 3280.84
-feet_to_m = 3.28084
 imperial_nearby = 3000.0
-imperial_occlude = feet_to_sm * 5
-imperial_faraway = feet_to_sm * 2
-imperial_superclose = feet_to_sm / 4.0
+imperial_occlude = units.feet_to_sm * 5
+imperial_faraway = units.feet_to_sm * 2
+imperial_superclose = units.feet_to_sm / 4.0
 
 for degrees in range(-360, 361):
     radians = math.radians(degrees)
@@ -72,10 +70,10 @@ class HudDataCache(object):
     def get_cached_text_texture(text, font):
         if text not in HudDataCache.TEXT_TEXTURE_CACHE:
             texture = font.render(
-                text, True, display.BLACK, display.YELLOW )  # .convert()
+                text, True, display.BLACK, display.YELLOW)  # .convert()
             # text_width, text_height = texture.get_size()
-            HudDataCache.TEXT_TEXTURE_CACHE[text] = texture #, (
-                # text_width, text_height)
+            HudDataCache.TEXT_TEXTURE_CACHE[text] = texture  # , (
+            # text_width, text_height)
 
         HudDataCache.__CACHE_ENTRY_LAST_USED__[text] = datetime.datetime.now()
         return HudDataCache.TEXT_TEXTURE_CACHE[text]
@@ -396,7 +394,8 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
         self.__border_width__ = 4
         text_height = font.get_height()
         border_vertical_size = (text_height >> 1) + (text_height >> 2)
-        vertical_alignment_offset = int((border_vertical_size / 2.0 ) + 0.5) + self.__border_width__
+        vertical_alignment_offset = int(
+            (border_vertical_size / 2.0) + 0.5) + self.__border_width__
         half_width = int(self.__heading_text__[360][1][0] * 3.5)
         self.__heading_text_box_lines__ = [
             [self.__center_x__ - half_width,
@@ -521,7 +520,8 @@ class RollIndicator(object):
             pitch_direction = '+'
         attitude_text = "{0}{1:3} | {2:3}".format(pitch_direction, pitch, roll)
 
-        roll_texture = self.__font__.render(attitude_text, True, display.BLACK, display.WHITE)
+        roll_texture = self.__font__.render(
+            attitude_text, True, display.BLACK, display.WHITE)
         texture_size = roll_texture.get_size()
         text_half_width, text_half_height = texture_size
         text_half_width = int(text_half_width / 2)
@@ -547,30 +547,21 @@ class AdsbElement(object):
         self.__width__ = framebuffer_size[0]
 
     def __get_distance_string__(self, distance):
-        sm = "statute"
-        nm = "knots"
-        metric = "metric"
+        """
+        Gets the distance string for display using the units
+        from the configuration.
 
-        units = self.__configuration__.__get_config_value__(
-            Configuration.DISTANCE_UNITS_KEY, sm)
+        Arguments:
+            distance {float} -- The distance... straight from the GDL90 which means FEET
 
-        if units is not metric:
-            if distance < imperial_nearby:
-                return "{0:.0f}".format(distance) + "'"
+        Returns:
+            string -- The distance in a handy string for display.
+        """
 
-            if units is nm:
-                return "{0:.1f}NM".format(distance / feet_to_nm)
+        display_units = self.__configuration__.__get_config_value__(
+            Configuration.DISTANCE_UNITS_KEY, units.STATUTE)
 
-            return "{0:.1f}SM".format(distance / feet_to_sm)
-        else:
-            conversion = distance / feet_to_km
-
-            if conversion > 0.5:
-                return "{0:.1f}km".format(conversion)
-
-            return "{0:.1f}m".format(distance / feet_to_m)
-
-        return "{0:.0f}'".format(distance)
+        return units.get_distance_string(display_units, distance)
 
     def __get_traffic_projection__(self, orientation, traffic):
         """
@@ -626,15 +617,18 @@ class AdsbElement(object):
         """
 
         size = int(self.__height__ * scale)
-        bug_vertical_offset = self.__font__.get_height() << 1 # int(self.__height__ * 0.25)
+        bug_vertical_offset = self.__font__.get_height() << 1  # int(self.__height__ * 0.25)
 
         below_reticle = [
-            [center_x - (size >> 2), self.__height__ - size - bug_vertical_offset],
+            [center_x - (size >> 2), self.__height__ -
+             size - bug_vertical_offset],
             [center_x, self.__height__ - bug_vertical_offset],
-            [center_x + (size >> 2), self.__height__ - size - bug_vertical_offset]
+            [center_x + (size >> 2), self.__height__ -
+             size - bug_vertical_offset]
         ]
 
-        return below_reticle, below_reticle[2][1] # self.__height__ - size - bug_vertical_offset
+        # self.__height__ - size - bug_vertical_offset
+        return below_reticle, below_reticle[2][1]
 
     def get_onscreen_reticle(self, center_x, center_y, scale):
         size = int(self.__height__ * scale)
@@ -698,7 +692,8 @@ class AdsbElement(object):
         additional_info_textures = [texture]
         widest_texture = text_width
         for additional_text in additional_info_text:
-            info_texture = HudDataCache.get_cached_text_texture(additional_text, self.__font__)
+            info_texture = HudDataCache.get_cached_text_texture(
+                additional_text, self.__font__)
             additional_info_textures.append(info_texture)
             info_size_x, info_size_y = info_texture.get_size()
             if widest_texture < info_size_x:
@@ -708,28 +703,30 @@ class AdsbElement(object):
 
         info_position_y = reticle_edge_positon_y - \
             int((len(additional_info_textures) * info_spacing) * text_height)
-        
+
         edge_left = (center_x - (widest_texture >> 1))
         edge_right = (center_x + (widest_texture >> 1))
 
         if edge_left < 0:
             edge_right += math.fabs(edge_left)
             edge_left = 0
-        
+
         if edge_right > self.__framebuffer_size__[0]:
             diff = edge_right - self.__framebuffer_size__[0]
             edge_left -= diff
             edge_right = self.__framebuffer_size__[0]
-        
+
         pixel_border_size = 4
-        fill_top_left = [edge_left - pixel_border_size, info_position_y - pixel_border_size]
+        fill_top_left = [edge_left - pixel_border_size,
+                         info_position_y - pixel_border_size]
         fill_top_right = [edge_right + pixel_border_size, fill_top_left[1]]
-        fill_bottom_right = [fill_top_right[0], info_position_y + pixel_border_size + int((len(additional_info_text) + 1) * info_spacing * text_height)]
+        fill_bottom_right = [fill_top_right[0], info_position_y + pixel_border_size +
+                             int((len(additional_info_text) + 1) * info_spacing * text_height)]
         fill_bottom_left = [fill_top_left[0], fill_bottom_right[1]]
 
         pygame.draw.polygon(framebuffer, display.YELLOW,
                             [fill_top_left, fill_top_right, fill_bottom_right, fill_bottom_left])
-        
+
         pygame.draw.lines(framebuffer,
                           display.BLACK, True, [fill_top_left, fill_top_right, fill_bottom_right, fill_bottom_left], 6)
 
@@ -840,10 +837,11 @@ class AdsbTargetBugs(AdsbElement):
         for traffic_report in traffic_bug_reports:
             if traffic_report.distance > imperial_occlude:
                 continue
-            
+
             try:
-                altitude_delta = int((traffic_report.altitude - orientation.alt) / 100.0)
-                
+                altitude_delta = int(
+                    (traffic_report.altitude - orientation.alt) / 100.0)
+
                 # TEST - Ignore stuff crazy separated
                 if math.fabs(altitude_delta) > 50:
                     continue
@@ -871,6 +869,7 @@ class AdsbTargetBugs(AdsbElement):
                                         target_bug_scale,
                                         traffic_report.is_on_ground())
         self.task_timer.stop()
+
 
 class AdsbTrafficListing(AdsbElement):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, configuration):
@@ -904,7 +903,7 @@ class AdsbTrafficListing(AdsbElement):
             bearing = report[1]
             distance_text = report[2]
             altitude = report[3]
-            iaco = report[4]
+            icao = report[4]
 
             # if self.__show_list__:
             traffic_report = "{0} {1} {2} {3}".format(
@@ -912,7 +911,7 @@ class AdsbTrafficListing(AdsbElement):
                 bearing.rjust(3),
                 distance_text.rjust(max_distance_length),
                 altitude.rjust(max_altitude_length))
-            out_padded_reports.append((iaco, traffic_report))
+            out_padded_reports.append((icao, traffic_report))
 
         return out_padded_reports
 
@@ -955,7 +954,7 @@ class AdsbTrafficListing(AdsbElement):
                 max_distance_length = distance_length
 
             pre_padded_text.append(
-                [identifier, bearing_text, distance_text, altitude_text, traffic.iaco_address])
+                [identifier, bearing_text, distance_text, altitude_text, traffic.icao_address])
         return max_identifier_length, max_distance_length, max_altitude_length
 
     def render(self, framebuffer, orientation):
@@ -981,10 +980,11 @@ class AdsbTrafficListing(AdsbElement):
 
         if len(padded_traffic_reports) == 0:
             framebuffer.blit(HudDataCache.get_cached_text_texture("NO TRAFFIC", self.__font__),
-                (x_pos, y_pos))
+                             (x_pos, y_pos))
 
         for identifier, traffic_report in padded_traffic_reports:
-            traffic_text_texture = HudDataCache.get_cached_text_texture(traffic_report, self.__font__)
+            traffic_text_texture = HudDataCache.get_cached_text_texture(
+                traffic_report, self.__font__)
 
             framebuffer.blit(
                 traffic_text_texture, (x_pos, y_pos))
@@ -1022,7 +1022,7 @@ class AdsbOnScreenReticles(AdsbElement):
             # Do not render reticles for things to far away
             if traffic.distance > imperial_occlude:
                 continue
-            
+
             if traffic.is_on_ground():
                 continue
 
@@ -1121,8 +1121,8 @@ class AdsbOnScreenReticles(AdsbElement):
 
 
 if __name__ == '__main__':
-    for distance in range(0, int(2.5 * feet_to_sm), int(feet_to_sm / 10.0)):
-        print "{0}' -> {1}".format(distance, get_reticle_size(distance))
+    for distance in range(0, int(2.5 * units.feet_to_sm), int(units.feet_to_sm / 10.0)):
+        print("{0}' -> {1}".format(distance, get_reticle_size(distance)))
 
     heading = 327
     pitch = 0
@@ -1131,7 +1131,8 @@ if __name__ == '__main__':
     altitude_delta = 1000
     pixels_per_degree = 10
     for bearing in range(0, 360, 10):
-        print "Bearing {0} -> {1}px".format(bearing, get_heading_bug_x(heading, bearing, 2.2222222))
+        print("Bearing {0} -> {1}px".format(bearing,
+                                            get_heading_bug_x(heading, bearing, 2.2222222)))
         x, y = get_onscreen_traffic_projection__(
             heading, pitch, roll, bearing, distance, altitude_delta, pixels_per_degree)
-        print "    {0}, {1}".format(x + 400, y + 240)
+        print("    {0}, {1}".format(x + 400, y + 240))

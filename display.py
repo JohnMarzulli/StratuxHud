@@ -5,9 +5,11 @@ Initializes the display, and holds common color values.
 """
 
 import os
-import sys
 import random
+import sys
+
 import pygame
+
 import lib.local_debug as local_debug
 
 # The SunFounder 5" TFT

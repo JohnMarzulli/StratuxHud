@@ -1,23 +1,25 @@
 #!/usr/bin/env python
 
-import math
-import json
-import os
-import sys
-import random
 import argparse
 import datetime
-import requests
+import json
+import math
+import os
+import random
+import sys
+
 import pygame
+import requests
+
 import display
-import traffic
-import lib.utilities as utilities
-import lib.local_debug as local_debug
-from configuration import *
-from aircraft import Aircraft
 import hud_elements
-from lib.task_timer import TaskTimer
+import lib.local_debug as local_debug
+import lib.utilities as utilities
+import traffic
+from aircraft import Aircraft
+from configuration import *
 from lib.recurring_task import RecurringTask
+from lib.task_timer import TaskTimer
 
 # TODO - Add the G-Meter
 # TODO - Disable functionality based on the enabled StratuxCapabilities
@@ -46,7 +48,7 @@ class HeadsUpDisplay(object):
             requests.Session().post(url, timeout=2)
         except:
             pass
-    
+
     def __shutdown_stratux__(self):
         url = "http://{0}/shutdown".format(
             self.__configuration__.stratux_address())
@@ -92,22 +94,22 @@ class HeadsUpDisplay(object):
                         if not local_debug.is_debug():
                             self.__shutdown_stratux__()
                         return False
-                    
+
                     if event.key in [pygame.K_KP_PLUS, pygame.K_PLUS]:
                         self.__view_index__ += 1
-                    
+
                     if event.key in [pygame.K_KP_MINUS, pygame.K_MINUS]:
                         self.__view_index__ -= 1
 
                     if event.key in [pygame.K_r]:
                         self.render_perf.reset()
                         self.orient_perf.reset()
-                    
+
                     if event.key in [pygame.K_BACKSPACE]:
                         self.__level_ahrs__()
-                    
+
                     if event.key in [pygame.K_EQUALS, pygame.K_KP_EQUALS]:
-                        self.__render_perf__ = not self.__render_perf__
+                        self.__should_render_perf__ = not self.__should_render_perf__
 
             if self.__view_index__ >= (len(self.__hud__views__)):
                 self.__view_index__ = 0
@@ -126,7 +128,7 @@ class HeadsUpDisplay(object):
             if self.__aircraft__.is_ahrs_available():
                 # Order of drawing is important
                 # The pitch lines are drawn before the other
-                # referenence information so they will be pushed to the
+                # reference information so they will be pushed to the
                 # background.
                 # The reference text is also intentionally
                 # drawn with a black background
@@ -150,7 +152,7 @@ class HeadsUpDisplay(object):
 
             self.render_perf.stop()
 
-            if self.__render_perf__ or len(self.__hud__views__[self.__view_index__]) == 0:
+            if self.__should_render_perf__ or len(self.__hud__views__[self.__view_index__]) == 0:
                 debug_status_left = int(self.__width__ >> 1)
                 debug_status_top = int(self.__height__ * 0.2)
                 render_perf_text = self.render_perf.to_string()
@@ -164,13 +166,15 @@ class HeadsUpDisplay(object):
                 else:
                     render_perf_text = render_perf_text.ljust(orient_len)
 
-                self.__render_text__(render_perf_text, display.BLACK, debug_status_left, debug_status_top, 0, display.YELLOW)
+                self.__render_text__(render_perf_text, display.BLACK,
+                                     debug_status_left, debug_status_top, 0, display.YELLOW)
                 debug_status_top += int(self.__font__.get_height() * 1.1)
-                self.__render_text__(orient_perf_text, display.BLACK, debug_status_left, debug_status_top, 0, display.YELLOW)
+                self.__render_text__(orient_perf_text, display.BLACK,
+                                     debug_status_left, debug_status_top, 0, display.YELLOW)
         finally:
             # Change the frame buffer
             flipped = pygame.transform.flip(
-                self.__backpage_framebuffer__, self.__configuration__.flip_horizonal, self.__configuration__.flip_vertical)
+                self.__backpage_framebuffer__, self.__configuration__.flip_horizontal, self.__configuration__.flip_vertical)
             self.__backpage_framebuffer__.blit(flipped, [0, 0])
             pygame.display.flip()
             clock.tick(MAX_FRAMERATE)
@@ -214,7 +218,7 @@ class HeadsUpDisplay(object):
         pygame.mouse.set_visible(False)
 
         pygame.font.init()
-        self.__render_perf__ = False
+        self.__should_render_perf__ = False
 
         # ",,"
         font_name = "consolas,monaco,courier,arial,helvetica"
@@ -239,14 +243,13 @@ class HeadsUpDisplay(object):
         self.__ahrs_not_available_element__ = hud_elements.AhrsNotAvailable(
             HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__))
 
-
         bottom_compass_element = hud_elements.CompassAndHeadingBottomElement(
-                HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__, (self.__width__, self.__height__))
+            HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__, (self.__width__, self.__height__))
         adsb_target_bug_element = hud_elements.AdsbTargetBugs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__,
-                                     (self.__width__, self.__height__), self.__configuration__)
+                                                              (self.__width__, self.__height__), self.__configuration__)
         adsb_onscreen_reticle_element = hud_elements.AdsbOnScreenReticles(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
-                                              self.__font__, (self.__width__, self.__height__), self.__configuration__)
-        
+                                                                          self.__font__, (self.__width__, self.__height__), self.__configuration__)
+
         traffic_only_view = [
             bottom_compass_element,
             adsb_target_bug_element,
@@ -255,7 +258,7 @@ class HeadsUpDisplay(object):
 
         traffic_listing_view = [
             hud_elements.AdsbTrafficListing(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__,
-                                     (self.__width__, self.__height__), self.__configuration__)
+                                            (self.__width__, self.__height__), self.__configuration__)
         ]
 
         ahrs_view = [
@@ -291,14 +294,14 @@ class HeadsUpDisplay(object):
         self.__backpage_framebuffer__.blit(texture, ((
             self.__width__ >> 1) - (text_width >> 1), (self.__height__ >> 1) - (text_height >> 1)))
         flipped = pygame.transform.flip(
-            self.__backpage_framebuffer__, self.__configuration__.flip_horizonal, self.__configuration__.flip_vertical)
+            self.__backpage_framebuffer__, self.__configuration__.flip_horizontal, self.__configuration__.flip_vertical)
         self.__backpage_framebuffer__.blit(flipped, [0, 0])
         pygame.display.flip()
 
     def __render_perf__(self):
-        print '--------------'
+        print('--------------')
         for element in self.__hud__views__[self.__view_index__]:
-            print element.task_timer.to_string()
+            print(element.task_timer.to_string())
 
 
 if __name__ == '__main__':

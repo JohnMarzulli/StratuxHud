@@ -16,7 +16,7 @@ class TaskTimer(object):
         self.average = 0.0
         self.is_running = False
         self.task_name = task_name
-    
+
     def reset(self):
         self.stop()
         self.fastest = None
@@ -25,7 +25,6 @@ class TaskTimer(object):
         self.__running_average__ = Queue.Queue(self.__max_running_average__)
         self.__running_sum__ = 0.0
         self.__running_average_count__ = 0.0
-
 
     def start(self):
         self.stop()
@@ -36,7 +35,7 @@ class TaskTimer(object):
     def stop(self):
         if not self.is_running:
             return
-        
+
         self.is_running = False
 
         self.last = (datetime.datetime.now() -
@@ -68,9 +67,10 @@ class TaskTimer(object):
         last_text = "{0:.1f}".format(self.last).rjust(slowest_length)
         average_text = "{0:.1f}".format(self.average).rjust(slowest_length)
         return "{0}: {1}, m={2}, s={3}".format(self.task_name,
-                                                last_text,
-                                                average_text,
-                                                slowest_text)
+                                               last_text,
+                                               average_text,
+                                               slowest_text)
+
 
 if __name__ == '__main__':
     timer = TaskTimer("test")
@@ -79,4 +79,4 @@ if __name__ == '__main__':
         timer.start()
         time.sleep(i / 10.0)
         timer.stop()
-        print timer.to_string()
+        print(timer.to_string())
