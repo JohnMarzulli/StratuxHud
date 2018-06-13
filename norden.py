@@ -105,7 +105,7 @@ def get_altitude(time):
     altitude = ((terminal_velocity * terminal_velocity) / gravity) * \
         math.log1p(math.cosh((gravity * time) / terminal_velocity))
 
-    return units.get_meters_from_feet(altitude)
+    return altitude
 
 
 def get_distance_traveled(current_speed, time_slice):
@@ -185,9 +185,9 @@ def get_time_to_impact(altitude, current_speed=0, total_time=0, time_slice=0.1):
 
 if __name__ == '__main__':
     flour_sack_weight = 0.22
-    flour_sack_k = 0.03
+    flour_sack_k = 0.002
 
-    for test_altitude in (0, 25, 50, 100, 200, 500):
+    for test_altitude in (0, 25, 50, 100, 200, 400, 500):
         time_to_impact = get_time_to_impact(
             units.get_meters_from_feet(test_altitude))
         free_fall_time = get_free_fall_time(units.get_meters_from_feet(
