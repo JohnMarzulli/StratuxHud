@@ -97,7 +97,7 @@ def get_altitude(time):
         time {float} -- The number of seconds to calculate the fall for.
 
     Returns:
-        float -- The number of feet traveled in the given amount of time.
+        float -- The number of meters traveled in the given amount of time.
     """
 
     # https://en.wikipedia.org/wiki/Free_fall#Uniform_gravitational_field_with_air_resistance
@@ -105,7 +105,7 @@ def get_altitude(time):
     altitude = ((terminal_velocity * terminal_velocity) / gravity) * \
         math.log1p(math.cosh((gravity * time) / terminal_velocity))
 
-    return altitude
+    return units.get_meters_from_feet(altitude)
 
 
 def get_distance_traveled(current_speed, time_slice):
@@ -199,8 +199,8 @@ if __name__ == '__main__':
         print('Free_fall      :{0}'.format(free_fall_time))
         print('Alt(time)      :{0}'.format(
             units.get_feet_from_meters(get_altitude(time_to_impact))))
-        print('Alt(Free_fall) :{0}'.format(
-            units.get_feet_from_meters(get_altitude(free_fall_time))))
+        print('Alt(Free_fall) :{0}'.format(units.get_feet_from_meters(
+            get_altitude(free_fall_time))))
 
     altitude_feet = 200
     ground_speed_mph = 60  # MPH
