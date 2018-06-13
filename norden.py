@@ -1,4 +1,5 @@
 # https://www.omnicalculator.com/physics/free-fall-air-resistance
+# https://keisan.casio.com/exec/system/1231475371
 #
 # Advance mode
 # Altitude 60m
@@ -23,56 +24,62 @@ import units
 import configuration
 
 terminal_velocity = 30  # m/s
-gravity = 9.8  # m/s^2
+gravity = 9.80665  # m/s^2
 drag_scalar = 0.7
 
 
-def get_bearing(starting_lat, starting_lon, lat2, lon2):
+def get_bearing(starting_pos, ending_pos):
     """
     Returns the bearing to the second GPS coord from the first.
 
     Arguments:
-        starting_lat {float} -- The starting latitude.
-        starting_lon {float} -- The starting longitude.
-        lat2 {float} -- The destination latitude.
-        lon2 {float} -- The destination longitude.
+        starting_pos {(float,float)} -- The starting lat/long
+        ending_pos {(float,float)} -- The ending lat/long
 
     Returns:
         float -- The bearing to lat2/lon2
     """
 
-    bearing = math.atan2(math.sin(lon2 - starting_lon) * math.cos(lat2), math.cos(starting_lat)
-                         * math.sin(lat2) - math.sin(starting_lat) * math.cos(lat2) * math.cos(lon2 - starting_lon))
+    lat2 = starting_pos[0]
+    lon2 = starting_pos[1]
+
+    lat1 = ending_pos[0]
+    lon1 = ending_pos[1]
+
+    bearing = math.atan2(math.sin(lon2 - lon1) * math.cos(lat2), math.cos(lat1)
+                         * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(lon2 - lon1))
     bearing = math.degrees(bearing)
     bearing = (bearing + 360) % 360
 
     return bearing
 
 
-def get_distance(starting_lat, starting_lon, lat2, lon2):
+def get_distance(starting_pos, ending_pos):
     """
     Returns the distance to the traffic from the given point.
 
-    starting_lat {float} -- The starting latitude.
-        starting_lon {float} -- The starting longitude.
-        lat2 {float} -- The destination latitude.
-        lon2 {float} -- The destination longitude.
+    Arguments:
+        starting_pos {(float,float)} -- The starting lat/long
+        ending_pos {(float,float)} -- The ending lat/long
 
     Returns:
         float -- The distance in STATUTE MILES between the given GPS points.
     """
 
-    lon1 = starting_lon
-    lat1 = starting_lat
+    lat1 = starting_pos[0]
+    lon1 = starting_pos[1]
+
+    lat2 = ending_pos[0]
+    lon2 = ending_pos[1]
 
     # convert decimal degrees to radians
     lon1, lat1, lon2, lat2 = map(math.radians, [lon1, lat1, lon2, lat2])
 
     # haversine formula
-    dlon = lon2 - lon1
-    dlat = lat2 - lat1
-    a = math.sin(dlat / 2)**2 + math.cos(lat1) * \
-        math.cos(lat2) * math.sin(dlon / 2)**2
+    delta_lon = lon2 - lon1
+    delta_lat = lat2 - lat1
+    a = math.sin(delta_lat / 2) ** 2 + math.cos(lat1) * \
+        math.cos(lat2) * math.sin(delta_lon / 2) ** 2
     c = 2 * math.asin(math.sqrt(a))
     # Radius of earth. Can change with units
     r = configuration.EARTH_RADIUS_STATUTE_MILES
@@ -133,6 +140,10 @@ def get_time_to_distance(distance, current_speed):
     return distance / current_speed
 
 
+def get_free_fall_time(meters, mass, k):
+    return math.sqrt(mass/(gravity * k)) * math.acosh(math.e ** ((meters * k)/mass))
+
+
 def get_time_to_impact(altitude, current_speed=0, total_time=0, time_slice=0.1):
     """
     Attempts to figure out how long it will take for something to
@@ -173,17 +184,57 @@ def get_time_to_impact(altitude, current_speed=0, total_time=0, time_slice=0.1):
 
 
 if __name__ == '__main__':
+    flour_sack_weight = 0.22
+    flour_sack_k = 0.03
+
     for test_altitude in (0, 25, 50, 100, 200, 500):
-        time_to_impact = get_time_to_impact(test_altitude)
-        altitude = get_altitude(time_to_impact)
+        time_to_impact = get_time_to_impact(
+            units.get_meters_from_feet(test_altitude))
+        free_fall_time = get_free_fall_time(units.get_meters_from_feet(
+            test_altitude), flour_sack_weight, flour_sack_k)
 
         print('-----------')
-        print('INPUT: ' + str(test_altitude))
-        print("Time:  " + str(time_to_impact))
-        print("Alt:   " + str(altitude))
+        print('INPUT          :{0}'.format(test_altitude))
+        print('Time           :{0}'.format(time_to_impact))
+        print('Free_fall      :{0}'.format(free_fall_time))
+        print('Alt(time)      :{0}'.format(
+            units.get_feet_from_meters(get_altitude(time_to_impact))))
+        print('Alt(Free_fall) :{0}'.format(
+            units.get_feet_from_meters(get_altitude(free_fall_time))))
 
     altitude_feet = 200
     ground_speed_mph = 60  # MPH
     ground_speed_ms = units.get_meters_per_second_from_mph(ground_speed_mph)
 
     print(ground_speed_ms)
+
+    target_center_position = (48.160464, -122.166409)
+    runway_number_position = (48.155973, -122.157582)
+    distance_miles = get_distance(
+        target_center_position, runway_number_position)
+    distance_meters = units.get_meters_from_feet(
+        units.get_feet_from_miles(distance_miles))
+    time_to_target = get_time_to_distance(distance_meters, ground_speed_ms)
+    time_to_impact = get_time_to_impact(
+        units.get_meters_from_feet(altitude_feet))
+    time_until_drop = time_to_target - time_to_impact
+    target_altitude_for_drop = units.get_feet_from_meters(
+        get_altitude(time_to_target))
+    bearing_to_target = get_bearing(
+        runway_number_position, target_center_position)
+    time_to_impact_from_ideal_current_altitude = get_time_to_impact(
+        target_altitude_for_drop)
+
+    print("Free_fall:{0}".format(get_free_fall_time(
+        units.get_meters_from_feet(altitude_feet), flour_sack_weight, flour_sack_k)))
+    print("Distance(miles):{0}".format(distance_miles))
+    print("Distance(meters):{0}".format(distance_meters))
+    print("Time to target:{0}".format(time_to_target))
+    print("Time to impact:{0}".format(time_to_impact))
+    print("Time until drop:{0}".format(time_until_drop))
+    print("Distance(miles):{0}".format(distance_miles))
+    print("Desired altitude for distance:{0}".format(
+        units.get_feet_from_meters(target_altitude_for_drop)))
+    print("Bearing to target:{0}".format(bearing_to_target))
+    print("Time to drop from ideal current altitude:{0}".format(
+        time_to_impact_from_ideal_current_altitude))
