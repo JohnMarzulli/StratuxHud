@@ -4,8 +4,8 @@ import pickle
 import display
 from heads_up_display import HeadsUpDisplay
 
-__sin_radians_by_degrees__ = {}
-__cos_radians_by_degrees__ = {}
+SIN_RADIANS_BY_DEGREES = {}
+COS_RADIANS_BY_DEGREES = {}
 
 __width__ = 800
 __height__ = 480
@@ -22,8 +22,8 @@ saved_ah_filename = 'ah.pickle'
 
 for degrees in range(-360, 361):
     radians = math.radians(degrees)
-    __sin_radians_by_degrees__[degrees] = math.sin(radians)
-    __cos_radians_by_degrees__[degrees] = math.cos(radians)
+    SIN_RADIANS_BY_DEGREES[degrees] = math.sin(radians)
+    COS_RADIANS_BY_DEGREES[degrees] = math.cos(radians)
 
 
 def __build_ah_lookup__():
@@ -77,12 +77,12 @@ def __get_line_coords__(pitch, roll, reference_angle):
     roll_delta = 90 - roll
 
     center_x = int(
-        (ahrs_center_x - (pitch_offset * __cos_radians_by_degrees__[roll_delta])) + 0.5)
+        (ahrs_center_x - (pitch_offset * COS_RADIANS_BY_DEGREES[roll_delta])) + 0.5)
     center_y = int(
-        (ahrs_center_y - (pitch_offset * __sin_radians_by_degrees__[roll_delta])) + 0.5)
+        (ahrs_center_y - (pitch_offset * SIN_RADIANS_BY_DEGREES[roll_delta])) + 0.5)
 
-    x_len = int((length * __cos_radians_by_degrees__[roll]) + 0.5)
-    y_len = int((length * __sin_radians_by_degrees__[roll]) + 0.5)
+    x_len = int((length * COS_RADIANS_BY_DEGREES[roll]) + 0.5)
+    y_len = int((length * SIN_RADIANS_BY_DEGREES[roll]) + 0.5)
 
     half_x_len = x_len >> 1
     half_y_len = y_len >> 1

@@ -12,14 +12,18 @@ import pygame
 import requests
 
 import display
-import hud_elements
 import lib.local_debug as local_debug
 import lib.utilities as utilities
 import traffic
+import views.hud_elements as hud_elements
 from aircraft import Aircraft
 from configuration import *
 from lib.recurring_task import RecurringTask
 from lib.task_timer import TaskTimer
+from views import (adsb_on_screen_reticles, adsb_target_bugs,
+                   adsb_traffic_listing, ahrs_not_available, altitude,
+                   artificial_horizon, compass_and_heading_bottom_element,
+                   level_reference, roll_indicator, skid_and_gs)
 
 # TODO - Add the G-Meter
 # TODO - Disable functionality based on the enabled StratuxCapabilities
@@ -84,38 +88,8 @@ class HeadsUpDisplay(object):
         """
 
         try:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    utilities.shutdown()
-                    return False
-                if event.type == pygame.KEYUP:
-                    if event.key in [pygame.K_q, pygame.K_ESCAPE]:
-                        utilities.shutdown(0)
-                        if not local_debug.is_debug():
-                            self.__shutdown_stratux__()
-                        return False
-
-                    if event.key in [pygame.K_KP_PLUS, pygame.K_PLUS]:
-                        self.__view_index__ += 1
-
-                    if event.key in [pygame.K_KP_MINUS, pygame.K_MINUS]:
-                        self.__view_index__ -= 1
-
-                    if event.key in [pygame.K_r]:
-                        self.render_perf.reset()
-                        self.orient_perf.reset()
-
-                    if event.key in [pygame.K_BACKSPACE]:
-                        self.__level_ahrs__()
-
-                    if event.key in [pygame.K_EQUALS, pygame.K_KP_EQUALS]:
-                        self.__should_render_perf__ = not self.__should_render_perf__
-
-            if self.__view_index__ >= (len(self.__hud__views__)):
-                self.__view_index__ = 0
-
-            if self.__view_index__ < 0:
-                self.__view_index__ = (len(self.__hud__views__) - 1)
+            if not self.__handle_input__():
+                return False
 
             self.orient_perf.start()
             orientation = self.__aircraft__.get_orientation()
@@ -220,7 +194,6 @@ class HeadsUpDisplay(object):
         pygame.font.init()
         self.__should_render_perf__ = False
 
-        # ",,"
         font_name = "consolas,monaco,courier,arial,helvetica"
 
         font_size_std = int(self.__height__ / 10.0)
@@ -240,15 +213,15 @@ class HeadsUpDisplay(object):
         self.__pixels_per_degree_y__ = (
             self.__height__ / HeadsUpDisplay.DEGREES_OF_PITCH) * HeadsUpDisplay.PITCH_DEGREES_DISPLAY_SCALER
 
-        self.__ahrs_not_available_element__ = hud_elements.AhrsNotAvailable(
+        self.__ahrs_not_available_element__ = ahrs_not_available.AhrsNotAvailable(
             HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__))
 
-        bottom_compass_element = hud_elements.CompassAndHeadingBottomElement(
+        bottom_compass_element = compass_and_heading_bottom_element.CompassAndHeadingBottomElement(
             HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__, (self.__width__, self.__height__))
-        adsb_target_bug_element = hud_elements.AdsbTargetBugs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__,
-                                                              (self.__width__, self.__height__), self.__configuration__)
-        adsb_onscreen_reticle_element = hud_elements.AdsbOnScreenReticles(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
-                                                                          self.__font__, (self.__width__, self.__height__), self.__configuration__)
+        adsb_target_bug_element = adsb_target_bugs.AdsbTargetBugs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__,
+                                                                  (self.__width__, self.__height__), self.__configuration__)
+        adsb_onscreen_reticle_element = adsb_on_screen_reticles.AdsbOnScreenReticles(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
+                                                                                     self.__font__, (self.__width__, self.__height__), self.__configuration__)
 
         traffic_only_view = [
             bottom_compass_element,
@@ -257,21 +230,21 @@ class HeadsUpDisplay(object):
         ]
 
         traffic_listing_view = [
-            hud_elements.AdsbTrafficListing(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__,
-                                            (self.__width__, self.__height__), self.__configuration__)
+            adsb_traffic_listing.AdsbTrafficListing(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__,
+                                                    (self.__width__, self.__height__), self.__configuration__)
         ]
 
         ahrs_view = [
-            hud_elements.LevelReference(
+            level_reference.LevelReference(
                 HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__, (self.__width__, self.__height__)),
-            hud_elements.ArtificialHorizon(
+            artificial_horizon.ArtificialHorizon(
                 HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__, (self.__width__, self.__height__)),
             bottom_compass_element,
-            hud_elements.Altitude(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
+            altitude.Altitude(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
+                              self.__detail_font__, (self.__width__, self.__height__)),
+            skid_and_gs.SkidAndGs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
                                   self.__detail_font__, (self.__width__, self.__height__)),
-            hud_elements.SkidAndGs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
-                                   self.__detail_font__, (self.__width__, self.__height__)),
-            hud_elements.RollIndicator(
+            roll_indicator.RollIndicator(
                 HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__)),
         ]
 
@@ -302,6 +275,63 @@ class HeadsUpDisplay(object):
         print('--------------')
         for element in self.__hud__views__[self.__view_index__]:
             print(element.task_timer.to_string())
+
+    def __handle_input__(self):
+        for event in pygame.event.get():
+            if not self.__handle_key_event__(event):
+                return False
+            
+        self.__clamp_view__()
+
+        return True
+    
+    def __handle_key_event__(self, event):
+        if event.type == pygame.QUIT:
+            utilities.shutdown()
+            return False
+
+        if event.type != pygame.KEYUP:
+            return True
+
+        if event.key in [pygame.K_ESCAPE]:
+            utilities.shutdown(0)
+            if not local_debug.is_debug():
+                self.__shutdown_stratux__()
+
+            return False
+        
+        # Quit to terminal only.
+        if event.key in [pygame.K_q]:
+            return False
+
+        if event.key in [pygame.K_KP_PLUS, pygame.K_PLUS]:
+            self.__view_index__ += 1
+
+        if event.key in [pygame.K_KP_MINUS, pygame.K_MINUS]:
+            self.__view_index__ -= 1
+
+        if event.key in [pygame.K_r]:
+            self.render_perf.reset()
+            self.orient_perf.reset()
+
+        if event.key in [pygame.K_BACKSPACE]:
+            self.__level_ahrs__()
+
+        if event.key in [pygame.K_EQUALS, pygame.K_KP_EQUALS]:
+            self.__should_render_perf__ = not self.__should_render_perf__
+        
+        return True
+
+    def __clamp_view__(self):
+        """
+        Makes sure that the view index is within bounds.
+        """
+
+        if self.__view_index__ >= (len(self.__hud__views__)):
+            self.__view_index__ = 0
+
+        if self.__view_index__ < 0:
+            self.__view_index__ = (len(self.__hud__views__) - 1)
 
 
 if __name__ == '__main__':
