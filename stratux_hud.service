@@ -3,7 +3,7 @@
 # sudo systemctl enable stratux_hud.service
 
 [Unit]
-Description=The Hangar Buddy piWarmer Service
+Description=Heads Up Display Service
 
 [Service]
 ExecStart=/usr/bin/python /home/pi/src/stratux_hud/stratux_hud.py
