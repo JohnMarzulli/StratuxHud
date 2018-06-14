@@ -1,6 +1,6 @@
 import pygame
 
-import display
+from lib.display import RED
 from lib.task_timer import TaskTimer
 
 
@@ -13,7 +13,7 @@ class AhrsNotAvailable(object):
 
         self.__not_available_lines__.append([[0, 0], [width, height]])
         self.__not_available_lines__.append([[0, height], [width, 0]])
-        self.__na_color__ = display.RED
+        self.__na_color__ = RED
         self.__na_line_width__ = 20
 
     def render(self, framebuffer, orientation):
@@ -28,3 +28,7 @@ class AhrsNotAvailable(object):
         pygame.draw.line(framebuffer, self.__na_color__, self.__not_available_lines__[
                          1][0], self.__not_available_lines__[1][1], self.__na_line_width__)
         self.task_timer.stop()
+
+if __name__ == '__main__':
+    import hud_elements
+    hud_elements.run_hud_element(AhrsNotAvailable)

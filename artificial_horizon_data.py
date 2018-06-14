@@ -1,7 +1,6 @@
 import math
 import pickle
 
-import display
 from heads_up_display import HeadsUpDisplay
 
 SIN_RADIANS_BY_DEGREES = {}

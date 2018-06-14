@@ -1,6 +1,6 @@
 import pygame
 
-import display
+from lib.display import *
 from lib.task_timer import TaskTimer
 
 
@@ -32,5 +32,5 @@ class LevelReference(object):
         self.task_timer.start()
         for line in self.level_reference_lines:
             pygame.draw.lines(framebuffer,
-                              display.WHITE, False, line, 6)
+                              WHITE, False, line, 6)
         self.task_timer.stop()

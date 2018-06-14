@@ -1,6 +1,5 @@
 import pygame
 
-import display
 from lib.task_timer import TaskTimer
 from adsb_element import AdsbElement
 from hud_elements import *

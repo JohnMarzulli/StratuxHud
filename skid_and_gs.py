@@ -1,7 +1,7 @@
 import pygame
 
-import display
 from lib.task_timer import TaskTimer
+from lib.display import *
 
 
 class SkidAndGs(object):
@@ -18,9 +18,13 @@ class SkidAndGs(object):
         self.task_timer.start()
         g_load_text = "{0:.1f}Gs".format(orientation.g_load)
         texture = self.__font__.render(
-            g_load_text, True, display.WHITE, display.BLACK)
+            g_load_text, True, WHITE, BLACK)
         text_width, text_height = texture.get_size()
 
         framebuffer.blit(
             texture, (self.__rhs__ - text_width, self.__text_y_pos__))
         self.task_timer.stop()
+
+if __name__ == '__main__':
+    import hud_elements
+    hud_elements.run_hud_element(SkidAndGs)

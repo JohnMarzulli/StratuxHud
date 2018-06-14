@@ -1,7 +1,7 @@
 import pygame
 
-import display
 from hud_elements import *
+from lib.display import *
 from lib.task_timer import TaskTimer
 
 
@@ -18,7 +18,7 @@ class ArtificialHorizon(object):
 
         for reference_angle in range(-degrees_of_pitch, degrees_of_pitch + 1, 10):
             text = font.render(
-                str(reference_angle), True, display.WHITE, display.BLACK).convert()
+                str(reference_angle), True, WHITE, BLACK).convert()
             size_x, size_y = text.get_size()
             self.__pitch_elements__[reference_angle] = (
                 text, (size_x >> 1, size_y >> 1))
@@ -36,7 +36,7 @@ class ArtificialHorizon(object):
                 continue
 
             pygame.draw.lines(framebuffer,
-                              display.GREEN, False, line_coords, 4)
+                              GREEN, False, line_coords, 4)
 
             text, half_size = self.__pitch_elements__[reference_angle]
             text = pygame.transform.rotate(text, orientation.roll)
@@ -82,3 +82,6 @@ class ArtificialHorizon(object):
         end_y = center_y - half_y_len
 
         return [[int(start_x), int(start_y)], [int(end_x), int(end_y)]], (int(center_x), int(center_y))
+
+if __name__ == '__main__':
+    run_hud_element(ArtificialHorizon)

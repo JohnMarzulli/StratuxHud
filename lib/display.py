@@ -10,7 +10,7 @@ import sys
 
 import pygame
 
-import lib.local_debug as local_debug
+import local_debug
 
 # The SunFounder 5" TFT
 DEFAULT_SCREEN_SIZE = 800, 480

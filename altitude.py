@@ -1,6 +1,5 @@
 import pygame
-
-import display
+from lib.display import *
 from lib.task_timer import TaskTimer
 
 

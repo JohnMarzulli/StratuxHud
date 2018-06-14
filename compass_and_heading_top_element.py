@@ -1,7 +1,7 @@
 import pygame
 
-import display
 from lib.task_timer import TaskTimer
+import lib.display as display
 
 class CompassAndHeadingTopElement(object):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
@@ -36,12 +36,13 @@ class CompassAndHeadingTopElement(object):
 
         self.__heading_text_box_lines__ = [
             [self.__center_x__ - half_width,
-             self.compass_text_y - border_vertical_size],
+             self.compass_text_y + (1.5 * text_height) - border_vertical_size],
             [self.__center_x__ + half_width,
-             self.compass_text_y - border_vertical_size],
+             self.compass_text_y + (1.5 * text_height) - border_vertical_size],
             [self.__center_x__ + half_width,
-             self.compass_text_y + border_vertical_size],
-            [self.__center_x__ - half_width, self.compass_text_y + border_vertical_size]]
+             self.compass_text_y + (1.5 * text_height) + border_vertical_size],
+            [self.__center_x__ - half_width,
+             self.compass_text_y + (1.5 * text_height) + border_vertical_size]]
 
         self.__heading_strip_offset__ = {}
         for heading in range(0, 181):
@@ -118,7 +119,7 @@ class CompassAndHeadingTopElement(object):
         text_width, text_height = rendered_text.get_size()
 
         framebuffer.blit(
-            rendered_text, (self.__center_x__ - (text_width >> 1), self.compass_text_y + text_height << 1))
+            rendered_text, (self.__center_x__ - (text_width >> 1), text_height << 1))
 
         pygame.draw.lines(framebuffer, display.GREEN, True,
                           self.__heading_text_box_lines__, 2)
@@ -133,3 +134,7 @@ class CompassAndHeadingTopElement(object):
 
         framebuffer.blit(
             rendered_text, (position_x - half_size[0], position_y - half_size[1]))
+
+if __name__ == '__main__':
+    import hud_elements
+    hud_elements.run_hud_element(CompassAndHeadingTopElement)

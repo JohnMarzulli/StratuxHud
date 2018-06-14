@@ -1,6 +1,6 @@
 import pygame
 
-import display
+from lib.display import *
 from compass_and_heading_top_element import CompassAndHeadingTopElement
 from lib.task_timer import TaskTimer
 
@@ -32,7 +32,7 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
             [self.__center_x__ - half_width, self.compass_text_y + border_vertical_size + vertical_alignment_offset]]
 
     def __render_heading_mark__(self, framebuffer, x_pos, heading):
-        pygame.draw.line(framebuffer, display.GREEN,
+        pygame.draw.line(framebuffer, GREEN,
                          [x_pos, self.__line_top__], [x_pos, self.__line_bottom__], self.__border_width__)
 
         self.__render_heading_text__(
@@ -65,12 +65,16 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
             orientation.get_onscreen_projection_display_heading(), int(orientation.gps_heading))
 
         rendered_text = self.__font__.render(
-            heading_text, True, display.BLACK, display.GREEN)
+            heading_text, True, BLACK, GREEN)
         text_width, text_height = rendered_text.get_size()
 
-        pygame.draw.polygon(framebuffer, display.GREEN,
+        pygame.draw.polygon(framebuffer, GREEN,
                             self.__heading_text_box_lines__)
 
         framebuffer.blit(
             rendered_text, (self.__center_x__ - (text_width >> 1), self.compass_text_y))
         self.task_timer.stop()
+
+if __name__ == '__main__':
+    import hud_elements
+    hud_elements.run_hud_element(CompassAndHeadingBottomElement)

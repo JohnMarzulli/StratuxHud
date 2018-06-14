@@ -11,19 +11,25 @@ import sys
 import pygame
 import requests
 
-import display
+import adsb_on_screen_reticles
+import adsb_target_bugs
+import adsb_traffic_listing
+import ahrs_not_available
+import altitude
+import artificial_horizon
+import compass_and_heading_bottom_element
+import hud_elements
+import level_reference
+import lib.display as display
 import lib.local_debug as local_debug
 import lib.utilities as utilities
+import roll_indicator
+import skid_and_gs
 import traffic
-import views.hud_elements as hud_elements
 from aircraft import Aircraft
 from configuration import *
 from lib.recurring_task import RecurringTask
 from lib.task_timer import TaskTimer
-from views import (adsb_on_screen_reticles, adsb_target_bugs,
-                   adsb_traffic_listing, ahrs_not_available, altitude,
-                   artificial_horizon, compass_and_heading_bottom_element,
-                   level_reference, roll_indicator, skid_and_gs)
 
 # TODO - Add the G-Meter
 # TODO - Disable functionality based on the enabled StratuxCapabilities
@@ -236,16 +242,19 @@ class HeadsUpDisplay(object):
 
         ahrs_view = [
             level_reference.LevelReference(
-                HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__, (self.__width__, self.__height__)),
+                HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
+                             self.__detail_font__, (self.__width__, self.__height__)),
             artificial_horizon.ArtificialHorizon(
-                HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__, (self.__width__, self.__height__)),
+                HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
+                             self.__detail_font__, (self.__width__, self.__height__)),
             bottom_compass_element,
             altitude.Altitude(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
                               self.__detail_font__, (self.__width__, self.__height__)),
             skid_and_gs.SkidAndGs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
-                                  self.__detail_font__, (self.__width__, self.__height__)),
+                              self.__detail_font__, (self.__width__, self.__height__)),
             roll_indicator.RollIndicator(
-                HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__)),
+                HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
+                              self.__font__, (self.__width__, self.__height__)),
         ]
 
         blank_view = []
@@ -280,11 +289,11 @@ class HeadsUpDisplay(object):
         for event in pygame.event.get():
             if not self.__handle_key_event__(event):
                 return False
-            
+
         self.__clamp_view__()
 
         return True
-    
+
     def __handle_key_event__(self, event):
         if event.type == pygame.QUIT:
             utilities.shutdown()
@@ -299,7 +308,7 @@ class HeadsUpDisplay(object):
                 self.__shutdown_stratux__()
 
             return False
-        
+
         # Quit to terminal only.
         if event.key in [pygame.K_q]:
             return False
@@ -319,7 +328,7 @@ class HeadsUpDisplay(object):
 
         if event.key in [pygame.K_EQUALS, pygame.K_KP_EQUALS]:
             self.__should_render_perf__ = not self.__should_render_perf__
-        
+
         return True
 
     def __clamp_view__(self):

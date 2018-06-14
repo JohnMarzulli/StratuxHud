@@ -2,7 +2,7 @@ import math
 
 import pygame
 
-import display
+from lib.display import *
 import units
 from configuration import Configuration
 from hud_elements import HudDataCache
@@ -157,10 +157,10 @@ class AdsbElement(object):
         reticle, reticle_edge_positon_y = self.get_below_reticle(
             center_x, target_bug_scale)
 
-        bug_color = display.RED
+        bug_color = RED
 
         if is_on_ground:
-            bug_color = display.BLUE
+            bug_color = BLUE
 
         pygame.draw.polygon(framebuffer, bug_color, reticle)
 
@@ -203,11 +203,11 @@ class AdsbElement(object):
                              int((len(additional_info_text) + 1) * info_spacing * text_height)]
         fill_bottom_left = [fill_top_left[0], fill_bottom_right[1]]
 
-        pygame.draw.polygon(framebuffer, display.YELLOW,
+        pygame.draw.polygon(framebuffer, YELLOW,
                             [fill_top_left, fill_top_right, fill_bottom_right, fill_bottom_left])
 
         pygame.draw.lines(framebuffer,
-                          display.BLACK, True, [fill_top_left, fill_top_right, fill_bottom_right, fill_bottom_left], 6)
+                          BLACK, True, [fill_top_left, fill_top_right, fill_bottom_right, fill_bottom_left], 6)
 
         self.__render_info_text__(
             additional_info_textures, center_x, framebuffer, info_position_y, info_spacing)
@@ -246,7 +246,7 @@ class AdsbElement(object):
             center_y = int(self.__height__ - border_space)
 
         pygame.draw.lines(framebuffer,
-                          display.RED, True, reticle_lines, 4)
+                          RED, True, reticle_lines, 4)
 
         # Move the identifer text away from the reticle
         if center_y < self.__center__[1]:
@@ -255,7 +255,7 @@ class AdsbElement(object):
             text_y = center_y - border_space
 
         rendered_text = self.__font__.render(
-            str(identifier), True, display.YELLOW)
+            str(identifier), True, YELLOW)
         text_width, text_height = rendered_text.get_size()
 
         text = pygame.transform.rotate(rendered_text, roll)

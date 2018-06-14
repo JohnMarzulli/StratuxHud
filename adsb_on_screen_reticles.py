@@ -1,6 +1,6 @@
 import pygame
 
-import display
+from lib.display import *
 from adsb_element import *
 from hud_elements import *
 from lib.task_timer import TaskTimer
@@ -76,9 +76,9 @@ class AdsbOnScreenReticles(AdsbElement):
             center_y = int(self.__height__ - border_space)
 
         pygame.draw.lines(framebuffer,
-                          display.BLACK, True, reticle_lines, 20)
+                          BLACK, True, reticle_lines, 20)
         pygame.draw.lines(framebuffer,
-                          display.RED, True, reticle_lines, 10)
+                          RED, True, reticle_lines, 10)
 
         # TEST - Do not render the tail number
         # Move the identifer text away from the reticle
