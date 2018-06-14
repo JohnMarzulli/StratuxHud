@@ -1,5 +1,5 @@
 import pygame
-from lib.display import *
+import lib.display as display
 from lib.task_timer import TaskTimer
 
 
@@ -22,3 +22,7 @@ class Altitude(object):
         framebuffer.blit(
             alt_texture, (self.__rhs__ - text_width, self.__text_y_pos__))
         self.task_timer.stop()
+
+if __name__ == '__main__':
+    import hud_elements
+    hud_elements.run_hud_element(Altitude)
