@@ -83,5 +83,6 @@ class ArtificialHorizon(object):
 
         return [[int(start_x), int(start_y)], [int(end_x), int(end_y)]], (int(center_x), int(center_y))
 
+
 if __name__ == '__main__':
-    run_hud_element(ArtificialHorizon)
+    run_ahrs_hud_element(ArtificialHorizon)

@@ -2,10 +2,9 @@ import datetime
 import math
 
 import pygame
-from lib.display import *
 
 import units
-from configuration import DEFAULT_CONFIG_FILE, Configuration
+from lib.display import *
 from lib.task_timer import TaskTimer
 from traffic import AdsbTrafficClient, Traffic
 
@@ -109,13 +108,14 @@ def get_onscreen_traffic_projection__(heading, pitch, roll, bearing, distance, a
 
     return screen_x, screen_y
 
-def run_hud_element(element_type, use_detail_font=True):
+
+def run_ahrs_hud_element(element_type, use_detail_font=True):
     """
-    Runs a HUD element alone for testing purposes
-    
+    Runs an AHRS based HUD element alone for testing purposes
+
     Arguments:
         element_type {type} -- The class to create.
-    
+
     Keyword Arguments:
         use_detail_font {bool} -- Should the detail font be used. (default: {True})
     """
@@ -146,11 +146,80 @@ def run_hud_element(element_type, use_detail_font=True):
 
     __aircraft__ = AhrsSimulation()
 
-    __pixels_per_degree_y__ = (__height__ / HeadsUpDisplay.DEGREES_OF_PITCH) * HeadsUpDisplay.PITCH_DEGREES_DISPLAY_SCALER
+    __pixels_per_degree_y__ = (
+        __height__ / HeadsUpDisplay.DEGREES_OF_PITCH) * HeadsUpDisplay.PITCH_DEGREES_DISPLAY_SCALER
 
-    hud_element = element_type(HeadsUpDisplay.DEGREES_OF_PITCH, __pixels_per_degree_y__, font, (__width__, __height__))
+    hud_element = element_type(HeadsUpDisplay.DEGREES_OF_PITCH,
+                               __pixels_per_degree_y__, font, (__width__, __height__))
 
     while True:
+        orientation = __aircraft__.ahrs_data
+        __aircraft__.simulate()
+        __backpage_framebuffer__.fill(BLACK)
+        hud_element.render(__backpage_framebuffer__, orientation)
+        pygame.display.flip()
+        clock.tick(60)
+
+
+def run_adsb_hud_element(element_type, use_detail_font=True):
+    """
+    Runs a ADSB based HUD element alone for testing purposes
+
+    Arguments:
+        element_type {type} -- The class to create.
+
+    Keyword Arguments:
+        use_detail_font {bool} -- Should the detail font be used. (default: {True})
+    """
+
+    from heads_up_display import HeadsUpDisplay
+    from hud_elements import HudDataCache
+    from aircraft import AhrsSimulation
+    from traffic import SimulatedTraffic
+    from configuration import DEFAULT_CONFIG_FILE, Configuration
+
+    simulated_traffic = (SimulatedTraffic(),
+                         SimulatedTraffic(), SimulatedTraffic())
+
+    clock = pygame.time.Clock()
+    config = Configuration(DEFAULT_CONFIG_FILE)
+
+    __backpage_framebuffer__, screen_size = display_init()  # args.debug)
+    __width__, __height__ = screen_size
+    pygame.mouse.set_visible(False)
+
+    pygame.font.init()
+
+    font_size_std = int(__height__ / 10.0)
+    font_size_detail = int(__height__ / 12.0)
+
+    __font__ = pygame.font.Font(
+        "./assets/fonts/LiberationMono-Bold.ttf", font_size_std)
+    __detail_font__ = pygame.font.Font(
+        "./assets/fonts/LiberationMono-Bold.ttf", font_size_detail)
+
+    if use_detail_font:
+        font = __detail_font__
+    else:
+        font = __font__
+
+    __aircraft__ = AhrsSimulation()
+
+    __pixels_per_degree_y__ = (
+        __height__ / HeadsUpDisplay.DEGREES_OF_PITCH) * HeadsUpDisplay.PITCH_DEGREES_DISPLAY_SCALER
+
+    hud_element = element_type(HeadsUpDisplay.DEGREES_OF_PITCH,
+                               __pixels_per_degree_y__, font, (
+                                   __width__, __height__),
+                               config)
+
+    while True:
+        for test_data in simulated_traffic:
+            test_data.simulate()
+            AdsbTrafficClient.TRAFFIC_MANAGER.handle_traffic_report(
+                test_data.to_json())
+
+        HudDataCache.update_traffic_reports()
         orientation = __aircraft__.ahrs_data
         __aircraft__.simulate()
         __backpage_framebuffer__.fill(BLACK)

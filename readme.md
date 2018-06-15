@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This project aims to bring an affordable headsup display system into ANY cockpit.
+This project aims to bring an affordable heads up display system into ANY cockpit.
 
 There are two versions that can be built:
 

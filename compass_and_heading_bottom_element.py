@@ -1,7 +1,7 @@
 import pygame
 
-from lib.display import *
 from compass_and_heading_top_element import CompassAndHeadingTopElement
+from lib.display import *
 from lib.task_timer import TaskTimer
 
 
@@ -75,6 +75,7 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
             rendered_text, (self.__center_x__ - (text_width >> 1), self.compass_text_y))
         self.task_timer.stop()
 
+
 if __name__ == '__main__':
     import hud_elements
-    hud_elements.run_hud_element(CompassAndHeadingBottomElement)
+    hud_elements.run_ahrs_hud_element(CompassAndHeadingBottomElement)

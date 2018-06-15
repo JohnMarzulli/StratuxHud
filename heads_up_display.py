@@ -5,7 +5,6 @@ import datetime
 import json
 import math
 import os
-import random
 import sys
 
 import pygame
@@ -243,18 +242,18 @@ class HeadsUpDisplay(object):
         ahrs_view = [
             level_reference.LevelReference(
                 HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
-                             self.__detail_font__, (self.__width__, self.__height__)),
+                self.__detail_font__, (self.__width__, self.__height__)),
             artificial_horizon.ArtificialHorizon(
                 HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
-                             self.__detail_font__, (self.__width__, self.__height__)),
+                self.__detail_font__, (self.__width__, self.__height__)),
             bottom_compass_element,
             altitude.Altitude(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
                               self.__detail_font__, (self.__width__, self.__height__)),
             skid_and_gs.SkidAndGs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
-                              self.__detail_font__, (self.__width__, self.__height__)),
+                                  self.__detail_font__, (self.__width__, self.__height__)),
             roll_indicator.RollIndicator(
                 HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
-                              self.__font__, (self.__width__, self.__height__)),
+                self.__font__, (self.__width__, self.__height__)),
         ]
 
         blank_view = []

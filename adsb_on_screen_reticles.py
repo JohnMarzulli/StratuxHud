@@ -1,8 +1,8 @@
 import pygame
 
-from lib.display import *
 from adsb_element import *
 from hud_elements import *
+from lib.display import *
 from lib.task_timer import TaskTimer
 
 
@@ -131,3 +131,8 @@ class AdsbOnScreenReticles(AdsbElement):
             translated_points.append([qx, qy])
 
         return translated_points
+
+
+if __name__ == '__main__':
+    import hud_elements
+    hud_elements.run_adsb_hud_element(AdsbOnScreenReticles)

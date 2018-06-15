@@ -29,6 +29,7 @@ class AhrsNotAvailable(object):
                          1][0], self.__not_available_lines__[1][1], self.__na_line_width__)
         self.task_timer.stop()
 
+
 if __name__ == '__main__':
     import hud_elements
-    hud_elements.run_hud_element(AhrsNotAvailable)
+    hud_elements.run_ahrs_hud_element(AhrsNotAvailable)

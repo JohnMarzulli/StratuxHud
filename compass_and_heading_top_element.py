@@ -1,7 +1,8 @@
 import pygame
 
-from lib.task_timer import TaskTimer
 import lib.display as display
+from lib.task_timer import TaskTimer
+
 
 class CompassAndHeadingTopElement(object):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
@@ -135,6 +136,7 @@ class CompassAndHeadingTopElement(object):
         framebuffer.blit(
             rendered_text, (position_x - half_size[0], position_y - half_size[1]))
 
+
 if __name__ == '__main__':
     import hud_elements
-    hud_elements.run_hud_element(CompassAndHeadingTopElement)
+    hud_elements.run_ahrs_hud_element(CompassAndHeadingTopElement)

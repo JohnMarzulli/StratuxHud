@@ -5,7 +5,6 @@ Initializes the display, and holds common color values.
 """
 
 import os
-import random
 import sys
 
 import pygame

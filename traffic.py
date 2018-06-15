@@ -1,22 +1,31 @@
 """
 Holds code relevant to collecting and traffic information.
 """
-import configuration
+
 import datetime
-import math
-import time
-import threading
 import json
-import ws4py
+import math
+import random
 import socket
+import threading
+import time
+
+import ws4py
 from ws4py.client.threadedclient import WebSocketClient
 from ws4py.streaming import Stream
+
+import configuration
 import lib.recurring_task as recurring_task
+from lib.simulated_values import SimulatedValue
 
 # TODO - More work around making this a BG
 
 
 class Traffic(object):
+    """
+    Holds data about traffic that the ADSB has received.
+    """
+
     TAIL_NUMBER_KEY = 'Tail'
     LATITUDE_KEY = 'Lat'
     LONGITUDE_KEY = 'Lon'
@@ -72,9 +81,23 @@ class Traffic(object):
     """
 
     def is_valid_report(self):
+        """
+        Is the current report valid and usable?
+
+        Returns:
+            bool -- True if the report can be trusted.
+        """
+
         return self.position_valid and self.bearing_distance_valid
 
     def is_on_ground(self):
+        """
+        Is this aircraft on the ground?
+
+        Returns:
+            bool -- True if the plane is on the ground.
+        """
+
         try:
             if 'OnGround' in self.__json__:
                 return bool(self.__json__['OnGround'])
@@ -174,6 +197,11 @@ class Traffic(object):
         self.__update_from_json__()
 
     def __update_from_json__(self):
+        """
+        Updates the report from the most recently received report.
+        (Deserialized from the JSON)
+        """
+
         # Position report with full GPS
         # {u'TargetType': 1,
         # u'Vvel': -1152,
@@ -247,12 +275,105 @@ class Traffic(object):
             print("Exception while updating...")
 
 
+class SimulatedTraffic(object):
+    """
+    Class to simulated ADSB received traffic.
+    """
+
+    def __init__(self):
+        """
+        Creates a new traffic simulation object.
+        """
+
+        target_center_position = (48.160464, -122.166409)
+        runway_number_position = (48.155973, -122.157582)
+        starting_points = (target_center_position, runway_number_position)
+
+        self.icao_address = random.randint(10000, 100000)
+        self.tail_number = "N{0}{1}{2}".format(random.randint(
+            1, 9), random.randint(0, 9), random.randint(0, 9))
+        self.position_valid = True
+        self.time_decoded = datetime.datetime.utcnow()
+        self.latitude = SimulatedValue(0.1, 10, 1, random.randint(
+            0, 9), starting_points[random.randint(0, 1)][0])
+        self.longitude = SimulatedValue(0.1, 10, 1, random.randint(
+            0, 9), starting_points[random.randint(0, 1)][1])
+        self.distance = SimulatedValue(
+            10, 1000, -1, random.randint(0, 1000), 1000)
+        self.bearing = SimulatedValue(0, 180, -1, random.randint(0, 180), 180)
+        self.altitude = SimulatedValue(10, 100, -1, 0, 500)
+        self.speed = SimulatedValue(5, 10, 1, 85)
+
+    def simulate(self):
+        """
+        Simulates the traffic for a 'tick'.
+        """
+
+        self.time_decoded = datetime.datetime.utcnow()
+        self.latitude.simulate()
+        self.longitude.simulate()
+        self.distance.simulate()
+        self.bearing.simulate()
+        self.altitude.simulate()
+        self.speed.simulate()
+
+    def to_json(self):
+        """
+        Returns this object back as a dictionary (deserialized json)
+
+        Returns:
+            dictionary -- The dictionary representing a traffic report.
+        """
+
+        return {'TargetType': 1,
+                'Vvel': -1152,
+                'Speed_valid': True,
+                'Emitter_category': 3,
+                'Tail': self.tail_number,
+                'GnssDiffFromBaroAlt': -300,
+                'Reg': self.tail_number,
+                'Last_seen': str(self.time_decoded),
+                'Squawk': 0,
+                'Track': 181,
+                'Timestamp': str(self.time_decoded),
+                'Icao_addr': self.icao_address,
+                'ExtrapolatedPosition': False,
+                'Addr_type': 0,
+                'Last_alt': str(self.time_decoded),
+                'Lat': self.latitude.value,
+                'Position_valid': True,
+                'Distance': self.distance.value,
+                'Age': 0.15000000000000002,
+                'Last_GnssDiffAlt': 4000,
+                'Last_speed': str(self.time_decoded),
+                'AgeLastAlt': 0.15000000000000002,
+                'Last_GnssDiff': str(self.time_decoded),
+                'BearingDist_valid': True,
+                'Lng': self.longitude.value,
+                'Lon': self.longitude.value,
+                'Bearing': self.bearing.value,
+                'OnGround': False,
+                'NIC': 8,
+                'Last_source': 1,
+                'PriorityStatus': 0,
+                'NACp': 10,
+                'SignalLevel': -5.054252345140135,
+                'AltIsGNSS': False,
+                'Alt': self.altitude.value,
+                'Speed': self.speed.value
+                }
+
+
 class TrafficManager(object):
     """
     Manager class that handles all of the position reports.
     """
 
     def clear(self):
+        """
+        Resets the traffic reports.
+        """
+
         self.traffic = {}
 
     def get_unreliable_traffic(self):
@@ -377,6 +498,10 @@ class AdsbTrafficClient(WebSocketClient):
         self.connect()
 
     def shutdown(self):
+        """
+        Stops the WebSocket and reception tasks.
+        """
+
         self.is_connected = False
         self.is_connecting = False
         try:
@@ -397,11 +522,25 @@ class AdsbTrafficClient(WebSocketClient):
             print("Issue on shutdown")
 
     def opened(self):
+        """
+        Event handler for when then connection is opened.
+        """
+
         self.is_connected = True
         self.is_connecting = False
         print("WebSocket opened to Stratux")
 
     def closed(self, code, reason=None):
+        """
+        Event handler for when the socket is closed.
+
+        Arguments:
+            code {object} -- The code for why the socket was closed.
+
+        Keyword Arguments:
+            reason {string} -- The reason why the socket was closed. (default: {None})
+        """
+
         self.is_connected = False
         self.is_connecting = False
 
@@ -416,6 +555,13 @@ class AdsbTrafficClient(WebSocketClient):
             print("Issue trying to close_connection")
 
     def received_message(self, m):
+        """
+        Handler for receiving a message.
+
+        Arguments:
+            m {string} -- The json message in string form.
+        """
+
         self.is_connected = True
         self.is_connecting = False
         self.last_message_received_time = datetime.datetime.now()
@@ -429,6 +575,10 @@ class AdsbTrafficClient(WebSocketClient):
             print("Issue decoding JSON")
 
     def __dump_traffic_diag__(self):
+        """
+        Prints our current traffic understanding.
+        """
+
         diag_traffic = AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
 
         if diag_traffic is not None:
@@ -437,6 +587,10 @@ class AdsbTrafficClient(WebSocketClient):
                                                traffic.bearing, traffic.distance))
 
     def __keep_alive__(self):
+        """
+        Attempts to keep the connection to the WebSocket alive.
+        """
+
         try:
             self.send(str(0xa))
         except:
@@ -457,6 +611,11 @@ class AdsbTrafficClient(WebSocketClient):
 
 
 class ConnectionManager(object):
+    """
+    Object to manage the connection to the Stratux WebSocket.
+    Performs the connections and re-connects.
+    """
+
     def __init__(self, socket_address):
         self.__is_shutting_down__ = False
         self.__manage_connection_task__ = None
@@ -465,6 +624,10 @@ class ConnectionManager(object):
             'ManageConnection', 2, self.__manage_connection__, start_immediate=False)
 
     def __manage_connection__(self):
+        """
+        Handles the connection.
+        """
+
         while True:
             if self.__is_shutting_down__:
                 continue
@@ -491,6 +654,10 @@ class ConnectionManager(object):
                 time.sleep(1)
 
     def shutdown(self):
+        """
+        Shutsdown the WebSocket connection.
+        """
+
         self.__is_shutting_down__ = True
         if self.__manage_connection_task__ is not None:
             self.__manage_connection_task__.stop()
@@ -499,6 +666,13 @@ class ConnectionManager(object):
             AdsbTrafficClient.INSTANCE.shutdown()
 
     def __is_connection_silently_timed_out__(self):
+        """
+        Tries to determine if the socket has stopped sending us data.
+        
+        Returns:
+            bool -- True if we think the socket has closed.
+        """
+
         if AdsbTrafficClient.INSTANCE.last_message_received_time is not None:
             connection_uptime = (datetime.datetime.now(
             ) - AdsbTrafficClient.INSTANCE.create_time).total_seconds()

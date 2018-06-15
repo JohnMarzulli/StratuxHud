@@ -125,3 +125,8 @@ class AdsbTrafficListing(AdsbElement):
 
             y_pos += self.__next_line_distance__
         self.task_timer.stop()
+
+
+if __name__ == '__main__':
+    import hud_elements
+    hud_elements.run_adsb_hud_element(AdsbTrafficListing)

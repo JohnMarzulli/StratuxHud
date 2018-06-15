@@ -1,8 +1,9 @@
 import pygame
 
-from lib.task_timer import TaskTimer
 from adsb_element import AdsbElement
 from hud_elements import *
+from lib.task_timer import TaskTimer
+
 
 class AdsbTargetBugs(AdsbElement):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, configuration):
@@ -72,3 +73,8 @@ class AdsbTargetBugs(AdsbElement):
                                         target_bug_scale,
                                         traffic_report.is_on_ground())
         self.task_timer.stop()
+
+
+if __name__ == '__main__':
+    import hud_elements
+    hud_elements.run_adsb_hud_element(AdsbTargetBugs)

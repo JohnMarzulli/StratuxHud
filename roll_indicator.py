@@ -1,6 +1,7 @@
 import math
 
 import pygame
+
 from lib.display import *
 from lib.task_timer import TaskTimer
 
@@ -40,6 +41,7 @@ class RollIndicator(object):
             roll_texture, (self.__center__[0] - text_half_width, self.__text_y_pos__))
         self.task_timer.stop()
 
+
 if __name__ == '__main__':
     import hud_elements
-    hud_elements.run_hud_element(RollIndicator, False)
+    hud_elements.run_ahrs_hud_element(RollIndicator, False)

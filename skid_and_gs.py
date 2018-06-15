@@ -1,7 +1,7 @@
 import pygame
 
-from lib.task_timer import TaskTimer
 from lib.display import *
+from lib.task_timer import TaskTimer
 
 
 class SkidAndGs(object):
@@ -25,6 +25,7 @@ class SkidAndGs(object):
             texture, (self.__rhs__ - text_width, self.__text_y_pos__))
         self.task_timer.stop()
 
+
 if __name__ == '__main__':
     import hud_elements
-    hud_elements.run_hud_element(SkidAndGs)
+    hud_elements.run_ahrs_hud_element(SkidAndGs)
