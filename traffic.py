@@ -486,16 +486,19 @@ class AdsbTrafficClient(WebSocketClient):
     INSTANCE = None
 
     def __init__(self, socket_address):
-        WebSocketClient.__init__(self, socket_address, heartbeat_freq=1)
+        WebSocketClient.__init__(self, socket_address)
 
         self.create_time = datetime.datetime.now()
         self.__update_task__ = None
-        self.__keepalive_task__ = None
         self.__manage_connection_task__ = None
         self.last_message_received_time = None
         self.is_connected = False
         self.is_connecting = False
         self.connect()
+
+        self.hb = ws4py.websocket.Heartbeat(self)
+        self.hb.start()
+
 
     def shutdown(self):
         """
@@ -504,18 +507,17 @@ class AdsbTrafficClient(WebSocketClient):
 
         self.is_connected = False
         self.is_connecting = False
+
         try:
             self.__update_task__.stop()
         except:
             pass
+
         try:
             self.__prune_task__.stop()
         except:
             pass
-        try:
-            self.__keepalive_task__.stop()
-        except:
-            pass
+
         try:
             self.close_connection()
         except:
@@ -553,6 +555,10 @@ class AdsbTrafficClient(WebSocketClient):
             raise
         except:
             print("Issue trying to close_connection")
+    
+    def ponged(self, pong):
+        print("Pong")
+    
 
     def received_message(self, m):
         """
@@ -570,7 +576,6 @@ class AdsbTrafficClient(WebSocketClient):
             adsb_traffic = json.loads(m.data)
             AdsbTrafficClient.TRAFFIC_MANAGER.handle_traffic_report(
                 adsb_traffic)
-            self.send(str(0xa))
         except:
             print("Issue decoding JSON")
 
@@ -586,15 +591,6 @@ class AdsbTrafficClient(WebSocketClient):
                 print("{0} - {1} - {2}".format(traffic.get_identifer(),
                                                traffic.bearing, traffic.distance))
 
-    def __keep_alive__(self):
-        """
-        Attempts to keep the connection to the WebSocket alive.
-        """
-
-        try:
-            self.send(str(0xa))
-        except:
-            print("Issue on __keep_alive__")
 
     def run_in_background(self):
         """
@@ -603,9 +599,6 @@ class AdsbTrafficClient(WebSocketClient):
 
         self.__update_task__ = recurring_task.RecurringTask(
             'TrafficUpdate', 0.1, self.run_forever, start_immediate=False)
-
-        self.__keepalive_task__ = recurring_task.RecurringTask(
-            'KeepAlive', 1, self.__keep_alive__, start_immediate=False)
 
         # recurring_task.RecurringTask('TrafficDump', 1.0, self.__dump_traffic_diag__)
 
@@ -679,10 +672,11 @@ class ConnectionManager(object):
             time_since_last_msg = (datetime.datetime.now(
             ) - AdsbTrafficClient.INSTANCE.last_message_received_time).total_seconds()
 
-            if time_since_last_msg > 10:
-                print("{0:.1f} seconds connection uptime".format(
+            print("{0:.1f} seconds connection uptime".format(
                     connection_uptime))
-                print("{0:.1f} since last msg".format(time_since_last_msg))
+            print("{0:.1f} since last msg".format(time_since_last_msg))
+
+            if time_since_last_msg > 1:
                 return not AdsbTrafficClient.INSTANCE.is_connecting
         return False
 
