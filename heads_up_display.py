@@ -206,9 +206,9 @@ class HeadsUpDisplay(object):
         font_size_loading = int(self.__height__ / 4.0)
 
         self.__font__ = pygame.font.Font(
-            "./assets/fonts/LiberationMono-Bold.ttf", font_size_std)
+            get_absolute_file_path("./assets/fonts/LiberationMono-Bold.ttf"), font_size_std)
         self.__detail_font__ = pygame.font.Font(
-            "./assets/fonts/LiberationMono-Bold.ttf", font_size_detail)
+            get_absolute_file_path("./assets/fonts/LiberationMono-Bold.ttf"), font_size_detail)
         self.__loading_font__ = pygame.font.SysFont(
             font_name, font_size_loading, True, False)
         self.__show_boot_screen__()

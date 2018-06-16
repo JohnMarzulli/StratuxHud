@@ -6,9 +6,23 @@ EARTH_RADIUS_STATUTE_MILES = 3956
 EARTH_RADIUS_KILOMETERS_MILES = 6371
 MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT = 2
 MAX_FRAMERATE = 60
-__config_file__ = "config.json"
+__config_file__ = "./config.json"
 __working_dir__ = os.path.dirname(os.path.abspath(__file__))
-DEFAULT_CONFIG_FILE = os.path.join(__working_dir__, os.path.normpath(__config_file__))
+
+def get_absolute_file_path(relative_path):
+    """
+    Returns the absolute file path no matter the OS.
+    
+    Arguments:
+        relative_path {string} -- The relative file path.
+    
+    Returns:
+        string -- The absolute filepath.
+    """
+
+    return os.path.join(__working_dir__, os.path.normpath(relative_path))
+
+DEFAULT_CONFIG_FILE = get_absolute_file_path(__config_file__)
 
 
 
