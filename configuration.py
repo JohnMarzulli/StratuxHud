@@ -1,11 +1,15 @@
 import json
+import os
 
 EARTH_RADIUS_NAUTICAL_MILES = 3440
 EARTH_RADIUS_STATUTE_MILES = 3956
 EARTH_RADIUS_KILOMETERS_MILES = 6371
 MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT = 2
 MAX_FRAMERATE = 60
-DEFAULT_CONFIG_FILE = "./config.json"
+__config_file__ = "config.json"
+__working_dir__ = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_CONFIG_FILE = os.path.join(__working_dir__, os.path.normpath(__config_file__))
+
 
 
 class DataSourceNames(object):
