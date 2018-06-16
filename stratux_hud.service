@@ -1,17 +1,17 @@
-# Move this file to /etc/systemd/system
+# cp stratux_hud.service /etc/systemd/system
 # sudo chmod 664
 # sudo systemctl enable stratux_hud.service
 
 [Unit]
-Description=Heads Up Display
+Description=Stratux HUD
 
 [Service]
-ExecStart=/usr/bin/python /home/pi/src/stratux_hud/stratux_hud.py
+ExecStart=/usr/bin/python /home/pi/StratuxHud/stratux_hud.py
 ExecStop=/usr/bin/pkill stratux_hud
 Group=pi
 Restart=always
 User=pi
-WorkingDirectory=/home/pi/stratux_hud
+WorkingDirectory=/home/pi/StratuxHud
 
 [Install]
 WantedBy=default.target
