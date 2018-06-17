@@ -2,12 +2,13 @@
 Module to handle tasks that occur on a regularly scheduled interval.
 """
 
-import threading
 import sys
+import threading
 import time
 
 FUNCTION_A_COUNT = 0
 FUNCTION_B_COUNT = 0
+
 
 class RecurringTask(object):
     """
@@ -19,7 +20,7 @@ class RecurringTask(object):
             if self.__last_task__ is not None:
                 self.pause()
                 self.__last_task__.cancel()
-            
+
             return True
         except:
             return False
@@ -58,22 +59,21 @@ class RecurringTask(object):
 
         self.__last_task__ = threading.Thread(target=self.__run_loop__)
         self.__last_task__.start()
-    
+
     def __run_loop__(self):
         while True:
             if self.__is_running__ and self.__task_callback__ is not None:
                 try:
                     self.__task_callback__()
                 except:
-                    error_mesage = "EX(" + self.__task_name__ + ")" #+ sys.exc_info()[0]
+                    # + sys.exc_info()[0]
+                    error_mesage = "EX(" + self.__task_name__ + ")"
                     if self.__logger__ is not None:
                         self.__logger__.info(error_mesage)
                     else:
-                        print error_mesage
-            
+                        print(error_mesage)
+
             time.sleep(int(self.__task_interval__))
-
-
 
     def __init__(self, task_name, task_interval, task_callback, logger=None, start_immediate=False):
         """
@@ -93,6 +93,7 @@ class RecurringTask(object):
         else:
             threading.Timer(int(self.__task_interval__), self.start).start()
 
+
 class TimerTest(object):
     def __init__(self):
         self.a = 0
@@ -110,12 +111,13 @@ class TimerTest(object):
         if (self.b % 10) == 0:
             raise KeyboardInterrupt
 
+
 if __name__ == '__main__':
 
     TEST = TimerTest()
 
     while True:
-        print "A:" + str(TEST.a)
-        print "B:" + str(TEST.b)
+        print("A:" + str(TEST.a))
+        print("B:" + str(TEST.b))
 
         time.sleep(1)

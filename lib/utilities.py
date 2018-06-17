@@ -3,14 +3,23 @@ Module to hold common utilities.
 """
 
 import subprocess
+
 import local_debug
 
-DEFAULT_POWER_CYCLE_DELAY = 2 # Time to allow for responses to be sent
+DEFAULT_POWER_CYCLE_DELAY = 2  # Time to allow for responses to be sent
+
 
 def get_singular_or_plural(value, unit):
     """
     Returns the value with a singuar
     or plural form.
+
+    Arguments:
+        value {number} -- The number to determine the plurality.
+        unit {string} -- The representation of the units.
+
+    Returns:
+        string -- The value with the unit in singular or plural form.
     """
 
     as_int = int(value)
@@ -26,6 +35,7 @@ def get_singular_or_plural(value, unit):
         result += "s"
 
     return result
+
 
 def get_time_text(number_of_seconds):
     """
@@ -90,6 +100,7 @@ def get_time_text(number_of_seconds):
 
     return get_singular_or_plural(number_of_days, "day")
 
+
 def escape(text):
     """
     Replaces escape sequences do they can be printed.
@@ -133,6 +144,7 @@ def get_cleaned_phone_number(dirty_number):
                                                                                                 '')
     return None
 
+
 def restart():
     """
     Restarts down the Pi.
@@ -143,7 +155,8 @@ def restart():
                          shell=True, stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT)
 
-def shutdown(seconds = 30):
+
+def shutdown(seconds=30):
     """
     Shuts down the Pi.
     """
@@ -153,11 +166,12 @@ def shutdown(seconds = 30):
                          shell=True, stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT)
 
+
 if __name__ == '__main__':
     import doctest
 
-    print "Starting tests."
+    print("Starting tests.")
 
     doctest.testmod()
 
-    print "Tests finished"
+    print("Tests finished")

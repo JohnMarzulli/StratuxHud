@@ -1,22 +1,31 @@
 """
 Holds code relevant to collecting and traffic information.
 """
-import configuration
+
 import datetime
-import math
-import time
-import threading
 import json
-import ws4py
+import math
+import random
 import socket
+import threading
+import time
+
+import ws4py
 from ws4py.client.threadedclient import WebSocketClient
 from ws4py.streaming import Stream
+
+import configuration
 import lib.recurring_task as recurring_task
+from lib.simulated_values import SimulatedValue
 
 # TODO - More work around making this a BG
 
 
 class Traffic(object):
+    """
+    Holds data about traffic that the ADSB has received.
+    """
+
     TAIL_NUMBER_KEY = 'Tail'
     LATITUDE_KEY = 'Lat'
     LONGITUDE_KEY = 'Lon'
@@ -72,15 +81,29 @@ class Traffic(object):
     """
 
     def is_valid_report(self):
+        """
+        Is the current report valid and usable?
+
+        Returns:
+            bool -- True if the report can be trusted.
+        """
+
         return self.position_valid and self.bearing_distance_valid
-    
+
     def is_on_ground(self):
+        """
+        Is this aircraft on the ground?
+
+        Returns:
+            bool -- True if the plane is on the ground.
+        """
+
         try:
             if 'OnGround' in self.__json__:
                 return bool(self.__json__['OnGround'])
         except:
             pass
-        
+
         return False
 
     def get_age(self):
@@ -98,7 +121,7 @@ class Traffic(object):
         if self.tail_number is not None and len(self.tail_number) > 1:
             return self.tail_number
 
-        return self.iaco_address
+        return self.icao_address
 
     def get_bearing(self, starting_lat, starting_lon):
         """
@@ -152,7 +175,7 @@ class Traffic(object):
             self.__json__.update(json_report)
             self.__update_from_json__()
         except:
-            print "Issue in update()"
+            print("Issue in update()")
 
     def __init__(self, json_from_stratux):
         """
@@ -160,7 +183,7 @@ class Traffic(object):
         """
 
         # Create all of the possible data
-        self.iaco_address = None
+        self.icao_address = None
         self.tail_number = None
         self.position_valid = None
         self.time_decoded = datetime.datetime.now()
@@ -174,6 +197,11 @@ class Traffic(object):
         self.__update_from_json__()
 
     def __update_from_json__(self):
+        """
+        Updates the report from the most recently received report.
+        (Deserialized from the JSON)
+        """
+
         # Position report with full GPS
         # {u'TargetType': 1,
         # u'Vvel': -1152,
@@ -212,7 +240,7 @@ class Traffic(object):
         # u'Speed': 177}
 
         try:
-            self.iaco_address = self.__json__[Traffic.ICAO_ADDR_KEY]
+            self.icao_address = self.__json__[Traffic.ICAO_ADDR_KEY]
             self.tail_number = self.__json__[Traffic.TAIL_NUMBER_KEY]
             self.position_valid = self.__json__[Traffic.POSITION_VALID_KEY]
             self.bearing_distance_valid = self.__json__[
@@ -244,7 +272,96 @@ class Traffic(object):
             else:
                 self.altitude = None
         except:
-            print "Exception while updating..."
+            print("Exception while updating...")
+
+
+class SimulatedTraffic(object):
+    """
+    Class to simulated ADSB received traffic.
+    """
+
+    def __init__(self):
+        """
+        Creates a new traffic simulation object.
+        """
+
+        target_center_position = (48.160464, -122.166409)
+        runway_number_position = (48.155973, -122.157582)
+        starting_points = (target_center_position, runway_number_position)
+
+        self.icao_address = random.randint(10000, 100000)
+        self.tail_number = "N{0}{1}{2}".format(random.randint(
+            1, 9), random.randint(0, 9), random.randint(0, 9))
+        self.position_valid = True
+        self.time_decoded = datetime.datetime.utcnow()
+        self.latitude = SimulatedValue(0.1, 10, 1, random.randint(
+            0, 9), starting_points[random.randint(0, 1)][0])
+        self.longitude = SimulatedValue(0.1, 10, 1, random.randint(
+            0, 9), starting_points[random.randint(0, 1)][1])
+        self.distance = SimulatedValue(
+            10, 1000, -1, random.randint(0, 1000), 1000)
+        self.bearing = SimulatedValue(0, 180, -1, random.randint(0, 180), 180)
+        self.altitude = SimulatedValue(10, 100, -1, 0, 500)
+        self.speed = SimulatedValue(5, 10, 1, 85)
+
+    def simulate(self):
+        """
+        Simulates the traffic for a 'tick'.
+        """
+
+        self.time_decoded = datetime.datetime.utcnow()
+        self.latitude.simulate()
+        self.longitude.simulate()
+        self.distance.simulate()
+        self.bearing.simulate()
+        self.altitude.simulate()
+        self.speed.simulate()
+
+    def to_json(self):
+        """
+        Returns this object back as a dictionary (deserialized json)
+
+        Returns:
+            dictionary -- The dictionary representing a traffic report.
+        """
+
+        return {'TargetType': 1,
+                'Vvel': -1152,
+                'Speed_valid': True,
+                'Emitter_category': 3,
+                'Tail': self.tail_number,
+                'GnssDiffFromBaroAlt': -300,
+                'Reg': self.tail_number,
+                'Last_seen': str(self.time_decoded),
+                'Squawk': 0,
+                'Track': 181,
+                'Timestamp': str(self.time_decoded),
+                'Icao_addr': self.icao_address,
+                'ExtrapolatedPosition': False,
+                'Addr_type': 0,
+                'Last_alt': str(self.time_decoded),
+                'Lat': self.latitude.value,
+                'Position_valid': True,
+                'Distance': self.distance.value,
+                'Age': 0.15000000000000002,
+                'Last_GnssDiffAlt': 4000,
+                'Last_speed': str(self.time_decoded),
+                'AgeLastAlt': 0.15000000000000002,
+                'Last_GnssDiff': str(self.time_decoded),
+                'BearingDist_valid': True,
+                'Lng': self.longitude.value,
+                'Lon': self.longitude.value,
+                'Bearing': self.bearing.value,
+                'OnGround': False,
+                'NIC': 8,
+                'Last_source': 1,
+                'PriorityStatus': 0,
+                'NACp': 10,
+                'SignalLevel': -5.054252345140135,
+                'AltIsGNSS': False,
+                'Alt': self.altitude.value,
+                'Speed': self.speed.value
+                }
 
 
 class TrafficManager(object):
@@ -253,6 +370,10 @@ class TrafficManager(object):
     """
 
     def clear(self):
+        """
+        Resets the traffic reports.
+        """
+
         self.traffic = {}
 
     def get_unreliable_traffic(self):
@@ -309,8 +430,8 @@ class TrafficManager(object):
         self.__lock__.acquire()
         try:
             traffic_report = Traffic(json_report)
-            identifier = str(traffic_report.iaco_address)
-            if traffic_report.iaco_address in self.traffic:
+            identifier = str(traffic_report.icao_address)
+            if traffic_report.icao_address in self.traffic:
                 self.traffic[identifier].update(json_report)
             else:
                 self.traffic[identifier] = traffic_report
@@ -341,7 +462,7 @@ class TrafficManager(object):
             for identifier_to_remove in traffic_to_remove:
                 del self.traffic[identifier_to_remove]
         except:
-            print "Issue on prune"
+            print("Issue on prune")
         finally:
             self.__lock__.release()
 
@@ -352,7 +473,7 @@ class TrafficManager(object):
             configuration.DEFAULT_CONFIG_FILE)
         self.__lock__ = threading.Lock()
         self.__prune_task__ = recurring_task.RecurringTask(
-                'PruneTraffic', 10, self.prune_traffic_reports)
+            'PruneTraffic', 10, self.prune_traffic_reports)
 
 
 class AdsbTrafficClient(WebSocketClient):
@@ -365,80 +486,111 @@ class AdsbTrafficClient(WebSocketClient):
     INSTANCE = None
 
     def __init__(self, socket_address):
-        WebSocketClient.__init__(self, socket_address, heartbeat_freq=1)
+        WebSocketClient.__init__(self, socket_address)
 
         self.create_time = datetime.datetime.now()
         self.__update_task__ = None
-        self.__keepalive_task__ = None
         self.__manage_connection_task__ = None
         self.last_message_received_time = None
         self.is_connected = False
         self.is_connecting = False
         self.connect()
 
+        self.hb = ws4py.websocket.Heartbeat(self)
+        self.hb.start()
+
+
     def shutdown(self):
+        """
+        Stops the WebSocket and reception tasks.
+        """
+
         self.is_connected = False
         self.is_connecting = False
+
         try:
             self.__update_task__.stop()
         except:
             pass
+
         try:
             self.__prune_task__.stop()
         except:
             pass
-        try:
-            self.__keepalive_task__.stop()
-        except:
-            pass
+
         try:
             self.close_connection()
         except:
-            print "Issue on shutdown"
+            print("Issue on shutdown")
 
     def opened(self):
+        """
+        Event handler for when then connection is opened.
+        """
+
         self.is_connected = True
         self.is_connecting = False
-        print "WebSocket opened to Stratux"
+        print("WebSocket opened to Stratux")
 
     def closed(self, code, reason=None):
+        """
+        Event handler for when the socket is closed.
+
+        Arguments:
+            code {object} -- The code for why the socket was closed.
+
+        Keyword Arguments:
+            reason {string} -- The reason why the socket was closed. (default: {None})
+        """
+
         self.is_connected = False
         self.is_connecting = False
 
-        print "Closed down", code, reason
+        print("Closed down", code, reason)
 
-        print "Attempting to reconnect..."
+        print("Attempting to reconnect...")
         try:
             self.close_connection()
         except KeyboardInterrupt, SystemExit:
             raise
         except:
-            print "Issue trying to close_connection"
+            print("Issue trying to close_connection")
+    
+    def ponged(self, pong):
+        print("Pong")
+    
 
     def received_message(self, m):
+        """
+        Handler for receiving a message.
+
+        Arguments:
+            m {string} -- The json message in string form.
+        """
+
         self.is_connected = True
         self.is_connecting = False
         self.last_message_received_time = datetime.datetime.now()
 
         try:
             adsb_traffic = json.loads(m.data)
-            AdsbTrafficClient.TRAFFIC_MANAGER.handle_traffic_report(adsb_traffic)
-            self.send(str(0xa))
+            AdsbTrafficClient.TRAFFIC_MANAGER.handle_traffic_report(
+                adsb_traffic)
         except:
-            print "Issue decoding JSON"
+            print("Issue decoding JSON")
 
     def __dump_traffic_diag__(self):
+        """
+        Prints our current traffic understanding.
+        """
+
         diag_traffic = AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
 
         if diag_traffic is not None:
             for traffic in diag_traffic:
-                print "{0} - {1} - {2}".format(traffic.get_identifer(), traffic.bearing, traffic.distance)
-    
-    def __keep_alive__(self):
-        try:
-            self.send(str(0xa))
-        except:
-            print "Issue on __keep_alive__"
+                print("{0} - {1} - {2}".format(traffic.get_identifer(),
+                                               traffic.bearing, traffic.distance))
+
 
     def run_in_background(self):
         """
@@ -447,15 +599,16 @@ class AdsbTrafficClient(WebSocketClient):
 
         self.__update_task__ = recurring_task.RecurringTask(
             'TrafficUpdate', 0.1, self.run_forever, start_immediate=False)
-        
-        self.__keepalive_task__ = recurring_task.RecurringTask(
-            'KeepAlive', 1, self.__keep_alive__, start_immediate=False)
-        
 
         # recurring_task.RecurringTask('TrafficDump', 1.0, self.__dump_traffic_diag__)
 
 
 class ConnectionManager(object):
+    """
+    Object to manage the connection to the Stratux WebSocket.
+    Performs the connections and re-connects.
+    """
+
     def __init__(self, socket_address):
         self.__is_shutting_down__ = False
         self.__manage_connection_task__ = None
@@ -464,47 +617,69 @@ class ConnectionManager(object):
             'ManageConnection', 2, self.__manage_connection__, start_immediate=False)
 
     def __manage_connection__(self):
+        """
+        Handles the connection.
+        """
+
         while True:
             if self.__is_shutting_down__:
                 continue
 
-            create =  AdsbTrafficClient.INSTANCE is None
+            create = AdsbTrafficClient.INSTANCE is None
             restart = False
             if AdsbTrafficClient.INSTANCE is not None:
                 restart |= self.__is_connection_silently_timed_out__()
-                restart |= not (AdsbTrafficClient.INSTANCE.is_connected or AdsbTrafficClient.INSTANCE.is_connecting)
+                restart |= not (
+                    AdsbTrafficClient.INSTANCE.is_connected or AdsbTrafficClient.INSTANCE.is_connecting)
 
                 if restart:
-                    print "SHUTTING DOWN EXISTING CONNECTION"
+                    print("SHUTTING DOWN EXISTING CONNECTION")
                     AdsbTrafficClient.INSTANCE.shutdown()
                     create = True
-            
+
             if create:
-                print "ATTEMPTING TO CONNECT"
-                AdsbTrafficClient.INSTANCE = AdsbTrafficClient(self.__socket_address__)
+                print("ATTEMPTING TO CONNECT")
+                AdsbTrafficClient.INSTANCE = AdsbTrafficClient(
+                    self.__socket_address__)
                 AdsbTrafficClient.INSTANCE.run_in_background()
                 time.sleep(30)
             else:
                 time.sleep(1)
 
     def shutdown(self):
+        """
+        Shutsdown the WebSocket connection.
+        """
+
         self.__is_shutting_down__ = True
         if self.__manage_connection_task__ is not None:
             self.__manage_connection_task__.stop()
-        
+
         if AdsbTrafficClient.INSTANCE is not None:
             AdsbTrafficClient.INSTANCE.shutdown()
 
     def __is_connection_silently_timed_out__(self):
-        if AdsbTrafficClient.INSTANCE.last_message_received_time is not None:
-            connection_uptime = (datetime.datetime.now() - AdsbTrafficClient.INSTANCE.create_time).total_seconds()
-            time_since_last_msg = (datetime.datetime.now() - AdsbTrafficClient.INSTANCE.last_message_received_time).total_seconds()
+        """
+        Tries to determine if the socket has stopped sending us data.
+        
+        Returns:
+            bool -- True if we think the socket has closed.
+        """
 
-            if time_since_last_msg > 10:
-                print "{0:.1f} seconds connection uptime".format(connection_uptime)
-                print "{0:.1f} since last msg".format(time_since_last_msg)
+        if AdsbTrafficClient.INSTANCE.last_message_received_time is not None:
+            connection_uptime = (datetime.datetime.now(
+            ) - AdsbTrafficClient.INSTANCE.create_time).total_seconds()
+            time_since_last_msg = (datetime.datetime.now(
+            ) - AdsbTrafficClient.INSTANCE.last_message_received_time).total_seconds()
+
+            print("{0:.1f} seconds connection uptime".format(
+                    connection_uptime))
+            print("{0:.1f} since last msg".format(time_since_last_msg))
+
+            if time_since_last_msg > 1:
                 return not AdsbTrafficClient.INSTANCE.is_connecting
         return False
+
 
 if __name__ == '__main__':
     import time
@@ -517,20 +692,20 @@ if __name__ == '__main__':
             CONFIGURATION.stratux_address())
         connection_manager = ConnectionManager(adsb_traffic_address)
 
-
         while True:
             time.sleep(5)
-            print "position_valid:"
+            print("position_valid:")
             reports = AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
             for traffic_report in reports:
-                print "    {0} {1} {2}".format(traffic_report.get_identifer(), traffic_report.bearing, traffic_report.distance)
+                print("    {0} {1} {2}".format(traffic_report.get_identifer(
+                ), traffic_report.bearing, traffic_report.distance))
 
-            print "Other:"
+            print("Other:")
             reports = AdsbTrafficClient.TRAFFIC_MANAGER.get_unreliable_traffic()
             for traffic_report in reports:
-                print "    {0}".format(traffic_report.get_identifer())
+                print("    {0}".format(traffic_report.get_identifer()))
 
-            print "---------------"
+            print("---------------")
 
     except KeyboardInterrupt:
         connection_manager.shutdown()
