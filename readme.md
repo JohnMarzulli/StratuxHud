@@ -22,6 +22,47 @@ A self contained system that uses a 3D printed case and teleprompter glass. This
 
 ![Teleprompter Glass Version In Flight](media/in_flight.jpg)
 
+## In Flight Controls
+
+You may use a number pad as input device. I used velcro to secure the number pad to my dashboard.
+
+
+| Key       | Action                                                                       |
+|-----------|------------------------------------------------------------------------------|
+| Backspace | Tell the Stratux that you are in a level position. Resets the AHRS to level. |
+| +         | Next view                                                                    |
+| -         | Previous view                                                                |
+| =         | Toggle rendering debug information                                           |
+| Esc       | Send shutdown commands to both the HUD controller _*and*_ the Stratux        |
+
+## Views
+
+* Traffic
+* AHRS
+* Traffic List (Text only)
+* Performance/debug
+
+### Traffic
+
+This shows you all of the traffic with reliable ADSB data.
+
+It attempts to prioritize traffic by distance.
+
+At the bottom is a heading strip. It shows you in text with a green background your GPS track and your gyro based direction. Combined they will give you an idea of any crab being maintained.
+
+To the left and right are the headings 180 degrees from center.
+
+Drawn above the heading strip are red "bugs". The larger the heading bug, the closer the traffic is.
+
+Right above each bug is a yellow "card" that shows you information about that traffic.
+
+At the top is the Tail Number, and if that is not available, a unique identifier that is broadcast.
+The next line is the bearing to the traffic.
+Below that is the distance to the target.
+Finally, the bottom line is the relative altitude in hundreds of feet. (+2 would be 200' above you.)
+
+Cards are drawn so the furthest traffic is "at the bottom of the stack". This prioritizes the closest traffic to have all content readable.
+
 ## Parts List
 
 ### All Builds
@@ -96,6 +137,7 @@ A self contained system that uses a 3D printed case and teleprompter glass. This
 
 1. Install the HUDLY projector per the HUDLY directions. It is handy to have the projector turned on to help locate the glass.
 2. Plug in the HDMI cable between the HUDLY input box and the Raspberry Pi.
+3. Plug the number pad into the Raspberry Pi
 
 
 ### Teleprompter Glass Based Setup
@@ -105,9 +147,28 @@ A self contained system that uses a 3D printed case and teleprompter glass. This
 3. Download the LCD drivers. <https://s3.amazonaws.com/sunfounder/Raspberry/images/LCD-show.tar.gz>
 4. Install the LCD driver per SunFounder's instructions. <http://wiki.sunfounder.cc/index.php?title=5_Inch_LCD_Touch_Screen_Monitor_for_Raspberry_Pi>
 5. Edit the StratuxHud config.json file so "flip_vertical" is True.
+6. Plug the number pad into the Raspberry Pi
 
 ## Appendix
 
-
-
 Teleprompter sample: <https://telepromptermirror.com/sample/>
+
+## Acknowledgements And Credits
+
+This project uses the Liberation family of fonts. They can be found at <https://pagure.io/liberation-fonts/>
+
+The initial project was inspired by Kris Knigga's PyAhrs project <https://github.com/kdknigga/pyahrs>
+
+The following components are used:
+
+* Python
+* PyGame
+* Ws4Py
+
+... and of course Stratux
+
+## License
+
+This project is covered by the GPL v3 license.
+
+Please see [LICENSE.md](LICENSE.md)
