@@ -124,14 +124,16 @@ class HeadsUpDisplay(object):
                             pass
                 except:
                     pass
-            else:
+            # Don't render the AHRS Out "X" if we are on the
+            # blank screen.
+            elif len(self.__hud__views__[self.__view_index__]) > 0:
                 # Should do this if the signal is lost...
                 self.__ahrs_not_available_element__.render(
                     self.__backpage_framebuffer__, orientation)  # 1ms
 
             self.render_perf.stop()
 
-            if self.__should_render_perf__ or len(self.__hud__views__[self.__view_index__]) == 0:
+            if self.__should_render_perf__:
                 debug_status_left = int(self.__width__ >> 1)
                 debug_status_top = int(self.__height__ * 0.2)
                 render_perf_text = self.render_perf.to_string()
