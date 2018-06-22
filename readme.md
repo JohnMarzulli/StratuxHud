@@ -4,9 +4,9 @@
 
 This project aims to bring an affordable heads up display system into ANY cockpit.
 
-The focus is to improve traffic awareness and to reduce the amount of time pilots reference tablets and EFBs.
+The focus is to improve traffic awareness and to reduce the amount of time pilots reference tablets or an EFB.
 
-_*NOTE:*_: This project relies on having a [Stratux](http://stratux.me/) build with AHRS and GPS. A suitable build can be done for less than $150 (USD).
+_*NOTE:*_ This project relies on having a [Stratux](http://stratux.me/) build with AHRS and GPS. A suitable build can be done for less than $150 (USD).
 
 There are two versions that can be built:
 
@@ -17,6 +17,7 @@ Using the "HUDLY Classic" projector and a Raspberry Pi 3.
 ![HUDLY Version](media/hudly_on_ground.jpg)
 
 Estimated cost is $300
+
 * $40 for RaspberryPi 3
 * $215 for HUDLY projector
 * Fans, case, cables
@@ -32,6 +33,7 @@ A self contained system that uses a 3D printed case and teleprompter glass. This
 ![Teleprompter Glass Version In Flight](media/in_flight.jpg)
 
 Estimated Cost is $140
+
 * $40 for a RaspberryPi 3
 * $45 for the LCD screen
 * $20 for Teleprompter Glass and shipping.
