@@ -14,6 +14,11 @@ Using the "HUDLY Classic" projector and a Raspberry Pi 3.
 
 ![HUDLY Version](media/hudly_on_ground.jpg)
 
+Estimated cost is $300
+* $40 for RaspberryPi 3
+* $215 for HUDLY projector
+* Fans, case, cables
+
 ### Alternative, Less Expensive Version
 
 A self contained system that uses a 3D printed case and teleprompter glass. This version can be built for the cost of a Raspberry Pi and the 3D print.
@@ -21,6 +26,13 @@ A self contained system that uses a 3D printed case and teleprompter glass. This
 *NOTE:* This version does have visibility issues in daylight conditions. The HUDLY Version is fully daylight visible.
 
 ![Teleprompter Glass Version In Flight](media/in_flight.jpg)
+
+Estimated Cost is $140
+* $40 for a RaspberryPi 3
+* $45 for the LCD screen
+* $20 for Teleprompter Glass and shipping.
+* Cost of 3D printing the special case.
+* Cables
 
 ## In Flight Controls
 
