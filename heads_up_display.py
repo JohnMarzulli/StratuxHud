@@ -46,6 +46,10 @@ class HeadsUpDisplay(object):
     PITCH_DEGREES_DISPLAY_SCALER = 2.0
 
     def __level_ahrs__(self):
+        """
+        Sends the command to the Stratux to level the AHRS.
+        """
+
         url = "http://{0}/cageAHRS".format(
             self.__configuration__.stratux_address())
 
@@ -55,6 +59,10 @@ class HeadsUpDisplay(object):
             pass
 
     def __shutdown_stratux__(self):
+        """
+        Sends the command to the Stratux to shutdown.
+        """
+
         url = "http://{0}/shutdown".format(
             self.__configuration__.stratux_address())
 
@@ -64,6 +72,10 @@ class HeadsUpDisplay(object):
             pass
 
     def run(self):
+        """
+        Runs the update/render logic loop.
+        """
+
         clock = pygame.time.Clock()
 
         try:
@@ -240,6 +252,8 @@ class HeadsUpDisplay(object):
                                                                   (self.__width__, self.__height__), self.__configuration__)
         adsb_onscreen_reticle_element = adsb_on_screen_reticles.AdsbOnScreenReticles(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
                                                                                      self.__font__, (self.__width__, self.__height__), self.__configuration__)
+        altitude_element = altitude.Altitude(
+            HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__, (self.__width__, self.__height__))
 
         time_element = time.Time(
             HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__, (self.__width__, self.__height__))
@@ -262,8 +276,9 @@ class HeadsUpDisplay(object):
         norden_view = [
             bottom_compass_element,
             groundspeed_element,
+            altitude_element,
             heading_target_bugs.HeadingTargetBugs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__,
-                                                    (self.__width__, self.__height__), self.__configuration__)
+                                                  (self.__width__, self.__height__), self.__configuration__)
         ]
 
         ahrs_view = [
@@ -274,8 +289,7 @@ class HeadsUpDisplay(object):
                 HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
                 self.__detail_font__, (self.__width__, self.__height__)),
             bottom_compass_element,
-            altitude.Altitude(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
-                              self.__detail_font__, (self.__width__, self.__height__)),
+            altitude_element,
             skid_and_gs.SkidAndGs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
                                   self.__detail_font__, (self.__width__, self.__height__)),
             roll_indicator.RollIndicator(
@@ -301,6 +315,10 @@ class HeadsUpDisplay(object):
             "PerfData", 5, self.__render_perf__, self.__logger__.logger)
 
     def __show_boot_screen__(self):
+        """
+        Renders a BOOTING screen.
+        """
+
         texture = self.__loading_font__.render("BOOTING", True, display.RED)
         text_width, text_height = texture.get_size()
         self.__backpage_framebuffer__.blit(texture, ((
@@ -311,11 +329,22 @@ class HeadsUpDisplay(object):
         pygame.display.flip()
 
     def __render_perf__(self):
+        """
+        Renders the performance data for the current view.
+        """
+
         self.__logger__('---- RENDER PERF ----')
         for element in self.__hud_views__[self.__view_index__]:
             self.__logger__(element.task_timer.to_string())
 
     def __handle_input__(self):
+        """
+        Top level handler for keyboard input.
+        
+        Returns:
+            bool -- True if the loop should continue, False if it should quit.
+        """
+
         for event in pygame.event.get():
             if not self.__handle_key_event__(event):
                 return False
@@ -325,6 +354,16 @@ class HeadsUpDisplay(object):
         return True
 
     def __handle_key_event__(self, event):
+        """
+        Handles a keyboard/keypad press event.
+        
+        Arguments:
+            event {pygame.event} -- The event from the keyboard.
+        
+        Returns:
+            bool -- True if the loop should continue, False if it should quit.
+        """
+
         if event.type == pygame.QUIT:
             utilities.shutdown()
             return False
