@@ -1,5 +1,8 @@
 import pygame
 
+import testing
+testing.load_imports()
+
 from lib.display import *
 from lib.task_timer import TaskTimer
 
@@ -34,3 +37,7 @@ class LevelReference(object):
             pygame.draw.lines(framebuffer,
                               WHITE, False, line, 6)
         self.task_timer.stop()
+
+if __name__ == '__main__':
+    import hud_elements
+    hud_elements.run_ahrs_hud_element(LevelReference)

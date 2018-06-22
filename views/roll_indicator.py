@@ -2,6 +2,9 @@ import math
 
 import pygame
 
+import testing
+testing.load_imports()
+
 from lib.display import *
 from lib.task_timer import TaskTimer
 

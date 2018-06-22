@@ -6,6 +6,15 @@ STATUTE = "statute"
 NAUTICAL = "knots"
 METRIC = "metric"
 
+SPEED = "SPEED"
+DISTANCE = "DISTANCE"
+
+UNIT_LABELS = {
+    STATUTE: {SPEED: "MPH", DISTANCE: "SM"},
+    NAUTICAL: {SPEED: "KTS", DISTANCE: "NM"},
+    METRIC: {SPEED: "KPH", DISTANCE: "KM"}
+}
+
 
 feet_to_nm = 6076.12
 feet_to_sm = 5280.0
@@ -43,13 +52,14 @@ def get_meters_from_feet(feet):
 
     return feet / feet_to_m
 
+
 def get_feet_from_meters(meters):
     """
     Returns feet from meters.
-    
+
     Arguments:
         meters {float} -- The value in meters.
-    
+
     Returns:
         float -- The meters converted to feet.
     """
@@ -80,14 +90,14 @@ def get_distance_string(units, distance):
             return "{0:.0f}".format(distance) + "'"
 
         if units == NAUTICAL:
-            return "{0:.1f}NM".format(distance / feet_to_nm)
+            return "{0:.1f}".format(distance / feet_to_nm) + UNIT_LABELS[NAUTICAL][DISTANCE]
 
-        return "{0:.1f}SM".format(distance / feet_to_sm)
+        return "{0:.1f}".format(distance / feet_to_sm) + UNIT_LABELS[STATUTE][DISTANCE]
     else:
         conversion = distance / feet_to_km
 
         if conversion > 0.5:
-            return "{0:.1f}km".format(conversion)
+            return "{0:.1f}".format(conversion) + UNIT_LABELS[METRIC][DISTANCE]
 
         return "{0:.1f}m".format(distance / feet_to_m)
 

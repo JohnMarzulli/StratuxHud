@@ -153,6 +153,7 @@ class AhrsData(object):
         self.groundspeed = 0
         self.vertical_speed = 0
         self.g_load = 1.0
+        self.utc_time = datetime.datetime.utcnow()
 
 
 class AhrsSimulation(object):
@@ -269,6 +270,7 @@ class AhrsStratux(object):
         new_ahrs_data.groundspeed = self.__get_value__(
             ahrs_json, 'GPSGroundSpeed', 0.0)
         new_ahrs_data.g_load = self.__get_value__(ahrs_json, 'AHRSGLoad', 1.0)
+        new_ahrs_data.utc_time = self.__get_value_with_fallback__(ahrs_json, 'GPSTime', str(datetime.datetime.utcnow()))
         self.data_source_available = True
         # except:
         #    self.data_source_available = False

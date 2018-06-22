@@ -1,12 +1,17 @@
 import math
 
 import pygame
+import testing
 
-from lib.display import *
+testing.load_imports()
+
 import units
 from configuration import Configuration
 from hud_elements import HudDataCache
+from lib.display import *
 from lib.task_timer import TaskTimer
+
+
 
 
 class AdsbElement(object):

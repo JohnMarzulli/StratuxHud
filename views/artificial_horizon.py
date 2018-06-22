@@ -1,5 +1,8 @@
 import pygame
 
+import testing
+testing.load_imports()
+
 from hud_elements import *
 from lib.display import *
 from lib.task_timer import TaskTimer

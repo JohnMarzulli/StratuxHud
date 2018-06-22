@@ -129,6 +129,8 @@ A blank screen so no information is displayed.
 ### Recommended HUDLY Build
 
 * [HUDLY Classic](https://gethudly.com/classic)
+  * *NOTE:* You will most likely want to order the cigarette lighter powered version.
+  * *NOTE:* You can order the iPhone or Android cable option based on your phone. It will not matter for the StratuxHud.
 * [12" HDMI Cable](https://www.amazon.com/StarTech-com-0-3m-Short-Speed-Cable/dp/B00K3HF276/ref=sr_1_11?s=electronics&ie=UTF8&qid=1529216822&sr=1-11&keywords=short%2Bhdmi%2Bcable&th=1)
 
 ### 3D Print Build

@@ -2,6 +2,10 @@ import pygame
 
 from adsb_element import *
 from hud_elements import *
+
+import testing
+testing.load_imports()
+
 from lib.task_timer import TaskTimer
 
 
