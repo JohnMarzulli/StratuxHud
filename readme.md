@@ -6,6 +6,8 @@ This project aims to bring an affordable heads up display system into ANY cockpi
 
 The focus is to improve traffic awareness and to reduce the amount of time pilots reference tablets and EFBs.
 
+_*NOTE:*_: This project relies on having a [Stratux](http://stratux.me/) build with AHRS and GPS. A suitable build can be done for less than $150 (USD).
+
 There are two versions that can be built:
 
 ### Recommended
