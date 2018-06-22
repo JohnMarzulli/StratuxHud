@@ -44,6 +44,7 @@ def get_reticle_size(distance, min_reticle_size=0.05, max_reticle_size=0.20):
 class HudDataCache(object):
     TEXT_TEXTURE_CACHE = {}
     RELIABLE_TRAFFIC_REPORTS = []
+    HEADING_BUGS = []
     __CACHE_ENTRY_LAST_USED__ = {}
     __CACHE_INVALIDATION_TIME__ = 60 * 5
 
@@ -122,6 +123,7 @@ def run_ahrs_hud_element(element_type, use_detail_font=True):
 
     from heads_up_display import HeadsUpDisplay
     from aircraft import AhrsSimulation
+    from datetime import datetime
 
     clock = pygame.time.Clock()
 
@@ -154,6 +156,7 @@ def run_ahrs_hud_element(element_type, use_detail_font=True):
 
     while True:
         orientation = __aircraft__.ahrs_data
+        orientation.utc_time = str(datetime.utcnow())
         __aircraft__.simulate()
         __backpage_framebuffer__.fill(BLACK)
         hud_element.render(__backpage_framebuffer__, orientation)
