@@ -10,25 +10,21 @@ import sys
 import pygame
 import requests
 
-import adsb_on_screen_reticles
-import adsb_target_bugs
-import adsb_traffic_listing
-import ahrs_not_available
-import altitude
-import artificial_horizon
-import compass_and_heading_bottom_element
-import hud_elements
-import level_reference
 import lib.display as display
 import lib.local_debug as local_debug
 import lib.utilities as utilities
-import roll_indicator
-import skid_and_gs
 import traffic
 from aircraft import Aircraft
 from configuration import *
 from lib.recurring_task import RecurringTask
 from lib.task_timer import TaskTimer
+import hud_elements
+from views import (adsb_on_screen_reticles, adsb_target_bugs,
+                   adsb_traffic_listing, ahrs_not_available, altitude,
+                   artificial_horizon, compass_and_heading_bottom_element,
+                   groundspeed,
+                   level_reference, roll_indicator, skid_and_gs,
+                   time)
 
 # TODO - Add the G-Meter
 # TODO - Disable functionality based on the enabled StratuxCapabilities
@@ -178,11 +174,26 @@ class HeadsUpDisplay(object):
             text, (position_x - (text_width >> 1), position_y - (text_height >> 1)))
 
         return text_width, text_height
+    
+    def log(self, text):
+        """
+        Logs the given text if a logger is available.
+        
+        Arguments:
+            text {string} -- The text to log
+        """
 
-    def __init__(self):
+        if self.__logger__ is not None:
+            self.__logger__.log_info_message(text)
+        else:
+            print(text)
+
+    def __init__(self, logger):
         """
         Initialize and create a new HUD.
         """
+
+        self.__logger__ = logger
 
         self.render_perf = TaskTimer("Render")
         self.orient_perf = TaskTimer("Orient")
@@ -230,6 +241,9 @@ class HeadsUpDisplay(object):
         adsb_onscreen_reticle_element = adsb_on_screen_reticles.AdsbOnScreenReticles(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
                                                                                      self.__font__, (self.__width__, self.__height__), self.__configuration__)
 
+        time_element = time.Time(
+            HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__, (self.__width__, self.__height__))
+
         traffic_only_view = [
             bottom_compass_element,
             adsb_target_bug_element,
@@ -256,9 +270,13 @@ class HeadsUpDisplay(object):
             roll_indicator.RollIndicator(
                 HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
                 self.__font__, (self.__width__, self.__height__)),
+            groundspeed.Groundspeed(
+                HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
+                self.__detail_font__, (self.__width__, self.__height__))
         ]
 
-        blank_view = []
+        # Yes... I know. It is the "blank" view... but has something...
+        blank_view = [time_element]
 
         self.__hud__views__ = [
             traffic_only_view,
@@ -269,7 +287,7 @@ class HeadsUpDisplay(object):
 
         self.__view_index__ = 0
 
-        self.__perf_task__ = RecurringTask("PerfData", 5, self.__render_perf__)
+        self.__perf_task__ = RecurringTask("PerfData", 5, self.__render_perf__, self.__logger__)
 
     def __show_boot_screen__(self):
         texture = self.__loading_font__.render("BOOTING", True, display.RED)
@@ -282,9 +300,9 @@ class HeadsUpDisplay(object):
         pygame.display.flip()
 
     def __render_perf__(self):
-        print('--------------')
+        self.__logger__('---- RENDER PERF ----')
         for element in self.__hud__views__[self.__view_index__]:
-            print(element.task_timer.to_string())
+            self.__logger__(element.task_timer.to_string())
 
     def __handle_input__(self):
         for event in pygame.event.get():
@@ -345,5 +363,5 @@ class HeadsUpDisplay(object):
 
 
 if __name__ == '__main__':
-    hud = HeadsUpDisplay()
+    hud = HeadsUpDisplay(None)
     sys.exit(hud.run())

@@ -1,5 +1,6 @@
 import json
 import os
+import units
 
 EARTH_RADIUS_NAUTICAL_MILES = 3440
 EARTH_RADIUS_STATUTE_MILES = 3956
@@ -56,7 +57,25 @@ class Configuration(object):
         return default_value
 
     def __get_display_settings__(self):
+        """
+        Returns the display settings.
+        This include if the image is flipped.
+        
+        Returns:
+            dictionary -- The display settings, if any found.
+        """
+
         return self.__get_config_value__(Configuration.DISPLAY_KEY, None)
+
+    def units(self):
+        """
+        Returns the units that the display should use.
+        
+        Returns:
+            string -- The type of units.
+        """
+
+        return self.__get_config_value__(self.DISTANCE_UNITS_KEY, units.STATUTE)
 
     def reverse_roll(self):
         """

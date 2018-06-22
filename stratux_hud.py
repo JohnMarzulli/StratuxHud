@@ -43,16 +43,18 @@ from lib.logger import Logger
 
 CONFIGURATION = configuration.Configuration(configuration.DEFAULT_CONFIG_FILE)
 
-LOG_LEVEL = logging.INFO
-
-LOGGER = logging.getLogger("stratux_hud")
-LOGGER.setLevel(LOG_LEVEL)
+python_logger = logging.getLogger("stratux_hud")
+python_logger.setLevel(logging.DEBUG)
+LOGGER = Logger(python_logger)
 HANDLER = logging.handlers.RotatingFileHandler(
-    CONFIGURATION.log_filename, maxBytes=1048576, backupCount=3)
+    "stratux_hud.log", maxBytes=1048576, backupCount=10)
 HANDLER.setFormatter(logging.Formatter(
-    '%(asctime)s %(levelname)-8s %(message)s'))
-LOGGER.addHandler(HANDLER)
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+python_logger.addHandler(HANDLER)
+
 
 if __name__ == '__main__':
-    hud = heads_up_display.HeadsUpDisplay()
+    LOGGER.log_info_message("Starting HUD")
+
+    hud = heads_up_display.HeadsUpDisplay(LOGGER)
     hud.run()

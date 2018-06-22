@@ -1,6 +1,10 @@
 import pygame
 
 from compass_and_heading_top_element import CompassAndHeadingTopElement
+
+import testing
+testing.load_imports()
+
 from lib.display import *
 from lib.task_timer import TaskTimer
 

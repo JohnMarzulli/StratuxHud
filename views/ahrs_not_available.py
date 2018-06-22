@@ -1,4 +1,7 @@
 import pygame
+import testing
+
+testing.load_imports()
 
 from lib.display import RED
 from lib.task_timer import TaskTimer
