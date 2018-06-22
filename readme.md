@@ -19,6 +19,8 @@ Estimated cost is $300
 * $215 for HUDLY projector
 * Fans, case, cables
 
+Requires your aircraft to have a "12 Volt" cigarette power outlet.
+
 ### Alternative, Less Expensive Version
 
 A self contained system that uses a 3D printed case and teleprompter glass. This version can be built for the cost of a Raspberry Pi and the 3D print.
@@ -33,6 +35,8 @@ Estimated Cost is $140
 * $20 for Teleprompter Glass and shipping.
 * Cost of 3D printing the special case.
 * Cables
+
+Can be powered by a USB powerbank or USB power.
 
 ## In Flight Controls
 
