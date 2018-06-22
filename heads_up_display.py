@@ -22,7 +22,7 @@ import hud_elements
 from views import (adsb_on_screen_reticles, adsb_target_bugs,
                    adsb_traffic_listing, ahrs_not_available, altitude,
                    artificial_horizon, compass_and_heading_bottom_element,
-                   groundspeed,
+                   groundspeed, heading_target_bugs,
                    level_reference, roll_indicator, skid_and_gs,
                    time)
 
@@ -112,7 +112,7 @@ class HeadsUpDisplay(object):
                 try:
                     hud_elements.HudDataCache.update_traffic_reports()
 
-                    for hud_element in self.__hud__views__[self.__view_index__]:
+                    for hud_element in self.__hud_views__[self.__view_index__]:
                         try:
                             hud_element.render(
                                 self.__backpage_framebuffer__, orientation)
@@ -122,7 +122,7 @@ class HeadsUpDisplay(object):
                     pass
             # Don't render the AHRS Out "X" if we are on the
             # blank screen.
-            elif len(self.__hud__views__[self.__view_index__]) > 0:
+            elif len(self.__hud_views__[self.__view_index__]) > 0:
                 # Should do this if the signal is lost...
                 self.__ahrs_not_available_element__.render(
                     self.__backpage_framebuffer__, orientation)  # 1ms
@@ -174,11 +174,11 @@ class HeadsUpDisplay(object):
             text, (position_x - (text_width >> 1), position_y - (text_height >> 1)))
 
         return text_width, text_height
-    
+
     def log(self, text):
         """
         Logs the given text if a logger is available.
-        
+
         Arguments:
             text {string} -- The text to log
         """
@@ -244,6 +244,10 @@ class HeadsUpDisplay(object):
         time_element = time.Time(
             HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__, (self.__width__, self.__height__))
 
+        groundspeed_element = groundspeed.Groundspeed(
+            HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
+            self.__detail_font__, (self.__width__, self.__height__))
+
         traffic_only_view = [
             bottom_compass_element,
             adsb_target_bug_element,
@@ -252,6 +256,13 @@ class HeadsUpDisplay(object):
 
         traffic_listing_view = [
             adsb_traffic_listing.AdsbTrafficListing(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__,
+                                                    (self.__width__, self.__height__), self.__configuration__)
+        ]
+
+        norden_view = [
+            bottom_compass_element,
+            groundspeed_element,
+            heading_target_bugs.HeadingTargetBugs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__,
                                                     (self.__width__, self.__height__), self.__configuration__)
         ]
 
@@ -270,24 +281,24 @@ class HeadsUpDisplay(object):
             roll_indicator.RollIndicator(
                 HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
                 self.__font__, (self.__width__, self.__height__)),
-            groundspeed.Groundspeed(
-                HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
-                self.__detail_font__, (self.__width__, self.__height__))
+            groundspeed_element
         ]
 
         # Yes... I know. It is the "blank" view... but has something...
         blank_view = [time_element]
 
-        self.__hud__views__ = [
+        self.__hud_views__ = [
             traffic_only_view,
             ahrs_view,
             traffic_listing_view,
+            norden_view,
             blank_view
         ]
 
         self.__view_index__ = 0
 
-        self.__perf_task__ = RecurringTask("PerfData", 5, self.__render_perf__, self.__logger__)
+        self.__perf_task__ = RecurringTask(
+            "PerfData", 5, self.__render_perf__, self.__logger__.logger)
 
     def __show_boot_screen__(self):
         texture = self.__loading_font__.render("BOOTING", True, display.RED)
@@ -301,7 +312,7 @@ class HeadsUpDisplay(object):
 
     def __render_perf__(self):
         self.__logger__('---- RENDER PERF ----')
-        for element in self.__hud__views__[self.__view_index__]:
+        for element in self.__hud_views__[self.__view_index__]:
             self.__logger__(element.task_timer.to_string())
 
     def __handle_input__(self):
@@ -355,11 +366,11 @@ class HeadsUpDisplay(object):
         Makes sure that the view index is within bounds.
         """
 
-        if self.__view_index__ >= (len(self.__hud__views__)):
+        if self.__view_index__ >= (len(self.__hud_views__)):
             self.__view_index__ = 0
 
         if self.__view_index__ < 0:
-            self.__view_index__ = (len(self.__hud__views__) - 1)
+            self.__view_index__ = (len(self.__hud_views__) - 1)
 
 
 if __name__ == '__main__':
