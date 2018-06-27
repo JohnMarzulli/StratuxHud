@@ -49,6 +49,17 @@ class HudDataCache(object):
     __CACHE_INVALIDATION_TIME__ = 60 * 5
 
     @staticmethod
+    def set_heading_bugs(targets):
+        """
+        Set and update the target/heading bugs.
+        
+        Arguments:
+            targets {float[,2]} -- Array of float lat/long tuples
+        """
+
+        HudDataCache.HEADING_BUGS = targets
+
+    @staticmethod
     def update_traffic_reports():
         HudDataCache.RELIABLE_TRAFFIC_REPORTS = AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
 
@@ -66,13 +77,32 @@ class HudDataCache(object):
             del HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_to_purge]
 
     @staticmethod
-    def get_cached_text_texture(text, font):
+    def get_cached_text_texture(text, font, text_color = BLACK, background_color = YELLOW, use_alpha = False):
+        """
+        Retrieves a cached texture.
+        If the texture with the given text does not already exists, creates it.
+        Uses only the text has the key. If the colors change, the cache is not invalidated or changed.
+        
+        Arguments:
+            text {string} -- The text to generate a texture for.
+            font {pygame.font} -- The font to use for the texture.
+        
+        Keyword Arguments:
+            text_color {tuple} -- The RGB color for the text. (default: {BLACK})
+            background_color {tuple} -- The RGB color for the BACKGROUND. (default: {YELLOW})
+            use_alpha {bool} -- Should alpha be used? (default: {False})
+        
+        Returns:
+            [type] -- The texture.
+        """
+
         if text not in HudDataCache.TEXT_TEXTURE_CACHE:
-            texture = font.render(
-                text, True, BLACK, YELLOW)  # .convert()
-            # text_width, text_height = texture.get_size()
-            HudDataCache.TEXT_TEXTURE_CACHE[text] = texture  # , (
-            # text_width, text_height)
+            texture = font.render(text, True, text_color, background_color)
+            
+            if use_alpha:
+                texture = texture.convert()
+
+            HudDataCache.TEXT_TEXTURE_CACHE[text] = texture
 
         HudDataCache.__CACHE_ENTRY_LAST_USED__[text] = datetime.datetime.now()
         return HudDataCache.TEXT_TEXTURE_CACHE[text]
