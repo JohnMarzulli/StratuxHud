@@ -70,6 +70,6 @@ if __name__ == '__main__':
     print("Have {0} targets.".format(len(heading_bugs.targets)))
 
     for target in heading_bugs.targets:
-        print("Target: {0}, {1}".format(target[0], target[1], target[2]))
+        print("Target: {0}, {1} : {2}".format(target[0], target[1], target[2]))
     
     heading_bugs.save()
