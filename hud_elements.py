@@ -43,15 +43,12 @@ def get_reticle_size(distance, min_reticle_size=0.05, max_reticle_size=0.20):
 
 class HudDataCache(object):
     TEXT_TEXTURE_CACHE = {}
-    RELIABLE_TRAFFIC_REPORTS = []
     __CACHE_ENTRY_LAST_USED__ = {}
     __CACHE_INVALIDATION_TIME__ = 60 * 5
   
 
     @staticmethod
     def update_traffic_reports():
-        HudDataCache.RELIABLE_TRAFFIC_REPORTS = AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
-
         # The second hardest problem in comp-sci...
         textures_to_purge = []
         for texture_key in HudDataCache.__CACHE_ENTRY_LAST_USED__:

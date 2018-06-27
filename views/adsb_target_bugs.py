@@ -31,7 +31,7 @@ class AdsbTargetBugs(AdsbElement):
         heading = orientation.get_onscreen_projection_heading()
 
         # Get the traffic, and bail out of we have none
-        traffic_reports = HudDataCache.RELIABLE_TRAFFIC_REPORTS
+        traffic_reports = AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
 
         if traffic_reports is None:
             self.task_timer.stop()
@@ -40,7 +40,7 @@ class AdsbTargetBugs(AdsbElement):
         # Draw the heading bugs in reverse order so the traffic closest to
         # us will be the most visible
         traffic_bug_reports = sorted(
-            HudDataCache.RELIABLE_TRAFFIC_REPORTS, key=lambda traffic: traffic.distance, reverse=True)
+            traffic_reports, key=lambda traffic: traffic.distance, reverse=True)
 
         for traffic_report in traffic_bug_reports:
             if traffic_report.distance > imperial_occlude:
