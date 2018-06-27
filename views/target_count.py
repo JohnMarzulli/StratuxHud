@@ -6,6 +6,7 @@ testing.load_imports()
 from lib.display import *
 from lib.task_timer import TaskTimer
 import units
+import hud_elements
 from ahrs_element import AhrsElement
 from hud_elements import *
 
@@ -38,7 +39,7 @@ class TargetCount(AhrsElement):
         text = "NO TARGETS"
 
         try:
-            heading_bugs = HudDataCache.get_heading_bugs()
+            heading_bugs = hud_elements.HEADING_BUGS
             count = len(heading_bugs)
 
             if count > 0:

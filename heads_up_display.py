@@ -147,8 +147,7 @@ class HeadsUpDisplay(object):
             self.orient_perf.stop()
 
             hud_elements.HudDataCache.update_traffic_reports()
-            hud_elements.HudDataCache.set_heading_bugs(
-                self.__target_manager__.targets)
+            hud_elements.HEADING_BUGS = self.__target_manager__.targets
 
             self.__backpage_framebuffer__.fill(display.BLACK)
 

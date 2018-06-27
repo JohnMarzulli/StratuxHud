@@ -40,28 +40,15 @@ def get_reticle_size(distance, min_reticle_size=0.05, max_reticle_size=0.20):
 
     return on_screen_reticle_scale
 
+HEADING_BUGS = []
+
 
 class HudDataCache(object):
     TEXT_TEXTURE_CACHE = {}
     RELIABLE_TRAFFIC_REPORTS = []
-    HEADING_BUGS = []
     __CACHE_ENTRY_LAST_USED__ = {}
     __CACHE_INVALIDATION_TIME__ = 60 * 5
-
-    @staticmethod
-    def set_heading_bugs(targets):
-        """
-        Set and update the target/heading bugs.
-        
-        Arguments:
-            targets {float[,2]} -- Array of float lat/long tuples
-        """
-
-        HudDataCache.HEADING_BUGS = targets
-    
-    @staticmethod
-    def get_heading_bugs():
-        return HudDataCache.HEADING_BUGS
+  
 
     @staticmethod
     def update_traffic_reports():

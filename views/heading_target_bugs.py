@@ -7,6 +7,7 @@ import pygame
 
 from adsb_element import AdsbElement
 from hud_elements import HudDataCache, get_reticle_size, get_heading_bug_x
+import hud_elements
 
 import testing
 testing.load_imports()
@@ -63,12 +64,10 @@ class HeadingTargetBugs(AdsbElement):
         heading = orientation.get_onscreen_projection_heading()
 
         # Get the traffic, and bail out of we have none
-        heading_bugs = HudDataCache.get_heading_bugs()
-
-        if heading_bugs is None:
+        if hud_elements.HEADING_BUGS is None:
             return
 
-        for target_position in heading_bugs:
+        for target_position in hud_elements.HEADING_BUGS:
             ground_speed_ms = units.get_meters_per_second_from_mph(
                 orientation.groundspeed)
             distance_miles = norden.get_distance(
