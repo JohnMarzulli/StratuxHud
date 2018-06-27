@@ -176,10 +176,10 @@ class HeadsUpDisplay(object):
                         try:
                             hud_element.render(
                                 self.__backpage_framebuffer__, orientation)
-                        except:
-                            pass
-            except:
-                pass
+                        except Exception as e:
+                            self.warn("ELEMENT:" + str(e))
+            except Exception as e:
+                self.warn("LOOP:" + str(e))
 
             self.render_perf.stop()
 
@@ -242,6 +242,19 @@ class HeadsUpDisplay(object):
         else:
             print(text)
 
+    def warn(self, text):
+        """
+        Logs the given text if a logger is available AS A WARNING.
+
+        Arguments:
+            text {string} -- The text to log
+        """
+
+        if self.__logger__ is not None:
+            self.__logger__.log_warning_message(text)
+        else:
+            print(text)
+
     def __build_ahrs_hud_element(self, hud_element_class, use_detail_font=False):
         """
         Builds a generic AHRS HUD element.
@@ -267,7 +280,8 @@ class HeadsUpDisplay(object):
 
             return hud_element_class(HeadsUpDisplay.DEGREES_OF_PITCH,
                                      self.__pixels_per_degree_y__, font, (self.__width__, self.__height__))
-        except:
+        except Exception as e:
+            self.warn("Unable to build element:" + str(e))
             return None
 
     def __init__(self, logger):
