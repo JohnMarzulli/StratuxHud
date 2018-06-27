@@ -19,12 +19,13 @@ from configuration import *
 from lib.recurring_task import RecurringTask
 from lib.task_timer import TaskTimer
 import hud_elements
+import targets
 from views import (adsb_on_screen_reticles, adsb_target_bugs,
                    adsb_traffic_listing, ahrs_not_available, altitude,
                    artificial_horizon, compass_and_heading_bottom_element,
-                   groundspeed,
+                   groundspeed, heading_target_bugs,
                    level_reference, roll_indicator, skid_and_gs,
-                   time)
+                   target_count, time)
 
 # TODO - Add the G-Meter
 # TODO - Disable functionality based on the enabled StratuxCapabilities
@@ -46,6 +47,10 @@ class HeadsUpDisplay(object):
     PITCH_DEGREES_DISPLAY_SCALER = 2.0
 
     def __level_ahrs__(self):
+        """
+        Sends the command to the Stratux to level the AHRS.
+        """
+
         url = "http://{0}/cageAHRS".format(
             self.__configuration__.stratux_address())
 
@@ -55,6 +60,10 @@ class HeadsUpDisplay(object):
             pass
 
     def __shutdown_stratux__(self):
+        """
+        Sends the command to the Stratux to shutdown.
+        """
+
         url = "http://{0}/shutdown".format(
             self.__configuration__.stratux_address())
 
@@ -64,6 +73,10 @@ class HeadsUpDisplay(object):
             pass
 
     def run(self):
+        """
+        Runs the update/render logic loop.
+        """
+
         clock = pygame.time.Clock()
 
         try:
@@ -72,10 +85,47 @@ class HeadsUpDisplay(object):
         finally:
             self.__connection_manager__.shutdown()
             pygame.display.quit()
-            self.__render_perf__()
-            # pygame.quit()
 
         sys.exit()
+
+    def __render_view_title__(self, text):
+        try:
+            texture = hud_elements.HudDataCache.get_cached_text_texture(
+                text,
+                self.__detail_font__,
+                display.BLUE,
+                display.BLACK,
+                True)
+
+            left_border = 0
+            top_border = 0
+            position = (left_border, top_border)
+
+            self.__backpage_framebuffer__.blit(
+                texture, position)
+        except:
+            pass
+
+    def __is_ahrs_view__(self, view):
+        """
+        Does any element in this view use AHRS?
+
+        Arguments:
+            view {AhrsElement[] or AdsbElement[]} -- The collection of view elements.
+
+        Returns:
+            bool -- True is any element uses ADSB.
+        """
+
+        if view is None or len(view) < 1:
+            return False
+
+        is_ahrs_view = False
+
+        for hud_element in view:
+            is_ahrs_view = is_ahrs_view or hud_element.uses_ahrs()
+
+        return is_ahrs_view
 
     def tick(self, clock):
         """
@@ -96,36 +146,38 @@ class HeadsUpDisplay(object):
             orientation = self.__aircraft__.get_orientation()
             self.orient_perf.stop()
 
+            hud_elements.HudDataCache.update_traffic_reports()
+
             self.__backpage_framebuffer__.fill(display.BLACK)
 
             self.render_perf.start()
 
-            if self.__aircraft__.is_ahrs_available():
-                # Order of drawing is important
-                # The pitch lines are drawn before the other
-                # reference information so they will be pushed to the
-                # background.
-                # The reference text is also intentionally
-                # drawn with a black background
-                # to overdraw the pitch lines
-                # and improve readability
-                try:
-                    hud_elements.HudDataCache.update_traffic_reports()
+            view_name, view = self.__hud_views__[self.__view_index__]
+            self.__render_view_title__(view_name)
 
-                    for hud_element in self.__hud__views__[self.__view_index__]:
+            view_uses_ahrs = self.__is_ahrs_view__(view)
+
+            try:
+                if view_uses_ahrs and not self.__aircraft__.is_ahrs_available():
+                    self.__ahrs_not_available_element__.render(
+                        self.__backpage_framebuffer__, orientation)
+                else:
+                    # Order of drawing is important
+                    # The pitch lines are drawn before the other
+                    # reference information so they will be pushed to the
+                    # background.
+                    # The reference text is also intentionally
+                    # drawn with a black background
+                    # to overdraw the pitch lines
+                    # and improve readability
+                    for hud_element in view:
                         try:
                             hud_element.render(
                                 self.__backpage_framebuffer__, orientation)
-                        except:
-                            pass
-                except:
-                    pass
-            # Don't render the AHRS Out "X" if we are on the
-            # blank screen.
-            elif len(self.__hud__views__[self.__view_index__]) > 0:
-                # Should do this if the signal is lost...
-                self.__ahrs_not_available_element__.render(
-                    self.__backpage_framebuffer__, orientation)  # 1ms
+                        except Exception as e:
+                            self.warn("ELEMENT:" + str(e))
+            except Exception as e:
+                self.warn("LOOP:" + str(e))
 
             self.render_perf.stop()
 
@@ -174,11 +226,11 @@ class HeadsUpDisplay(object):
             text, (position_x - (text_width >> 1), position_y - (text_height >> 1)))
 
         return text_width, text_height
-    
+
     def log(self, text):
         """
         Logs the given text if a logger is available.
-        
+
         Arguments:
             text {string} -- The text to log
         """
@@ -187,6 +239,48 @@ class HeadsUpDisplay(object):
             self.__logger__.log_info_message(text)
         else:
             print(text)
+
+    def warn(self, text):
+        """
+        Logs the given text if a logger is available AS A WARNING.
+
+        Arguments:
+            text {string} -- The text to log
+        """
+
+        if self.__logger__ is not None:
+            self.__logger__.log_warning_message(text)
+        else:
+            print(text)
+
+    def __build_ahrs_hud_element(self, hud_element_class, use_detail_font=False):
+        """
+        Builds a generic AHRS HUD element.
+
+        Arguments:
+            hud_element_class {class} -- The object type to build.
+
+        Keyword Arguments:
+            use_detail_font {bool} -- Should the smaller detail font be used. (default: {False})
+
+        Returns:
+            hud_element -- A HUD element ready for rendering.
+        """
+
+        try:
+            if hud_element_class is None:
+                return None
+
+            font = self.__font__
+
+            if use_detail_font:
+                font = self.__detail_font__
+
+            return hud_element_class(HeadsUpDisplay.DEGREES_OF_PITCH,
+                                     self.__pixels_per_degree_y__, font, (self.__width__, self.__height__))
+        except Exception as e:
+            self.warn("Unable to build element:" + str(e))
+            return None
 
     def __init__(self, logger):
         """
@@ -231,18 +325,20 @@ class HeadsUpDisplay(object):
         self.__pixels_per_degree_y__ = (
             self.__height__ / HeadsUpDisplay.DEGREES_OF_PITCH) * HeadsUpDisplay.PITCH_DEGREES_DISPLAY_SCALER
 
-        self.__ahrs_not_available_element__ = ahrs_not_available.AhrsNotAvailable(
-            HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__, (self.__width__, self.__height__))
+        self.__ahrs_not_available_element__ = self.__build_ahrs_hud_element(
+            ahrs_not_available.AhrsNotAvailable)
 
-        bottom_compass_element = compass_and_heading_bottom_element.CompassAndHeadingBottomElement(
-            HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__, (self.__width__, self.__height__))
+        bottom_compass_element = self.__build_ahrs_hud_element(
+            compass_and_heading_bottom_element.CompassAndHeadingBottomElement, True)
         adsb_target_bug_element = adsb_target_bugs.AdsbTargetBugs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__,
                                                                   (self.__width__, self.__height__), self.__configuration__)
         adsb_onscreen_reticle_element = adsb_on_screen_reticles.AdsbOnScreenReticles(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
                                                                                      self.__font__, (self.__width__, self.__height__), self.__configuration__)
-
-        time_element = time.Time(
-            HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__, (self.__width__, self.__height__))
+        altitude_element = self.__build_ahrs_hud_element(
+            altitude.Altitude, True)
+        time_element = self.__build_ahrs_hud_element(time.Time, True)
+        groundspeed_element = self.__build_ahrs_hud_element(
+            groundspeed.Groundspeed, True)
 
         traffic_only_view = [
             bottom_compass_element,
@@ -255,41 +351,53 @@ class HeadsUpDisplay(object):
                                                     (self.__width__, self.__height__), self.__configuration__)
         ]
 
-        ahrs_view = [
-            level_reference.LevelReference(
-                HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
-                self.__detail_font__, (self.__width__, self.__height__)),
-            artificial_horizon.ArtificialHorizon(
-                HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
-                self.__detail_font__, (self.__width__, self.__height__)),
+        norden_view = [
             bottom_compass_element,
-            altitude.Altitude(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
-                              self.__detail_font__, (self.__width__, self.__height__)),
-            skid_and_gs.SkidAndGs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
-                                  self.__detail_font__, (self.__width__, self.__height__)),
-            roll_indicator.RollIndicator(
-                HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
-                self.__font__, (self.__width__, self.__height__)),
-            groundspeed.Groundspeed(
-                HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
-                self.__detail_font__, (self.__width__, self.__height__))
+            heading_target_bugs.HeadingTargetBugs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__,
+                                                  (self.__width__, self.__height__), self.__configuration__),
+            # Draw the ground speed and altitude last so they
+            # will appear "on top".
+            self.__build_ahrs_hud_element(target_count.TargetCount, True),
+            groundspeed_element,
+            altitude_element
+        ]
+
+        ahrs_view = [
+            self.__build_ahrs_hud_element(
+                level_reference.LevelReference, True),
+            self.__build_ahrs_hud_element(
+                artificial_horizon.ArtificialHorizon, True),
+            bottom_compass_element,
+            altitude_element,
+            self.__build_ahrs_hud_element(skid_and_gs.SkidAndGs, True),
+            self.__build_ahrs_hud_element(roll_indicator.RollIndicator, True),
+            groundspeed_element
         ]
 
         # Yes... I know. It is the "blank" view... but has something...
         blank_view = [time_element]
 
-        self.__hud__views__ = [
-            traffic_only_view,
-            ahrs_view,
-            traffic_listing_view,
-            blank_view
-        ]
+        self.__hud_views__ = [
+            ("Traffic", traffic_only_view),
+            ("AHRS", ahrs_view),
+            ("ADSB List", traffic_listing_view),
+            # ("Norden", norden_view),
+            ("Time", blank_view),
+            ("", [])
+            ]
 
         self.__view_index__ = 0
 
-        self.__perf_task__ = RecurringTask("PerfData", 5, self.__render_perf__, self.__logger__)
+        logger = None
+
+        if self.__logger__ is not None:
+            logger = self.__logger__.logger
 
     def __show_boot_screen__(self):
+        """
+        Renders a BOOTING screen.
+        """
+
         texture = self.__loading_font__.render("BOOTING", True, display.RED)
         text_width, text_height = texture.get_size()
         self.__backpage_framebuffer__.blit(texture, ((
@@ -299,12 +407,14 @@ class HeadsUpDisplay(object):
         self.__backpage_framebuffer__.blit(flipped, [0, 0])
         pygame.display.flip()
 
-    def __render_perf__(self):
-        self.__logger__('---- RENDER PERF ----')
-        for element in self.__hud__views__[self.__view_index__]:
-            self.__logger__(element.task_timer.to_string())
-
     def __handle_input__(self):
+        """
+        Top level handler for keyboard input.
+
+        Returns:
+            bool -- True if the loop should continue, False if it should quit.
+        """
+
         for event in pygame.event.get():
             if not self.__handle_key_event__(event):
                 return False
@@ -314,6 +424,16 @@ class HeadsUpDisplay(object):
         return True
 
     def __handle_key_event__(self, event):
+        """
+        Handles a keyboard/keypad press event.
+
+        Arguments:
+            event {pygame.event} -- The event from the keyboard.
+
+        Returns:
+            bool -- True if the loop should continue, False if it should quit.
+        """
+
         if event.type == pygame.QUIT:
             utilities.shutdown()
             return False
@@ -345,6 +465,15 @@ class HeadsUpDisplay(object):
         if event.key in [pygame.K_BACKSPACE]:
             self.__level_ahrs__()
 
+        if event.key in [pygame.K_DELETE, pygame.K_PERIOD, pygame.K_KP_PERIOD]:
+            targets.TARGET_MANAGER.clear_targets()
+
+        if event.key in [pygame.K_RETURN, pygame.K_KP_ENTER]:
+            orientation = self.__aircraft__.get_orientation()
+            targets.TARGET_MANAGER.add_target(
+                orientation.position[0], orientation.position[1], orientation.alt)
+            targets.TARGET_MANAGER.save()
+
         if event.key in [pygame.K_EQUALS, pygame.K_KP_EQUALS]:
             self.__should_render_perf__ = not self.__should_render_perf__
 
@@ -355,11 +484,11 @@ class HeadsUpDisplay(object):
         Makes sure that the view index is within bounds.
         """
 
-        if self.__view_index__ >= (len(self.__hud__views__)):
+        if self.__view_index__ >= (len(self.__hud_views__)):
             self.__view_index__ = 0
 
         if self.__view_index__ < 0:
-            self.__view_index__ = (len(self.__hud__views__) - 1)
+            self.__view_index__ = (len(self.__hud_views__) - 1)
 
 
 if __name__ == '__main__':

@@ -14,16 +14,16 @@ class Logger(object):
         """ Log and print at Info level """
         if print_to_screen:
             print("LOG:" + utilities.escape(message_to_log))
-        self.__logger__.info(utilities.escape(message_to_log))
+        self.logger.info(utilities.escape(message_to_log))
 
         return message_to_log
 
     def log_warning_message(self, message_to_log):
         """ Log and print at Warning level """
         print("WARN:" + message_to_log)
-        self.__logger__.warning(utilities.escape(message_to_log))
+        self.logger.warning(utilities.escape(message_to_log))
 
         return message_to_log
 
     def __init__(self, logger):
-        self.__logger__ = logger
+        self.logger = logger

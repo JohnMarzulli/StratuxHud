@@ -5,9 +5,10 @@ testing.load_imports()
 
 from lib.display import *
 from lib.task_timer import TaskTimer
+from ahrs_element import AhrsElement
 
 
-class LevelReference(object):
+class LevelReference(AhrsElement):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
         self.task_timer = TaskTimer('LevelReference')
         self.level_reference_lines = []

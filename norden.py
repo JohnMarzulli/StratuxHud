@@ -25,7 +25,10 @@ import configuration
 
 terminal_velocity = 30  # m/s
 gravity = 9.80665  # m/s^2
-drag_scalar = 0.7
+drag_scalar = 0.4
+DEFAULT_K = 0.01
+
+CLAMP_SPEED = 0.1 # The slowest M/S we are willing to do the math on.
 
 
 def get_bearing(starting_pos, ending_pos):
@@ -134,13 +137,16 @@ def get_time_to_distance(distance, current_speed):
         current_speed {float} -- The speed in meters per second.
 
     Returns:
-        [type] -- [description]
+        float -- The number of seconds until the destination is reached.
     """
+
+    if math.fabs(current_speed) < CLAMP_SPEED:
+        current_speed = CLAMP_SPEED
 
     return distance / current_speed
 
 
-def get_free_fall_time(meters, mass, k):
+def get_free_fall_time(meters, mass, k = DEFAULT_K):
     return math.sqrt(mass/(gravity * k)) * math.acosh(math.e ** ((meters * k)/mass))
 
 
@@ -162,6 +168,9 @@ def get_time_to_impact(altitude, current_speed=0, total_time=0, time_slice=0.1):
     Returns:
         [type] -- [description]
     """
+
+    if altitude <= 0.0:
+        return 0.0
 
     # TODO - Figure out how to make terminal_velocity apply exponentially
     #        instead of having a linear velocity growth
@@ -185,9 +194,9 @@ def get_time_to_impact(altitude, current_speed=0, total_time=0, time_slice=0.1):
 
 if __name__ == '__main__':
     flour_sack_weight = 0.22
-    flour_sack_k = 0.002
+    flour_sack_k = 0.01
 
-    for test_altitude in (0, 25, 50, 100, 200, 400, 500):
+    for test_altitude in (0, 25, 50, 100, 200, 250, 400, 500):
         time_to_impact = get_time_to_impact(
             units.get_meters_from_feet(test_altitude))
         free_fall_time = get_free_fall_time(units.get_meters_from_feet(
@@ -202,7 +211,7 @@ if __name__ == '__main__':
         print('Alt(Free_fall) :{0}'.format(units.get_feet_from_meters(
             get_altitude(free_fall_time))))
 
-    altitude_feet = 200
+    altitude_feet = 250 # time in fall was about 6.5
     ground_speed_mph = 60  # MPH
     ground_speed_ms = units.get_meters_per_second_from_mph(ground_speed_mph)
 
