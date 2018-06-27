@@ -62,7 +62,7 @@ class HeadingTargetBugs(AdsbElement):
         heading = orientation.get_onscreen_projection_heading()
 
         # Get the traffic, and bail out of we have none
-        heading_bugs = HudDataCache.HEADING_BUGS
+        heading_bugs = HudDataCache.get_heading_bugs()
 
         if heading_bugs is None:
             return

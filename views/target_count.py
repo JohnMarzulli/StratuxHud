@@ -34,13 +34,17 @@ class TargetCount(AhrsElement):
     def render(self, framebuffer, orientation):
         self.task_timer.start()
         # Get the traffic, and bail out of we have none
-        heading_bugs = HudDataCache.HEADING_BUGS
-        count = len(heading_bugs)
 
         text = "NO TARGETS"
 
-        if count > 0:
-            text = "{0} TARGETS".format(count)
+        try:
+            heading_bugs = HudDataCache.get_heading_bugs()
+            count = len(heading_bugs)
+
+            if count > 0:
+                text = "{0} TARGETS".format(count)
+        except:
+            text = "ERROR"
 
         texture = self.__font__.render(text, True, WHITE, BLACK)
 

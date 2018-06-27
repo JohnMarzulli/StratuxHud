@@ -58,6 +58,10 @@ class HudDataCache(object):
         """
 
         HudDataCache.HEADING_BUGS = targets
+    
+    @staticmethod
+    def get_heading_bugs():
+        return HudDataCache.HEADING_BUGS
 
     @staticmethod
     def update_traffic_reports():
