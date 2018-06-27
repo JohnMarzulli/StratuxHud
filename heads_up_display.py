@@ -96,9 +96,9 @@ class HeadsUpDisplay(object):
                 display.BLUE,
                 display.BLACK,
                 True)
-            # text_width, text_height = texture.get_size()
-            left_border = 0  # int(self.__width__ * 0.1)
-            top_border = 0  # text_height
+
+            left_border = 0
+            top_border = 0
             position = (left_border, top_border)
 
             self.__backpage_framebuffer__.blit(
@@ -381,10 +381,10 @@ class HeadsUpDisplay(object):
             ("Traffic", traffic_only_view),
             ("AHRS", ahrs_view),
             ("ADSB List", traffic_listing_view),
-            ("Norden", norden_view),
+            # ("Norden", norden_view),
             ("Time", blank_view),
             ("", [])
-        ]
+            ]
 
         self.__view_index__ = 0
 
