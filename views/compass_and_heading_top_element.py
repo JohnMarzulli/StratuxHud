@@ -5,9 +5,10 @@ testing.load_imports()
 
 import lib.display as display
 from lib.task_timer import TaskTimer
+from ahrs_element import AhrsElement
 
 
-class CompassAndHeadingTopElement(object):
+class CompassAndHeadingTopElement(AhrsElement):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
         self.task_timer = TaskTimer('CompassAndHeadingTopElement')
         self.__framebuffer_size__ = framebuffer_size

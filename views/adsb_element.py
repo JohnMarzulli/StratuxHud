@@ -15,6 +15,16 @@ from lib.task_timer import TaskTimer
 
 
 class AdsbElement(object):
+    def uses_ahrs(self):
+        """
+        Does this element use AHRS data to render?
+               
+        Returns:
+            bool -- True if the element uses AHRS data.
+        """
+
+        return True
+
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, configuration):
         self.__roll_elements__ = {}
         self.__framebuffer_size__ = framebuffer_size

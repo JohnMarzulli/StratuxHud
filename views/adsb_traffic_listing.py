@@ -10,6 +10,16 @@ from lib.task_timer import TaskTimer
 
 
 class AdsbTrafficListing(AdsbElement):
+    def uses_ahrs(self):
+        """
+        Does this element use AHRS data to render?
+
+        Returns:
+            bool -- False as this element does not use AHRS data.
+        """
+
+        return False
+
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, configuration):
         AdsbElement.__init__(
             self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, configuration)
@@ -24,7 +34,7 @@ class AdsbTrafficListing(AdsbElement):
         self.__top_border__ = int(self.__height__ * 0.2)
         self.__bottom_border__ = self.__height__ - int(self.__height__ * 0.1)
 
-    def __get_padded_traffic_reports__(self, traffic_reports, orientation):
+    def __get_padded_traffic_reports__(self, traffic_reports):
         max_identifier_length = 0
         max_bearing_length = 0
         max_altitude_length = 0
@@ -32,7 +42,7 @@ class AdsbTrafficListing(AdsbElement):
         pre_padded_text = []
 
         max_identifier_length, max_distance_length, max_altitude_length = self.__get_pre_padded_text_reports__(
-            traffic_reports, orientation, max_identifier_length, max_bearing_length, max_altitude_length, max_distance_length, pre_padded_text)
+            traffic_reports, max_identifier_length, max_bearing_length, max_altitude_length, max_distance_length, pre_padded_text)
 
         out_padded_reports = []
 
@@ -53,20 +63,17 @@ class AdsbTrafficListing(AdsbElement):
 
         return out_padded_reports
 
-    def __get_pre_padded_text_reports__(self, traffic_reports, orientation, max_identifier_length, max_bearing_length, max_altitude_length, max_distance_length, pre_padded_text):
+    def __get_pre_padded_text_reports__(self, traffic_reports, max_identifier_length, max_bearing_length, max_altitude_length, max_distance_length, pre_padded_text):
         report_count = 0
         for traffic in traffic_reports:
             # Do not list traffic too far away
-            if traffic.distance > imperial_occlude or traffic.is_on_ground():
+            if report_count > self.__max_reports__ or traffic.distance > imperial_occlude or traffic.is_on_ground():
                 continue
 
             report_count += 1
 
-            if report_count > self.__max_reports__:
-                break
-
             identifier = str(traffic.get_identifer())
-            altitude_delta = int((traffic.altitude - orientation.alt) / 100.0)
+            altitude_delta = int(traffic.altitude / 100.0)
             distance_text = self.__get_distance_string__(traffic.distance)
             delta_sign = ''
             if altitude_delta > 0:
@@ -93,6 +100,7 @@ class AdsbTrafficListing(AdsbElement):
 
             pre_padded_text.append(
                 [identifier, bearing_text, distance_text, altitude_text, traffic.icao_address])
+
         return max_identifier_length, max_distance_length, max_altitude_length
 
     def render(self, framebuffer, orientation):
@@ -114,7 +122,7 @@ class AdsbTrafficListing(AdsbElement):
         x_pos = self.__listing_text_start_x__
 
         padded_traffic_reports = self.__get_padded_traffic_reports__(
-            traffic_reports, orientation)
+            traffic_reports)
 
         if len(padded_traffic_reports) == 0:
             framebuffer.blit(HudDataCache.get_cached_text_texture("NO TRAFFIC", self.__font__),

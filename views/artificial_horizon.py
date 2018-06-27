@@ -6,9 +6,10 @@ testing.load_imports()
 from hud_elements import *
 from lib.display import *
 from lib.task_timer import TaskTimer
+from ahrs_element import AhrsElement
 
 
-class ArtificialHorizon(object):
+class ArtificialHorizon(AhrsElement):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
         self.task_timer = TaskTimer('ArtificialHorizon')
         self.__pitch_elements__ = {}

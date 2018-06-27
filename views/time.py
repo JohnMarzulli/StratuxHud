@@ -6,9 +6,10 @@ testing.load_imports()
 from lib.display import *
 from lib.task_timer import TaskTimer
 import units
+from ahrs_element import AhrsElement
 
 
-class Time(object):
+class Time(AhrsElement):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
         self.task_timer = TaskTimer('Time')
         self.__font__ = font

@@ -6,9 +6,10 @@ testing.load_imports()
 from lib.display import *
 from lib.task_timer import TaskTimer
 import units
+from ahrs_element import AhrsElement
 
 
-class Groundspeed(object):
+class Groundspeed(AhrsElement):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
         self.task_timer = TaskTimer('Groundspeed')
         self.__font__ = font
@@ -18,7 +19,7 @@ class Groundspeed(object):
             center_y - text_half_height
         self.__rhs__ = int(0.9 * framebuffer_size[0])
 
-        self.__left_x__ = int(framebuffer_size[0] * 0.01)
+        self.__left_x__ = 0 # WAS int(framebuffer_size[0] * 0.01)
 
     def render(self, framebuffer, orientation):
         self.task_timer.start()

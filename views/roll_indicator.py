@@ -7,9 +7,10 @@ testing.load_imports()
 
 from lib.display import *
 from lib.task_timer import TaskTimer
+from ahrs_element import AhrsElement
 
 
-class RollIndicator(object):
+class RollIndicator(AhrsElement):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
         self.task_timer = TaskTimer('RollIndicator')
         self.__roll_elements__ = {}

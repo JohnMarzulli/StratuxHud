@@ -5,9 +5,10 @@ testing.load_imports()
 
 from lib.display import *
 from lib.task_timer import TaskTimer
+from ahrs_element import AhrsElement
 
 
-class SkidAndGs(object):
+class SkidAndGs(AhrsElement):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
         self.task_timer = TaskTimer('SkidAndGs')
         self.__font__ = font
@@ -15,7 +16,7 @@ class SkidAndGs(object):
         text_half_height = int(font.get_height()) >> 1
         self.__text_y_pos__ = (text_half_height << 2) + \
             center_y - text_half_height
-        self.__rhs__ = int(0.9 * framebuffer_size[0])
+        self.__rhs__ = int(framebuffer_size[0]) # was 0.9
 
     def render(self, framebuffer, orientation):
         self.task_timer.start()
