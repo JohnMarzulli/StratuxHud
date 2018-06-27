@@ -43,8 +43,8 @@ class TargetCount(AhrsElement):
 
             if count > 0:
                 text = "{0} TARGETS".format(count)
-        except:
-            text = "ERROR"
+        except Exception as e:
+            text = "ERROR" + str(e)
 
         texture = self.__font__.render(text, True, WHITE, BLACK)
 
