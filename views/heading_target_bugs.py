@@ -64,11 +64,7 @@ class HeadingTargetBugs(AdsbElement):
         # Get the traffic, and bail out of we have none
         heading_bugs = HudDataCache.HEADING_BUGS
 
-        if heading_bugs is None or len(heading_bugs) == 0:
-            framebuffer.blit(HudDataCache.get_cached_text_texture("NO TARGETS", self.__font__),
-                             (self.__listing_text_start_x__, self.__listing_text_start_y__))
-
-            self.task_timer.stop()
+        if heading_bugs is None:
             return
 
         for target_position in heading_bugs:
