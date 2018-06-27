@@ -25,7 +25,7 @@ from views import (adsb_on_screen_reticles, adsb_target_bugs,
                    artificial_horizon, compass_and_heading_bottom_element,
                    groundspeed, heading_target_bugs,
                    level_reference, roll_indicator, skid_and_gs,
-                   time)
+                   target_count, time)
 
 # TODO - Add the G-Meter
 # TODO - Disable functionality based on the enabled StratuxCapabilities
@@ -346,6 +346,7 @@ class HeadsUpDisplay(object):
                                                   (self.__width__, self.__height__), self.__configuration__),
             # Draw the ground speed and altitude last so they
             # will appear "on top".
+            self.__build_ahrs_hud_element(target_count.TargetCount, True),
             groundspeed_element,
             altitude_element
         ]
