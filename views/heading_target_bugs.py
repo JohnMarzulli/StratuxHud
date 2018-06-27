@@ -6,13 +6,14 @@ View to render heading targets.
 import pygame
 
 from adsb_element import AdsbElement
-from hud_elements import *
+from hud_elements import HudDataCache, get_reticle_size, get_heading_bug_x
 
 import testing
 testing.load_imports()
 
 from lib.task_timer import TaskTimer
 import norden
+import units
 
 
 class HeadingTargetBugs(AdsbElement):
