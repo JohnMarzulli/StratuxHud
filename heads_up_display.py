@@ -147,7 +147,6 @@ class HeadsUpDisplay(object):
             self.orient_perf.stop()
 
             hud_elements.HudDataCache.update_traffic_reports()
-            hud_elements.HEADING_BUGS = self.__target_manager__.targets
 
             self.__backpage_framebuffer__.fill(display.BLACK)
 
@@ -292,7 +291,6 @@ class HeadsUpDisplay(object):
 
         self.render_perf = TaskTimer("Render")
         self.orient_perf = TaskTimer("Orient")
-        self.__target_manager__ = targets.Targets()
 
         self.__configuration__ = Configuration(DEFAULT_CONFIG_FILE)
 
@@ -468,13 +466,13 @@ class HeadsUpDisplay(object):
             self.__level_ahrs__()
 
         if event.key in [pygame.K_DELETE, pygame.K_PERIOD, pygame.K_KP_PERIOD]:
-            self.__target_manager__.clear_targets()
+            targets.TARGET_MANAGER.clear_targets()
 
         if event.key in [pygame.K_RETURN, pygame.K_KP_ENTER]:
             orientation = self.__aircraft__.get_orientation()
-            self.__target_manager__.add_target(
+            targets.TARGET_MANAGER.add_target(
                 orientation.position[0], orientation.position[1], orientation.alt)
-            self.__target_manager__.save()
+            targets.TARGET_MANAGER.save()
 
         if event.key in [pygame.K_EQUALS, pygame.K_KP_EQUALS]:
             self.__should_render_perf__ = not self.__should_render_perf__

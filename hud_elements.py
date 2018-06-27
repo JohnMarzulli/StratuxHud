@@ -40,8 +40,6 @@ def get_reticle_size(distance, min_reticle_size=0.05, max_reticle_size=0.20):
 
     return on_screen_reticle_scale
 
-HEADING_BUGS = []
-
 
 class HudDataCache(object):
     TEXT_TEXTURE_CACHE = {}

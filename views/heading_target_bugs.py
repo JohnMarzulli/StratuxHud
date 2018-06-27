@@ -15,6 +15,7 @@ testing.load_imports()
 from lib.task_timer import TaskTimer
 import norden
 import units
+import targets
 
 
 class HeadingTargetBugs(AdsbElement):
@@ -64,10 +65,10 @@ class HeadingTargetBugs(AdsbElement):
         heading = orientation.get_onscreen_projection_heading()
 
         # Get the traffic, and bail out of we have none
-        if hud_elements.HEADING_BUGS is None:
+        if targets.TARGET_MANAGER is None or targets.TARGET_MANAGER.targets is None:
             return
 
-        for target_position in hud_elements.HEADING_BUGS:
+        for target_position in targets.TARGET_MANAGER.targets:
             ground_speed_ms = units.get_meters_per_second_from_mph(
                 orientation.groundspeed)
             distance_miles = norden.get_distance(

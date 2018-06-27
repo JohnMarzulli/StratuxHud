@@ -6,7 +6,6 @@ Manages heading/target bugs.
 import configuration
 import json
 
-
 class Targets(object):
 
     def save(self):
@@ -49,6 +48,8 @@ class Targets(object):
         Creates a new target manager.
         """
 
+        TARGET_MANAGER = self
+
         self.targets = []
 
         try:
@@ -63,13 +64,13 @@ class Targets(object):
         except:
             pass
 
+TARGET_MANAGER = Targets()
+
 
 if __name__ == '__main__':
-    heading_bugs = Targets()
+    print("Have {0} targets.".format(len(TARGET_MANAGER.targets)))
 
-    print("Have {0} targets.".format(len(heading_bugs.targets)))
-
-    for target in heading_bugs.targets:
+    for target in TARGET_MANAGER.targets:
         print("Target: {0}, {1} : {2}".format(target[0], target[1], target[2]))
     
-    heading_bugs.save()
+    TARGET_MANAGER.save()

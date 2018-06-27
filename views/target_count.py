@@ -9,6 +9,7 @@ import units
 import hud_elements
 from ahrs_element import AhrsElement
 from hud_elements import *
+import targets
 
 
 class TargetCount(AhrsElement):
@@ -39,8 +40,7 @@ class TargetCount(AhrsElement):
         text = "NO TARGETS"
 
         try:
-            heading_bugs = hud_elements.HEADING_BUGS
-            count = len(heading_bugs)
+            count = len(targets.TARGET_MANAGER.targets)
 
             if count > 0:
                 text = "{0} TARGETS".format(count)
