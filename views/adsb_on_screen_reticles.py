@@ -85,19 +85,6 @@ class AdsbOnScreenReticles(AdsbElement):
         pygame.draw.lines(framebuffer,
                           RED, True, reticle_lines, 10)
 
-        # TEST - Do not render the tail number
-        # Move the identifer text away from the reticle
-        # if center_y < self.__center__[1]:
-        #     center_y = center_y + border_space
-        # else:
-        #     center_y = center_y - border_space
-
-        # texture, texture_size = HudDataCache.get_cached_text_texture(
-        #     identifier, self.__font__)
-
-        # self.__render_texture__(
-        #     framebuffer, (center_x, center_y), texture, texture_size, roll)
-
     def __rotate_reticle__(self, reticle, roll):
         """
         Takes a series of line segments and rotates them (roll) about
