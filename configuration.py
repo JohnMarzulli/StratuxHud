@@ -11,18 +11,20 @@ __config_file__ = "./config.json"
 __heading_bugs_file__ = "./heading_bugs.json"
 __working_dir__ = os.path.dirname(os.path.abspath(__file__))
 
+
 def get_absolute_file_path(relative_path):
     """
     Returns the absolute file path no matter the OS.
-    
+
     Arguments:
         relative_path {string} -- The relative file path.
-    
+
     Returns:
         string -- The absolute filepath.
     """
 
     return os.path.join(__working_dir__, os.path.normpath(relative_path))
+
 
 DEFAULT_CONFIG_FILE = get_absolute_file_path(__config_file__)
 HEADING_BUGS_FILE = get_absolute_file_path(__heading_bugs_file__)
@@ -46,6 +48,7 @@ class Configuration(object):
     OWNSHIP_KEY = "ownship"
     MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT_KEY = "traffic_report_removal_minutes"
     DISTANCE_UNITS_KEY = "distance_units"
+    DECLINATION_KEY = "declination"
 
     def __get_config_value__(self, key, default_value):
         """
@@ -61,17 +64,27 @@ class Configuration(object):
         """
         Returns the display settings.
         This include if the image is flipped.
-        
+
         Returns:
             dictionary -- The display settings, if any found.
         """
 
         return self.__get_config_value__(Configuration.DISPLAY_KEY, None)
 
+    def get_declination(self):
+        """
+        Returns the magnetic variance (true to magnetic)
+
+        Returns:
+            float -- The number of degrees to adjust the heading displayed by.
+        """
+
+        return self.__get_config_value__(self.DECLINATION_KEY, 0.0)
+
     def units(self):
         """
         Returns the units that the display should use.
-        
+
         Returns:
             string -- The type of units.
         """
@@ -155,3 +168,6 @@ class Configuration(object):
                 Configuration.DISPLAY_KEY][Configuration.FLIP_VERTICAL_KEY]
         except:
             pass
+
+
+CONFIGURATION = Configuration(DEFAULT_CONFIG_FILE)
