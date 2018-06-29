@@ -10,5 +10,6 @@
     "flip_vertical": false
   },
   "ownship": "N701GV",
-  "data_source": "stratux"
+  "data_source": "stratux",
+  "declination": 16.0
 }
