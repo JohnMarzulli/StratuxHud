@@ -4,6 +4,7 @@ import math
 import pygame
 
 import units
+import configuration
 from lib.display import *
 from lib.task_timer import TaskTimer
 from traffic import AdsbTrafficClient, Traffic
@@ -45,7 +46,6 @@ class HudDataCache(object):
     TEXT_TEXTURE_CACHE = {}
     __CACHE_ENTRY_LAST_USED__ = {}
     __CACHE_INVALIDATION_TIME__ = 60 * 5
-  
 
     @staticmethod
     def update_traffic_reports():
@@ -63,28 +63,28 @@ class HudDataCache(object):
             del HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_to_purge]
 
     @staticmethod
-    def get_cached_text_texture(text, font, text_color = BLACK, background_color = YELLOW, use_alpha = False):
+    def get_cached_text_texture(text, font, text_color=BLACK, background_color=YELLOW, use_alpha=False):
         """
         Retrieves a cached texture.
         If the texture with the given text does not already exists, creates it.
         Uses only the text has the key. If the colors change, the cache is not invalidated or changed.
-        
+
         Arguments:
             text {string} -- The text to generate a texture for.
             font {pygame.font} -- The font to use for the texture.
-        
+
         Keyword Arguments:
             text_color {tuple} -- The RGB color for the text. (default: {BLACK})
             background_color {tuple} -- The RGB color for the BACKGROUND. (default: {YELLOW})
             use_alpha {bool} -- Should alpha be used? (default: {False})
-        
+
         Returns:
             [type] -- The texture.
         """
 
         if text not in HudDataCache.TEXT_TEXTURE_CACHE:
             texture = font.render(text, True, text_color, background_color)
-            
+
             if use_alpha:
                 texture = texture.convert()
 
@@ -92,6 +92,28 @@ class HudDataCache(object):
 
         HudDataCache.__CACHE_ENTRY_LAST_USED__[text] = datetime.datetime.now()
         return HudDataCache.TEXT_TEXTURE_CACHE[text]
+
+
+def apply_declination(heading):
+    """
+    Returns a heading to display with the declination adjust to convert from true to magnetic.
+
+    Arguments:
+        heading {float} -- The TRUE heading.
+
+    Returns:
+        float -- The MAGNETIC heading.
+    """
+
+    new_heading = heading - configuration.CONFIGURATION.get_declination()
+
+    if new_heading < 0.0:
+        new_heading = new_heading + 360.0
+
+    if new_heading > 360.0:
+        new_heading = new_heading - 360.0
+
+    return new_heading
 
 
 def get_heading_bug_x(heading, bearing, degrees_per_pixel):
@@ -107,7 +129,7 @@ def get_heading_bug_x(heading, bearing, degrees_per_pixel):
 
 def get_onscreen_traffic_projection__(heading, pitch, roll, bearing, distance, altitude_delta, pixels_per_degree):
     """
-    empts to figure out where the traffic reticle should be rendered.
+    Attempts to figure out where the traffic reticle should be rendered.
     Returns value RELATIVE to the screen center.
     """
 
@@ -263,3 +285,5 @@ if __name__ == '__main__':
         x, y = get_onscreen_traffic_projection__(
             heading, pitch, roll, bearing, distance, altitude_delta, pixels_per_degree)
         print("    {0}, {1}".format(x + 400, y + 240))
+        print("TRUE: {0} -> {1} MAG".format(bearing,
+                                            apply_declination(bearing)))

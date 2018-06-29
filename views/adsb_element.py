@@ -7,18 +7,16 @@ testing.load_imports()
 
 import units
 from configuration import Configuration
-from hud_elements import HudDataCache
+from hud_elements import HudDataCache, apply_declination
 from lib.display import *
 from lib.task_timer import TaskTimer
-
-
 
 
 class AdsbElement(object):
     def uses_ahrs(self):
         """
         Does this element use AHRS data to render?
-               
+
         Returns:
             bool -- True if the element uses AHRS data.
         """
@@ -155,7 +153,8 @@ class AdsbElement(object):
         if altitude_delta > 0:
             delta_sign = '+'
         altitude_text = "{0}{1}".format(delta_sign, altitude_delta)
-        bearing_text = "{0}".format(int(traffic_report.bearing))
+        bearing_text = "{0}".format(
+            int(apply_declination(traffic_report.bearing)))
 
         return [bearing_text, distance_text, altitude_text]
 

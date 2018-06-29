@@ -7,6 +7,7 @@ testing.load_imports()
 
 from lib.display import *
 from lib.task_timer import TaskTimer
+import hud_elements
 
 
 class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
@@ -40,7 +41,10 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
                          [x_pos, self.__line_top__], [x_pos, self.__line_bottom__], self.__border_width__)
 
         self.__render_heading_text__(
-            framebuffer, heading, x_pos, self.compass_text_y)
+            framebuffer,
+            hud_elements.apply_declination(heading),
+            x_pos,
+            self.compass_text_y)
 
     def render(self, framebuffer, orientation):
         """
@@ -66,7 +70,9 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
 
         # Render the text that is showing our AHRS and GPS headings
         heading_text = "{0} | {1}".format(
-            orientation.get_onscreen_projection_display_heading(), int(orientation.gps_heading))
+            int(hud_elements.apply_declination(
+                orientation.get_onscreen_projection_display_heading())),
+            int(hud_elements.apply_declination(orientation.gps_heading)))
 
         rendered_text = self.__font__.render(
             heading_text, True, BLACK, GREEN)

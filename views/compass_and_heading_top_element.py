@@ -4,6 +4,7 @@ import testing
 testing.load_imports()
 
 import lib.display as display
+import hud_elements
 from lib.task_timer import TaskTimer
 from ahrs_element import AhrsElement
 
@@ -68,13 +69,15 @@ class CompassAndHeadingTopElement(AhrsElement):
             to_the_left = (heading - heading_strip)
             to_the_right = (heading + heading_strip)
 
+            displayed_left = hud_elements.apply_declination(to_the_left)
+            displayed_right = hud_elements.apply_declination(to_the_right)
             if to_the_left < 0:
                 to_the_left += 360
 
             if to_the_right > 360:
                 to_the_right -= 360
 
-            if (to_the_left == 0) or ((to_the_left % 90) == 0):
+            if (displayed_left == 0) or ((displayed_left % 90) == 0):
                 line_x_left = self.__center_x__ - \
                     self.__heading_strip_offset__[heading_strip]
                 things_to_render.append([line_x_left, to_the_left])
@@ -82,7 +85,7 @@ class CompassAndHeadingTopElement(AhrsElement):
             if to_the_left == to_the_right:
                 continue
 
-            if (to_the_right % 90) == 0:
+            if (displayed_right % 90) == 0:
                 line_x_right = self.__center_x__ + \
                     self.__heading_strip_offset__[heading_strip]
                 things_to_render.append([line_x_right, to_the_right])
@@ -94,7 +97,10 @@ class CompassAndHeadingTopElement(AhrsElement):
                          [x_pos, self.line_height], [x_pos, 0], 4)
 
         self.__render_heading_text__(
-            framebuffer, heading, x_pos, self.compass_text_y)
+            framebuffer,
+            hud_elements.apply_declination(heading),
+            x_pos,
+            self.compass_text_y)
 
     def render(self, framebuffer, orientation):
         """
@@ -115,9 +121,9 @@ class CompassAndHeadingTopElement(AhrsElement):
         # Render the text that is showing our AHRS and GPS headings
         cover_old_rendering_spaces = " "
         heading_text = "{0}{1} | {2}{0}".format(cover_old_rendering_spaces,
-                                                str(orientation.get_onscreen_projection_display_heading()).rjust(
-                                                    3),
-                                                str(int(orientation.gps_heading)).rjust(3))
+                                                str(int(hud_elements.apply_declination(
+                                                    orientation.get_onscreen_projection_display_heading()))).rjust(3),
+                                                str(int(hud_elements.apply_declination(orientation.gps_heading))).rjust(3))
 
         rendered_text = self.__font__.render(
             heading_text, True, display.GREEN, display.BLACK)

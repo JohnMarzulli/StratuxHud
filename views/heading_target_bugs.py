@@ -104,7 +104,7 @@ class HeadingTargetBugs(AdsbElement):
                 time_until_drop, delta_altitude, units.get_feet_from_miles(distance_miles))
 
             self.__render_heading_bug__(framebuffer,
-                                        "{0:.1f}".format(bearing_to_target),
+                                        "{0:.1f}".format(hud_elements.apply_declination(bearing_to_target)),
                                         additional_info_text,
                                         heading_bug_x,
                                         target_bug_scale,
