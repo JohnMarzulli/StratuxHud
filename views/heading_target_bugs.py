@@ -8,7 +8,7 @@ import pygame
 from adsb_element import AdsbElement
 from hud_elements import HudDataCache, get_reticle_size, get_heading_bug_x
 import hud_elements
-
+import utils
 import testing
 testing.load_imports()
 
@@ -19,9 +19,9 @@ import targets
 
 
 class HeadingTargetBugs(AdsbElement):
-    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, configuration):
+    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
         AdsbElement.__init__(
-            self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, configuration)
+            self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size)
 
         self.task_timer = TaskTimer('HeadingTargetBugs')
         self.__listing_text_start_y__ = int(self.__font__.get_height())
@@ -104,7 +104,7 @@ class HeadingTargetBugs(AdsbElement):
                 time_until_drop, delta_altitude, units.get_feet_from_miles(distance_miles))
 
             self.__render_heading_bug__(framebuffer,
-                                        "{0:.1f}".format(bearing_to_target),
+                                        "{0:.1f}".format(utils.apply_declination(bearing_to_target)),
                                         additional_info_text,
                                         heading_bug_x,
                                         target_bug_scale,

@@ -1,38 +1,37 @@
 import math
 
 import pygame
+import utils
 import testing
 
 testing.load_imports()
 
 import units
 from configuration import Configuration
-from hud_elements import HudDataCache
+import hud_elements
 from lib.display import *
 from lib.task_timer import TaskTimer
-
-
+import configuration
 
 
 class AdsbElement(object):
     def uses_ahrs(self):
         """
         Does this element use AHRS data to render?
-               
+
         Returns:
             bool -- True if the element uses AHRS data.
         """
 
         return True
 
-    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, configuration):
+    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
         self.__roll_elements__ = {}
         self.__framebuffer_size__ = framebuffer_size
         self.__center__ = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
         half_texture_height = int(font.get_height()) >> 1
         self.__text_y_pos__ = self.__center__[1] - half_texture_height
         self.__font__ = font
-        self.__configuration__ = configuration
         self.__top_border__ = int(framebuffer_size[1] * 0.5)
         self.__bottom_border__ = framebuffer_size[1] - self.__top_border__
         self.__pixels_per_degree_y__ = pixels_per_degree_y
@@ -52,7 +51,7 @@ class AdsbElement(object):
             string -- The distance in a handy string for display.
         """
 
-        display_units = self.__configuration__.__get_config_value__(
+        display_units = configuration.CONFIGURATION.__get_config_value__(
             Configuration.DISTANCE_UNITS_KEY, units.STATUTE)
 
         return units.get_distance_string(display_units, distance)
@@ -155,7 +154,8 @@ class AdsbElement(object):
         if altitude_delta > 0:
             delta_sign = '+'
         altitude_text = "{0}{1}".format(delta_sign, altitude_delta)
-        bearing_text = "{0}".format(int(traffic_report.bearing))
+        bearing_text = "{0}".format(
+            int(utils.apply_declination(traffic_report.bearing)))
 
         return [bearing_text, distance_text, altitude_text]
 
@@ -179,14 +179,14 @@ class AdsbElement(object):
 
         pygame.draw.polygon(framebuffer, bug_color, reticle)
 
-        texture = HudDataCache.get_cached_text_texture(
+        texture = hud_elements.HudDataCache.get_cached_text_texture(
             identifier_text, self.__font__)
         text_width, text_height = texture.get_size()
 
         additional_info_textures = [texture]
         widest_texture = text_width
         for additional_text in additional_info_text:
-            info_texture = HudDataCache.get_cached_text_texture(
+            info_texture = hud_elements.HudDataCache.get_cached_text_texture(
                 additional_text, self.__font__)
             additional_info_textures.append(info_texture)
             info_size_x, info_size_y = info_texture.get_size()

@@ -23,10 +23,10 @@ import math
 import units
 import configuration
 
-terminal_velocity = 30  # m/s
+terminal_velocity = 60  # m/s
 gravity = 9.80665  # m/s^2
-drag_scalar = 0.4
-DEFAULT_K = 0.01
+drag_scalar = 0.6
+DEFAULT_K = 0.0001 # 0.01
 
 CLAMP_SPEED = 0.1 # The slowest M/S we are willing to do the math on.
 
@@ -88,27 +88,6 @@ def get_distance(starting_pos, ending_pos):
     r = configuration.EARTH_RADIUS_STATUTE_MILES
 
     return c * r
-
-
-def get_altitude(time):
-    """
-    Returns the amount of distance traveled in a free fall using terminal velocity
-
-    Assumes this is the distance dropped (IE ground = 0)
-
-    Arguments:
-        time {float} -- The number of seconds to calculate the fall for.
-
-    Returns:
-        float -- The number of meters traveled in the given amount of time.
-    """
-
-    # https://en.wikipedia.org/wiki/Free_fall#Uniform_gravitational_field_with_air_resistance
-
-    altitude = ((terminal_velocity * terminal_velocity) / gravity) * \
-        math.log1p(math.cosh((gravity * time) / terminal_velocity))
-
-    return altitude
 
 
 def get_distance_traveled(current_speed, time_slice):
@@ -196,7 +175,7 @@ if __name__ == '__main__':
     flour_sack_weight = 0.22
     flour_sack_k = 0.01
 
-    for test_altitude in (0, 25, 50, 100, 200, 250, 400, 500):
+    for test_altitude in (0, 25, 100, 200, 250, 400):
         time_to_impact = get_time_to_impact(
             units.get_meters_from_feet(test_altitude))
         free_fall_time = get_free_fall_time(units.get_meters_from_feet(
@@ -206,10 +185,6 @@ if __name__ == '__main__':
         print('INPUT          :{0}'.format(test_altitude))
         print('Time           :{0}'.format(time_to_impact))
         print('Free_fall      :{0}'.format(free_fall_time))
-        print('Alt(time)      :{0}'.format(
-            units.get_feet_from_meters(get_altitude(time_to_impact))))
-        print('Alt(Free_fall) :{0}'.format(units.get_feet_from_meters(
-            get_altitude(free_fall_time))))
 
     altitude_feet = 250 # time in fall was about 6.5
     ground_speed_mph = 60  # MPH
@@ -227,12 +202,8 @@ if __name__ == '__main__':
     time_to_impact = get_time_to_impact(
         units.get_meters_from_feet(altitude_feet))
     time_until_drop = time_to_target - time_to_impact
-    target_altitude_for_drop = units.get_feet_from_meters(
-        get_altitude(time_to_target))
     bearing_to_target = get_bearing(
         runway_number_position, target_center_position)
-    time_to_impact_from_ideal_current_altitude = get_time_to_impact(
-        target_altitude_for_drop)
 
     print("Free_fall:{0}".format(get_free_fall_time(
         units.get_meters_from_feet(altitude_feet), flour_sack_weight, flour_sack_k)))
@@ -242,8 +213,4 @@ if __name__ == '__main__':
     print("Time to impact:{0}".format(time_to_impact))
     print("Time until drop:{0}".format(time_until_drop))
     print("Distance(miles):{0}".format(distance_miles))
-    print("Desired altitude for distance:{0}".format(
-        units.get_feet_from_meters(target_altitude_for_drop)))
     print("Bearing to target:{0}".format(bearing_to_target))
-    print("Time to drop from ideal current altitude:{0}".format(
-        time_to_impact_from_ideal_current_altitude))

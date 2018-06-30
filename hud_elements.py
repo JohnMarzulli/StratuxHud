@@ -1,9 +1,17 @@
+"""
+Common code for HUD view elements.
+"""
+
+
 import datetime
 import math
 
 import pygame
 
 import units
+import configuration
+import views.utils as utils
+
 from lib.display import *
 from lib.task_timer import TaskTimer
 from traffic import AdsbTrafficClient, Traffic
@@ -16,6 +24,7 @@ imperial_occlude = units.feet_to_sm * 5
 imperial_faraway = units.feet_to_sm * 2
 imperial_superclose = units.feet_to_sm / 4.0
 
+# Fill the quick trig look up tables.
 for degrees in range(-360, 361):
     radians = math.radians(degrees)
     SIN_RADIANS_BY_DEGREES[degrees] = math.sin(radians)
@@ -23,6 +32,20 @@ for degrees in range(-360, 361):
 
 
 def get_reticle_size(distance, min_reticle_size=0.05, max_reticle_size=0.20):
+    """
+    The the size of the reticle based on the distance of the target.
+    
+    Arguments:
+        distance {float} -- The distance (feet) to the target.
+    
+    Keyword Arguments:
+        min_reticle_size {float} -- The minimum size of the reticle. (default: {0.05})
+        max_reticle_size {float} -- The maximum size of the reticle. (default: {0.20})
+    
+    Returns:
+        float -- The size of the reticle (in proportion to the screen size.)
+    """
+
     on_screen_reticle_scale = min_reticle_size  # 0.05
 
     if distance <= imperial_superclose:
@@ -45,7 +68,6 @@ class HudDataCache(object):
     TEXT_TEXTURE_CACHE = {}
     __CACHE_ENTRY_LAST_USED__ = {}
     __CACHE_INVALIDATION_TIME__ = 60 * 5
-  
 
     @staticmethod
     def update_traffic_reports():
@@ -63,28 +85,28 @@ class HudDataCache(object):
             del HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_to_purge]
 
     @staticmethod
-    def get_cached_text_texture(text, font, text_color = BLACK, background_color = YELLOW, use_alpha = False):
+    def get_cached_text_texture(text, font, text_color=BLACK, background_color=YELLOW, use_alpha=False):
         """
         Retrieves a cached texture.
         If the texture with the given text does not already exists, creates it.
         Uses only the text has the key. If the colors change, the cache is not invalidated or changed.
-        
+
         Arguments:
             text {string} -- The text to generate a texture for.
             font {pygame.font} -- The font to use for the texture.
-        
+
         Keyword Arguments:
             text_color {tuple} -- The RGB color for the text. (default: {BLACK})
             background_color {tuple} -- The RGB color for the BACKGROUND. (default: {YELLOW})
             use_alpha {bool} -- Should alpha be used? (default: {False})
-        
+
         Returns:
             [type] -- The texture.
         """
 
         if text not in HudDataCache.TEXT_TEXTURE_CACHE:
             texture = font.render(text, True, text_color, background_color)
-            
+
             if use_alpha:
                 texture = texture.convert()
 
@@ -95,6 +117,18 @@ class HudDataCache(object):
 
 
 def get_heading_bug_x(heading, bearing, degrees_per_pixel):
+    """
+    Gets the X position of a heading bug. 0 is the LHS.
+    
+    Arguments:
+        heading {float} -- The current heading of the plane
+        bearing {float} -- The bearing of the target.
+        degrees_per_pixel {float} -- The number of degrees per horizontal pixel.
+    
+    Returns:
+        int -- The screen X position.
+    """
+
     delta = (bearing - heading + 180)
     if delta < 0:
         delta += 360
@@ -107,7 +141,7 @@ def get_heading_bug_x(heading, bearing, degrees_per_pixel):
 
 def get_onscreen_traffic_projection__(heading, pitch, roll, bearing, distance, altitude_delta, pixels_per_degree):
     """
-    empts to figure out where the traffic reticle should be rendered.
+    Attempts to figure out where the traffic reticle should be rendered.
     Returns value RELATIVE to the screen center.
     """
 
@@ -201,7 +235,6 @@ def run_adsb_hud_element(element_type, use_detail_font=True):
                          SimulatedTraffic(), SimulatedTraffic())
 
     clock = pygame.time.Clock()
-    config = Configuration(DEFAULT_CONFIG_FILE)
 
     __backpage_framebuffer__, screen_size = display_init()  # args.debug)
     __width__, __height__ = screen_size
@@ -228,9 +261,8 @@ def run_adsb_hud_element(element_type, use_detail_font=True):
         __height__ / HeadsUpDisplay.DEGREES_OF_PITCH) * HeadsUpDisplay.PITCH_DEGREES_DISPLAY_SCALER
 
     hud_element = element_type(HeadsUpDisplay.DEGREES_OF_PITCH,
-                               __pixels_per_degree_y__, font, (
-                                   __width__, __height__),
-                               config)
+                               __pixels_per_degree_y__, font,
+                               (__width__, __height__))
 
     while True:
         for test_data in simulated_traffic:
@@ -263,3 +295,5 @@ if __name__ == '__main__':
         x, y = get_onscreen_traffic_projection__(
             heading, pitch, roll, bearing, distance, altitude_delta, pixels_per_degree)
         print("    {0}, {1}".format(x + 400, y + 240))
+        print("TRUE: {0} -> {1} MAG".format(bearing,
+                                            utils.apply_declination(bearing)))

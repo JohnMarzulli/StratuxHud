@@ -12,9 +12,9 @@ from lib.task_timer import TaskTimer
 
 
 class AdsbOnScreenReticles(AdsbElement):
-    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, configuration):
+    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
         AdsbElement.__init__(
-            self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, configuration)
+            self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size)
 
         self.task_timer = TaskTimer('AdsbOnScreenReticles')
 
@@ -84,19 +84,6 @@ class AdsbOnScreenReticles(AdsbElement):
                           BLACK, True, reticle_lines, 20)
         pygame.draw.lines(framebuffer,
                           RED, True, reticle_lines, 10)
-
-        # TEST - Do not render the tail number
-        # Move the identifer text away from the reticle
-        # if center_y < self.__center__[1]:
-        #     center_y = center_y + border_space
-        # else:
-        #     center_y = center_y - border_space
-
-        # texture, texture_size = HudDataCache.get_cached_text_texture(
-        #     identifier, self.__font__)
-
-        # self.__render_texture__(
-        #     framebuffer, (center_x, center_y), texture, texture_size, roll)
 
     def __rotate_reticle__(self, reticle, roll):
         """

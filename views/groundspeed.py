@@ -24,7 +24,7 @@ class Groundspeed(AhrsElement):
     def render(self, framebuffer, orientation):
         self.task_timer.start()
         # TODO - Pass in the configuration to all elements so they can have access to the unit types.
-        groundspeed_text = "{0:.1f}".format(orientation.g_load).rjust(5) + units.UNIT_LABELS[units.STATUTE][units.SPEED]
+        groundspeed_text = "{0:.1f}".format(orientation.groundspeed).rjust(5) + units.UNIT_LABELS[units.STATUTE][units.SPEED]
         texture = self.__font__.render(
             groundspeed_text, True, WHITE, BLACK)
 
