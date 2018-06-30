@@ -105,7 +105,11 @@ def apply_declination(heading):
         float -- The MAGNETIC heading.
     """
 
-    new_heading = heading - configuration.CONFIGURATION.get_declination()
+    try:
+        new_heading = int(heading - configuration.CONFIGURATION.get_declination())
+    except:
+        # If the heading is the unknown '---' then the math wil fail.
+        return heading
 
     if new_heading < 0.0:
         new_heading = new_heading + 360.0
@@ -250,9 +254,8 @@ def run_adsb_hud_element(element_type, use_detail_font=True):
         __height__ / HeadsUpDisplay.DEGREES_OF_PITCH) * HeadsUpDisplay.PITCH_DEGREES_DISPLAY_SCALER
 
     hud_element = element_type(HeadsUpDisplay.DEGREES_OF_PITCH,
-                               __pixels_per_degree_y__, font, (
-                                   __width__, __height__),
-                               config)
+                               __pixels_per_degree_y__, font,
+                               (__width__, __height__))
 
     while True:
         for test_data in simulated_traffic:
