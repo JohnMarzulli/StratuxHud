@@ -384,7 +384,7 @@ class HeadsUpDisplay(object):
             ("Traffic", traffic_only_view),
             ("AHRS", ahrs_view),
             ("ADSB List", traffic_listing_view),
-            ("Norden", norden_view),
+            # ("Norden", norden_view),
             ("Time", time_view),
             ("System Info", system_info_view),
             ("", [])
