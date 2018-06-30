@@ -8,6 +8,8 @@ import configuration
 import lib.recurring_task as recurring_task
 from lib.simulated_values import SimulatedValue
 
+HEADING_NOT_AVAILABLE = '---'
+
 
 class StratuxCapabilities(object):
     """
@@ -131,16 +133,22 @@ class AhrsData(object):
         return int(self.gps_heading)
 
     def get_onscreen_projection_display_heading(self):
-        if self.__is_compass_heading_valid__():
-            return int(self.compass_heading)
+        try:
+            if self.__is_compass_heading_valid__():
+                return int(self.compass_heading)
+        except:
+            pass
 
-        return '---'
+        return HEADING_NOT_AVAILABLE
 
     def get_heading(self):
-        if self.compass_heading is None or self.compass_heading > 360 or self.compass_heading < 0 or self.compass_heading is '':
-            return self.gps_heading
+        try:
+            if self.compass_heading is None or self.compass_heading > 360 or self.compass_heading < 0 or self.compass_heading is '':
+                return int(self.gps_heading)
 
-        return self.compass_heading
+            return int(self.compass_heading)
+        except:
+            return HEADING_NOT_AVAILABLE
 
     def __init__(self):
         self.roll = 0.0
