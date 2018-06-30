@@ -25,6 +25,7 @@ from views import (adsb_on_screen_reticles, adsb_target_bugs,
                    artificial_horizon, compass_and_heading_bottom_element,
                    groundspeed, heading_target_bugs,
                    level_reference, roll_indicator, skid_and_gs,
+                   system_info,
                    target_count, time)
 
 # TODO - Add the G-Meter
@@ -335,6 +336,7 @@ class HeadsUpDisplay(object):
         altitude_element = self.__build_ahrs_hud_element(
             altitude.Altitude, True)
         time_element = self.__build_ahrs_hud_element(time.Time, True)
+        system_info_element = self.__build_ahrs_hud_element(system_info.SystemInfo, False)
         groundspeed_element = self.__build_ahrs_hud_element(
             groundspeed.Groundspeed, True)
 
@@ -342,6 +344,10 @@ class HeadsUpDisplay(object):
             bottom_compass_element,
             adsb_target_bug_element,
             adsb_onscreen_reticle_element
+        ]
+
+        system_info_view = [
+            system_info_element
         ]
 
         traffic_listing_view = [
@@ -380,6 +386,7 @@ class HeadsUpDisplay(object):
             ("ADSB List", traffic_listing_view),
             ("Norden", norden_view),
             ("Time", time_view),
+            ("System Info", system_info_view),
             ("", [])
             ]
 
