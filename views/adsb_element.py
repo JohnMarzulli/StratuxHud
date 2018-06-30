@@ -7,7 +7,7 @@ testing.load_imports()
 
 import units
 from configuration import Configuration
-from hud_elements import HudDataCache, apply_declination
+import hud_elements
 from lib.display import *
 from lib.task_timer import TaskTimer
 import configuration
@@ -154,7 +154,7 @@ class AdsbElement(object):
             delta_sign = '+'
         altitude_text = "{0}{1}".format(delta_sign, altitude_delta)
         bearing_text = "{0}".format(
-            int(apply_declination(traffic_report.bearing)))
+            int(hud_elements.apply_declination(traffic_report.bearing)))
 
         return [bearing_text, distance_text, altitude_text]
 
@@ -178,14 +178,14 @@ class AdsbElement(object):
 
         pygame.draw.polygon(framebuffer, bug_color, reticle)
 
-        texture = HudDataCache.get_cached_text_texture(
+        texture = hud_elements.HudDataCache.get_cached_text_texture(
             identifier_text, self.__font__)
         text_width, text_height = texture.get_size()
 
         additional_info_textures = [texture]
         widest_texture = text_width
         for additional_text in additional_info_text:
-            info_texture = HudDataCache.get_cached_text_texture(
+            info_texture = hud_elements.HudDataCache.get_cached_text_texture(
                 additional_text, self.__font__)
             additional_info_textures.append(info_texture)
             info_size_x, info_size_y = info_texture.get_size()
