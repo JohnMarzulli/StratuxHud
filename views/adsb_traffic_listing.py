@@ -2,7 +2,7 @@ import pygame
 
 from adsb_element import *
 from hud_elements import *
-
+import utils
 import testing
 testing.load_imports()
 
@@ -48,7 +48,7 @@ class AdsbTrafficListing(AdsbElement):
 
         for report in pre_padded_text:
             identifier = report[0]
-            bearing = str(apply_declination(float(report[1])))
+            bearing = str(utils.apply_declination(float(report[1])))
             distance_text = report[2]
             altitude = report[3]
             icao = report[4]

@@ -3,6 +3,7 @@ import pygame
 from compass_and_heading_top_element import CompassAndHeadingTopElement
 
 import testing
+import utils
 testing.load_imports()
 
 from lib.display import *
@@ -42,7 +43,7 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
 
         self.__render_heading_text__(
             framebuffer,
-            hud_elements.apply_declination(heading),
+            utils.apply_declination(heading),
             x_pos,
             self.compass_text_y)
 
@@ -70,9 +71,9 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
 
         # Render the text that is showing our AHRS and GPS headings
         heading_text = "{0} | {1}".format(
-            hud_elements.apply_declination(
+            utils.apply_declination(
                 orientation.get_onscreen_projection_display_heading()),
-            hud_elements.apply_declination(orientation.gps_heading))
+            utils.apply_declination(orientation.gps_heading))
 
         rendered_text = self.__font__.render(
             heading_text, True, BLACK, GREEN)

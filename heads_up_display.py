@@ -280,7 +280,7 @@ class HeadsUpDisplay(object):
             return hud_element_class(HeadsUpDisplay.DEGREES_OF_PITCH,
                                      self.__pixels_per_degree_y__, font, (self.__width__, self.__height__))
         except Exception as e:
-            self.warn("Unable to build element:" + str(e))
+            self.warn("Unable to build element {0}:{1}".format(hud_element_class, e))
             return None
 
     def __init__(self, logger):

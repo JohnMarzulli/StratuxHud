@@ -1,6 +1,7 @@
 import math
 
 import pygame
+import utils
 import testing
 
 testing.load_imports()
@@ -154,7 +155,7 @@ class AdsbElement(object):
             delta_sign = '+'
         altitude_text = "{0}{1}".format(delta_sign, altitude_delta)
         bearing_text = "{0}".format(
-            int(hud_elements.apply_declination(traffic_report.bearing)))
+            int(utils.apply_declination(traffic_report.bearing)))
 
         return [bearing_text, distance_text, altitude_text]
 

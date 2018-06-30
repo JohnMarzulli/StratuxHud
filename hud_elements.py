@@ -10,6 +10,8 @@ import pygame
 
 import units
 import configuration
+import views.utils as utils
+
 from lib.display import *
 from lib.task_timer import TaskTimer
 from traffic import AdsbTrafficClient, Traffic
@@ -112,32 +114,6 @@ class HudDataCache(object):
 
         HudDataCache.__CACHE_ENTRY_LAST_USED__[text] = datetime.datetime.now()
         return HudDataCache.TEXT_TEXTURE_CACHE[text]
-
-
-def apply_declination(heading):
-    """
-    Returns a heading to display with the declination adjust to convert from true to magnetic.
-
-    Arguments:
-        heading {float} -- The TRUE heading.
-
-    Returns:
-        float -- The MAGNETIC heading.
-    """
-
-    try:
-        new_heading = int(heading - configuration.CONFIGURATION.get_declination())
-    except:
-        # If the heading is the unknown '---' then the math wil fail.
-        return heading
-
-    if new_heading < 0.0:
-        new_heading = new_heading + 360.0
-
-    if new_heading > 360.0:
-        new_heading = new_heading - 360.0
-
-    return new_heading
 
 
 def get_heading_bug_x(heading, bearing, degrees_per_pixel):
@@ -320,4 +296,4 @@ if __name__ == '__main__':
             heading, pitch, roll, bearing, distance, altitude_delta, pixels_per_degree)
         print("    {0}, {1}".format(x + 400, y + 240))
         print("TRUE: {0} -> {1} MAG".format(bearing,
-                                            apply_declination(bearing)))
+                                            utils.apply_declination(bearing)))
