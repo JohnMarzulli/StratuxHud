@@ -19,9 +19,9 @@ import targets
 
 
 class HeadingTargetBugs(AdsbElement):
-    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, configuration):
+    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
         AdsbElement.__init__(
-            self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, configuration)
+            self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size)
 
         self.task_timer = TaskTimer('HeadingTargetBugs')
         self.__listing_text_start_y__ = int(self.__font__.get_height())

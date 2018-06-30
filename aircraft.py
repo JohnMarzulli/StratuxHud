@@ -250,7 +250,7 @@ class AhrsStratux(object):
         new_ahrs_data = AhrsData()
 
         url = "http://{0}/getSituation".format(
-            self.__configuration__.stratux_address())
+            configuration.CONFIGURATION.stratux_address())
 
         try:
             ahrs_json = self.__stratux_session__.get(url, timeout=2).json()
@@ -338,13 +338,13 @@ class AhrsStratux(object):
             self.ahrs_data = new_ahrs_data
 
             if new_ahrs_data.roll != None:
-                if self.__configuration__.reverse_roll():
+                if configuration.CONFIGURATION.reverse_roll():
                     self.ahrs_data.roll = 0.0 - new_ahrs_data.roll
                 else:
                     self.ahrs_data.roll = new_ahrs_data.roll
 
             if new_ahrs_data.pitch != None:
-                if self.__configuration__.reverse_pitch():
+                if configuration.CONFIGURATION.reverse_pitch():
                     self.ahrs_data.pitch = 0.0 - new_ahrs_data.pitch
                 else:
                     self.ahrs_data.pitch = new_ahrs_data.pitch
@@ -361,19 +361,17 @@ class AhrsStratux(object):
         self.__lock__.acquire()
         try:
             self.capabilities = StratuxCapabilities(
-                self.__configuration__.stratux_address(), self.__stratux_session__)
+                configuration.CONFIGURATION.stratux_address(), self.__stratux_session__)
         finally:
             self.__lock__.release()
 
-    def __init__(self, configuration):
-        self.__configuration__ = configuration
-
+    def __init__(self):
         self.__stratux_session__ = requests.Session()
 
         self.ahrs_data = AhrsData()
         self.data_source_available = False
         self.capabilities = StratuxCapabilities(
-            self.__configuration__.stratux_address(), self.__stratux_session__)
+            configuration.CONFIGURATION.stratux_address(), self.__stratux_session__)
         recurring_task.RecurringTask(
             'UpdateCapabilities', 15, self.__update_capabilities__)
 
@@ -392,14 +390,12 @@ class Aircraft(object):
                 print("error")
 
     def __init__(self, force_simulation=False):
-        self.__configuration__ = configuration.Configuration(
-            configuration.DEFAULT_CONFIG_FILE)
         self.ahrs_source = None
 
-        if force_simulation or self.__configuration__.data_source() == configuration.DataSourceNames.SIMULATION:
+        if force_simulation or configuration.CONFIGURATION.data_source() == configuration.DataSourceNames.SIMULATION:
             self.ahrs_source = AhrsSimulation()
-        elif self.__configuration__.data_source() == configuration.DataSourceNames.STRATUX:
-            self.ahrs_source = AhrsStratux(self.__configuration__)
+        elif configuration.CONFIGURATION.data_source() == configuration.DataSourceNames.STRATUX:
+            self.ahrs_source = AhrsStratux()
 
         recurring_task.RecurringTask(
             'UpdateAhrs', 1.0 / (configuration.MAX_FRAMERATE * 2), self.__update_orientation__)

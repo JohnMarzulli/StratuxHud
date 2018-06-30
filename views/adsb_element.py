@@ -10,6 +10,7 @@ from configuration import Configuration
 from hud_elements import HudDataCache, apply_declination
 from lib.display import *
 from lib.task_timer import TaskTimer
+import configuration
 
 
 class AdsbElement(object):
@@ -23,14 +24,13 @@ class AdsbElement(object):
 
         return True
 
-    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, configuration):
+    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
         self.__roll_elements__ = {}
         self.__framebuffer_size__ = framebuffer_size
         self.__center__ = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
         half_texture_height = int(font.get_height()) >> 1
         self.__text_y_pos__ = self.__center__[1] - half_texture_height
         self.__font__ = font
-        self.__configuration__ = configuration
         self.__top_border__ = int(framebuffer_size[1] * 0.5)
         self.__bottom_border__ = framebuffer_size[1] - self.__top_border__
         self.__pixels_per_degree_y__ = pixels_per_degree_y
@@ -50,7 +50,7 @@ class AdsbElement(object):
             string -- The distance in a handy string for display.
         """
 
-        display_units = self.__configuration__.__get_config_value__(
+        display_units = configuration.CONFIGURATION.__get_config_value__(
             Configuration.DISTANCE_UNITS_KEY, units.STATUTE)
 
         return units.get_distance_string(display_units, distance)

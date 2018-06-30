@@ -52,7 +52,7 @@ class HeadsUpDisplay(object):
         """
 
         url = "http://{0}/cageAHRS".format(
-            self.__configuration__.stratux_address())
+            CONFIGURATION.stratux_address())
 
         try:
             requests.Session().post(url, timeout=2)
@@ -65,7 +65,7 @@ class HeadsUpDisplay(object):
         """
 
         url = "http://{0}/shutdown".format(
-            self.__configuration__.stratux_address())
+            CONFIGURATION.stratux_address())
 
         try:
             requests.Session().post(url, timeout=2)
@@ -203,7 +203,7 @@ class HeadsUpDisplay(object):
         finally:
             # Change the frame buffer
             flipped = pygame.transform.flip(
-                self.__backpage_framebuffer__, self.__configuration__.flip_horizontal, self.__configuration__.flip_vertical)
+                self.__backpage_framebuffer__, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)
             self.__backpage_framebuffer__.blit(flipped, [0, 0])
             pygame.display.flip()
             clock.tick(MAX_FRAMERATE)
@@ -292,10 +292,8 @@ class HeadsUpDisplay(object):
         self.render_perf = TaskTimer("Render")
         self.orient_perf = TaskTimer("Orient")
 
-        self.__configuration__ = Configuration(DEFAULT_CONFIG_FILE)
-
         adsb_traffic_address = "ws://{0}/traffic".format(
-            self.__configuration__.stratux_address())
+            CONFIGURATION.stratux_address())
         self.__connection_manager__ = traffic.ConnectionManager(
             adsb_traffic_address)
 
@@ -331,9 +329,9 @@ class HeadsUpDisplay(object):
         bottom_compass_element = self.__build_ahrs_hud_element(
             compass_and_heading_bottom_element.CompassAndHeadingBottomElement, True)
         adsb_target_bug_element = adsb_target_bugs.AdsbTargetBugs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__,
-                                                                  (self.__width__, self.__height__), self.__configuration__)
+                                                                  (self.__width__, self.__height__))
         adsb_onscreen_reticle_element = adsb_on_screen_reticles.AdsbOnScreenReticles(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
-                                                                                     self.__font__, (self.__width__, self.__height__), self.__configuration__)
+                                                                                     self.__font__, (self.__width__, self.__height__))
         altitude_element = self.__build_ahrs_hud_element(
             altitude.Altitude, True)
         time_element = self.__build_ahrs_hud_element(time.Time, True)
@@ -348,13 +346,13 @@ class HeadsUpDisplay(object):
 
         traffic_listing_view = [
             adsb_traffic_listing.AdsbTrafficListing(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__,
-                                                    (self.__width__, self.__height__), self.__configuration__)
+                                                    (self.__width__, self.__height__))
         ]
 
         norden_view = [
             bottom_compass_element,
             heading_target_bugs.HeadingTargetBugs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__,
-                                                  (self.__width__, self.__height__), self.__configuration__),
+                                                  (self.__width__, self.__height__)),
             # Draw the ground speed and altitude last so they
             # will appear "on top".
             self.__build_ahrs_hud_element(target_count.TargetCount, True),
@@ -374,15 +372,14 @@ class HeadsUpDisplay(object):
             groundspeed_element
         ]
 
-        # Yes... I know. It is the "blank" view... but has something...
-        blank_view = [time_element]
+        time_view = [time_element]
 
         self.__hud_views__ = [
             ("Traffic", traffic_only_view),
             ("AHRS", ahrs_view),
             ("ADSB List", traffic_listing_view),
-            # ("Norden", norden_view),
-            ("Time", blank_view),
+            ("Norden", norden_view),
+            ("Time", time_view),
             ("", [])
             ]
 
@@ -403,7 +400,7 @@ class HeadsUpDisplay(object):
         self.__backpage_framebuffer__.blit(texture, ((
             self.__width__ >> 1) - (text_width >> 1), (self.__height__ >> 1) - (text_height >> 1)))
         flipped = pygame.transform.flip(
-            self.__backpage_framebuffer__, self.__configuration__.flip_horizontal, self.__configuration__.flip_vertical)
+            self.__backpage_framebuffer__, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)
         self.__backpage_framebuffer__.blit(flipped, [0, 0])
         pygame.display.flip()
 
