@@ -19,7 +19,7 @@ Main entry code for Stratux HUD
 # for development\testing under Windows or Mac
 #
 #
-# Program to consume the AHRS and position data from a Stratux and dispplay
+# Program to consume the AHRS and position data from a Stratux and display
 # it as a HUD style display.
 #
 # This code does not have to run on the Stratux hardware, but it can.

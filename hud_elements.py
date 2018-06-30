@@ -1,3 +1,8 @@
+"""
+Common code for HUD view elements.
+"""
+
+
 import datetime
 import math
 
@@ -17,6 +22,7 @@ imperial_occlude = units.feet_to_sm * 5
 imperial_faraway = units.feet_to_sm * 2
 imperial_superclose = units.feet_to_sm / 4.0
 
+# Fill the quick trig look up tables.
 for degrees in range(-360, 361):
     radians = math.radians(degrees)
     SIN_RADIANS_BY_DEGREES[degrees] = math.sin(radians)
@@ -24,6 +30,20 @@ for degrees in range(-360, 361):
 
 
 def get_reticle_size(distance, min_reticle_size=0.05, max_reticle_size=0.20):
+    """
+    The the size of the reticle based on the distance of the target.
+    
+    Arguments:
+        distance {float} -- The distance (feet) to the target.
+    
+    Keyword Arguments:
+        min_reticle_size {float} -- The minimum size of the reticle. (default: {0.05})
+        max_reticle_size {float} -- The maximum size of the reticle. (default: {0.20})
+    
+    Returns:
+        float -- The size of the reticle (in proportion to the screen size.)
+    """
+
     on_screen_reticle_scale = min_reticle_size  # 0.05
 
     if distance <= imperial_superclose:
@@ -121,6 +141,18 @@ def apply_declination(heading):
 
 
 def get_heading_bug_x(heading, bearing, degrees_per_pixel):
+    """
+    Gets the X position of a heading bug. 0 is the LHS.
+    
+    Arguments:
+        heading {float} -- The current heading of the plane
+        bearing {float} -- The bearing of the target.
+        degrees_per_pixel {float} -- The number of degrees per horizontal pixel.
+    
+    Returns:
+        int -- The screen X position.
+    """
+
     delta = (bearing - heading + 180)
     if delta < 0:
         delta += 360
@@ -227,7 +259,6 @@ def run_adsb_hud_element(element_type, use_detail_font=True):
                          SimulatedTraffic(), SimulatedTraffic())
 
     clock = pygame.time.Clock()
-    config = Configuration(DEFAULT_CONFIG_FILE)
 
     __backpage_framebuffer__, screen_size = display_init()  # args.debug)
     __width__, __height__ = screen_size
