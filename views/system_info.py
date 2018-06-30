@@ -1,14 +1,34 @@
 import pygame
 import socket
 
+import struct
+
 import testing
 testing.load_imports()
 
 from lib.display import *
 from lib.task_timer import TaskTimer
+import lib.local_debug as local_debug
 import units
 from ahrs_element import AhrsElement
 
+if not local_debug.is_debug():
+    import fcntl
+
+def get_ip_address(ifname = "wlan0"):
+    if not local_debug.is_debug():
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            return socket.inet_ntoa(fcntl.ioctl(
+                s.fileno(),
+                0x8915,  # SIOCGIFADDR
+                struct.pack('256s', ifname[:15])
+            )[20:24])
+        except:
+            pass
+
+    host_name = socket.gethostname()
+    return socket.gethostbyname(host_name)
 
 class SystemInfo(AhrsElement):
     def uses_ahrs(self):
@@ -35,8 +55,7 @@ class SystemInfo(AhrsElement):
     def render(self, framebuffer, orientation):
         self.task_timer.start()
 
-        host_name = socket.gethostname()
-        host_ip = socket.gethostbyname(host_name)
+        host_ip = get_ip_address()
 
         ip_text = "IP: {}".format(host_ip)
         ip_texture = self.__font__.render(ip_text, True, BLUE, BLACK)
