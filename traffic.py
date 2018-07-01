@@ -670,11 +670,11 @@ class ConnectionManager(object):
             time_since_last_msg = (datetime.datetime.now(
             ) - AdsbTrafficClient.INSTANCE.last_message_received_time).total_seconds()
 
-            print("{0:.1f} seconds connection uptime".format(
+            if time_since_last_msg > 15:
+                print("{0:.1f} seconds connection uptime".format(
                     connection_uptime))
-            print("{0:.1f} since last msg".format(time_since_last_msg))
+                print("{0:.1f} since last msg".format(time_since_last_msg))
 
-            if time_since_last_msg > 1:
                 return not AdsbTrafficClient.INSTANCE.is_connecting
         return False
 
