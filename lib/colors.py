@@ -39,7 +39,7 @@ def interpolate(left_value, right_value, proportion):
     right_value = clamp(0, right_value, 255)
     proportion = clamp(0.0, proportion, 1.0)
 
-    return left_value + ((right_value - left_value) * proportion)
+    return int(float(left_value) + (float(right_value - left_value) * proportion))
 
 def get_color_mix(left_color, right_color, proportion):
     """
