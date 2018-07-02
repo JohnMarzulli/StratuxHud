@@ -10,6 +10,50 @@ from lib.simulated_values import SimulatedValue
 
 HEADING_NOT_AVAILABLE = '---'
 
+class StratuxStatus(object):
+
+    def __get_status__(self, key):
+        if key is None:
+            return False
+
+        if self.__status_json__ is None:
+            return False
+
+        if key in self.__status_json__:
+            try:
+                return bool(self.__status_json__[key])
+            except KeyboardInterrupt, SystemExit:
+                raise
+            except:
+                return False
+
+        return False
+
+    def __init__(self, stratux_address, stratux_session, simulation_mode=False):
+        """
+        Builds a list of Capabilities of the stratux.
+        """
+
+        if stratux_address is None or simulation_mode:
+            self.__status_json__ = None
+            self.cpu_temp = 50.0
+            self.satellites_locked = 0
+
+        else:
+            url = "http://{0}/getStatus".format(stratux_address)
+
+            try:
+                self.__status_json__ = stratux_session.get(
+                    url, timeout=2).json()
+
+            except KeyboardInterrupt, SystemExit:
+                raise
+            except:
+                self.__status_json__ = {}
+
+
+            self.cpu_temp = self.__get_status__('CPUTemp')
+            self.satellites_locked = self.__get_status__('GPS_satellites_locked')
 
 class StratuxCapabilities(object):
     """
@@ -55,7 +99,7 @@ class StratuxCapabilities(object):
             except KeyboardInterrupt, SystemExit:
                 raise
             except:
-                self.__capabilities_json__ = []
+                self.__capabilities_json__ = {}
 
             self.traffic_enabled = self.__get_capability__('UAT_Enabled')
             self.gps_enabled = self.__get_capability__('GPS_Enabled')
@@ -361,6 +405,8 @@ class AhrsStratux(object):
         self.__lock__.acquire()
         try:
             self.capabilities = StratuxCapabilities(
+                configuration.CONFIGURATION.stratux_address(), self.__stratux_session__)
+            self.stratux_status = StratuxStatus(
                 configuration.CONFIGURATION.stratux_address(), self.__stratux_session__)
         finally:
             self.__lock__.release()
