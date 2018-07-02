@@ -1,7 +1,7 @@
 {
   "stratux_address": "192.168.10.1",
   "distance_units": "statute",
-  "traffic_report_removal_minutes": 2,
+  "traffic_report_removal_minutes": 1,
   "display": {
     "reverse_roll": false,
     "reverse_pitch": false,
