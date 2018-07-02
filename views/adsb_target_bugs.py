@@ -70,13 +70,16 @@ class AdsbTargetBugs(AdsbElement):
             additional_info_text = self.__get_additional_target_text__(
                 traffic_report, orientation)
 
-            self.__render_heading_bug__(framebuffer,
-                                        str(traffic_report.get_identifer()),
-                                        additional_info_text,
-                                        heading_bug_x,
-                                        target_bug_scale,
-                                        traffic_report.is_on_ground(),
-                                        traffic_report.get_age())
+            try:
+                self.__render_heading_bug__(framebuffer,
+                                            str(traffic_report.get_identifer()),
+                                            additional_info_text,
+                                            heading_bug_x,
+                                            target_bug_scale,
+                                            traffic_report.is_on_ground(),
+                                            traffic_report.get_age())
+            except Exception as e:
+                print(str(e))
         self.task_timer.stop()
 
 

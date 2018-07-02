@@ -39,7 +39,8 @@ class AdsbElement(object):
         self.__pixels_per_degree_x__ = self.__framebuffer_size__[0] / 360.0
         self.__height__ = framebuffer_size[1]
         self.__width__ = framebuffer_size[0]
-        self.start_fade_threshold = (configuration.CONFIGURATION.max_minutes_before_removal * 60 ) / 2
+        self.start_fade_threshold = (
+            configuration.CONFIGURATION.max_minutes_before_removal * 60) / 2
 
     def __get_distance_string__(self, distance):
         """
@@ -168,7 +169,7 @@ class AdsbElement(object):
                                center_x,
                                target_bug_scale,
                                is_on_ground,
-                               time_since_last_report = 0.0):
+                               time_since_last_report=0.0):
         """
         Renders a targetting reticle on the screen.
         Assumes the X/Y projection has already been performed.
@@ -183,13 +184,7 @@ class AdsbElement(object):
         if is_on_ground:
             bug_color = BLUE
 
-        card_color = YELLOW
-
-        if time_since_last_report > self.start_fade_threshold:
-            max_distance = (configuration.CONFIGURATION.max_minutes_before_removal * 60) - self.start_fade_threshold
-            proportion = (time_since_last_report - self.start_fade_threshold) / max_distance
-
-            card_color = colors.get_color_mix(YELLOW, BLACK, proportion)
+        card_color = self.__get_card_color__(time_since_last_report)
 
         pygame.draw.polygon(framebuffer, bug_color, reticle)
 
@@ -240,6 +235,33 @@ class AdsbElement(object):
 
         self.__render_info_text__(
             additional_info_textures, center_x, framebuffer, info_position_y, info_spacing)
+
+    def __get_card_color__(self, time_since_last_report):
+        """
+        Gets the color the card should be based on how long it has been
+        since the traffic has had a report.
+        
+        Arguments:
+            time_since_last_report {float} -- The number of seconds since the last traffic report.
+        
+        Returns:
+            float[] -- The RGB tuple/array of the color the target card should be.
+        """
+
+        try:
+            card_color = YELLOW
+
+            if time_since_last_report > self.start_fade_threshold:
+                max_distance = (
+                    configuration.CONFIGURATION.max_minutes_before_removal * 60.0) - self.start_fade_threshold
+                proportion = (time_since_last_report -
+                              self.start_fade_threshold) / max_distance
+
+                card_color = colors.get_color_mix(YELLOW, BLACK, proportion)
+
+            return card_color
+        except:
+            return YELLOW
 
     def __render_info_text__(self, additional_info_textures, center_x, framebuffer, info_position_y, info_spacing):
         for info_texture in additional_info_textures:
