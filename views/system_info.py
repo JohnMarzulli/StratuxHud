@@ -1,6 +1,7 @@
 import pygame
 import socket
 import datetime
+import math
 
 import struct
 
@@ -18,6 +19,9 @@ from traffic import AdsbTrafficClient
 
 if not local_debug.is_debug():
     import fcntl
+
+NORMAL_TEMP = 50
+REDLINE_TEMP = 80
 
 
 def get_ip_address(ifname="wlan0"):
@@ -46,6 +50,21 @@ def get_ip_address(ifname="wlan0"):
     return (socket.gethostbyname(host_name), GREEN)
 
 
+def get_cpu_temp_text_color(temperature):
+    color = GREEN
+
+    if temperature > REDLINE_TEMP:
+        color = RED
+    elif temperature > NORMAL_TEMP:
+        delta = float(temperature - NORMAL_TEMP)
+        temp_range = float(REDLINE_TEMP - NORMAL_TEMP)
+        delta = colors.clamp(0.0, delta, temp_range)
+        proportion = delta / temp_range
+        color = colors.get_color_mix(GREEN, RED, proportion)
+
+    return color 
+
+
 def get_cpu_temp():
     """
     Gets the cpu temperature on RasPi (Celsius)
@@ -57,18 +76,16 @@ def get_cpu_temp():
     color = GREEN
 
     try:
+        # if not local_debug.is_debug():
         raspberry_pi_temp = open('/sys/class/thermal/thermal_zone0/temp')
         temp = float(raspberry_pi_temp.read())
         temp = temp/1000
+        # else:
+        #    temp = float(datetime.datetime.utcnow().second) + 30.0
 
-        if temp > 90:
-            color = RED
-        if temp > 50:
-            delta = 90 - temp
-            proportion = delta / 40.0
-            color = colors.get_color_mix(GREEN, RED, proportion)
+        color = get_cpu_temp_text_color(temp)
 
-        return ("{0}C".format(temp), color)
+        return ("{0}C".format(int(math.floor(temp))), color)
     except:
         return ('---', GRAY)
 
@@ -127,11 +144,12 @@ class SystemInfo(AhrsElement):
         # First line in the array is at the bottom.
         # Last line in the array is towards the top.
         info_lines = [
-            ["IP         : ", get_ip_address()],
-            ["CPU        : ", get_cpu_temp()],
-            ["SOCKET     : ", get_websocket_uptime()],
-            ["DECLINATION: ", [str(configuration.CONFIGURATION.get_declination()), BLUE]],
-            ["OWNSHIP    : ", [configuration.CONFIGURATION.ownship, BLUE]]
+            ["IP          : ", get_ip_address()],
+            ["HUD CPU     : ", get_cpu_temp()],
+            ["SOCKET      : ", get_websocket_uptime()],
+            ["DECLINATION : ", [
+                str(configuration.CONFIGURATION.get_declination()), BLUE]],
+            ["OWNSHIP     : ", [configuration.CONFIGURATION.ownship, BLUE]]
         ]
 
         render_y = self.__text_y_pos__
@@ -143,7 +161,8 @@ class SystemInfo(AhrsElement):
             size = texture_lhs.get_size()
 
             # Draw the value in the encoded colors.
-            texture_rhs = self.__font__.render(line[1][0], True, line[1][1], BLACK)
+            texture_rhs = self.__font__.render(
+                line[1][0], True, line[1][1], BLACK)
             framebuffer.blit(texture_rhs, (size[0], render_y))
 
             render_y = render_y - (self.font_height * 1.2)
@@ -153,4 +172,9 @@ class SystemInfo(AhrsElement):
 
 if __name__ == '__main__':
     import hud_elements
+
+    # for temp in range(45, 95, 5):
+    #     color = get_cpu_temp_text_color(temp)
+    #     print("{3} => {0},{1},{2}".format(color[0], color[1], color[2], temp))
+
     hud_elements.run_ahrs_hud_element(SystemInfo, True)
