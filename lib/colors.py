@@ -75,10 +75,10 @@ def get_color_mix(left_color, right_color, proportion):
     if array_length != len(right_color):
         return left_color
     
-    new_color = copy.copy(left_color)
+    new_color = []
 
     for index in range(0, array_length):
-        new_color[index] = int(interpolate(left_color[index], right_color[index], proportion))
+        new_color.append(int(interpolate(left_color[index], right_color[index], proportion)))
     
     return new_color
 
