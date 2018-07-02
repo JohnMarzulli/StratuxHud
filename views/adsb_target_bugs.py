@@ -75,7 +75,8 @@ class AdsbTargetBugs(AdsbElement):
                                         additional_info_text,
                                         heading_bug_x,
                                         target_bug_scale,
-                                        traffic_report.is_on_ground())
+                                        traffic_report.is_on_ground(),
+                                        traffic_report.get_age())
         self.task_timer.stop()
 
 

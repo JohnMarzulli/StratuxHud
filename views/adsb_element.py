@@ -11,6 +11,7 @@ from configuration import Configuration
 import hud_elements
 from lib.display import *
 from lib.task_timer import TaskTimer
+import lib.colors as colors
 import configuration
 
 
@@ -38,6 +39,7 @@ class AdsbElement(object):
         self.__pixels_per_degree_x__ = self.__framebuffer_size__[0] / 360.0
         self.__height__ = framebuffer_size[1]
         self.__width__ = framebuffer_size[0]
+        self.start_fade_threshold = (configuration.CONFIGURATION.max_minutes_before_removal * 60 ) / 2
 
     def __get_distance_string__(self, distance):
         """
@@ -159,10 +161,14 @@ class AdsbElement(object):
 
         return [bearing_text, distance_text, altitude_text]
 
-    def __render_heading_bug__(self, framebuffer,
+    def __render_heading_bug__(self,
+                               framebuffer,
                                identifier_text,
                                additional_info_text,
-                               center_x, target_bug_scale, is_on_ground):
+                               center_x,
+                               target_bug_scale,
+                               is_on_ground,
+                               time_since_last_report = 0.0):
         """
         Renders a targetting reticle on the screen.
         Assumes the X/Y projection has already been performed.
@@ -177,17 +183,25 @@ class AdsbElement(object):
         if is_on_ground:
             bug_color = BLUE
 
+        card_color = YELLOW
+
+        if time_since_last_report > self.start_fade_threshold:
+            max_distance = (configuration.CONFIGURATION.max_minutes_before_removal * 60) - self.start_fade_threshold
+            proportion = (time_since_last_report - self.start_fade_threshold) / max_distance
+
+            card_color = colors.get_color_mix(YELLOW, BLACK, proportion)
+
         pygame.draw.polygon(framebuffer, bug_color, reticle)
 
         texture = hud_elements.HudDataCache.get_cached_text_texture(
-            identifier_text, self.__font__)
+            identifier_text, self.__font__, BLACK, card_color, False, True)
         text_width, text_height = texture.get_size()
 
         additional_info_textures = [texture]
         widest_texture = text_width
         for additional_text in additional_info_text:
             info_texture = hud_elements.HudDataCache.get_cached_text_texture(
-                additional_text, self.__font__)
+                additional_text, self.__font__, BLACK, card_color, False, True)
             additional_info_textures.append(info_texture)
             info_size_x, info_size_y = info_texture.get_size()
             if widest_texture < info_size_x:
@@ -218,7 +232,7 @@ class AdsbElement(object):
                              int((len(additional_info_text) + 1) * info_spacing * text_height)]
         fill_bottom_left = [fill_top_left[0], fill_bottom_right[1]]
 
-        pygame.draw.polygon(framebuffer, YELLOW,
+        pygame.draw.polygon(framebuffer, card_color,
                             [fill_top_left, fill_top_right, fill_bottom_right, fill_bottom_left])
 
         pygame.draw.lines(framebuffer,
