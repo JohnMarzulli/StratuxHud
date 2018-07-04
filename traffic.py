@@ -9,6 +9,7 @@ import random
 import socket
 import threading
 import time
+import ping
 
 import ws4py
 from ws4py.client.threadedclient import WebSocketClient
@@ -497,7 +498,6 @@ class AdsbTrafficClient(WebSocketClient):
         self.hb = ws4py.websocket.Heartbeat(self)
         self.hb.start()
 
-
     def shutdown(self):
         """
         Stops the WebSocket and reception tasks.
@@ -553,10 +553,9 @@ class AdsbTrafficClient(WebSocketClient):
             raise
         except:
             print("Issue trying to close_connection")
-    
+
     def ponged(self, pong):
         print("Pong")
-    
 
     def received_message(self, m):
         """
@@ -589,7 +588,6 @@ class AdsbTrafficClient(WebSocketClient):
                 print("{0} - {1} - {2}".format(traffic.get_identifer(),
                                                traffic.bearing, traffic.distance))
 
-
     def run_in_background(self):
         """
         Runs the WS traffic connector.
@@ -613,6 +611,15 @@ class ConnectionManager(object):
         self.__socket_address__ = socket_address
         self.__manage_connection_task__ = recurring_task.RecurringTask(
             'ManageConnection', 2, self.__manage_connection__, start_immediate=False)
+        self.__pong_task__ = recurring_task.RecurringTask(
+            'HeartbeatStratux', 2, self.pong_stratux)
+
+    def pong_stratux(self):
+        """
+        Send pong to the Stratux
+        """
+
+        ping.verbose_pong(configuration.CONFIGURATION.stratux_address())
 
     def __manage_connection__(self):
         """
@@ -620,6 +627,7 @@ class ConnectionManager(object):
         """
 
         while True:
+
             if self.__is_shutting_down__:
                 continue
 
@@ -659,7 +667,7 @@ class ConnectionManager(object):
     def __is_connection_silently_timed_out__(self):
         """
         Tries to determine if the socket has stopped sending us data.
-        
+
         Returns:
             bool -- True if we think the socket has closed.
         """
