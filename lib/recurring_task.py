@@ -65,9 +65,10 @@ class RecurringTask(object):
             if self.__is_running__ and self.__task_callback__ is not None:
                 try:
                     self.__task_callback__()
-                except:
+                except Exception as e:
                     # + sys.exc_info()[0]
-                    error_mesage = "EX(" + self.__task_name__ + ")"
+                    error_mesage = "EX({}):{}".format(self.__task_name__, e)
+
                     if self.__logger__ is not None:
                         self.__logger__.info(error_mesage)
                     else:

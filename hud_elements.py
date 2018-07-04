@@ -85,7 +85,7 @@ class HudDataCache(object):
             del HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_to_purge]
 
     @staticmethod
-    def get_cached_text_texture(text, font, text_color=BLACK, background_color=YELLOW, use_alpha=False):
+    def get_cached_text_texture(text, font, text_color=BLACK, background_color=YELLOW, use_alpha=False, force_regen=False):
         """
         Retrieves a cached texture.
         If the texture with the given text does not already exists, creates it.
@@ -104,7 +104,7 @@ class HudDataCache(object):
             [type] -- The texture.
         """
 
-        if text not in HudDataCache.TEXT_TEXTURE_CACHE:
+        if text not in HudDataCache.TEXT_TEXTURE_CACHE or force_regen:
             texture = font.render(text, True, text_color, background_color)
 
             if use_alpha:
