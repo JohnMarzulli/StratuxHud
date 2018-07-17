@@ -355,16 +355,16 @@ class HeadsUpDisplay(object):
                                                     (self.__width__, self.__height__))
         ]
 
-        norden_view = [
-            bottom_compass_element,
-            heading_target_bugs.HeadingTargetBugs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__,
-                                                  (self.__width__, self.__height__)),
-            # Draw the ground speed and altitude last so they
-            # will appear "on top".
-            self.__build_ahrs_hud_element(target_count.TargetCount, True),
-            groundspeed_element,
-            altitude_element
-        ]
+        # norden_view = [
+        #     bottom_compass_element,
+        #     heading_target_bugs.HeadingTargetBugs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__,
+        #                                           (self.__width__, self.__height__)),
+        #     # Draw the ground speed and altitude last so they
+        #     # will appear "on top".
+        #     self.__build_ahrs_hud_element(target_count.TargetCount, True),
+        #     groundspeed_element,
+        #     altitude_element
+        # ]
 
         ahrs_view = [
             self.__build_ahrs_hud_element(

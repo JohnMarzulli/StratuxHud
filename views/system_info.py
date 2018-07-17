@@ -17,37 +17,29 @@ import configuration
 from ahrs_element import AhrsElement
 from traffic import AdsbTrafficClient
 
-if not local_debug.is_debug():
-    import fcntl
+import commands
 
 NORMAL_TEMP = 50
 REDLINE_TEMP = 80
 
 
-def get_ip_address(ifname="wlan0"):
+def get_ip_address():
     """
     Returns the local IP address of this unit.
 
-    Keyword Arguments:
-        ifname {str} -- The lan device name on the RasPi to get the IP from. (default: {"wlan0"})
-
     Returns:
-        string -- The IP address as a string.
+        tuple -- The IP address as a string and the color to render it in.
     """
 
-    if not local_debug.is_debug():
-        try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            return (socket.inet_ntoa(fcntl.ioctl(
-                s.fileno(),
-                0x8915,  # SIOCGIFADDR
-                struct.pack('256s', ifname[:15]), GREEN)
-            )[20:24])
-        except:
-            pass
-
-    host_name = socket.gethostname()
-    return (socket.gethostbyname(host_name), GREEN)
+    try:
+        if not local_debug.is_debug():
+            ip_addr = commands.getoutput('hostname -I').strip()
+            return (ip_addr, GREEN)
+        else:
+            host_name = socket.gethostname()
+            return (socket.gethostbyname(host_name), GREEN)
+    except:
+        return ('UNKNOWN', RED)
 
 
 def get_cpu_temp_text_color(temperature):
