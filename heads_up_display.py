@@ -20,6 +20,7 @@ from lib.recurring_task import RecurringTask
 from lib.task_timer import TaskTimer
 import hud_elements
 import targets
+import restful_host
 from views import (adsb_on_screen_reticles, adsb_target_bugs,
                    adsb_traffic_listing, ahrs_not_available, altitude,
                    artificial_horizon, compass_and_heading_bottom_element,
@@ -396,6 +397,9 @@ class HeadsUpDisplay(object):
 
         if self.__logger__ is not None:
             logger = self.__logger__.logger
+        
+        web_server = restful_host.HudServer()
+        RecurringTask("rest_host", 0.1, web_server.run, start_immediate=False)
 
     def __show_boot_screen__(self):
         """
