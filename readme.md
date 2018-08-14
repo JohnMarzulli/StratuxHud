@@ -185,13 +185,13 @@ A blank screen so no information is displayed.
 ### Install Software
 
 1. Enter `ping google.com`. Press ctrl+c after a while. This will confirm that you have internet access. If you do not, then use rasp-config to re-enter your wi-fi
-2. `pip install ws4py`
-3. `pip install pygame`
-4. `pip install requests`
-5. `cd ~`
-6. `git clone https://github.com/JohnMarzulli/StratuxHud.git`
+2. `cd ~`
+3. `git clone https://github.com/JohnMarzulli/StratuxHud.git`
+4. `cd StratuxHud`
+5. `python --version`. Verify that your version is 2.7.14
+6. `sudo python setup.py develop`
 7. `sudo raspi-config`
-8. Choose "WiFi" again, and enter `stratux` as the SSID. No password
+8. Choose "WiFi" again, and enter `stratux` as the SSID. No password.
 9. `sudo vim /etc/wpa_supplicant/wpa_supplicant.conf`
 10. Delete the section that contains your WiFi network, leaving the section that contains the Stratux network.
 11. More info on configuring Linux WiFi: <https://www.raspberrypi.org/forums/viewtopic.php?t=160620>
