@@ -1,15 +1,10 @@
 {
-  "stratux_address": "192.168.10.1",
-  "distance_units": "statute",
-  "traffic_report_removal_minutes": 1,
-  "display": {
-    "reverse_roll": false,
-    "reverse_pitch": false,
-    "reverse_yaw": false,
-    "flip_horizontal": false,
-    "flip_vertical": false
-  },
-  "ownship": "N701GV",
-  "data_source": "stratux",
-  "declination": 0.0
+    "data_source": "stratux", 
+    "declination": 0.0, 
+    "distance_units": "statute", 
+    "flip_horizontal": false, 
+    "flip_vertical": false, 
+    "ownship": "N701GV", 
+    "stratux_address": "192.168.10.1", 
+    "traffic_report_removal_minutes": 1.0
 }
