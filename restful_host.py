@@ -23,7 +23,7 @@ COMMAND_PROCESSOR = None
 
 # EXAMPLES
 # Invoke-WebRequest -Uri "http://localhost:8080/settings" -Method GET -ContentType "application/json"
-# Invoke-WebRequest -Uri "http://localhost:8080/settings" -Method PUT -ContentType "application/json" -Body '{"SETTINGS": {"BAUDRATE": 1234}}'
+# Invoke-WebRequest -Uri "http://localhost:8080/settings" -Method PUT -ContentType "application/json" -Body '{"declination": 0}'
 
 ERROR_JSON = '{success: false}'
 
@@ -33,6 +33,7 @@ def get_settings(handler):
     Handles a get-the-settings request.
     """
     if configuration.CONFIGURATION is not None:
+        print("settings/GET")
         return configuration.CONFIGURATION.get_json_from_config()
     else:
         return ERROR_JSON
@@ -45,6 +46,8 @@ def set_settings(handler):
 
     if configuration.CONFIGURATION is not None:
         payload = handler.get_payload()
+        print("settings/PUT:")
+        print(payload)
         configuration.CONFIGURATION.update_configuration(payload)
         return configuration.CONFIGURATION.get_json_from_config()
     else:
