@@ -281,8 +281,80 @@ class HeadsUpDisplay(object):
             return hud_element_class(HeadsUpDisplay.DEGREES_OF_PITCH,
                                      self.__pixels_per_degree_y__, font, (self.__width__, self.__height__))
         except Exception as e:
-            self.warn("Unable to build element {0}:{1}".format(hud_element_class, e))
+            self.warn("Unable to build element {0}:{1}".format(
+                hud_element_class, e))
             return None
+
+    def __load_view_elements(self):
+        """
+        Loads the list of available view elements from the configuration
+        file. Returns it as a map of the element name (Human/kind) to
+        the Python object that instantiates it, and if it uses the
+        "detail" (aka Large) font or not.
+
+        Returns:
+            map -- Keyed by element name, elements are tuples of object name / boolean
+        """
+
+        view_elements = {}
+        with open(VIEW_ELEMENTS_FILE) as json_config_file:
+            json_config_text = json_config_file.read()
+            json_config = json.loads(json_config_text)
+
+            for view_element_name in json_config:
+                namespace = json_config[view_element_name]['class'].split('.')
+                file_module = getattr(sys.modules['views'], namespace[0])
+                class_name = getattr(file_module, namespace[1])
+                view_elements[view_element_name] = (
+                    class_name, json_config[view_element_name]['detail_font'])
+
+        return view_elements
+
+    def __load_views(self, view_elements):
+        """
+        Returns a list of views that can be used by the HUD
+
+        Arguments:
+            view_elements {map} -- Dictionary keyed by element name containing the info to instantiate the element.
+
+        Returns:
+            array -- Array of tuples. Each element is a tuple of the name of the view and an array of the elements that make the view. 
+        """
+
+        hud_views = []
+
+        with open(VIEWS_FILE) as json_config_file:
+            json_config_text = json_config_file.read()
+            json_config = json.loads(json_config_text)
+
+            for view in json_config['views']:
+                try:
+                    view_name = view['name']
+                    element_names = view['elements']
+                    new_view_elements = []
+
+                    for element_name in element_names:
+                        element_config = view_elements[element_name]
+                        new_view_elements.append(self.__build_ahrs_hud_element(
+                            element_config[0], element_config[1]))
+
+                    hud_views.append((view_name, new_view_elements))
+                except Exception as ex:
+                    self.log(
+                        "While attempting to load view={}, EX:{}".format(view, ex))
+
+        return hud_views
+
+    def __build_hud_views(self):
+        """
+        Returns the built object of the views.
+
+        Returns:
+            array -- Array of tuples. Each element is a tuple of the name of the view and an array of the elements that make the view. 
+        """
+
+        view_elements = self.__load_view_elements()
+        return self.__load_views(view_elements)
 
     def __init__(self, logger):
         """
@@ -328,68 +400,7 @@ class HeadsUpDisplay(object):
         self.__ahrs_not_available_element__ = self.__build_ahrs_hud_element(
             ahrs_not_available.AhrsNotAvailable)
 
-        bottom_compass_element = self.__build_ahrs_hud_element(
-            compass_and_heading_bottom_element.CompassAndHeadingBottomElement, True)
-        adsb_target_bug_element = adsb_target_bugs.AdsbTargetBugs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__,
-                                                                  (self.__width__, self.__height__))
-        adsb_onscreen_reticle_element = adsb_on_screen_reticles.AdsbOnScreenReticles(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
-                                                                                     self.__font__, (self.__width__, self.__height__))
-        altitude_element = self.__build_ahrs_hud_element(
-            altitude.Altitude, True)
-        time_element = self.__build_ahrs_hud_element(time.Time, True)
-        system_info_element = self.__build_ahrs_hud_element(system_info.SystemInfo, False)
-        groundspeed_element = self.__build_ahrs_hud_element(
-            groundspeed.Groundspeed, True)
-
-        traffic_only_view = [
-            bottom_compass_element,
-            adsb_target_bug_element,
-            adsb_onscreen_reticle_element
-        ]
-
-        system_info_view = [
-            system_info_element
-        ]
-
-        traffic_listing_view = [
-            adsb_traffic_listing.AdsbTrafficListing(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__,
-                                                    (self.__width__, self.__height__))
-        ]
-
-        # norden_view = [
-        #     bottom_compass_element,
-        #     heading_target_bugs.HeadingTargetBugs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__,
-        #                                           (self.__width__, self.__height__)),
-        #     # Draw the ground speed and altitude last so they
-        #     # will appear "on top".
-        #     self.__build_ahrs_hud_element(target_count.TargetCount, True),
-        #     groundspeed_element,
-        #     altitude_element
-        # ]
-
-        ahrs_view = [
-            self.__build_ahrs_hud_element(
-                level_reference.LevelReference, True),
-            self.__build_ahrs_hud_element(
-                artificial_horizon.ArtificialHorizon, True),
-            bottom_compass_element,
-            altitude_element,
-            self.__build_ahrs_hud_element(skid_and_gs.SkidAndGs, True),
-            self.__build_ahrs_hud_element(roll_indicator.RollIndicator, True),
-            groundspeed_element
-        ]
-
-        time_view = [time_element]
-
-        self.__hud_views__ = [
-            ("Traffic", traffic_only_view),
-            ("AHRS", ahrs_view),
-            ("ADSB List", traffic_listing_view),
-            # ("Norden", norden_view),
-            ("Time", time_view),
-            ("System Info", system_info_view),
-            ("", [])
-            ]
+        self.__hud_views__ = self.__build_hud_views()
 
         self.__view_index__ = 0
 
@@ -397,7 +408,7 @@ class HeadsUpDisplay(object):
 
         if self.__logger__ is not None:
             logger = self.__logger__.logger
-        
+
         web_server = restful_host.HudServer()
         RecurringTask("rest_host", 0.1, web_server.run, start_immediate=False)
 

@@ -1,0 +1,36 @@
+{
+  "views": [
+    {
+      "name": "Traffic",
+      "elements": ["Compass", "ADSB Target Bugs", "ADSB Reticles"]
+    },
+    {
+      "name": "Traffic List",
+      "elements": ["Traffic List"]
+    },
+    {
+      "name": "AHRS",
+      "elements": [
+        "Level Reference",
+        "Artificial Horizon",
+        "Compass",
+        "Altitude",
+        "G Load",
+        "Roll Indicator",
+        "Groundspeed"
+      ]
+    },
+    {
+      "name": "Universal Time",
+      "elements": ["Time"]
+    },
+    {
+      "name": "Diagnostics",
+      "elements": ["System Info"]
+    },
+    {
+      "name": "",
+      "elements": []
+    }
+  ]
+}
