@@ -16,6 +16,7 @@ import lib.utilities as utilities
 import configuration
 import lib.local_debug as local_debug
 
+RESTFUL_HOST_PORT = 8080
 CONFIGURATION = None
 COMMAND_PROCESSOR = None
 
@@ -26,6 +27,14 @@ COMMAND_PROCESSOR = None
 # Invoke-WebRequest -Uri "http://localhost:8080/settings" -Method PUT -ContentType "application/json" -Body '{"declination": 0}'
 
 ERROR_JSON = '{success: false}'
+
+
+def get_views_list(handler):
+    return json.dumps(configuration.CONFIGURATION.get_views_list(), indent=4, sort_keys=False)
+
+
+def get_elements_list(handler):
+    return json.dumps(configuration.CONFIGURATION.get_elements_list(), indent=4, sort_keys=False)
 
 
 def get_settings(handler):
@@ -54,6 +63,16 @@ def set_settings(handler):
         return ERROR_JSON
 
 
+def set_views(handler):
+    payload = handler.get_payload()
+    view_config_text = json.dumps(payload, indent=4, sort_keys=True)
+    print("views/PUT:\n{}".format(view_config_text))
+
+    configuration.CONFIGURATION.write_views_list(view_config_text)
+
+    return configuration.CONFIGURATION.get_views_list()
+
+
 def get_json_success_response(text):
     """
     Returns a generic JSON response of success with
@@ -70,7 +89,9 @@ class RestfulHost(BaseHTTPRequestHandler):
 
     HERE = os.path.dirname(os.path.realpath(__file__))
     ROUTES = {
-        r'^/settings': {'GET': get_settings, 'PUT': set_settings, 'media_type': 'application/json'}
+        r'^/settings': {'GET': get_settings, 'PUT': set_settings, 'media_type': 'application/json'},
+        r'^/view_elements': {'GET': get_elements_list, 'media_type': 'application/json'},
+        r'^/views': {'GET': get_views_list, 'PUT': set_views, 'media_type': 'application/json'},
     }
 
     def do_HEAD(self):
@@ -179,11 +200,10 @@ class HudServer(object):
     Class to handle running a REST endpoint to handle configuration.
     """
 
-
     def get_server_ip(self):
         """
         Returns the IP address of this REST server.
-        
+
         Returns:
             string -- The IP address of this server.
         """
@@ -196,21 +216,6 @@ class HudServer(object):
 
         return local_ip
 
-    def get_server_port(self):
-        """
-        Returns the port the server is running on.
-        
-        Returns:
-            int -- The port the server is running on.
-        """
-
-        port = 80
-
-        if local_debug.is_debug():
-            port = 8080
-
-        return port
-
     def run(self):
         """
         Starts the server.
@@ -221,7 +226,7 @@ class HudServer(object):
         self.__httpd__.serve_forever()
 
     def __init__(self):
-        self.__port__ = self.get_server_port()
+        self.__port__ = RESTFUL_HOST_PORT
         self.__local_ip__ = self.get_server_ip()
         server_address = (self.__local_ip__, self.__port__)
         self.__httpd__ = HTTPServer(server_address, RestfulHost)

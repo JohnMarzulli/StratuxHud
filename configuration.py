@@ -61,6 +61,35 @@ class Configuration(object):
     DISTANCE_UNITS_KEY = "distance_units"
     DECLINATION_KEY = "declination"
 
+    def get_elements_list(self):
+        with open(VIEW_ELEMENTS_FILE) as json_config_file:
+            json_config_text = json_config_file.read()
+            json_config = json.loads(json_config_text)
+
+            return json_config
+
+        return {}
+
+    def get_views_list(self):
+        """
+        Returns a list of views that can be used by the HUD
+
+        Returns:
+            array -- Array of dictionary. Each element contains the name of the view and a list of elements it is made from. 
+        """
+        try:
+            with open(VIEWS_FILE) as json_config_file:
+                json_config_text = json_config_file.read()
+                json_config = json.loads(json_config_text)
+
+                return json_config['views']
+        except:
+            return []
+    
+    def write_views_list(self, view_config):
+        with open(VIEWS_FILE, 'w') as configfile:
+            configfile.write(view_config)
+
     def get_json_from_text(self, text):
         """
         Takes raw text and imports it into JSON.
@@ -88,7 +117,7 @@ class Configuration(object):
         }
 
         return json.dumps(config_dictionary, indent=4, sort_keys=True)
-    
+
     def write_config(self):
         """
         Writes the config file down to file.
@@ -191,19 +220,18 @@ class Configuration(object):
         """
 
         return self.__get_config_value__(Configuration.STRATUX_ADDRESS_KEY, Configuration.DEFAULT_NETWORK_IP)
-    
+
     def update_configuration(self, json_config):
         """
         Updates the master configuration from a json provided dictionary.
-        
+
         Arguments:
             json_config_file {dictionary} -- JSON provided config decoded into a dictionary.
         """
-       
+
         self.__configuration__.update(json_config)
         self.set_from_json(self.__configuration__)
         self.write_config()
-
 
     def __load_configuration__(self, json_config_file):
         """
