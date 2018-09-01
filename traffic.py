@@ -409,16 +409,19 @@ class TrafficManager(object):
         actionable_traffic = []
 
         self.__lock__.acquire()
-        try:
-            for identifier in self.traffic:
-                if self.traffic[identifier].is_valid_report():
-                    if configuration.CONFIGURATION.ownship in str(self.traffic[identifier].get_identifer()):
-                        continue
+        potential_traffic_idents = [identifier for identifier in self.traffic]
+        self.__lock__.release()
 
-                    actionable_traffic.append(self.traffic[identifier])
-        finally:
+        for identifier in potential_traffic_idents:
+            self.__lock__.acquire()
+            if self.traffic[identifier].is_valid_report():
+                if configuration.CONFIGURATION.ownship in str(self.traffic[identifier].get_identifer()):
+                    self.__lock__.release()
+                    continue
+
+                actionable_traffic.append(self.traffic[identifier])
             self.__lock__.release()
-
+            
         sorted_traffic = sorted(
             actionable_traffic, key=lambda traffic: traffic.distance)
 
@@ -454,10 +457,8 @@ class TrafficManager(object):
             traffic_to_remove = []
             for identifier in self.traffic:
                 traffic_age = self.traffic[identifier].get_age()
-                # nice_name = self.traffic[identifier].get_identifer()
-                # print "{0} is {1}s old".format(nice_name, traffic_age)
+
                 if traffic_age > (configuration.CONFIGURATION.max_minutes_before_removal * 60):
-                    # print "Pruning {0}/{1}".format(nice_name, identifier)
                     traffic_to_remove.append(identifier)
 
             for identifier_to_remove in traffic_to_remove:

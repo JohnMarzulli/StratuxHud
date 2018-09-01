@@ -387,19 +387,13 @@ class AhrsStratux(object):
         """
         Atomically sets the AHRS data.
         """
+        self.ahrs_data = new_ahrs_data
 
-        self.__lock__.acquire(True)
+        if new_ahrs_data.roll != None:
+            self.ahrs_data.roll = new_ahrs_data.roll
 
-        try:
-            self.ahrs_data = new_ahrs_data
-
-            if new_ahrs_data.roll != None:
-                self.ahrs_data.roll = new_ahrs_data.roll
-
-            if new_ahrs_data.pitch != None:
-                self.ahrs_data.pitch = new_ahrs_data.pitch
-        finally:
-            self.__lock__.release()
+        if new_ahrs_data.pitch != None:
+            self.ahrs_data.pitch = new_ahrs_data.pitch
 
     def __update_capabilities__(self):
         """

@@ -97,7 +97,7 @@ class HeadsUpDisplay(object):
                 self.__detail_font__,
                 display.BLUE,
                 display.BLACK,
-                True)
+                False)
 
             left_border = 0
             top_border = 0
@@ -148,16 +148,12 @@ class HeadsUpDisplay(object):
             orientation = self.__aircraft__.get_orientation()
             self.orient_perf.stop()
 
-            hud_elements.HudDataCache.update_traffic_reports()
-
             self.__backpage_framebuffer__.fill(display.BLACK)
 
             self.render_perf.start()
 
-            view_name, view = self.__hud_views__[self.__view_index__]
+            view_name, view, view_uses_ahrs = self.__hud_views__[self.__view_index__]
             self.__render_view_title__(view_name)
-
-            view_uses_ahrs = self.__is_ahrs_view__(view)
 
             try:
                 if view_uses_ahrs and not self.__aircraft__.is_ahrs_available():
@@ -172,12 +168,10 @@ class HeadsUpDisplay(object):
                     # drawn with a black background
                     # to overdraw the pitch lines
                     # and improve readability
+                    self.log("---- VIEW RENDER START ----")
                     for hud_element in view:
-                        try:
-                            hud_element.render(
-                                self.__backpage_framebuffer__, orientation)
-                        except Exception as e:
-                            self.warn("ELEMENT:" + str(e))
+                        self.__render_view_element__(hud_element, orientation)
+                    self.log("---------------------------")
             except Exception as e:
                 self.warn("LOOP:" + str(e))
 
@@ -187,6 +181,7 @@ class HeadsUpDisplay(object):
                 debug_status_left = int(self.__width__ >> 1)
                 debug_status_top = int(self.__height__ * 0.2)
                 render_perf_text = self.render_perf.to_string()
+                cache_perf_text = self.cache_perf.to_string()
                 orient_perf_text = self.orient_perf.to_string()
 
                 perf_len = len(render_perf_text)
@@ -202,6 +197,9 @@ class HeadsUpDisplay(object):
                 debug_status_top += int(self.__font__.get_height() * 1.1)
                 self.__render_text__(orient_perf_text, display.BLACK,
                                      debug_status_left, debug_status_top, 0, display.YELLOW)
+                debug_status_top += int(self.__font__.get_height() * 1.1)
+                self.__render_text__(cache_perf_text, display.BLACK,
+                                     debug_status_left, debug_status_top, 0, display.YELLOW)
         finally:
             # Change the frame buffer
             flipped = pygame.transform.flip(
@@ -211,6 +209,21 @@ class HeadsUpDisplay(object):
             clock.tick(MAX_FRAMERATE)
 
         return True
+
+    def __render_view_element__(self, hud_element, orientation):
+        element_name = str(hud_element)
+        if element_name not in self.__view_element_timers:
+            self.__view_element_timers[element_name] = TaskTimer(element_name)
+
+        timer = self.__view_element_timers[element_name]
+        timer.start()
+        try:
+            hud_element.render(
+                self.__backpage_framebuffer__, orientation)
+        except Exception as e:
+            self.warn("ELEMENT:" + str(e))
+        timer.stop()
+        self.log("VIEW ELEMENT: {}".format(timer.to_string()))
 
     def __render_text__(self, text, color, position_x, position_y, roll, background_color=None):
         """
@@ -237,10 +250,12 @@ class HeadsUpDisplay(object):
             text {string} -- The text to log
         """
 
-        if self.__logger__ is not None:
-            self.__logger__.log_info_message(text)
-        else:
-            print(text)
+        # if self.__logger__ is not None:
+        #     self.__logger__.log_info_message(text)
+        # else:
+        #     print(text)
+
+        pass
 
     def warn(self, text):
         """
@@ -338,7 +353,8 @@ class HeadsUpDisplay(object):
                         new_view_elements.append(self.__build_ahrs_hud_element(
                             element_config[0], element_config[1]))
 
-                    hud_views.append((view_name, new_view_elements))
+                    is_ahrs_view = self.__is_ahrs_view__(new_view_elements)
+                    hud_views.append((view_name, new_view_elements, is_ahrs_view))
                 except Exception as ex:
                     self.log(
                         "While attempting to load view={}, EX:{}".format(view, ex))
@@ -356,15 +372,25 @@ class HeadsUpDisplay(object):
         view_elements = self.__load_view_elements()
         return self.__load_views(view_elements)
 
+    def __purge_old_reports__(self):
+        self.cache_perf.start()
+        hud_elements.HudDataCache.purge_old_traffic_reports()
+        self.cache_perf.stop()
+    
+    def __update_traffic_reports__(self):
+        hud_elements.HudDataCache.update_traffic_reports()
+
     def __init__(self, logger):
         """
         Initialize and create a new HUD.
         """
 
         self.__logger__ = logger
+        self.__view_element_timers = {}
 
         self.render_perf = TaskTimer("Render")
         self.orient_perf = TaskTimer("Orient")
+        self.cache_perf = TaskTimer("Cache")
 
         adsb_traffic_address = "ws://{0}/traffic".format(
             CONFIGURATION.stratux_address())
@@ -411,6 +437,8 @@ class HeadsUpDisplay(object):
 
         web_server = restful_host.HudServer()
         RecurringTask("rest_host", 0.1, web_server.run, start_immediate=False)
+        RecurringTask("purge_old_traffic", 10.0, self.__purge_old_reports__, start_immediate=False)
+        RecurringTask("update_traffic", 0.1, self.__update_traffic_reports__, start_immediate=True)
 
     def __show_boot_screen__(self):
         """
@@ -480,6 +508,7 @@ class HeadsUpDisplay(object):
         if event.key in [pygame.K_r]:
             self.render_perf.reset()
             self.orient_perf.reset()
+            self.cache_perf.reset()
 
         if event.key in [pygame.K_BACKSPACE]:
             self.__level_ahrs__()

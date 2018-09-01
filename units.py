@@ -81,23 +81,23 @@ def get_meters_per_second_from_mph(speed):
     return mph_to_ms * speed
 
 
-def get_distance_string(units, distance):
+def get_converted_units_string(units, distance, unit_type=DISTANCE):
     if units is None:
         units = STATUTE
 
     if units != METRIC:
-        if distance < IMPERIAL_NEARBY:
+        if distance < IMPERIAL_NEARBY and units != SPEED:
             return "{0:.0f}".format(distance) + "'"
 
         if units == NAUTICAL:
-            return "{0:.1f}".format(distance / feet_to_nm) + UNIT_LABELS[NAUTICAL][DISTANCE]
+            return "{0:.1f}{1}".format(distance / feet_to_nm, UNIT_LABELS[NAUTICAL][unit_type])
 
-        return "{0:.1f}".format(distance / feet_to_sm) + UNIT_LABELS[STATUTE][DISTANCE]
+        return "{0:.1f}{1}".format(distance / feet_to_sm, UNIT_LABELS[STATUTE][unit_type])
     else:
         conversion = distance / feet_to_km
 
-        if conversion > 0.5:
-            return "{0:.1f}".format(conversion) + UNIT_LABELS[METRIC][DISTANCE]
+        if conversion < 0.5 and units != SPEED:
+            return "{0:.1f}{1}".format(conversion,  UNIT_LABELS[METRIC][unit_type])
 
         return "{0:.1f}m".format(distance / feet_to_m)
 
