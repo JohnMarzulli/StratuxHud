@@ -211,19 +211,22 @@ class HeadsUpDisplay(object):
         return True
 
     def __render_view_element__(self, hud_element, orientation):
-        element_name = str(hud_element)
-        if element_name not in self.__view_element_timers:
-            self.__view_element_timers[element_name] = TaskTimer(element_name)
-
-        timer = self.__view_element_timers[element_name]
-        timer.start()
         try:
-            hud_element.render(
-                self.__backpage_framebuffer__, orientation)
-        except Exception as e:
-            self.warn("ELEMENT:" + str(e))
-        timer.stop()
-        self.log("VIEW ELEMENT: {}".format(timer.to_string()))
+            element_name = str(hud_element)
+            if element_name not in self.__view_element_timers:
+                self.__view_element_timers[element_name] = TaskTimer(element_name)
+
+            timer = self.__view_element_timers[element_name]
+            timer.start()
+            try:
+                hud_element.render(
+                    self.__backpage_framebuffer__, orientation)
+            except Exception as e:
+                self.warn('ELEMENT EX:{}'.format(e))
+            timer.stop()
+            self.log("VIEW ELEMENT: {}".format(timer.to_string()))
+        except Exception as ex:
+            self.warn('__render_view_element__ EX:{}'.format(ex))
 
     def __render_text__(self, text, color, position_x, position_y, roll, background_color=None):
         """
