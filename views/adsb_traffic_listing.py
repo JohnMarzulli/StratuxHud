@@ -109,7 +109,7 @@ class AdsbTrafficListing(AdsbElement):
         self.task_timer.start()
 
         # Get the traffic, and bail out of we have none
-        traffic_reports = AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
+        traffic_reports = HudDataCache.get_reliable_traffic()
 
         if traffic_reports is None:
             self.task_timer.stop()

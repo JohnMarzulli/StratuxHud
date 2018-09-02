@@ -78,7 +78,7 @@ class RecurringTask(object):
 
     def __init__(self, task_name, task_interval, task_callback, logger=None, start_immediate=False):
         """
-        Creates a new reocurring task.
+        Creates a new reccurring task.
         The call back is called at the given time schedule.
         """
 

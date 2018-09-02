@@ -387,9 +387,7 @@ class AhrsStratux(object):
         """
         Atomically sets the AHRS data.
         """
-
-        self.__lock__.acquire(True)
-
+        self.__lock__.acquire()
         try:
             self.ahrs_data = new_ahrs_data
 

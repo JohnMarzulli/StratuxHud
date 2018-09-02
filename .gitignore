@@ -51,3 +51,4 @@ Temporary Items
 *.swp
 .pytest_cache/
 StratuxHud.egg-info
+stratux_hud.log.*

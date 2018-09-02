@@ -5,14 +5,16 @@ Common code for HUD view elements.
 
 import datetime
 import math
+import threading
 
 import pygame
 
 import units
 import configuration
+import traffic
 import views.utils as utils
 
-from lib.display import *
+from lib.display import WHITE, BLACK, YELLOW, display_init
 from lib.task_timer import TaskTimer
 from traffic import AdsbTrafficClient, Traffic
 
@@ -69,8 +71,36 @@ class HudDataCache(object):
     __CACHE_ENTRY_LAST_USED__ = {}
     __CACHE_INVALIDATION_TIME__ = 60 * 5
 
+    RELIABLE_TRAFFIC = []
+    UNRELIABLE_TRAFFIC = []
+
+    __LOCK__ = threading.Lock()
+
     @staticmethod
     def update_traffic_reports():
+        HudDataCache.__LOCK__.acquire()
+        HudDataCache.RELIABLE_TRAFFIC = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
+        HudDataCache.UNRELIABLE_TRAFFIC = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.get_unreliable_traffic()
+        HudDataCache.__LOCK__.release()
+    
+    @staticmethod
+    def get_reliable_traffic():
+        HudDataCache.__LOCK__.acquire()
+        traffic_clone = [traffic for traffic in HudDataCache.RELIABLE_TRAFFIC]
+        HudDataCache.__LOCK__.release()
+
+        return traffic_clone
+    
+    @staticmethod
+    def get_unreliable_traffic():
+        HudDataCache.__LOCK__.acquire()
+        traffic_clone = [traffic for traffic in HudDataCache.UNRELIABLE_TRAFFIC]
+        HudDataCache.__LOCK__.release()
+
+        return traffic_clone
+
+    @staticmethod
+    def purge_old_traffic_reports():
         # The second hardest problem in comp-sci...
         textures_to_purge = []
         for texture_key in HudDataCache.__CACHE_ENTRY_LAST_USED__:
@@ -229,7 +259,6 @@ def run_adsb_hud_element(element_type, use_detail_font=True):
     from hud_elements import HudDataCache
     from aircraft import AhrsSimulation
     from traffic import SimulatedTraffic
-    from configuration import DEFAULT_CONFIG_FILE, Configuration
 
     simulated_traffic = (SimulatedTraffic(),
                          SimulatedTraffic(), SimulatedTraffic())
@@ -270,7 +299,7 @@ def run_adsb_hud_element(element_type, use_detail_font=True):
             AdsbTrafficClient.TRAFFIC_MANAGER.handle_traffic_report(
                 test_data.to_json())
 
-        HudDataCache.update_traffic_reports()
+        HudDataCache.purge_old_traffic_reports()
         orientation = __aircraft__.ahrs_data
         __aircraft__.simulate()
         __backpage_framebuffer__.fill(BLACK)
