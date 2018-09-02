@@ -409,17 +409,16 @@ class TrafficManager(object):
         actionable_traffic = []
 
         self.__lock__.acquire()
-        potential_traffic_idents = [identifier for identifier in self.traffic]
-        self.__lock__.release()
+        try:
+            potential_traffic_idents = [identifier for identifier in self.traffic]
 
-        for identifier in potential_traffic_idents:
-            self.__lock__.acquire()
-            if self.traffic[identifier].is_valid_report():
-                if configuration.CONFIGURATION.ownship in str(self.traffic[identifier].get_identifer()):
-                    self.__lock__.release()
-                    continue
+            for identifier in potential_traffic_idents:
+                if self.traffic[identifier].is_valid_report():
+                    if configuration.CONFIGURATION.ownship in str(self.traffic[identifier].get_identifer()):        
+                        continue
 
-                actionable_traffic.append(self.traffic[identifier])
+                    actionable_traffic.append(self.traffic[identifier])
+        finally:
             self.__lock__.release()
             
         sorted_traffic = sorted(
