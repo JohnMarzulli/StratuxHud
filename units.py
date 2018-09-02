@@ -86,7 +86,7 @@ def get_converted_units_string(units, distance, unit_type=DISTANCE):
         units = STATUTE
 
     if units != METRIC:
-        if distance < IMPERIAL_NEARBY and units != SPEED:
+        if distance < IMPERIAL_NEARBY and unit_type != SPEED:
             return "{0:.0f}".format(distance) + "'"
 
         if units == NAUTICAL:
