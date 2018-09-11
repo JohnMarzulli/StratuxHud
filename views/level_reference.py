@@ -34,9 +34,7 @@ class LevelReference(AhrsElement):
         """
 
         self.task_timer.start()
-        for line in self.level_reference_lines:
-            pygame.draw.lines(framebuffer,
-                              WHITE, False, line, 6)
+        [pygame.draw.lines(framebuffer, WHITE, False, line, 6) for line in self.level_reference_lines]
         self.task_timer.stop()
 
 if __name__ == '__main__':

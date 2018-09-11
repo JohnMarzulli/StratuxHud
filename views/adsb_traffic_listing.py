@@ -34,6 +34,22 @@ class AdsbTrafficListing(AdsbElement):
         self.__top_border__ = int(self.__height__ * 0.2)
         self.__bottom_border__ = self.__height__ - int(self.__height__ * 0.1)
 
+    def __get_listing__(self, report, max_identifier_length, max_distance_length, max_altitude_length):
+        identifier = report[0]
+        bearing = str(utils.apply_declination(float(report[1])))
+        distance_text = report[2]
+        altitude = report[3]
+        icao = report[4]
+
+        # if self.__show_list__:
+        traffic_report = "{0} {1} {2} {3}".format(
+            identifier.ljust(max_identifier_length),
+            bearing.rjust(3),
+            distance_text.rjust(max_distance_length),
+            altitude.rjust(max_altitude_length))
+
+        return (icao, traffic_report)
+
     def __get_padded_traffic_reports__(self, traffic_reports):
         max_identifier_length = 0
         max_bearing_length = 0
@@ -44,22 +60,10 @@ class AdsbTrafficListing(AdsbElement):
         max_identifier_length, max_distance_length, max_altitude_length = self.__get_pre_padded_text_reports__(
             traffic_reports, max_identifier_length, max_bearing_length, max_altitude_length, max_distance_length, pre_padded_text)
 
-        out_padded_reports = []
-
-        for report in pre_padded_text:
-            identifier = report[0]
-            bearing = str(utils.apply_declination(float(report[1])))
-            distance_text = report[2]
-            altitude = report[3]
-            icao = report[4]
-
-            # if self.__show_list__:
-            traffic_report = "{0} {1} {2} {3}".format(
-                identifier.ljust(max_identifier_length),
-                bearing.rjust(3),
-                distance_text.rjust(max_distance_length),
-                altitude.rjust(max_altitude_length))
-            out_padded_reports.append((icao, traffic_report))
+        out_padded_reports = [self.__get_listing__(report,
+                                                   max_distance_length,
+                                                   max_distance_length,
+                                                   max_altitude_length) for report in pre_padded_text]
 
         return out_padded_reports
 

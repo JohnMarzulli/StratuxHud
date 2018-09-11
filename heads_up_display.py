@@ -85,10 +85,19 @@ class HeadsUpDisplay(object):
             while self.tick(clock):
                 pass
         finally:
-            self.__connection_manager__.shutdown()
             pygame.display.quit()
 
-        sys.exit()
+            print('Shutting down Connection Manager')
+            self.__connection_manager__.shutdown()
+
+            print('Shutting down HTTP')
+            self.web_server.stop()
+
+            RecurringTask.kill_all()
+
+        print('Finished with run()')
+
+        return 0
 
     def __render_view_title__(self, text):
         try:
@@ -170,8 +179,10 @@ class HeadsUpDisplay(object):
                     # to overdraw the pitch lines
                     # and improve readability
                     self.log("---- VIEW RENDER START ----")
-                    for hud_element in view:
-                        self.__render_view_element__(hud_element, orientation)
+
+                    [self.__render_view_element__(
+                        hud_element, orientation) for hud_element in view]
+
                     self.log("---------------------------")
             except Exception as e:
                 self.warn("LOOP:" + str(e))
@@ -441,8 +452,9 @@ class HeadsUpDisplay(object):
         if self.__logger__ is not None:
             logger = self.__logger__.logger
 
-        web_server = restful_host.HudServer()
-        RecurringTask("rest_host", 0.1, web_server.run, start_immediate=False)
+        self.web_server = restful_host.HudServer()
+        RecurringTask("rest_host", 0.1, self.web_server.run,
+                      start_immediate=False)
         RecurringTask("purge_old_traffic", 10.0,
                       self.__purge_old_reports__, start_immediate=False)
         RecurringTask("update_traffic", 0.1,
@@ -485,9 +497,11 @@ class HeadsUpDisplay(object):
             bool -- True if the loop should continue, False if it should quit.
         """
 
-        for event in pygame.event.get():
-            if not self.__handle_key_event__(event):
-                return False
+        events = pygame.event.get()
+        event_handling_repsonses = map(self.__handle_key_event__, events)
+
+        if False in event_handling_repsonses:
+            return False
 
         self.__clamp_view__()
 

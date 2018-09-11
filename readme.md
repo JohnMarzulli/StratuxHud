@@ -18,9 +18,9 @@ Using the "HUDLY Classic" projector and a Raspberry Pi 3.
 
 Estimated cost is $300
 
-* $40 for RaspberryPi 3
-* $215 for HUDLY projector
-* Fans, case, cables
+- $40 for RaspberryPi 3
+- $215 for HUDLY projector
+- Fans, case, cables
 
 Requires your aircraft to have a "12 Volt" cigarette power outlet.
 
@@ -28,17 +28,17 @@ Requires your aircraft to have a "12 Volt" cigarette power outlet.
 
 A self contained system that uses a 3D printed case and teleprompter glass. This version can be built for the cost of a Raspberry Pi and the 3D print.
 
-*NOTE:* This version does have visibility issues in daylight conditions. The HUDLY Version is fully daylight visible.
+_NOTE:_ This version does have visibility issues in daylight conditions. The HUDLY Version is fully daylight visible.
 
 ![Teleprompter Glass Version In Flight](media/in_flight.jpg)
 
 Estimated Cost is $140
 
-* $40 for a RaspberryPi 3
-* $45 for the LCD screen
-* $20 for Teleprompter Glass and shipping.
-* Cost of 3D printing the special case.
-* Cables
+- $40 for a RaspberryPi 3
+- $45 for the LCD screen
+- $20 for Teleprompter Glass and shipping.
+- Cost of 3D printing the special case.
+- Cables
 
 Can be powered by a USB powerbank or USB power.
 
@@ -47,7 +47,7 @@ Can be powered by a USB powerbank or USB power.
 You may use a number pad as input device. I used velcro to secure the number pad to my dashboard.
 
 | Key       | Action                                                                       |
-|-----------|------------------------------------------------------------------------------|
+| --------- | ---------------------------------------------------------------------------- |
 | Backspace | Tell the Stratux that you are in a level position. Resets the AHRS to level. |
 | +         | Next view                                                                    |
 | -         | Previous view                                                                |
@@ -57,10 +57,10 @@ You may use a number pad as input device. I used velcro to secure the number pad
 
 ## Views
 
-* Traffic
-* AHRS
-* Traffic List (Text only)
-* Blank
+- Traffic
+- AHRS
+- Traffic List (Text only)
+- Blank
 
 ### Traffic View
 
@@ -84,7 +84,7 @@ The closer the traffic, the larger the heading bug.
 
 This shows you all of the traffic with reliable ADSB data.
 
-*NOTE: Any planes further than 10SM are excluded from this view.*
+_NOTE: Any planes further than 10SM are excluded from this view._
 
 It attempts to prioritize traffic by distance.
 
@@ -121,9 +121,9 @@ We are experiencing 0.8Gs, less than normal gravity.
 
 ![Traffic View Screenshot](media/traffic_listing_view.jpg)
 
-This shows us *at most* the five closest planes.
+This shows us _at most_ the five closest planes.
 
-*NOTE: Any planes further than 10SM are excluded from this view.*
+_NOTE: Any planes further than 10SM are excluded from this view._
 
 Here we see N435SP is the closest plane, bearing 345, 1.0 statute miles away, and 1,300' above us.
 
@@ -137,26 +137,26 @@ A blank screen so no information is displayed.
 
 ### All Builds
 
-*NOTE:* This _does not_ include a power source. You will need to supply ship power from a 5V USB port or from a battery.
+_NOTE:_ This _does not_ include a power source. You will need to supply ship power from a 5V USB port or from a battery.
 
-* [Raspberry Pi 3](https://www.amazon.com/Raspberry-Pi-RASPBERRYPI3-MODB-1GB-Model-Motherboard/dp/B01CD5VC92/ref=sr_1_3?s=electronics&ie=UTF8&qid=1529215701&sr=1-3&keywords=raspberry+pi+3)
-* [Case For Raspberry Pi](https://www.amazon.com/iPhoenix-Raspberry-White-Compatible-Model/dp/B06XQSXZ97/ref=sr_1_3?s=electronics&dd=iYEspjjyeRXfqDW9BHwJFw%2C%2C&ddc_refnmnt=pfod&ie=UTF8&qid=1529215794&sr=1-3&keywords=white+raspberry+pi+3+case&refinements=p_97%3A11292772011)
-* [Cooling Fan for Raspberry Pi](https://www.amazon.com/gp/product/B075R4S9GH/ref=od_aui_detailpages00?ie=UTF8&psc=1)
-* [Micro USB Cable](https://www.amazon.com/AmazonBasics-Male-Micro-Cable-Black/dp/B0711PVX6Z/ref=sr_1_6?s=electronics&ie=UTF8&qid=1529215888&sr=1-6&keywords=micro+usb+cable)
-* [Micro SD Card](https://www.amazon.com/SanDisk-Ultra-Micro-Adapter-SDSQUNC-016G-GN6MA/dp/B010Q57SEE/ref=sr_1_10?s=pc&ie=UTF8&qid=1529215944&sr=1-10&keywords=micro+sd+card)
-* [Rottay Mechanical Keypad](https://www.amazon.com/Number-Rottay-Mechanical-Numeric-backlit/dp/B076FTSY6J/ref=sr_1_3?ie=UTF8&qid=1529215627&sr=8-3&keywords=mechanical+keypad)
+- [Raspberry Pi 3](https://www.amazon.com/Raspberry-Pi-RASPBERRYPI3-MODB-1GB-Model-Motherboard/dp/B01CD5VC92/ref=sr_1_3?s=electronics&ie=UTF8&qid=1529215701&sr=1-3&keywords=raspberry+pi+3)
+- [Case For Raspberry Pi](https://www.amazon.com/iPhoenix-Raspberry-White-Compatible-Model/dp/B06XQSXZ97/ref=sr_1_3?s=electronics&dd=iYEspjjyeRXfqDW9BHwJFw%2C%2C&ddc_refnmnt=pfod&ie=UTF8&qid=1529215794&sr=1-3&keywords=white+raspberry+pi+3+case&refinements=p_97%3A11292772011)
+- [Cooling Fan for Raspberry Pi](https://www.amazon.com/gp/product/B075R4S9GH/ref=od_aui_detailpages00?ie=UTF8&psc=1)
+- [Micro USB Cable](https://www.amazon.com/AmazonBasics-Male-Micro-Cable-Black/dp/B0711PVX6Z/ref=sr_1_6?s=electronics&ie=UTF8&qid=1529215888&sr=1-6&keywords=micro+usb+cable)
+- [Micro SD Card](https://www.amazon.com/SanDisk-Ultra-Micro-Adapter-SDSQUNC-016G-GN6MA/dp/B010Q57SEE/ref=sr_1_10?s=pc&ie=UTF8&qid=1529215944&sr=1-10&keywords=micro+sd+card)
+- [Rottay Mechanical Keypad](https://www.amazon.com/Number-Rottay-Mechanical-Numeric-backlit/dp/B076FTSY6J/ref=sr_1_3?ie=UTF8&qid=1529215627&sr=8-3&keywords=mechanical+keypad)
 
 ### Recommended HUDLY Build
 
-* [HUDLY Classic](https://gethudly.com/classic)
-  * *NOTE:* You will most likely want to order the cigarette lighter powered version.
-  * *NOTE:* You can order the iPhone or Android cable option based on your phone. It will not matter for the StratuxHud.
-* [12" HDMI Cable](https://www.amazon.com/StarTech-com-0-3m-Short-Speed-Cable/dp/B00K3HF276/ref=sr_1_11?s=electronics&ie=UTF8&qid=1529216822&sr=1-11&keywords=short%2Bhdmi%2Bcable&th=1)
+- [HUDLY Classic](https://gethudly.com/classic)
+  - _NOTE:_ You will most likely want to order the cigarette lighter powered version.
+  - _NOTE:_ You can order the iPhone or Android cable option based on your phone. It will not matter for the StratuxHud.
+- [12" HDMI Cable](https://www.amazon.com/StarTech-com-0-3m-Short-Speed-Cable/dp/B00K3HF276/ref=sr_1_11?s=electronics&ie=UTF8&qid=1529216822&sr=1-11&keywords=short%2Bhdmi%2Bcable&th=1)
 
 ### 3D Print Build
 
-* [Teleprompter Glass Sample of both thickness of the 60/40 glass](<https://telepromptermirror.com/sample/>)
-* [SunFounder 5" TFT LCD](https://www.amazon.com/SunFounder-Monitor-Display-800X480-Raspberry/dp/B01HXSFIH6)
+- [Teleprompter Glass Sample of both thickness of the 60/40 glass](https://telepromptermirror.com/sample/)
+- [SunFounder 5" TFT LCD](https://www.amazon.com/SunFounder-Monitor-Display-800X480-Raspberry/dp/B01HXSFIH6)
 
 ## Install instructions
 
@@ -182,6 +182,17 @@ A blank screen so no information is displayed.
 18. "Other" -> "English US" -> "Default" -> "No compose" -> "Yes"
 19. "Finish"
 
+#### Raspberry Pi 3B+
+
+If you are using a 3B+, it may suffer from undervoltage alerts.
+These may be relieved by the following command to update your Linux install to the latest:
+
+```bash
+sudo apt-get update && sudo apt-get dist-upgrade -y
+```
+
+Make sure you are using a high quality power cable if you are using a Pi 3B+
+
 ### Install Software
 
 1. Enter `ping google.com`. Press ctrl+c after a while. This will confirm that you have internet access. If you do not, then use rasp-config to re-enter your wi-fi
@@ -200,9 +211,9 @@ A blank screen so no information is displayed.
 14. Select "Nano" (Option 1)
 15. Enter the following text at the _bottom_ of the file:
 
-  ```code
-  @reboot sudo python /home/pi/StratuxHud/stratux_hud.py &
-  ```
+```bash
+@reboot sudo python /home/pi/StratuxHud/stratux_hud.py &
+```
 
 1. Save and quit.
 
@@ -233,9 +244,9 @@ The initial project was inspired by Kris Knigga's PyAhrs project <https://github
 
 The following components are used:
 
-* Python
-* PyGame
-* Ws4Py
+- Python
+- PyGame
+- Ws4Py
 
 ... and of course Stratux
 

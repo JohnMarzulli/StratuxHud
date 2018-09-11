@@ -56,10 +56,6 @@ class AdsbTargetBugs(AdsbElement):
             finally:
                 pass
 
-            # Now find where to draw the reticle....
-            reticle_x, reticle_y = self.__get_traffic_projection__(
-                orientation, traffic_report)
-
             # Render using the Above us bug
             # target_bug_scale = 0.04
             target_bug_scale = get_reticle_size(traffic_report.distance)
