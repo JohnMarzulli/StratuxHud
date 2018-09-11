@@ -27,32 +27,32 @@ class ArtificialHorizon(AhrsElement):
             self.__pitch_elements__[reference_angle] = (
                 text, (size_x >> 1, size_y >> 1))
 
+    def __render_reference_line__(self, framebuffer, reference_angle, draw_line, rot_text, orientation):
+        line_coords, line_center = self.__get_line_coords__(
+                orientation.pitch, orientation.roll, reference_angle)
+
+        # Perform some trivial clipping of the lines
+        # This also prevents early text rasterization
+        if line_center[1] < 0 or line_center[1] > self.__height__:
+            return
+
+        draw_line(framebuffer, GREEN, False, line_coords, 4)
+
+        text, half_size = self.__pitch_elements__[reference_angle]
+        text = rot_text(text, orientation.roll)
+        half_x, half_y = half_size
+        center_x, center_y = line_center
+
+        framebuffer.blit(text, (center_x - half_x, center_y - half_y))
+
     def render(self, framebuffer, orientation):
         self.task_timer.start()
 
         draw_line = pygame.draw.lines
         rot_text = pygame.transform.rotate
-        pitch = orientation.pitch
-        roll = orientation.roll
-        blit = framebuffer.blit
 
         for reference_angle in self.__pitch_elements__:
-            line_coords, line_center = self.__get_line_coords__(
-                pitch, roll, reference_angle)
-
-            # Perform some trivial clipping of the lines
-            # This also prevents early text rasterization
-            if line_center[1] < 0 or line_center[1] > self.__height__:
-                continue
-
-            draw_line(framebuffer, GREEN, False, line_coords, 4)
-
-            text, half_size = self.__pitch_elements__[reference_angle]
-            text = rot_text(text, roll)
-            half_x, half_y = half_size
-            center_x, center_y = line_center
-
-            blit(text, (center_x - half_x, center_y - half_y))
+            self.__render_reference_line__(framebuffer, reference_angle, draw_line, rot_text, orientation)
         self.task_timer.stop()
 
     def __get_cos__(self, degrees):

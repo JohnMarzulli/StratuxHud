@@ -410,19 +410,19 @@ class TrafficManager(object):
 
         self.__lock__.acquire()
         try:
-            potential_traffic_idents = [identifier for identifier in self.traffic]
+            potential_traffic_idents = [identifier
+                                        if self.traffic[identifier].is_valid_report()
+                                        and configuration.CONFIGURATION.ownship not in str(self.traffic[identifier].get_identifer())
+                                        else None for identifier in self.traffic]
 
             for identifier in potential_traffic_idents:
-                if self.traffic[identifier].is_valid_report():
-                    if configuration.CONFIGURATION.ownship in str(self.traffic[identifier].get_identifer()):        
-                        continue
-
+                if identifier is not None:
                     actionable_traffic.append(self.traffic[identifier])
         finally:
             self.__lock__.release()
-            
-        sorted_traffic = sorted(
-            actionable_traffic, key=lambda traffic: traffic.distance)
+
+        sorted_traffic = sorted(actionable_traffic,
+                                key=lambda traffic: traffic.distance)
 
         return sorted_traffic
 
@@ -626,11 +626,7 @@ class ConnectionManager(object):
         Handles the connection.
         """
 
-        while True:
-
-            if self.__is_shutting_down__:
-                continue
-
+        while not self.__is_shutting_down__:
             create = AdsbTrafficClient.INSTANCE is None
             restart = False
             if AdsbTrafficClient.INSTANCE is not None:
@@ -643,12 +639,12 @@ class ConnectionManager(object):
                     AdsbTrafficClient.INSTANCE.shutdown()
                     create = True
 
-            if create:
+            if create and not self.__is_shutting_down__:
                 print("ATTEMPTING TO CONNECT")
                 AdsbTrafficClient.INSTANCE = AdsbTrafficClient(
                     self.__socket_address__)
                 AdsbTrafficClient.INSTANCE.run_in_background()
-                time.sleep(30)
+                time.sleep(30 if not self.__is_shutting_down__ else 0)
             else:
                 time.sleep(1)
 
@@ -663,6 +659,7 @@ class ConnectionManager(object):
 
         if AdsbTrafficClient.INSTANCE is not None:
             AdsbTrafficClient.INSTANCE.shutdown()
+            AdsbTrafficClient.INSTANCE = None
 
     def __is_connection_silently_timed_out__(self):
         """

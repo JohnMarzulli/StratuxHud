@@ -218,6 +218,11 @@ class HudServer(object):
         print("localhost = {}:{}".format(self.__local_ip__, self.__port__))
 
         self.__httpd__.serve_forever()
+    
+    def stop(self):
+        if self.__httpd__ is not None:
+            self.__httpd__.shutdown()
+            self.__httpd__.server_close()
 
     def __init__(self):
         self.__port__ = RESTFUL_HOST_PORT
