@@ -307,7 +307,7 @@ class AhrsStratux(object):
             configuration.CONFIGURATION.stratux_address())
 
         try:
-            ahrs_json = self.__stratux_session__.get(url, timeout=2).json()
+            ahrs_json = self.__stratux_session__.get(url, timeout=0.5).json()
 
         except KeyboardInterrupt:
             raise
@@ -320,7 +320,6 @@ class AhrsStratux(object):
 
         new_ahrs_data.roll = self.__get_value__(ahrs_json, 'AHRSRoll', 0.0)
         new_ahrs_data.pitch = self.__get_value__(ahrs_json, 'AHRSPitch', 0.0)
-        # new_ahrs_data.compass_heading = self.__get_value__(ahrs_json, 'AHRSGyroHeading', 0.0) / 1000.0 #'AHRSMagHeading', 0.0) / 10.0
         new_ahrs_data.compass_heading = self.__get_value__(
             ahrs_json, 'AHRSGyroHeading', 1080)  # anything above 360 indicates "not available"
         new_ahrs_data.gps_heading = self.__get_value__(

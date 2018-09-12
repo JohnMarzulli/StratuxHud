@@ -68,14 +68,12 @@ class AdsbTrafficListing(AdsbElement):
         return out_padded_reports
 
     def __get_pre_padded_text_reports__(self, traffic_reports, max_identifier_length, max_bearing_length, max_altitude_length, max_distance_length, pre_padded_text):
-        report_count = 0
-        for traffic in traffic_reports:
-            # Do not list traffic too far away
-            if report_count > self.__max_reports__ or traffic.distance > imperial_occlude or traffic.is_on_ground():
-                continue
+        # Do not list traffic too far away, or on the ground.
+        # Only show what can fit on the screen
+        reports_to_show = filter(lambda x: x.distance < imperial_occlude and not x.is_on_ground(), traffic_reports)
+        reports_to_show = reports_to_show[:self.__max_reports__]
 
-            report_count += 1
-
+        for traffic in reports_to_show:
             identifier = str(traffic.get_identifer())
             altitude_delta = int(traffic.altitude / 100.0)
             distance_text = self.__get_distance_string__(traffic.distance)

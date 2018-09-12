@@ -36,14 +36,14 @@ for degrees in range(-360, 361):
 def get_reticle_size(distance, min_reticle_size=0.05, max_reticle_size=0.20):
     """
     The the size of the reticle based on the distance of the target.
-    
+
     Arguments:
         distance {float} -- The distance (feet) to the target.
-    
+
     Keyword Arguments:
         min_reticle_size {float} -- The minimum size of the reticle. (default: {0.05})
         max_reticle_size {float} -- The maximum size of the reticle. (default: {0.20})
-    
+
     Returns:
         float -- The size of the reticle (in proportion to the screen size.)
     """
@@ -82,37 +82,89 @@ class HudDataCache(object):
         HudDataCache.RELIABLE_TRAFFIC = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
         HudDataCache.UNRELIABLE_TRAFFIC = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.get_unreliable_traffic()
         HudDataCache.__LOCK__.release()
-    
+
     @staticmethod
     def get_reliable_traffic():
+        """
+        Returns a thread safe copy of the currently known reliable traffic.
+
+        Returns:
+            list -- A list of the reliable traffic.
+        """
+
         HudDataCache.__LOCK__.acquire()
-        traffic_clone = [traffic for traffic in HudDataCache.RELIABLE_TRAFFIC]
+        traffic_clone = HudDataCache.RELIABLE_TRAFFIC[:]
         HudDataCache.__LOCK__.release()
 
         return traffic_clone
-    
+
     @staticmethod
     def get_unreliable_traffic():
+        """
+        Returns a thread safe copy of the currently known traffic that _does not_ have position data.
+
+        Returns:
+            list -- A list of the positionless traffic.
+        """
         HudDataCache.__LOCK__.acquire()
-        traffic_clone = [traffic for traffic in HudDataCache.UNRELIABLE_TRAFFIC]
+        traffic_clone = HudDataCache.UNRELIABLE_TRAFFIC[:]
         HudDataCache.__LOCK__.release()
 
         return traffic_clone
+
+    @staticmethod
+    def __purge_texture__(texture_to_purge):
+        """
+        Attempts to remove a texture from the cache.
+
+        Arguments:
+            texture_to_purge {string} -- The identifier of the texture to remove from the system.
+        """
+
+        try:
+            del HudDataCache.TEXT_TEXTURE_CACHE[texture_to_purge]
+            del HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_to_purge]
+        except:
+            pass
+
+    @staticmethod
+    def __get_purge_key__(now, texture_key):
+        """
+        Returns the key of the traffic to purge if it should be, otherwise returns None.
+
+        Arguments:
+            now {datetime} -- The current time.
+            texture_key {string} -- The identifier of the texture we are interesting in.
+
+        Returns:
+            string -- The identifier to purge, or None
+        """
+
+        lsu = HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_key]
+        time_since_last_use = (datetime.datetime.now() - lsu).total_seconds()
+
+        return texture_key if time_since_last_use > HudDataCache.__CACHE_INVALIDATION_TIME__ else None
 
     @staticmethod
     def purge_old_traffic_reports():
+        """
+        Works through the traffic reports and removes any traffic that is
+        old, or the cache has timed out on.
+        """
+
         # The second hardest problem in comp-sci...
         textures_to_purge = []
-        for texture_key in HudDataCache.__CACHE_ENTRY_LAST_USED__:
-            lsu = HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_key]
-            time_since_last_use = (
-                datetime.datetime.now() - lsu).total_seconds()
-            if time_since_last_use > HudDataCache.__CACHE_INVALIDATION_TIME__:
-                textures_to_purge.append(texture_key)
-
-        for texture_to_purge in textures_to_purge:
-            del HudDataCache.TEXT_TEXTURE_CACHE[texture_to_purge]
-            del HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_to_purge]
+        HudDataCache.__LOCK__.acquire()
+        try:
+            now = datetime.datetime.now()
+            textures_to_purge = [HudDataCache.__get_purge_key__(now, texture_key)
+                                 for texture_key in HudDataCache.__CACHE_ENTRY_LAST_USED__]
+            textures_to_purge = filter(lambda x: x is not None,
+                                       textures_to_purge)
+            [HudDataCache.__purge_texture__(texture_to_purge)
+             for texture_to_purge in textures_to_purge]
+        finally:
+            HudDataCache.__LOCK__.release()
 
     @staticmethod
     def get_cached_text_texture(text, font, text_color=BLACK, background_color=YELLOW, use_alpha=False, force_regen=False):
@@ -149,12 +201,12 @@ class HudDataCache(object):
 def get_heading_bug_x(heading, bearing, degrees_per_pixel):
     """
     Gets the X position of a heading bug. 0 is the LHS.
-    
+
     Arguments:
         heading {float} -- The current heading of the plane
         bearing {float} -- The bearing of the target.
         degrees_per_pixel {float} -- The number of degrees per horizontal pixel.
-    
+
     Returns:
         int -- The screen X position.
     """
