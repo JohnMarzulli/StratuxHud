@@ -51,8 +51,9 @@ class ArtificialHorizon(AhrsElement):
         draw_line = pygame.draw.lines
         rot_text = pygame.transform.rotate
 
-        for reference_angle in self.__pitch_elements__:
-            self.__render_reference_line__(framebuffer, reference_angle, draw_line, rot_text, orientation)
+        [self.__render_reference_line__(framebuffer, reference_angle, draw_line, rot_text, orientation) \
+            for reference_angle in self.__pitch_elements__]
+            
         self.task_timer.stop()
 
     def __get_cos__(self, degrees):
