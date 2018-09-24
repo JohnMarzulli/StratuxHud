@@ -88,7 +88,7 @@ class HeadsUpDisplay(object):
             self.__connection_manager__.shutdown()
             pygame.display.quit()
 
-        sys.exit()
+        return 0
 
     def __render_view_title__(self, text):
         try:
@@ -169,8 +169,9 @@ class HeadsUpDisplay(object):
                     # to overdraw the pitch lines
                     # and improve readability
                     self.log("---- VIEW RENDER START ----")
-                    for hud_element in view:
-                        self.__render_view_element__(hud_element, orientation)
+
+                    [self.__render_view_element__(
+                        hud_element, orientation) for hud_element in view]
                     self.log("---------------------------")
             except Exception as e:
                 self.warn("LOOP:" + str(e))
@@ -448,10 +449,25 @@ class HeadsUpDisplay(object):
         Renders a BOOTING screen.
         """
 
+        disclaimer_text = ['Not intended as',
+                           'a primary collision evasion',
+                           'or flight instrument system.',
+                           'For advisiory only.']
+
         texture = self.__loading_font__.render("BOOTING", True, display.RED)
         text_width, text_height = texture.get_size()
+        center_y = (self.__height__ >> 1)
         self.__backpage_framebuffer__.blit(texture, ((
-            self.__width__ >> 1) - (text_width >> 1), (self.__height__ >> 1) - (text_height >> 1)))
+            self.__width__ >> 1) - (text_width >> 1), center_y - text_height - self.__detail_font__.get_height()))
+
+        y = self.__height__ >> 1
+        for text in disclaimer_text:
+            texture = self.__detail_font__.render(text, True, display.YELLOW)
+            text_width, text_height = texture.get_size()
+            self.__backpage_framebuffer__.blit(
+                texture, ((self.__width__ >> 1) - (text_width >> 1), y))
+            y += text_height + (text_height >> 3)
+
         flipped = pygame.transform.flip(
             self.__backpage_framebuffer__, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)
         self.__backpage_framebuffer__.blit(flipped, [0, 0])
@@ -465,9 +481,11 @@ class HeadsUpDisplay(object):
             bool -- True if the loop should continue, False if it should quit.
         """
 
-        for event in pygame.event.get():
-            if not self.__handle_key_event__(event):
-                return False
+        events = pygame.event.get()
+        event_handling_repsonses = map(self.__handle_key_event__, events)
+
+        if False in event_handling_repsonses:
+            return False
 
         self.__clamp_view__()
 
