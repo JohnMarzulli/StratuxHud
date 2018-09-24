@@ -96,19 +96,58 @@ class HudDataCache(object):
         return traffic_clone
     
     @staticmethod
-    def purge_old_traffic_reports():
-        # The second hardest problem in comp-sci...
-        textures_to_purge = []
-        for texture_key in HudDataCache.__CACHE_ENTRY_LAST_USED__:
-            lsu = HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_key]
-            time_since_last_use = (
-                datetime.datetime.now() - lsu).total_seconds()
-            if time_since_last_use > HudDataCache.__CACHE_INVALIDATION_TIME__:
-                textures_to_purge.append(texture_key)
+    def __purge_texture__(texture_to_purge):
+        """
+        Attempts to remove a texture from the cache.
 
-        for texture_to_purge in textures_to_purge:
+        Arguments:
+            texture_to_purge {string} -- The identifier of the texture to remove from the system.
+        """
+
+        try:
             del HudDataCache.TEXT_TEXTURE_CACHE[texture_to_purge]
             del HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_to_purge]
+        except:
+            pass
+
+    @staticmethod
+    def __get_purge_key__(now, texture_key):
+        """
+        Returns the key of the traffic to purge if it should be, otherwise returns None.
+
+        Arguments:
+            now {datetime} -- The current time.
+            texture_key {string} -- The identifier of the texture we are interesting in.
+
+        Returns:
+            string -- The identifier to purge, or None
+        """
+
+        lsu = HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_key]
+        time_since_last_use = (datetime.datetime.now() - lsu).total_seconds()
+
+        return texture_key if time_since_last_use > HudDataCache.__CACHE_INVALIDATION_TIME__ else None
+
+    @staticmethod
+    def purge_old_traffic_reports():
+        """
+        Works through the traffic reports and removes any traffic that is
+        old, or the cache has timed out on.
+        """
+
+        # The second hardest problem in comp-sci...
+        textures_to_purge = []
+        HudDataCache.__LOCK__.acquire()
+        try:
+            now = datetime.datetime.now()
+            textures_to_purge = [HudDataCache.__get_purge_key__(now, texture_key)
+                                 for texture_key in HudDataCache.__CACHE_ENTRY_LAST_USED__]
+            textures_to_purge = filter(lambda x: x is not None,
+                                       textures_to_purge)
+            [HudDataCache.__purge_texture__(texture_to_purge)
+             for texture_to_purge in textures_to_purge]
+        finally:
+            HudDataCache.__LOCK__.release()
 
     @staticmethod
     def get_cached_text_texture(text, font, text_color=BLACK, background_color=YELLOW, use_alpha=False, force_regen=False):
