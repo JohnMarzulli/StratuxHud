@@ -57,7 +57,7 @@ class RecurringTask(object):
         Runs the callback.
         """
 
-        self.__last_task__ = threading.Thread(target=self.__run_loop__)
+        self.__last_task__ = threading.Thread(target=self.__run_loop__, name=self.__task_name__)
         self.__last_task__.start()
 
     def __run_loop__(self):
