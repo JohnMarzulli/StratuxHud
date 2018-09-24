@@ -72,7 +72,6 @@ class HudDataCache(object):
     __CACHE_INVALIDATION_TIME__ = 60 * 5
 
     RELIABLE_TRAFFIC = []
-    UNRELIABLE_TRAFFIC = []
 
     __LOCK__ = threading.Lock()
 
@@ -80,7 +79,6 @@ class HudDataCache(object):
     def update_traffic_reports():
         HudDataCache.__LOCK__.acquire()
         HudDataCache.RELIABLE_TRAFFIC = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
-        HudDataCache.UNRELIABLE_TRAFFIC = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.get_unreliable_traffic()
         HudDataCache.__LOCK__.release()
     
     @staticmethod
@@ -97,20 +95,6 @@ class HudDataCache(object):
 
         return traffic_clone
     
-    @staticmethod
-    def get_unreliable_traffic():
-        """
-        Returns a thread safe copy of the currently known traffic that _does not_ have position data.
-
-        Returns:
-            list -- A list of the positionless traffic.
-        """
-        HudDataCache.__LOCK__.acquire()
-        traffic_clone = HudDataCache.UNRELIABLE_TRAFFIC[:]
-        HudDataCache.__LOCK__.release()
-
-        return traffic_clone
-
     @staticmethod
     def purge_old_traffic_reports():
         # The second hardest problem in comp-sci...
