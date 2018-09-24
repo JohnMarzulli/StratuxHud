@@ -386,12 +386,8 @@ class TrafficManager(object):
 
         self.__lock__.acquire()
         try:
-            for identifier in self.traffic:
-                if not self.traffic[identifier].is_valid_report():
-                    if configuration.CONFIGURATION.ownship in str(self.traffic[identifier].get_identifer()):
-                        continue
-
-                    traffic_without_position.append(self.traffic[identifier])
+            traffic_without_position = [self.traffic[identifier] if not self.traffic[identifier].is_valid_report() else None for identifier in self.traffic]
+            traffic_without_position = filter(lambda x: x is not None, traffic_without_position)
         finally:
             self.__lock__.release()
 
@@ -410,14 +406,13 @@ class TrafficManager(object):
 
         self.__lock__.acquire()
         try:
-            potential_traffic_idents = [identifier for identifier in self.traffic]
+            potential_traffic_idents = [identifier
+                                        if self.traffic[identifier].is_valid_report()
+                                        and configuration.CONFIGURATION.ownship not in str(self.traffic[identifier].get_identifer())
+                                        else None for identifier in self.traffic]
 
-            for identifier in potential_traffic_idents:
-                if self.traffic[identifier].is_valid_report():
-                    if configuration.CONFIGURATION.ownship in str(self.traffic[identifier].get_identifer()):        
-                        continue
-
-                    actionable_traffic.append(self.traffic[identifier])
+            traffic_with_position = filter(lambda x: x is not None, potential_traffic_idents)
+            actionable_traffic = [self.traffic[identifier] for identifier in traffic_with_position]
         finally:
             self.__lock__.release()
             
