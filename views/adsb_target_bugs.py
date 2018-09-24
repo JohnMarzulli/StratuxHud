@@ -1,7 +1,8 @@
+import math
 import pygame
 
 from adsb_element import AdsbElement
-from hud_elements import *
+from hud_elements import get_reticle_size, get_heading_bug_x, HudDataCache, imperial_occlude
 
 import testing
 testing.load_imports()
@@ -24,6 +25,38 @@ class AdsbTargetBugs(AdsbElement):
         self.__top_border__ = int(self.__height__ * 0.2)
         self.__bottom_border__ = self.__height__ - int(self.__height__ * 0.1)
 
+    def __render_traffic_heading_bug__(self, traffic_report, heading, orientation, framebuffer):
+        """
+        Render a single heading bug to the framebuffer.
+        
+        Arguments:
+            traffic_report {Traffic} -- The traffic we want to render a bug for.
+            heading {int} -- Our current heading.
+            orientation {Orientation} -- Our plane's current orientation.
+            framebuffer {Framebuffer} -- What we are going to draw to.
+        """
+
+        # Render using the Above us bug
+        # target_bug_scale = 0.04
+        target_bug_scale = get_reticle_size(traffic_report.distance)
+
+        heading_bug_x = get_heading_bug_x(
+            heading, traffic_report.bearing, self.__pixels_per_degree_x__)
+
+        additional_info_text = self.__get_additional_target_text__(
+            traffic_report, orientation)
+
+        try:
+            self.__render_heading_bug__(framebuffer,
+                                        str(traffic_report.get_identifer()),
+                                        additional_info_text,
+                                        heading_bug_x,
+                                        target_bug_scale,
+                                        traffic_report.is_on_ground(),
+                                        traffic_report.get_age())
+        except:
+            pass
+
     def render(self, framebuffer, orientation):
         # Render a heading strip along the top
 
@@ -42,44 +75,12 @@ class AdsbTargetBugs(AdsbElement):
         traffic_bug_reports = sorted(
             traffic_reports, key=lambda traffic: traffic.distance, reverse=True)
 
-        for traffic_report in traffic_bug_reports:
-            if traffic_report.distance > imperial_occlude:
-                continue
+        reports_to_show = filter(lambda x: x.distance < imperial_occlude and math.fabs(
+            x.altitude - orientation.alt) < 5000.0, traffic_bug_reports)
 
-            try:
-                altitude_delta = int(
-                    (traffic_report.altitude - orientation.alt) / 100.0)
+        [self.__render_traffic_heading_bug__(
+            traffic_report, heading, orientation, framebuffer) for traffic_report in reports_to_show]
 
-                # TEST - Ignore stuff crazy separated
-                if math.fabs(altitude_delta) > 50:
-                    continue
-            finally:
-                pass
-
-            # Now find where to draw the reticle....
-            reticle_x, reticle_y = self.__get_traffic_projection__(
-                orientation, traffic_report)
-
-            # Render using the Above us bug
-            # target_bug_scale = 0.04
-            target_bug_scale = get_reticle_size(traffic_report.distance)
-
-            heading_bug_x = get_heading_bug_x(
-                heading, traffic_report.bearing, self.__pixels_per_degree_x__)
-
-            additional_info_text = self.__get_additional_target_text__(
-                traffic_report, orientation)
-
-            try:
-                self.__render_heading_bug__(framebuffer,
-                                            str(traffic_report.get_identifer()),
-                                            additional_info_text,
-                                            heading_bug_x,
-                                            target_bug_scale,
-                                            traffic_report.is_on_ground(),
-                                            traffic_report.get_age())
-            except Exception as e:
-                print(str(e))
         self.task_timer.stop()
 
 
