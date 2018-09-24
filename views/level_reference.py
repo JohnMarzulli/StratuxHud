@@ -38,6 +38,7 @@ class LevelReference(AhrsElement):
          for line in self.level_reference_lines]
         self.task_timer.stop()
 
+
 if __name__ == '__main__':
     import hud_elements
     hud_elements.run_ahrs_hud_element(LevelReference)
