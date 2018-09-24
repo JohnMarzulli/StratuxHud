@@ -85,16 +85,28 @@ class HudDataCache(object):
     
     @staticmethod
     def get_reliable_traffic():
+        """
+        Returns a thread safe copy of the currently known reliable traffic.
+
+        Returns:
+            list -- A list of the reliable traffic.
+        """
         HudDataCache.__LOCK__.acquire()
-        traffic_clone = [traffic for traffic in HudDataCache.RELIABLE_TRAFFIC]
+        traffic_clone = HudDataCache.RELIABLE_TRAFFIC[:]
         HudDataCache.__LOCK__.release()
 
         return traffic_clone
     
     @staticmethod
     def get_unreliable_traffic():
+        """
+        Returns a thread safe copy of the currently known traffic that _does not_ have position data.
+
+        Returns:
+            list -- A list of the positionless traffic.
+        """
         HudDataCache.__LOCK__.acquire()
-        traffic_clone = [traffic for traffic in HudDataCache.UNRELIABLE_TRAFFIC]
+        traffic_clone = HudDataCache.UNRELIABLE_TRAFFIC[:]
         HudDataCache.__LOCK__.release()
 
         return traffic_clone
