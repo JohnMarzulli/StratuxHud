@@ -307,7 +307,7 @@ class AhrsStratux(object):
             configuration.CONFIGURATION.stratux_address())
 
         try:
-            ahrs_json = self.__stratux_session__.get(url, timeout=2).json()
+            ahrs_json = self.__stratux_session__.get(url, timeout=0.5).json()
 
         except KeyboardInterrupt:
             raise
