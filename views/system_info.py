@@ -136,6 +136,7 @@ class SystemInfo(AhrsElement):
         # First line in the array is at the bottom.
         # Last line in the array is towards the top.
         info_lines = [
+            ["VERSION     : ", [configuration.VERSION, YELLOW]],
             ["IP          : ", get_ip_address()],
             ["HUD CPU     : ", get_cpu_temp()],
             ["SOCKET      : ", get_websocket_uptime()],
