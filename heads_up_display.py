@@ -6,6 +6,7 @@ import json
 import math
 import os
 import sys
+from time import sleep
 
 import pygame
 import requests
@@ -78,6 +79,9 @@ class HeadsUpDisplay(object):
         """
         Runs the update/render logic loop.
         """
+
+        # Make sure that the disclaimer is visible for long enough.
+        sleep(5)
 
         clock = pygame.time.Clock()
 
@@ -456,17 +460,21 @@ class HeadsUpDisplay(object):
 
         texture = self.__loading_font__.render("BOOTING", True, display.RED)
         text_width, text_height = texture.get_size()
-        center_y = (self.__height__ >> 1)
-        self.__backpage_framebuffer__.blit(texture, ((
-            self.__width__ >> 1) - (text_width >> 1), center_y - text_height - self.__detail_font__.get_height()))
 
-        y = self.__height__ >> 1
+        self.__backpage_framebuffer__.blit(texture, ((
+            self.__width__ >> 1) - (text_width >> 1), self.__detail_font__.get_height()))
+
+        y = (self.__height__ >> 2) + (self.__height__ >> 3)
         for text in disclaimer_text:
             texture = self.__detail_font__.render(text, True, display.YELLOW)
             text_width, text_height = texture.get_size()
             self.__backpage_framebuffer__.blit(
                 texture, ((self.__width__ >> 1) - (text_width >> 1), y))
             y += text_height + (text_height >> 3)
+        
+        texture = self.__detail_font__.render('Version {}'.format(VERSION), True, display.GREEN)
+        text_width, text_height = texture.get_size()
+        self.__backpage_framebuffer__.blit(texture, ((self.__width__ >> 1) - (text_width >> 1), self.__height__ - text_height))
 
         flipped = pygame.transform.flip(
             self.__backpage_framebuffer__, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)
