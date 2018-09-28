@@ -156,7 +156,8 @@ class HeadsUpDisplay(object):
 
             self.render_perf.start()
 
-            view_name, view, view_uses_ahrs = self.__hud_views__[self.__view_index__]
+            view_name, view, view_uses_ahrs = self.__hud_views__[
+                self.__view_index__]
             self.__render_view_title__(view_name)
 
             try:
@@ -172,11 +173,34 @@ class HeadsUpDisplay(object):
                     # drawn with a black background
                     # to overdraw the pitch lines
                     # and improve readability
-                    self.log("---- VIEW RENDER START ----")
 
-                    [self.__render_view_element__(
+                    render_times = [self.__render_view_element__(
                         hud_element, orientation) for hud_element in view]
-                    self.log("---------------------------")
+
+                    now = datetime.datetime.utcnow()
+
+                    if (self.__last_perf_render__ is None) or (now - self.__last_perf_render__).total_seconds() > 60:
+                        self.__last_perf_render__ = now
+
+                        self.log("---- VIEW ELEMENT RENDER TIMES ----")
+
+                        for element_times in render_times:
+                            self.log('RENDER: {}, {}'.format(
+                                now, element_times))
+
+                        self.log('CACHE: {}, Textures, {}, {}, {}'.format(
+                            now,
+                            hud_elements.HudDataCache.get_texture_cache_size(),
+                            hud_elements.HudDataCache.get_texture_cache_miss_count(),
+                            hud_elements.HudDataCache.get_texture_cache_purge_count()))
+                        
+                        self.log('CONNECTION MANAGER: {}, ConnectionManager, {}, {}, {}'.format(
+                            now,
+                            self.__connection_manager__.CONNECT_ATTEMPTS,
+                            self.__connection_manager__.SHUTDOWNS,
+                            self.__connection_manager__.SILENT_TIMEOUTS))
+
+                        self.log("-----------------------------------")
             except Exception as e:
                 self.warn("LOOP:" + str(e))
 
@@ -216,10 +240,12 @@ class HeadsUpDisplay(object):
         return True
 
     def __render_view_element__(self, hud_element, orientation):
+        element_name = str(hud_element)
+
         try:
-            element_name = str(hud_element)
             if element_name not in self.__view_element_timers:
-                self.__view_element_timers[element_name] = TaskTimer(element_name)
+                self.__view_element_timers[element_name] = TaskTimer(
+                    element_name)
 
             timer = self.__view_element_timers[element_name]
             timer.start()
@@ -229,9 +255,13 @@ class HeadsUpDisplay(object):
             except Exception as e:
                 self.warn('ELEMENT EX:{}'.format(e))
             timer.stop()
-            self.log("VIEW ELEMENT: {}".format(timer.to_string()))
+            timer_string = timer.to_string()
+
+            return timer_string
         except Exception as ex:
             self.warn('__render_view_element__ EX:{}'.format(ex))
+
+            return 'Element View Timer Error:{}'.format(ex)
 
     def __render_text__(self, text, color, position_x, position_y, roll, background_color=None):
         """
@@ -258,12 +288,10 @@ class HeadsUpDisplay(object):
             text {string} -- The text to log
         """
 
-        # if self.__logger__ is not None:
-        #     self.__logger__.log_info_message(text)
-        # else:
-        #     print(text)
-
-        pass
+        if self.__logger__ is not None:
+            self.__logger__.log_info_message(text)
+        else:
+            print(text)
 
     def warn(self, text):
         """
@@ -362,7 +390,8 @@ class HeadsUpDisplay(object):
                             element_config[0], element_config[1]))
 
                     is_ahrs_view = self.__is_ahrs_view__(new_view_elements)
-                    hud_views.append((view_name, new_view_elements, is_ahrs_view))
+                    hud_views.append(
+                        (view_name, new_view_elements, is_ahrs_view))
                 except Exception as ex:
                     self.log(
                         "While attempting to load view={}, EX:{}".format(view, ex))
@@ -384,7 +413,7 @@ class HeadsUpDisplay(object):
         self.cache_perf.start()
         hud_elements.HudDataCache.purge_old_traffic_reports()
         self.cache_perf.stop()
-    
+
     def __update_traffic_reports__(self):
         hud_elements.HudDataCache.update_traffic_reports()
 
@@ -393,6 +422,7 @@ class HeadsUpDisplay(object):
         Initialize and create a new HUD.
         """
 
+        self.__last_perf_render__ = None
         self.__logger__ = logger
         self.__view_element_timers = {}
 
@@ -445,8 +475,10 @@ class HeadsUpDisplay(object):
 
         web_server = restful_host.HudServer()
         RecurringTask("rest_host", 0.1, web_server.run, start_immediate=False)
-        RecurringTask("purge_old_traffic", 10.0, self.__purge_old_reports__, start_immediate=False)
-        RecurringTask("update_traffic", 0.1, self.__update_traffic_reports__, start_immediate=True)
+        RecurringTask("purge_old_traffic", 10.0,
+                      self.__purge_old_reports__, start_immediate=False)
+        RecurringTask("update_traffic", 0.1,
+                      self.__update_traffic_reports__, start_immediate=True)
 
     def __show_boot_screen__(self):
         """
@@ -471,10 +503,12 @@ class HeadsUpDisplay(object):
             self.__backpage_framebuffer__.blit(
                 texture, ((self.__width__ >> 1) - (text_width >> 1), y))
             y += text_height + (text_height >> 3)
-        
-        texture = self.__detail_font__.render('Version {}'.format(VERSION), True, display.GREEN)
+
+        texture = self.__detail_font__.render(
+            'Version {}'.format(VERSION), True, display.GREEN)
         text_width, text_height = texture.get_size()
-        self.__backpage_framebuffer__.blit(texture, ((self.__width__ >> 1) - (text_width >> 1), self.__height__ - text_height))
+        self.__backpage_framebuffer__.blit(texture, ((
+            self.__width__ >> 1) - (text_width >> 1), self.__height__ - text_height))
 
         flipped = pygame.transform.flip(
             self.__backpage_framebuffer__, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)

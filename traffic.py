@@ -608,6 +608,9 @@ class ConnectionManager(object):
             'ManageConnection', 2, self.__manage_connection__, start_immediate=False)
         self.__pong_task__ = recurring_task.RecurringTask(
             'HeartbeatStratux', 2, self.pong_stratux)
+        self.CONNECT_ATTEMPTS = 0
+        self.SHUTDOWNS = 0
+        self.SILENT_TIMEOUTS = 0
 
     def pong_stratux(self):
         """
@@ -629,16 +632,20 @@ class ConnectionManager(object):
             create = AdsbTrafficClient.INSTANCE is None
             restart = False
             if AdsbTrafficClient.INSTANCE is not None:
-                restart |= self.__is_connection_silently_timed_out__()
-                restart |= not (
-                    AdsbTrafficClient.INSTANCE.is_connected or AdsbTrafficClient.INSTANCE.is_connecting)
+                is_silent_timeout = self.__is_connection_silently_timed_out__()
+                restart |= is_silent_timeout
+                restart |= not (AdsbTrafficClient.INSTANCE.is_connected or AdsbTrafficClient.INSTANCE.is_connecting)
 
                 if restart:
                     print("SHUTTING DOWN EXISTING CONNECTION")
                     AdsbTrafficClient.INSTANCE.shutdown()
                     create = True
 
+                    if is_silent_timeout:
+                        self.SILENT_TIMEOUTS += 1
+
             if create:
+                self.CONNECT_ATTEMPTS += 1
                 print("ATTEMPTING TO CONNECT")
                 AdsbTrafficClient.INSTANCE = AdsbTrafficClient(
                     self.__socket_address__)
@@ -653,6 +660,7 @@ class ConnectionManager(object):
         """
 
         self.__is_shutting_down__ = True
+        self.SHUTDOWNS += 1
         if self.__manage_connection_task__ is not None:
             self.__manage_connection_task__.stop()
 
@@ -667,11 +675,11 @@ class ConnectionManager(object):
             bool -- True if we think the socket has closed.
         """
 
+        now = datetime.datetime.now()
+
         if AdsbTrafficClient.INSTANCE.last_message_received_time is not None:
-            connection_uptime = (datetime.datetime.now(
-            ) - AdsbTrafficClient.INSTANCE.create_time).total_seconds()
-            time_since_last_msg = (datetime.datetime.now(
-            ) - AdsbTrafficClient.INSTANCE.last_message_received_time).total_seconds()
+            connection_uptime = (now - AdsbTrafficClient.INSTANCE.create_time).total_seconds()
+            time_since_last_msg = (now - AdsbTrafficClient.INSTANCE.last_message_received_time).total_seconds()
 
             if time_since_last_msg > 15:
                 print("{0:.1f} seconds connection uptime".format(

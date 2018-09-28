@@ -76,7 +76,7 @@ class TaskTimer(object):
             else:
                 average_text = '---'
 
-            return "{0}: {1}, m={2}, s={3}".format(self.task_name,
+            return "{0}, {1}, {2}, {3}".format(self.task_name,
                                                 last_text,
                                                 average_text,
                                                 slowest_text)
