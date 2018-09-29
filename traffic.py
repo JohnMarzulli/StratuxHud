@@ -386,8 +386,11 @@ class TrafficManager(object):
 
         self.__lock__.acquire()
         try:
-            traffic_without_position = [self.traffic[identifier] if not self.traffic[identifier].is_valid_report() else None for identifier in self.traffic]
-            traffic_without_position = filter(lambda x: x is not None, traffic_without_position)
+            traffic_without_position = [self.traffic[identifier]
+                                        if not self.traffic[identifier].is_valid_report()
+                                        else None for identifier in self.traffic]
+            traffic_without_position = filter(
+                lambda x: x is not None, traffic_without_position)
         finally:
             self.__lock__.release()
 
@@ -411,11 +414,13 @@ class TrafficManager(object):
                                         and configuration.CONFIGURATION.ownship not in str(self.traffic[identifier].get_identifer())
                                         else None for identifier in self.traffic]
 
-            traffic_with_position = filter(lambda x: x is not None, potential_traffic_idents)
-            actionable_traffic = [self.traffic[identifier] for identifier in traffic_with_position]
+            traffic_with_position = filter(
+                lambda x: x is not None, potential_traffic_idents)
+            actionable_traffic = [self.traffic[identifier]
+                                  for identifier in traffic_with_position]
         finally:
             self.__lock__.release()
-            
+
         sorted_traffic = sorted(
             actionable_traffic, key=lambda traffic: traffic.distance)
 
@@ -634,7 +639,8 @@ class ConnectionManager(object):
             if AdsbTrafficClient.INSTANCE is not None:
                 is_silent_timeout = self.__is_connection_silently_timed_out__()
                 restart |= is_silent_timeout
-                restart |= not (AdsbTrafficClient.INSTANCE.is_connected or AdsbTrafficClient.INSTANCE.is_connecting)
+                restart |= not (
+                    AdsbTrafficClient.INSTANCE.is_connected or AdsbTrafficClient.INSTANCE.is_connecting)
 
                 if restart:
                     print("SHUTTING DOWN EXISTING CONNECTION")
@@ -677,9 +683,23 @@ class ConnectionManager(object):
 
         now = datetime.datetime.now()
 
-        if AdsbTrafficClient.INSTANCE.last_message_received_time is not None:
-            connection_uptime = (now - AdsbTrafficClient.INSTANCE.create_time).total_seconds()
-            time_since_last_msg = (now - AdsbTrafficClient.INSTANCE.last_message_received_time).total_seconds()
+        msg_last_received_time = AdsbTrafficClient.INSTANCE.last_message_received_time
+        ping_last_received_time = ping.LAST_RECIEVED
+        last_received = msg_last_received_time
+
+        # Use the ping reception to augment the last message reception time
+        # If the SDRs are not receiving any traffic, then no updates will be
+        # sent... but the connection is still very much open and active.
+        if ping_last_received_time is None:
+            last_received = msg_last_received_time
+        elif msg_last_received_time is None \
+                or ping_last_received_time < msg_last_received_time:
+            last_received = ping_last_received_time
+
+        if last_received is not None:
+            connection_uptime = (now
+                                 - AdsbTrafficClient.INSTANCE.create_time).total_seconds()
+            time_since_last_msg = (now - last_received).total_seconds()
 
             if time_since_last_msg > 15:
                 print("{0:.1f} seconds connection uptime".format(
