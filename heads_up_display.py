@@ -185,16 +185,16 @@ class HeadsUpDisplay(object):
                         self.log("---- VIEW ELEMENT RENDER TIMES ----")
 
                         for element_times in render_times:
-                            self.log('RENDER: {}, {}'.format(
+                            self.log('RENDER, {}, {}'.format(
                                 now, element_times))
 
-                        self.log('CACHE: {}, Textures, {}, {}, {}'.format(
+                        self.log('CACHE, {}, Textures, {}, {}, {}'.format(
                             now,
                             hud_elements.HudDataCache.get_texture_cache_size(),
                             hud_elements.HudDataCache.get_texture_cache_miss_count(),
                             hud_elements.HudDataCache.get_texture_cache_purge_count()))
                         
-                        self.log('CONNECTION MANAGER: {}, ConnectionManager, {}, {}, {}'.format(
+                        self.log('CONNECTION MANAGER, {}, ConnectionManager, {}, {}, {}'.format(
                             now,
                             self.__connection_manager__.CONNECT_ATTEMPTS,
                             self.__connection_manager__.SHUTDOWNS,
