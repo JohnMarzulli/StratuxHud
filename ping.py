@@ -60,6 +60,7 @@ import socket
 import struct
 import select
 import time
+from datetime import datetime
 
 if sys.platform == "win32":
     # On Windows, the best timer is time.clock()
@@ -71,6 +72,8 @@ else:
 # From /usr/include/linux/icmp.h; your milage may vary.
 ICMP_ECHO_REPLY = 0
 ICMP_ECHO_REQUEST = 8  # Seems to be the same on Solaris.
+
+LAST_RECIEVED = datetime.utcnow()
 
 
 def checksum(source_string):
@@ -114,6 +117,7 @@ def receive_one_ping(my_socket, ID, timeout):
         if whatReady[0] == []:  # Timeout
             return
 
+        LAST_RECIEVED = datetime.utcnow()
         timeReceived = default_timer()
         recPacket, addr = my_socket.recvfrom(1024)
         icmpHeader = recPacket[20:28]
@@ -131,6 +135,7 @@ def receive_one_ping(my_socket, ID, timeout):
         timeLeft = timeLeft - howLongInSelect
         if timeLeft <= 0:
             return
+
 
 def send_one_pong(my_socket, dest_addr, ID):
     dest_addr = socket.gethostbyname(dest_addr)
@@ -154,6 +159,7 @@ def send_one_pong(my_socket, dest_addr, ID):
     )
     packet = header + data
     my_socket.sendto(packet, (dest_addr, 1))  # Don't know about the 1
+
 
 def send_one_ping(my_socket, dest_addr, ID):
     """
@@ -207,6 +213,7 @@ def do_one(dest_addr, timeout):
     my_socket.close()
     return delay
 
+
 def send_pong(dest_addr, timeout):
     """
     Returns either the delay (in seconds) or none on timeout.
@@ -230,6 +237,7 @@ def send_pong(dest_addr, timeout):
     receive_one_ping(my_socket, my_ID, timeout)
 
     my_socket.close()
+
 
 def verbose_pong(dest_addr, timeout=2, count=1):
     """

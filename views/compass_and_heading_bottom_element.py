@@ -65,9 +65,8 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
         if heading > 360:
             heading -= 360
 
-        for heading_mark_to_render in self.__heading_strip__[heading]:
-            self.__render_heading_mark__(
-                framebuffer, heading_mark_to_render[0], heading_mark_to_render[1])
+        [self.__render_heading_mark__(framebuffer, heading_mark_to_render[0], heading_mark_to_render[1])
+         for heading_mark_to_render in self.__heading_strip__[heading]]
 
         # Render the text that is showing our AHRS and GPS headings
         heading_text = "{0} | {1}".format(

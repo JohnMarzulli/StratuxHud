@@ -1,0 +1,50 @@
+{
+  "Compass": {
+    "class": "compass_and_heading_bottom_element.CompassAndHeadingBottomElement",
+    "detail_font": true
+  },
+  "ADSB Target Bugs": {
+    "class": "adsb_target_bugs.AdsbTargetBugs",
+    "detail_font": false
+  },
+  "ADSB Reticles": {
+    "class": "adsb_on_screen_reticles.AdsbOnScreenReticles",
+    "detail_font": false
+  },
+  "Altitude": {
+    "class": "altitude.Altitude",
+    "detail_font": true
+  },
+  "Time": {
+    "class": "time.Time",
+    "detail_font": true
+  },
+  "System Info": {
+    "class": "system_info.SystemInfo",
+    "detail_font": false
+  },
+  "Groundspeed": {
+    "class": "groundspeed.Groundspeed",
+    "detail_font": true
+  },
+  "Traffic List": {
+    "class": "adsb_traffic_listing.AdsbTrafficListing",
+    "detail_font": true
+  },
+  "Level Reference": {
+    "class": "level_reference.LevelReference",
+    "detail_font": true
+  },
+  "Artificial Horizon": {
+    "class": "artificial_horizon.ArtificialHorizon",
+    "detail_font": true
+  },
+  "G Load": {
+    "class": "skid_and_gs.SkidAndGs",
+    "detail_font": true
+  },
+  "Roll Indicator": {
+    "class": "roll_indicator.RollIndicator",
+    "detail_font": true
+  }
+}

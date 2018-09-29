@@ -6,6 +6,7 @@ import json
 import math
 import os
 import sys
+from time import sleep
 
 import pygame
 import requests
@@ -20,6 +21,7 @@ from lib.recurring_task import RecurringTask
 from lib.task_timer import TaskTimer
 import hud_elements
 import targets
+import restful_host
 from views import (adsb_on_screen_reticles, adsb_target_bugs,
                    adsb_traffic_listing, ahrs_not_available, altitude,
                    artificial_horizon, compass_and_heading_bottom_element,
@@ -78,6 +80,9 @@ class HeadsUpDisplay(object):
         Runs the update/render logic loop.
         """
 
+        # Make sure that the disclaimer is visible for long enough.
+        sleep(5)
+
         clock = pygame.time.Clock()
 
         try:
@@ -87,7 +92,7 @@ class HeadsUpDisplay(object):
             self.__connection_manager__.shutdown()
             pygame.display.quit()
 
-        sys.exit()
+        return 0
 
     def __render_view_title__(self, text):
         try:
@@ -96,7 +101,7 @@ class HeadsUpDisplay(object):
                 self.__detail_font__,
                 display.BLUE,
                 display.BLACK,
-                True)
+                False)
 
             left_border = 0
             top_border = 0
@@ -147,16 +152,13 @@ class HeadsUpDisplay(object):
             orientation = self.__aircraft__.get_orientation()
             self.orient_perf.stop()
 
-            hud_elements.HudDataCache.update_traffic_reports()
-
             self.__backpage_framebuffer__.fill(display.BLACK)
 
             self.render_perf.start()
 
-            view_name, view = self.__hud_views__[self.__view_index__]
+            view_name, view, view_uses_ahrs = self.__hud_views__[
+                self.__view_index__]
             self.__render_view_title__(view_name)
-
-            view_uses_ahrs = self.__is_ahrs_view__(view)
 
             try:
                 if view_uses_ahrs and not self.__aircraft__.is_ahrs_available():
@@ -171,12 +173,34 @@ class HeadsUpDisplay(object):
                     # drawn with a black background
                     # to overdraw the pitch lines
                     # and improve readability
-                    for hud_element in view:
-                        try:
-                            hud_element.render(
-                                self.__backpage_framebuffer__, orientation)
-                        except Exception as e:
-                            self.warn("ELEMENT:" + str(e))
+
+                    render_times = [self.__render_view_element__(
+                        hud_element, orientation) for hud_element in view]
+
+                    now = datetime.datetime.utcnow()
+
+                    if (self.__last_perf_render__ is None) or (now - self.__last_perf_render__).total_seconds() > 60:
+                        self.__last_perf_render__ = now
+
+                        self.log("---- VIEW ELEMENT RENDER TIMES ----")
+
+                        for element_times in render_times:
+                            self.log('RENDER, {}, {}'.format(
+                                now, element_times))
+
+                        self.log('CACHE, {}, Textures, {}, {}, {}'.format(
+                            now,
+                            hud_elements.HudDataCache.get_texture_cache_size(),
+                            hud_elements.HudDataCache.get_texture_cache_miss_count(),
+                            hud_elements.HudDataCache.get_texture_cache_purge_count()))
+                        
+                        self.log('CONNECTION MANAGER, {}, ConnectionManager, {}, {}, {}'.format(
+                            now,
+                            self.__connection_manager__.CONNECT_ATTEMPTS,
+                            self.__connection_manager__.SHUTDOWNS,
+                            self.__connection_manager__.SILENT_TIMEOUTS))
+
+                        self.log("-----------------------------------")
             except Exception as e:
                 self.warn("LOOP:" + str(e))
 
@@ -186,6 +210,7 @@ class HeadsUpDisplay(object):
                 debug_status_left = int(self.__width__ >> 1)
                 debug_status_top = int(self.__height__ * 0.2)
                 render_perf_text = self.render_perf.to_string()
+                cache_perf_text = self.cache_perf.to_string()
                 orient_perf_text = self.orient_perf.to_string()
 
                 perf_len = len(render_perf_text)
@@ -201,6 +226,9 @@ class HeadsUpDisplay(object):
                 debug_status_top += int(self.__font__.get_height() * 1.1)
                 self.__render_text__(orient_perf_text, display.BLACK,
                                      debug_status_left, debug_status_top, 0, display.YELLOW)
+                debug_status_top += int(self.__font__.get_height() * 1.1)
+                self.__render_text__(cache_perf_text, display.BLACK,
+                                     debug_status_left, debug_status_top, 0, display.YELLOW)
         finally:
             # Change the frame buffer
             flipped = pygame.transform.flip(
@@ -210,6 +238,30 @@ class HeadsUpDisplay(object):
             clock.tick(MAX_FRAMERATE)
 
         return True
+
+    def __render_view_element__(self, hud_element, orientation):
+        element_name = str(hud_element)
+
+        try:
+            if element_name not in self.__view_element_timers:
+                self.__view_element_timers[element_name] = TaskTimer(
+                    element_name)
+
+            timer = self.__view_element_timers[element_name]
+            timer.start()
+            try:
+                hud_element.render(
+                    self.__backpage_framebuffer__, orientation)
+            except Exception as e:
+                self.warn('ELEMENT EX:{}'.format(e))
+            timer.stop()
+            timer_string = timer.to_string()
+
+            return timer_string
+        except Exception as ex:
+            self.warn('__render_view_element__ EX:{}'.format(ex))
+
+            return 'Element View Timer Error:{}'.format(ex)
 
     def __render_text__(self, text, color, position_x, position_y, roll, background_color=None):
         """
@@ -280,18 +332,103 @@ class HeadsUpDisplay(object):
             return hud_element_class(HeadsUpDisplay.DEGREES_OF_PITCH,
                                      self.__pixels_per_degree_y__, font, (self.__width__, self.__height__))
         except Exception as e:
-            self.warn("Unable to build element {0}:{1}".format(hud_element_class, e))
+            self.warn("Unable to build element {0}:{1}".format(
+                hud_element_class, e))
             return None
+
+    def __load_view_elements(self):
+        """
+        Loads the list of available view elements from the configuration
+        file. Returns it as a map of the element name (Human/kind) to
+        the Python object that instantiates it, and if it uses the
+        "detail" (aka Large) font or not.
+
+        Returns:
+            map -- Keyed by element name, elements are tuples of object name / boolean
+        """
+
+        view_elements = {}
+        with open(VIEW_ELEMENTS_FILE) as json_config_file:
+            json_config_text = json_config_file.read()
+            json_config = json.loads(json_config_text)
+
+            for view_element_name in json_config:
+                namespace = json_config[view_element_name]['class'].split('.')
+                file_module = getattr(sys.modules['views'], namespace[0])
+                class_name = getattr(file_module, namespace[1])
+                view_elements[view_element_name] = (
+                    class_name, json_config[view_element_name]['detail_font'])
+
+        return view_elements
+
+    def __load_views(self, view_elements):
+        """
+        Returns a list of views that can be used by the HUD
+
+        Arguments:
+            view_elements {map} -- Dictionary keyed by element name containing the info to instantiate the element.
+
+        Returns:
+            array -- Array of tuples. Each element is a tuple of the name of the view and an array of the elements that make the view. 
+        """
+
+        hud_views = []
+
+        with open(VIEWS_FILE) as json_config_file:
+            json_config_text = json_config_file.read()
+            json_config = json.loads(json_config_text)
+
+            for view in json_config['views']:
+                try:
+                    view_name = view['name']
+                    element_names = view['elements']
+                    new_view_elements = []
+
+                    for element_name in element_names:
+                        element_config = view_elements[element_name]
+                        new_view_elements.append(self.__build_ahrs_hud_element(
+                            element_config[0], element_config[1]))
+
+                    is_ahrs_view = self.__is_ahrs_view__(new_view_elements)
+                    hud_views.append(
+                        (view_name, new_view_elements, is_ahrs_view))
+                except Exception as ex:
+                    self.log(
+                        "While attempting to load view={}, EX:{}".format(view, ex))
+
+        return hud_views
+
+    def __build_hud_views(self):
+        """
+        Returns the built object of the views.
+
+        Returns:
+            array -- Array of tuples. Each element is a tuple of the name of the view and an array of the elements that make the view. 
+        """
+
+        view_elements = self.__load_view_elements()
+        return self.__load_views(view_elements)
+
+    def __purge_old_reports__(self):
+        self.cache_perf.start()
+        hud_elements.HudDataCache.purge_old_traffic_reports()
+        self.cache_perf.stop()
+
+    def __update_traffic_reports__(self):
+        hud_elements.HudDataCache.update_traffic_reports()
 
     def __init__(self, logger):
         """
         Initialize and create a new HUD.
         """
 
+        self.__last_perf_render__ = None
         self.__logger__ = logger
+        self.__view_element_timers = {}
 
         self.render_perf = TaskTimer("Render")
         self.orient_perf = TaskTimer("Orient")
+        self.cache_perf = TaskTimer("Cache")
 
         adsb_traffic_address = "ws://{0}/traffic".format(
             CONFIGURATION.stratux_address())
@@ -327,68 +464,7 @@ class HeadsUpDisplay(object):
         self.__ahrs_not_available_element__ = self.__build_ahrs_hud_element(
             ahrs_not_available.AhrsNotAvailable)
 
-        bottom_compass_element = self.__build_ahrs_hud_element(
-            compass_and_heading_bottom_element.CompassAndHeadingBottomElement, True)
-        adsb_target_bug_element = adsb_target_bugs.AdsbTargetBugs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__font__,
-                                                                  (self.__width__, self.__height__))
-        adsb_onscreen_reticle_element = adsb_on_screen_reticles.AdsbOnScreenReticles(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__,
-                                                                                     self.__font__, (self.__width__, self.__height__))
-        altitude_element = self.__build_ahrs_hud_element(
-            altitude.Altitude, True)
-        time_element = self.__build_ahrs_hud_element(time.Time, True)
-        system_info_element = self.__build_ahrs_hud_element(system_info.SystemInfo, False)
-        groundspeed_element = self.__build_ahrs_hud_element(
-            groundspeed.Groundspeed, True)
-
-        traffic_only_view = [
-            bottom_compass_element,
-            adsb_target_bug_element,
-            adsb_onscreen_reticle_element
-        ]
-
-        system_info_view = [
-            system_info_element
-        ]
-
-        traffic_listing_view = [
-            adsb_traffic_listing.AdsbTrafficListing(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__,
-                                                    (self.__width__, self.__height__))
-        ]
-
-        # norden_view = [
-        #     bottom_compass_element,
-        #     heading_target_bugs.HeadingTargetBugs(HeadsUpDisplay.DEGREES_OF_PITCH, self.__pixels_per_degree_y__, self.__detail_font__,
-        #                                           (self.__width__, self.__height__)),
-        #     # Draw the ground speed and altitude last so they
-        #     # will appear "on top".
-        #     self.__build_ahrs_hud_element(target_count.TargetCount, True),
-        #     groundspeed_element,
-        #     altitude_element
-        # ]
-
-        ahrs_view = [
-            self.__build_ahrs_hud_element(
-                level_reference.LevelReference, True),
-            self.__build_ahrs_hud_element(
-                artificial_horizon.ArtificialHorizon, True),
-            bottom_compass_element,
-            altitude_element,
-            self.__build_ahrs_hud_element(skid_and_gs.SkidAndGs, True),
-            self.__build_ahrs_hud_element(roll_indicator.RollIndicator, True),
-            groundspeed_element
-        ]
-
-        time_view = [time_element]
-
-        self.__hud_views__ = [
-            ("Traffic", traffic_only_view),
-            ("AHRS", ahrs_view),
-            ("ADSB List", traffic_listing_view),
-            # ("Norden", norden_view),
-            ("Time", time_view),
-            ("System Info", system_info_view),
-            ("", [])
-            ]
+        self.__hud_views__ = self.__build_hud_views()
 
         self.__view_index__ = 0
 
@@ -397,15 +473,43 @@ class HeadsUpDisplay(object):
         if self.__logger__ is not None:
             logger = self.__logger__.logger
 
+        web_server = restful_host.HudServer()
+        RecurringTask("rest_host", 0.1, web_server.run, start_immediate=False)
+        RecurringTask("purge_old_traffic", 10.0,
+                      self.__purge_old_reports__, start_immediate=False)
+        RecurringTask("update_traffic", 0.1,
+                      self.__update_traffic_reports__, start_immediate=True)
+
     def __show_boot_screen__(self):
         """
         Renders a BOOTING screen.
         """
 
+        disclaimer_text = ['Not intended as',
+                           'a primary collision evasion',
+                           'or flight instrument system.',
+                           'For advisiory only.']
+
         texture = self.__loading_font__.render("BOOTING", True, display.RED)
         text_width, text_height = texture.get_size()
+
         self.__backpage_framebuffer__.blit(texture, ((
-            self.__width__ >> 1) - (text_width >> 1), (self.__height__ >> 1) - (text_height >> 1)))
+            self.__width__ >> 1) - (text_width >> 1), self.__detail_font__.get_height()))
+
+        y = (self.__height__ >> 2) + (self.__height__ >> 3)
+        for text in disclaimer_text:
+            texture = self.__detail_font__.render(text, True, display.YELLOW)
+            text_width, text_height = texture.get_size()
+            self.__backpage_framebuffer__.blit(
+                texture, ((self.__width__ >> 1) - (text_width >> 1), y))
+            y += text_height + (text_height >> 3)
+
+        texture = self.__detail_font__.render(
+            'Version {}'.format(VERSION), True, display.GREEN)
+        text_width, text_height = texture.get_size()
+        self.__backpage_framebuffer__.blit(texture, ((
+            self.__width__ >> 1) - (text_width >> 1), self.__height__ - text_height))
+
         flipped = pygame.transform.flip(
             self.__backpage_framebuffer__, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)
         self.__backpage_framebuffer__.blit(flipped, [0, 0])
@@ -419,9 +523,11 @@ class HeadsUpDisplay(object):
             bool -- True if the loop should continue, False if it should quit.
         """
 
-        for event in pygame.event.get():
-            if not self.__handle_key_event__(event):
-                return False
+        events = pygame.event.get()
+        event_handling_repsonses = map(self.__handle_key_event__, events)
+
+        if False in event_handling_repsonses:
+            return False
 
         self.__clamp_view__()
 
@@ -465,6 +571,7 @@ class HeadsUpDisplay(object):
         if event.key in [pygame.K_r]:
             self.render_perf.reset()
             self.orient_perf.reset()
+            self.cache_perf.reset()
 
         if event.key in [pygame.K_BACKSPACE]:
             self.__level_ahrs__()

@@ -5,14 +5,16 @@ Common code for HUD view elements.
 
 import datetime
 import math
+import threading
 
 import pygame
 
 import units
 import configuration
+import traffic
 import views.utils as utils
 
-from lib.display import *
+from lib.display import WHITE, BLACK, YELLOW, display_init
 from lib.task_timer import TaskTimer
 from traffic import AdsbTrafficClient, Traffic
 
@@ -68,21 +70,132 @@ class HudDataCache(object):
     TEXT_TEXTURE_CACHE = {}
     __CACHE_ENTRY_LAST_USED__ = {}
     __CACHE_INVALIDATION_TIME__ = 60 * 5
+    __CACHE_ADDITION_COUNT__ = 0
+    __CACHE_PURGE_COUNT__ = 0
+
+    RELIABLE_TRAFFIC = []
+
+    __LOCK__ = threading.Lock()
+
+    @staticmethod
+    def get_texture_cache_miss_count():
+        """
+        Returns the number of cache misses the cache has had.
+        
+        Returns:
+            int -- The number of total cache misses.
+        """
+
+        HudDataCache.__LOCK__.acquire()
+        result = HudDataCache.__CACHE_ADDITION_COUNT__
+        HudDataCache.__LOCK__.release()
+
+        return result
+    
+    @staticmethod
+    def get_texture_cache_purge_count():
+        """
+        Get the total number of textures purged from the cache.
+        
+        Returns:
+            int -- The total number of textures purged from the system.
+        """
+
+        HudDataCache.__LOCK__.acquire()
+        result = HudDataCache.__CACHE_PURGE_COUNT__
+        HudDataCache.__LOCK__.release()
+
+        return result
+    
+    @staticmethod
+    def get_texture_cache_size():
+        """
+        Gets the current size of the texture cache.
+        
+        Returns:
+            int -- The number of entries in the texture cache.
+        """
+
+        HudDataCache.__LOCK__.acquire()
+        result = len(HudDataCache.TEXT_TEXTURE_CACHE)
+        HudDataCache.__LOCK__.release()
+
+        return result
 
     @staticmethod
     def update_traffic_reports():
-        # The second hardest problem in comp-sci...
-        textures_to_purge = []
-        for texture_key in HudDataCache.__CACHE_ENTRY_LAST_USED__:
-            lsu = HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_key]
-            time_since_last_use = (
-                datetime.datetime.now() - lsu).total_seconds()
-            if time_since_last_use > HudDataCache.__CACHE_INVALIDATION_TIME__:
-                textures_to_purge.append(texture_key)
+        HudDataCache.__LOCK__.acquire()
+        HudDataCache.RELIABLE_TRAFFIC = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
+        HudDataCache.__LOCK__.release()
+    
+    @staticmethod
+    def get_reliable_traffic():
+        """
+        Returns a thread safe copy of the currently known reliable traffic.
 
-        for texture_to_purge in textures_to_purge:
+        Returns:
+            list -- A list of the reliable traffic.
+        """
+        HudDataCache.__LOCK__.acquire()
+        traffic_clone = HudDataCache.RELIABLE_TRAFFIC[:]
+        HudDataCache.__LOCK__.release()
+
+        return traffic_clone
+    
+    @staticmethod
+    def __purge_texture__(texture_to_purge):
+        """
+        Attempts to remove a texture from the cache.
+
+        Arguments:
+            texture_to_purge {string} -- The identifier of the texture to remove from the system.
+        """
+
+        try:
             del HudDataCache.TEXT_TEXTURE_CACHE[texture_to_purge]
             del HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_to_purge]
+            HudDataCache.__CACHE_PURGE_COUNT__ -= 1
+        finally:
+            return True
+
+    @staticmethod
+    def __get_purge_key__(now, texture_key):
+        """
+        Returns the key of the traffic to purge if it should be, otherwise returns None.
+
+        Arguments:
+            now {datetime} -- The current time.
+            texture_key {string} -- The identifier of the texture we are interesting in.
+
+        Returns:
+            string -- The identifier to purge, or None
+        """
+
+        lsu = HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_key]
+        time_since_last_use = (datetime.datetime.now() - lsu).total_seconds()
+
+        return texture_key if time_since_last_use > HudDataCache.__CACHE_INVALIDATION_TIME__ else None
+
+    @staticmethod
+    def purge_old_traffic_reports():
+        """
+        Works through the traffic reports and removes any traffic that is
+        old, or the cache has timed out on.
+        """
+
+        # The second hardest problem in comp-sci...
+        textures_to_purge = []
+        HudDataCache.__LOCK__.acquire()
+        try:
+            now = datetime.datetime.now()
+            textures_to_purge = [HudDataCache.__get_purge_key__(now, texture_key)
+                                 for texture_key in HudDataCache.__CACHE_ENTRY_LAST_USED__]
+            textures_to_purge = filter(lambda x: x is not None,
+                                       textures_to_purge)
+            [HudDataCache.__purge_texture__(texture_to_purge)
+             for texture_to_purge in textures_to_purge]
+        finally:
+            HudDataCache.__LOCK__.release()
 
     @staticmethod
     def get_cached_text_texture(text, font, text_color=BLACK, background_color=YELLOW, use_alpha=False, force_regen=False):
@@ -111,6 +224,7 @@ class HudDataCache(object):
                 texture = texture.convert()
 
             HudDataCache.TEXT_TEXTURE_CACHE[text] = texture
+            HudDataCache.__CACHE_ADDITION_COUNT__ += 1
 
         HudDataCache.__CACHE_ENTRY_LAST_USED__[text] = datetime.datetime.now()
         return HudDataCache.TEXT_TEXTURE_CACHE[text]
@@ -229,7 +343,6 @@ def run_adsb_hud_element(element_type, use_detail_font=True):
     from hud_elements import HudDataCache
     from aircraft import AhrsSimulation
     from traffic import SimulatedTraffic
-    from configuration import DEFAULT_CONFIG_FILE, Configuration
 
     simulated_traffic = (SimulatedTraffic(),
                          SimulatedTraffic(), SimulatedTraffic())
@@ -270,7 +383,7 @@ def run_adsb_hud_element(element_type, use_detail_font=True):
             AdsbTrafficClient.TRAFFIC_MANAGER.handle_traffic_report(
                 test_data.to_json())
 
-        HudDataCache.update_traffic_reports()
+        HudDataCache.purge_old_traffic_reports()
         orientation = __aircraft__.ahrs_data
         __aircraft__.simulate()
         __backpage_framebuffer__.fill(BLACK)

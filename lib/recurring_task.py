@@ -57,7 +57,7 @@ class RecurringTask(object):
         Runs the callback.
         """
 
-        self.__last_task__ = threading.Thread(target=self.__run_loop__)
+        self.__last_task__ = threading.Thread(target=self.__run_loop__, name=self.__task_name__)
         self.__last_task__.start()
 
     def __run_loop__(self):
@@ -78,7 +78,7 @@ class RecurringTask(object):
 
     def __init__(self, task_name, task_interval, task_callback, logger=None, start_immediate=False):
         """
-        Creates a new reocurring task.
+        Creates a new reccurring task.
         The call back is called at the given time schedule.
         """
 
