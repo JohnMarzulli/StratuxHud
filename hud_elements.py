@@ -70,17 +70,62 @@ class HudDataCache(object):
     TEXT_TEXTURE_CACHE = {}
     __CACHE_ENTRY_LAST_USED__ = {}
     __CACHE_INVALIDATION_TIME__ = 60 * 5
+    __CACHE_ADDITION_COUNT__ = 0
+    __CACHE_PURGE_COUNT__ = 0
 
     RELIABLE_TRAFFIC = []
-    UNRELIABLE_TRAFFIC = []
 
     __LOCK__ = threading.Lock()
+
+    @staticmethod
+    def get_texture_cache_miss_count():
+        """
+        Returns the number of cache misses the cache has had.
+        
+        Returns:
+            int -- The number of total cache misses.
+        """
+
+        HudDataCache.__LOCK__.acquire()
+        result = HudDataCache.__CACHE_ADDITION_COUNT__
+        HudDataCache.__LOCK__.release()
+
+        return result
+    
+    @staticmethod
+    def get_texture_cache_purge_count():
+        """
+        Get the total number of textures purged from the cache.
+        
+        Returns:
+            int -- The total number of textures purged from the system.
+        """
+
+        HudDataCache.__LOCK__.acquire()
+        result = HudDataCache.__CACHE_PURGE_COUNT__
+        HudDataCache.__LOCK__.release()
+
+        return result
+    
+    @staticmethod
+    def get_texture_cache_size():
+        """
+        Gets the current size of the texture cache.
+        
+        Returns:
+            int -- The number of entries in the texture cache.
+        """
+
+        HudDataCache.__LOCK__.acquire()
+        result = len(HudDataCache.TEXT_TEXTURE_CACHE)
+        HudDataCache.__LOCK__.release()
+
+        return result
 
     @staticmethod
     def update_traffic_reports():
         HudDataCache.__LOCK__.acquire()
         HudDataCache.RELIABLE_TRAFFIC = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
-        HudDataCache.UNRELIABLE_TRAFFIC = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.get_unreliable_traffic()
         HudDataCache.__LOCK__.release()
 
     @staticmethod
@@ -91,23 +136,8 @@ class HudDataCache(object):
         Returns:
             list -- A list of the reliable traffic.
         """
-
         HudDataCache.__LOCK__.acquire()
         traffic_clone = HudDataCache.RELIABLE_TRAFFIC[:]
-        HudDataCache.__LOCK__.release()
-
-        return traffic_clone
-
-    @staticmethod
-    def get_unreliable_traffic():
-        """
-        Returns a thread safe copy of the currently known traffic that _does not_ have position data.
-
-        Returns:
-            list -- A list of the positionless traffic.
-        """
-        HudDataCache.__LOCK__.acquire()
-        traffic_clone = HudDataCache.UNRELIABLE_TRAFFIC[:]
         HudDataCache.__LOCK__.release()
 
         return traffic_clone
@@ -124,8 +154,9 @@ class HudDataCache(object):
         try:
             del HudDataCache.TEXT_TEXTURE_CACHE[texture_to_purge]
             del HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_to_purge]
-        except:
-            pass
+            HudDataCache.__CACHE_PURGE_COUNT__ += 1
+        finally:
+            return True
 
     @staticmethod
     def __get_purge_key__(now, texture_key):
@@ -193,6 +224,7 @@ class HudDataCache(object):
                 texture = texture.convert()
 
             HudDataCache.TEXT_TEXTURE_CACHE[text] = texture
+            HudDataCache.__CACHE_ADDITION_COUNT__ += 1
 
         HudDataCache.__CACHE_ENTRY_LAST_USED__[text] = datetime.datetime.now()
         return HudDataCache.TEXT_TEXTURE_CACHE[text]

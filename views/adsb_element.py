@@ -212,7 +212,7 @@ class AdsbElement(object):
         widest_texture = text_width
         for additional_text in additional_info_text:
             info_texture = hud_elements.HudDataCache.get_cached_text_texture(
-                additional_text, self.__font__, BLACK, card_color, False, True)
+                additional_text, self.__font__, BLACK, card_color, False, False)
             additional_info_textures.append(info_texture)
             info_size_x, info_size_y = info_texture.get_size()
             if widest_texture < info_size_x:

@@ -1,17 +1,17 @@
 {
   "views": [
     {
-        "elements": [
-          "Level Reference",
-          "Artificial Horizon",
-          "Compass",
-          "Altitude",
-          "G Load",
-          "Roll Indicator",
-          "Groundspeed"
-        ],
-        "name": "AHRS"
-      },
+      "elements": [
+        "Level Reference",
+        "Artificial Horizon",
+        "Compass",
+        "Altitude",
+        "G Load",
+        "Roll Indicator",
+        "Groundspeed"
+      ],
+      "name": "AHRS"
+    },
     {
       "elements": ["Compass", "ADSB Target Bugs", "ADSB Reticles"],
       "name": "Traffic"

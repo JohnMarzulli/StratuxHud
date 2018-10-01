@@ -21,15 +21,17 @@ class ArtificialHorizon(AhrsElement):
         self.__height__ = framebuffer_size[1]
 
         for reference_angle in range(-degrees_of_pitch, degrees_of_pitch + 1, 10):
-            text = font.render(
-                str(reference_angle), True, WHITE, BLACK).convert()
+            text = font.render(str(reference_angle),
+                               True,
+                               WHITE,
+                               BLACK).convert()
             size_x, size_y = text.get_size()
             self.__pitch_elements__[reference_angle] = (
                 text, (size_x >> 1, size_y >> 1))
 
     def __render_reference_line__(self, framebuffer, reference_angle, draw_line, rot_text, orientation):
         line_coords, line_center = self.__get_line_coords__(
-                orientation.pitch, orientation.roll, reference_angle)
+            orientation.pitch, orientation.roll, reference_angle)
 
         # Perform some trivial clipping of the lines
         # This also prevents early text rasterization
@@ -47,20 +49,13 @@ class ArtificialHorizon(AhrsElement):
 
     def render(self, framebuffer, orientation):
         self.task_timer.start()
-
         draw_line = pygame.draw.lines
         rot_text = pygame.transform.rotate
 
-        [self.__render_reference_line__(framebuffer, reference_angle, draw_line, rot_text, orientation) \
+        [self.__render_reference_line__(framebuffer, reference_angle, draw_line, rot_text, orientation)
             for reference_angle in self.__pitch_elements__]
-            
+
         self.task_timer.stop()
-
-    def __get_cos__(self, degrees):
-        return COS_RADIANS_BY_DEGREES[degrees]
-
-    def __get_sin__(self, degrees):
-        return SIN_RADIANS_BY_DEGREES[degrees]
 
     def __get_line_coords__(self, pitch, roll, reference_angle):
         """
@@ -81,13 +76,14 @@ class ArtificialHorizon(AhrsElement):
 
         roll_delta = 90 - roll
 
-        center_x = int(
-            (ahrs_center_x - (pitch_offset * self.__get_cos__(roll_delta)) + 0.5))
-        center_y = int(
-            (ahrs_center_y - (pitch_offset * self.__get_sin__(roll_delta)) + 0.5))
+        center_x = ahrs_center_x - (pitch_offset * COS_RADIANS_BY_DEGREES[roll_delta]) + 0.5
+        center_y = ahrs_center_y - (pitch_offset * SIN_RADIANS_BY_DEGREES[roll_delta]) + 0.5
 
-        x_len = int(length * self.__get_cos__(roll) + 0.5)
-        y_len = int(length * self.__get_sin__(roll) + 0.5)
+        center_x = int(center_x)
+        center_y = int(center_y)
+
+        x_len = int(length * COS_RADIANS_BY_DEGREES[roll] + 0.5)
+        y_len = int(length * SIN_RADIANS_BY_DEGREES[roll] + 0.5)
 
         half_x_len = x_len >> 1
         half_y_len = y_len >> 1

@@ -386,8 +386,11 @@ class TrafficManager(object):
 
         self.__lock__.acquire()
         try:
-            traffic_without_position = [self.traffic[identifier] if not self.traffic[identifier].is_valid_report() else None for identifier in self.traffic]
-            traffic_without_position = filter(lambda x: x is not None, traffic_without_position)
+            traffic_without_position = [self.traffic[identifier]
+                                        if not self.traffic[identifier].is_valid_report()
+                                        else None for identifier in self.traffic]
+            traffic_without_position = filter(
+                lambda x: x is not None, traffic_without_position)
         finally:
             self.__lock__.release()
 
@@ -411,13 +414,15 @@ class TrafficManager(object):
                                         and configuration.CONFIGURATION.ownship not in str(self.traffic[identifier].get_identifer())
                                         else None for identifier in self.traffic]
 
-            traffic_with_position = filter(lambda x: x is not None, potential_traffic_idents)
-            actionable_traffic = [self.traffic[identifier] for identifier in traffic_with_position]
+            traffic_with_position = filter(
+                lambda x: x is not None, potential_traffic_idents)
+            actionable_traffic = [self.traffic[identifier]
+                                  for identifier in traffic_with_position]
         finally:
             self.__lock__.release()
 
-        sorted_traffic = sorted(actionable_traffic,
-                                key=lambda traffic: traffic.distance)
+        sorted_traffic = sorted(
+            actionable_traffic, key=lambda traffic: traffic.distance)
 
         return sorted_traffic
 
@@ -608,6 +613,9 @@ class ConnectionManager(object):
             'ManageConnection', 2, self.__manage_connection__, start_immediate=False)
         self.__pong_task__ = recurring_task.RecurringTask(
             'HeartbeatStratux', 2, self.pong_stratux)
+        self.CONNECT_ATTEMPTS = 0
+        self.SHUTDOWNS = 0
+        self.SILENT_TIMEOUTS = 0
 
     def pong_stratux(self):
         """
@@ -625,7 +633,8 @@ class ConnectionManager(object):
             create = AdsbTrafficClient.INSTANCE is None
             restart = False
             if AdsbTrafficClient.INSTANCE is not None:
-                restart |= self.__is_connection_silently_timed_out__()
+                is_silent_timeout = self.__is_connection_silently_timed_out__()
+                restart |= is_silent_timeout
                 restart |= not (
                     AdsbTrafficClient.INSTANCE.is_connected or AdsbTrafficClient.INSTANCE.is_connecting)
 
@@ -634,7 +643,11 @@ class ConnectionManager(object):
                     AdsbTrafficClient.INSTANCE.shutdown()
                     create = True
 
-            if create and not self.__is_shutting_down__:
+                    if is_silent_timeout:
+                        self.SILENT_TIMEOUTS += 1
+
+            if create:
+                self.CONNECT_ATTEMPTS += 1
                 print("ATTEMPTING TO CONNECT")
                 AdsbTrafficClient.INSTANCE = AdsbTrafficClient(
                     self.__socket_address__)
@@ -649,6 +662,7 @@ class ConnectionManager(object):
         """
 
         self.__is_shutting_down__ = True
+        self.SHUTDOWNS += 1
         if self.__manage_connection_task__ is not None:
             self.__manage_connection_task__.stop()
 
@@ -664,11 +678,25 @@ class ConnectionManager(object):
             bool -- True if we think the socket has closed.
         """
 
-        if AdsbTrafficClient.INSTANCE.last_message_received_time is not None:
-            connection_uptime = (datetime.datetime.now(
-            ) - AdsbTrafficClient.INSTANCE.create_time).total_seconds()
-            time_since_last_msg = (datetime.datetime.now(
-            ) - AdsbTrafficClient.INSTANCE.last_message_received_time).total_seconds()
+        now = datetime.datetime.now()
+
+        msg_last_received_time = AdsbTrafficClient.INSTANCE.last_message_received_time
+        ping_last_received_time = ping.LAST_RECIEVED
+        last_received = msg_last_received_time
+
+        # Use the ping reception to augment the last message reception time
+        # If the SDRs are not receiving any traffic, then no updates will be
+        # sent... but the connection is still very much open and active.
+        if ping_last_received_time is None:
+            last_received = msg_last_received_time
+        elif msg_last_received_time is None \
+                or ping_last_received_time < msg_last_received_time:
+            last_received = ping_last_received_time
+
+        if last_received is not None:
+            connection_uptime = (now
+                                 - AdsbTrafficClient.INSTANCE.create_time).total_seconds()
+            time_since_last_msg = (now - last_received).total_seconds()
 
             if time_since_last_msg > 15:
                 print("{0:.1f} seconds connection uptime".format(

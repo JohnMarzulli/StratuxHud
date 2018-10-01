@@ -6,6 +6,7 @@ import json
 import math
 import os
 import sys
+from time import sleep
 
 import pygame
 import requests
@@ -79,6 +80,9 @@ class HeadsUpDisplay(object):
         Runs the update/render logic loop.
         """
 
+        # Make sure that the disclaimer is visible for long enough.
+        sleep(5)
+
         clock = pygame.time.Clock()
 
         try:
@@ -86,16 +90,6 @@ class HeadsUpDisplay(object):
                 pass
         finally:
             pygame.display.quit()
-
-            print('Shutting down Connection Manager')
-            self.__connection_manager__.shutdown()
-
-            print('Shutting down HTTP')
-            self.web_server.stop()
-
-            RecurringTask.kill_all()
-
-        print('Finished with run()')
 
         return 0
 
@@ -178,12 +172,33 @@ class HeadsUpDisplay(object):
                     # drawn with a black background
                     # to overdraw the pitch lines
                     # and improve readability
-                    self.log("---- VIEW RENDER START ----")
-
-                    [self.__render_view_element__(
+                    render_times = [self.__render_view_element__(
                         hud_element, orientation) for hud_element in view]
 
-                    self.log("---------------------------")
+                    now = datetime.datetime.utcnow()
+
+                    if (self.__last_perf_render__ is None) or (now - self.__last_perf_render__).total_seconds() > 60:
+                        self.__last_perf_render__ = now
+
+                        self.log("---- VIEW ELEMENT RENDER TIMES ----")
+
+                        for element_times in render_times:
+                            self.log('RENDER, {}, {}'.format(
+                                now, element_times))
+
+                        self.log('CACHE, {}, Textures, {}, {}, {}'.format(
+                            now,
+                            hud_elements.HudDataCache.get_texture_cache_size(),
+                            hud_elements.HudDataCache.get_texture_cache_miss_count(),
+                            hud_elements.HudDataCache.get_texture_cache_purge_count()))
+                        
+                        self.log('CONNECTION MANAGER, {}, ConnectionManager, {}, {}, {}'.format(
+                            now,
+                            self.__connection_manager__.CONNECT_ATTEMPTS,
+                            self.__connection_manager__.SHUTDOWNS,
+                            self.__connection_manager__.SILENT_TIMEOUTS))
+
+                        self.log("-----------------------------------")
             except Exception as e:
                 self.warn("LOOP:" + str(e))
 
@@ -223,8 +238,9 @@ class HeadsUpDisplay(object):
         return True
 
     def __render_view_element__(self, hud_element, orientation):
+        element_name = str(hud_element)
+
         try:
-            element_name = str(hud_element)
             if element_name not in self.__view_element_timers:
                 self.__view_element_timers[element_name] = TaskTimer(
                     element_name)
@@ -237,9 +253,13 @@ class HeadsUpDisplay(object):
             except Exception as e:
                 self.warn('ELEMENT EX:{}'.format(e))
             timer.stop()
-            self.log("VIEW ELEMENT: {}".format(timer.to_string()))
+            timer_string = timer.to_string()
+
+            return timer_string
         except Exception as ex:
             self.warn('__render_view_element__ EX:{}'.format(ex))
+
+            return 'Element View Timer Error:{}'.format(ex)
 
     def __render_text__(self, text, color, position_x, position_y, roll, background_color=None):
         """
@@ -266,12 +286,10 @@ class HeadsUpDisplay(object):
             text {string} -- The text to log
         """
 
-        # if self.__logger__ is not None:
-        #     self.__logger__.log_info_message(text)
-        # else:
-        #     print(text)
-
-        pass
+        if self.__logger__ is not None:
+            self.__logger__.log_info_message(text)
+        else:
+            print(text)
 
     def warn(self, text):
         """
@@ -402,6 +420,7 @@ class HeadsUpDisplay(object):
         Initialize and create a new HUD.
         """
 
+        self.__last_perf_render__ = None
         self.__logger__ = logger
         self.__view_element_timers = {}
 
@@ -472,17 +491,23 @@ class HeadsUpDisplay(object):
 
         texture = self.__loading_font__.render("BOOTING", True, display.RED)
         text_width, text_height = texture.get_size()
-        center_y = (self.__height__ >> 1)
-        self.__backpage_framebuffer__.blit(texture, ((
-            self.__width__ >> 1) - (text_width >> 1), center_y - text_height - self.__detail_font__.get_height()))
 
-        y = self.__height__ >> 1
+        self.__backpage_framebuffer__.blit(texture, ((
+            self.__width__ >> 1) - (text_width >> 1), self.__detail_font__.get_height()))
+
+        y = (self.__height__ >> 2) + (self.__height__ >> 3)
         for text in disclaimer_text:
             texture = self.__detail_font__.render(text, True, display.YELLOW)
             text_width, text_height = texture.get_size()
             self.__backpage_framebuffer__.blit(
                 texture, ((self.__width__ >> 1) - (text_width >> 1), y))
             y += text_height + (text_height >> 3)
+
+        texture = self.__detail_font__.render(
+            'Version {}'.format(VERSION), True, display.GREEN)
+        text_width, text_height = texture.get_size()
+        self.__backpage_framebuffer__.blit(texture, ((
+            self.__width__ >> 1) - (text_width >> 1), self.__height__ - text_height))
 
         flipped = pygame.transform.flip(
             self.__backpage_framebuffer__, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)
