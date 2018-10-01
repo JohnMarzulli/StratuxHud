@@ -154,7 +154,7 @@ class HudDataCache(object):
         try:
             del HudDataCache.TEXT_TEXTURE_CACHE[texture_to_purge]
             del HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_to_purge]
-            HudDataCache.__CACHE_PURGE_COUNT__ -= 1
+            HudDataCache.__CACHE_PURGE_COUNT__ += 1
         finally:
             return True
 
