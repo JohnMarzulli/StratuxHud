@@ -36,14 +36,14 @@ for degrees in range(-360, 361):
 def get_reticle_size(distance, min_reticle_size=0.05, max_reticle_size=0.20):
     """
     The the size of the reticle based on the distance of the target.
-    
+
     Arguments:
         distance {float} -- The distance (feet) to the target.
-    
+
     Keyword Arguments:
         min_reticle_size {float} -- The minimum size of the reticle. (default: {0.05})
         max_reticle_size {float} -- The maximum size of the reticle. (default: {0.20})
-    
+
     Returns:
         float -- The size of the reticle (in proportion to the screen size.)
     """
@@ -127,7 +127,7 @@ class HudDataCache(object):
         HudDataCache.__LOCK__.acquire()
         HudDataCache.RELIABLE_TRAFFIC = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
         HudDataCache.__LOCK__.release()
-    
+
     @staticmethod
     def get_reliable_traffic():
         """
@@ -141,7 +141,7 @@ class HudDataCache(object):
         HudDataCache.__LOCK__.release()
 
         return traffic_clone
-    
+
     @staticmethod
     def __purge_texture__(texture_to_purge):
         """
@@ -233,12 +233,12 @@ class HudDataCache(object):
 def get_heading_bug_x(heading, bearing, degrees_per_pixel):
     """
     Gets the X position of a heading bug. 0 is the LHS.
-    
+
     Arguments:
         heading {float} -- The current heading of the plane
         bearing {float} -- The bearing of the target.
         degrees_per_pixel {float} -- The number of degrees per horizontal pixel.
-    
+
     Returns:
         int -- The screen X position.
     """

@@ -49,7 +49,6 @@ class ArtificialHorizon(AhrsElement):
 
     def render(self, framebuffer, orientation):
         self.task_timer.start()
-
         draw_line = pygame.draw.lines
         rot_text = pygame.transform.rotate
 

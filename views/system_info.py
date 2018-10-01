@@ -54,7 +54,7 @@ def get_cpu_temp_text_color(temperature):
         proportion = delta / temp_range
         color = colors.get_color_mix(GREEN, RED, proportion)
 
-    return color 
+    return color
 
 
 def get_cpu_temp():
@@ -90,9 +90,9 @@ def get_websocket_uptime():
         string -- Time string of how long the socket has been connected.
     """
 
-    if AdsbTrafficClient.INSTANCE is not None and AdsbTrafficClient.INSTANCE.last_message_received_time is not None:
-        connection_uptime = (datetime.datetime.now(
-        ) - AdsbTrafficClient.INSTANCE.create_time).total_seconds()
+    if AdsbTrafficClient.INSTANCE is not None:
+        connection_uptime = (datetime.datetime.now()
+                             - AdsbTrafficClient.INSTANCE.create_time).total_seconds()
 
         if connection_uptime < 60:
             return ("{} seconds".format(int(connection_uptime)), YELLOW)

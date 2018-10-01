@@ -89,7 +89,6 @@ class HeadsUpDisplay(object):
             while self.tick(clock):
                 pass
         finally:
-            self.__connection_manager__.shutdown()
             pygame.display.quit()
 
         return 0
@@ -173,7 +172,6 @@ class HeadsUpDisplay(object):
                     # drawn with a black background
                     # to overdraw the pitch lines
                     # and improve readability
-
                     render_times = [self.__render_view_element__(
                         hud_element, orientation) for hud_element in view]
 
@@ -473,8 +471,9 @@ class HeadsUpDisplay(object):
         if self.__logger__ is not None:
             logger = self.__logger__.logger
 
-        web_server = restful_host.HudServer()
-        RecurringTask("rest_host", 0.1, web_server.run, start_immediate=False)
+        self.web_server = restful_host.HudServer()
+        RecurringTask("rest_host", 0.1, self.web_server.run,
+                      start_immediate=False)
         RecurringTask("purge_old_traffic", 10.0,
                       self.__purge_old_reports__, start_immediate=False)
         RecurringTask("update_traffic", 0.1,

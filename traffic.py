@@ -629,11 +629,7 @@ class ConnectionManager(object):
         Handles the connection.
         """
 
-        while True:
-
-            if self.__is_shutting_down__:
-                continue
-
+        while not self.__is_shutting_down__:
             create = AdsbTrafficClient.INSTANCE is None
             restart = False
             if AdsbTrafficClient.INSTANCE is not None:
@@ -656,7 +652,7 @@ class ConnectionManager(object):
                 AdsbTrafficClient.INSTANCE = AdsbTrafficClient(
                     self.__socket_address__)
                 AdsbTrafficClient.INSTANCE.run_in_background()
-                time.sleep(30)
+                time.sleep(30 if not self.__is_shutting_down__ else 0)
             else:
                 time.sleep(1)
 
@@ -672,6 +668,7 @@ class ConnectionManager(object):
 
         if AdsbTrafficClient.INSTANCE is not None:
             AdsbTrafficClient.INSTANCE.shutdown()
+            AdsbTrafficClient.INSTANCE = None
 
     def __is_connection_silently_timed_out__(self):
         """
