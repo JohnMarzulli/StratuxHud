@@ -7,6 +7,7 @@ from lib.display import *
 from lib.task_timer import TaskTimer
 import units
 from ahrs_element import AhrsElement
+import configuration
 
 
 class Groundspeed(AhrsElement):
@@ -19,12 +20,17 @@ class Groundspeed(AhrsElement):
             center_y - text_half_height
         self.__rhs__ = int(0.9 * framebuffer_size[0])
 
-        self.__left_x__ = 0 # WAS int(framebuffer_size[0] * 0.01)
+        self.__left_x__ = 0  # WAS int(framebuffer_size[0] * 0.01)
 
     def render(self, framebuffer, orientation):
         self.task_timer.start()
-        # TODO - Pass in the configuration to all elements so they can have access to the unit types.
-        groundspeed_text = "{0:.1f}".format(orientation.groundspeed).rjust(5) + units.UNIT_LABELS[units.STATUTE][units.SPEED]
+
+        speed_units = configuration.CONFIGURATION.__get_config_value__(
+            configuration.Configuration.DISTANCE_UNITS_KEY, units.STATUTE)
+
+        groundspeed_text = units.get_converted_units_string(
+            speed_units, orientation.groundspeed * units.feet_to_nm, units.SPEED)
+
         texture = self.__font__.render(
             groundspeed_text, True, WHITE, BLACK)
 

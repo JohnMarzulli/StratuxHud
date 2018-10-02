@@ -34,6 +34,22 @@ class AdsbTrafficListing(AdsbElement):
         self.__top_border__ = int(self.__height__ * 0.2)
         self.__bottom_border__ = self.__height__ - int(self.__height__ * 0.1)
 
+    def __get_listing__(self, report, max_identifier_length, max_distance_length, max_altitude_length):
+        identifier = report[0]
+        bearing = str(utils.apply_declination(float(report[1])))
+        distance_text = report[2]
+        altitude = report[3]
+        icao = report[4]
+
+        # if self.__show_list__:
+        traffic_report = "{0} {1} {2} {3}".format(
+            identifier.ljust(max_identifier_length),
+            bearing.rjust(3),
+            distance_text.rjust(max_distance_length),
+            altitude.rjust(max_altitude_length))
+
+        return (icao, traffic_report)
+
     def __get_padded_traffic_reports__(self, traffic_reports):
         max_identifier_length = 0
         max_bearing_length = 0
@@ -44,34 +60,20 @@ class AdsbTrafficListing(AdsbElement):
         max_identifier_length, max_distance_length, max_altitude_length = self.__get_pre_padded_text_reports__(
             traffic_reports, max_identifier_length, max_bearing_length, max_altitude_length, max_distance_length, pre_padded_text)
 
-        out_padded_reports = []
-
-        for report in pre_padded_text:
-            identifier = report[0]
-            bearing = str(utils.apply_declination(float(report[1])))
-            distance_text = report[2]
-            altitude = report[3]
-            icao = report[4]
-
-            # if self.__show_list__:
-            traffic_report = "{0} {1} {2} {3}".format(
-                identifier.ljust(max_identifier_length),
-                bearing.rjust(3),
-                distance_text.rjust(max_distance_length),
-                altitude.rjust(max_altitude_length))
-            out_padded_reports.append((icao, traffic_report))
+        out_padded_reports = [self.__get_listing__(report,
+                                                   max_distance_length,
+                                                   max_distance_length,
+                                                   max_altitude_length) for report in pre_padded_text]
 
         return out_padded_reports
 
     def __get_pre_padded_text_reports__(self, traffic_reports, max_identifier_length, max_bearing_length, max_altitude_length, max_distance_length, pre_padded_text):
-        report_count = 0
-        for traffic in traffic_reports:
-            # Do not list traffic too far away
-            if report_count > self.__max_reports__ or traffic.distance > imperial_occlude or traffic.is_on_ground():
-                continue
+        # Do not list traffic too far away, or on the ground.
+        # Only show what can fit on the screen
+        reports_to_show = filter(lambda x: x.distance < imperial_occlude and not x.is_on_ground(), traffic_reports)
+        reports_to_show = reports_to_show[:self.__max_reports__]
 
-            report_count += 1
-
+        for traffic in reports_to_show:
             identifier = str(traffic.get_identifer())
             altitude_delta = int(traffic.altitude / 100.0)
             distance_text = self.__get_distance_string__(traffic.distance)
@@ -109,7 +111,7 @@ class AdsbTrafficListing(AdsbElement):
         self.task_timer.start()
 
         # Get the traffic, and bail out of we have none
-        traffic_reports = AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
+        traffic_reports = HudDataCache.get_reliable_traffic()
 
         if traffic_reports is None:
             self.task_timer.stop()

@@ -41,6 +41,22 @@ class AdsbElement(object):
         self.__width__ = framebuffer_size[0]
         self.start_fade_threshold = (
             configuration.CONFIGURATION.max_minutes_before_removal * 60) / 2
+    
+    def __get_speed_string__(self, speed):
+        """
+        Gets the string to display for the speed. Uses the units configured by the user.
+        
+        Arguments:
+            speed {number} -- The raw speed from the sensor.
+        
+        Returns:
+            string -- A string with the speed and the correct units.
+        """
+
+        speed_units = configuration.CONFIGURATION.__get_config_value__(
+            Configuration.DISTANCE_UNITS_KEY, units.STATUTE)
+        
+        return units.get_converted_units_string(speed_units, speed, units.SPEED)
 
     def __get_distance_string__(self, distance):
         """
@@ -57,7 +73,7 @@ class AdsbElement(object):
         display_units = configuration.CONFIGURATION.__get_config_value__(
             Configuration.DISTANCE_UNITS_KEY, units.STATUTE)
 
-        return units.get_distance_string(display_units, distance)
+        return units.get_converted_units_string(display_units, distance)
 
     def __get_traffic_projection__(self, orientation, traffic):
         """
@@ -189,14 +205,14 @@ class AdsbElement(object):
         pygame.draw.polygon(framebuffer, bug_color, reticle)
 
         texture = hud_elements.HudDataCache.get_cached_text_texture(
-            identifier_text, self.__font__, BLACK, card_color, False, True)
+            identifier_text, self.__font__, BLACK, card_color, False, False)
         text_width, text_height = texture.get_size()
 
         additional_info_textures = [texture]
         widest_texture = text_width
         for additional_text in additional_info_text:
             info_texture = hud_elements.HudDataCache.get_cached_text_texture(
-                additional_text, self.__font__, BLACK, card_color, False, True)
+                additional_text, self.__font__, BLACK, card_color, False, False)
             additional_info_textures.append(info_texture)
             info_size_x, info_size_y = info_texture.get_size()
             if widest_texture < info_size_x:

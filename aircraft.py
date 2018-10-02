@@ -22,7 +22,9 @@ class StratuxStatus(object):
         if key in self.__status_json__:
             try:
                 return bool(self.__status_json__[key])
-            except KeyboardInterrupt, SystemExit:
+            except KeyboardInterrupt:
+                raise
+            except SystemExit:
                 raise
             except:
                 return False
@@ -46,7 +48,9 @@ class StratuxStatus(object):
                 self.__status_json__ = stratux_session.get(
                     url, timeout=2).json()
 
-            except KeyboardInterrupt, SystemExit:
+            except KeyboardInterrupt:
+                raise
+            except SystemExit:
                 raise
             except:
                 self.__status_json__ = {}
@@ -71,7 +75,9 @@ class StratuxCapabilities(object):
         if key in self.__capabilities_json__:
             try:
                 return bool(self.__capabilities_json__[key])
-            except KeyboardInterrupt, SystemExit:
+            except KeyboardInterrupt:
+                raise
+            except SystemExit:
                 raise
             except:
                 return False
@@ -96,7 +102,9 @@ class StratuxCapabilities(object):
                 self.__capabilities_json__ = stratux_session.get(
                     url, timeout=2).json()
 
-            except KeyboardInterrupt, SystemExit:
+            except KeyboardInterrupt:
+                raise
+            except SystemExit:
                 raise
             except:
                 self.__capabilities_json__ = {}
@@ -267,7 +275,9 @@ class AhrsStratux(object):
             try:
                 return ahrs_json[key]
 
-            except KeyboardInterrupt, SystemExit:
+            except KeyboardInterrupt:
+                raise
+            except SystemExit:
                 raise
             except:
                 return default
@@ -297,9 +307,11 @@ class AhrsStratux(object):
             configuration.CONFIGURATION.stratux_address())
 
         try:
-            ahrs_json = self.__stratux_session__.get(url, timeout=2).json()
+            ahrs_json = self.__stratux_session__.get(url, timeout=0.5).json()
 
-        except KeyboardInterrupt, SystemExit:
+        except KeyboardInterrupt:
+            raise
+        except SystemExit:
             raise
         except:
             self.data_source_available = False
@@ -308,7 +320,6 @@ class AhrsStratux(object):
 
         new_ahrs_data.roll = self.__get_value__(ahrs_json, 'AHRSRoll', 0.0)
         new_ahrs_data.pitch = self.__get_value__(ahrs_json, 'AHRSPitch', 0.0)
-        # new_ahrs_data.compass_heading = self.__get_value__(ahrs_json, 'AHRSGyroHeading', 0.0) / 1000.0 #'AHRSMagHeading', 0.0) / 10.0
         new_ahrs_data.compass_heading = self.__get_value__(
             ahrs_json, 'AHRSGyroHeading', 1080)  # anything above 360 indicates "not available"
         new_ahrs_data.gps_heading = self.__get_value__(
@@ -375,23 +386,15 @@ class AhrsStratux(object):
         """
         Atomically sets the AHRS data.
         """
-
-        self.__lock__.acquire(True)
-
+        self.__lock__.acquire()
         try:
             self.ahrs_data = new_ahrs_data
 
             if new_ahrs_data.roll != None:
-                if configuration.CONFIGURATION.reverse_roll():
-                    self.ahrs_data.roll = 0.0 - new_ahrs_data.roll
-                else:
-                    self.ahrs_data.roll = new_ahrs_data.roll
+                self.ahrs_data.roll = new_ahrs_data.roll
 
             if new_ahrs_data.pitch != None:
-                if configuration.CONFIGURATION.reverse_pitch():
-                    self.ahrs_data.pitch = 0.0 - new_ahrs_data.pitch
-                else:
-                    self.ahrs_data.pitch = new_ahrs_data.pitch
+                self.ahrs_data.pitch = new_ahrs_data.pitch
         finally:
             self.__lock__.release()
 
