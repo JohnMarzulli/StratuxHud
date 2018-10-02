@@ -189,8 +189,8 @@ class HeadsUpDisplay(object):
                         self.log('CACHE, {}, Textures, {}, {}, {}'.format(
                             now,
                             hud_elements.HudDataCache.get_texture_cache_size(),
-                            hud_elements.HudDataCache.get_texture_cache_miss_count(),
-                            hud_elements.HudDataCache.get_texture_cache_purge_count()))
+                            hud_elements.HudDataCache.get_texture_cache_miss_count(True),
+                            hud_elements.HudDataCache.get_texture_cache_purge_count(True)))
                         
                         self.log('CONNECTION MANAGER, {}, ConnectionManager, {}, {}, {}'.format(
                             now,

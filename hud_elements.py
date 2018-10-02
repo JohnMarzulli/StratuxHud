@@ -78,7 +78,7 @@ class HudDataCache(object):
     __LOCK__ = threading.Lock()
 
     @staticmethod
-    def get_texture_cache_miss_count():
+    def get_texture_cache_miss_count(reset=False):
         """
         Returns the number of cache misses the cache has had.
         
@@ -88,12 +88,14 @@ class HudDataCache(object):
 
         HudDataCache.__LOCK__.acquire()
         result = HudDataCache.__CACHE_ADDITION_COUNT__
+        if reset:
+            HudDataCache.__CACHE_ADDITION_COUNT__ = 0
         HudDataCache.__LOCK__.release()
 
         return result
     
     @staticmethod
-    def get_texture_cache_purge_count():
+    def get_texture_cache_purge_count(reset=False):
         """
         Get the total number of textures purged from the cache.
         
@@ -103,6 +105,9 @@ class HudDataCache(object):
 
         HudDataCache.__LOCK__.acquire()
         result = HudDataCache.__CACHE_PURGE_COUNT__
+
+        if reset:
+            HudDataCache.__CACHE_PURGE_COUNT__ = 0
         HudDataCache.__LOCK__.release()
 
         return result
