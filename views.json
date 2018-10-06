@@ -2,13 +2,15 @@
   "views": [
     {
       "elements": [
+        "ADSB Target Bugs Only",
         "Level Reference",
         "Artificial Horizon",
         "Compass",
         "Altitude",
         "G Load",
         "Roll Indicator",
-        "Groundspeed"
+        "Groundspeed",
+        "ADSB Reticles"
       ],
       "name": "AHRS"
     },
