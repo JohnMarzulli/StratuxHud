@@ -22,7 +22,7 @@ from lib.task_timer import TaskTimer
 import hud_elements
 import targets
 import restful_host
-from views import (adsb_on_screen_reticles, adsb_target_bugs,
+from views import (adsb_on_screen_reticles, adsb_target_bugs, adsb_target_bugs_only,
                    adsb_traffic_listing, ahrs_not_available, altitude,
                    artificial_horizon, compass_and_heading_bottom_element,
                    groundspeed, heading_target_bugs,
