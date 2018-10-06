@@ -29,61 +29,94 @@ class ArtificialHorizon(AhrsElement):
             self.__pitch_elements__[reference_angle] = (
                 text, (size_x >> 1, size_y >> 1))
 
-    def __render_reference_line__(self, framebuffer, reference_angle, draw_line, rot_text, orientation):
-        line_coords, line_center = self.__get_line_coords__(
-            orientation.pitch, orientation.roll, reference_angle)
+    def __render_reference_line__(self, framebuffer, line_info, draw_line, rot_text, roll):
+        """
+        Renders a single line of the AH ladder.
+        
+        Arguments:
+            framebuffer {Surface} -- The target framebuffer to draw to.
+            line_info {triplet} -- The line coords, center, and angle.
+            draw_line {function} -- The function to draw the line.
+            rot_text {function} -- The function to rotate the text.
+            roll {float} -- How much the plane is rolled.
+        """
 
-        # Perform some trivial clipping of the lines
-        # This also prevents early text rasterization
-        if line_center[1] < 0 or line_center[1] > self.__height__:
-            return
-
+        line_coords, line_center, reference_angle = line_info
         draw_line(framebuffer, GREEN, False, line_coords, 4)
 
         text, half_size = self.__pitch_elements__[reference_angle]
-        text = rot_text(text, orientation.roll)
+        text = rot_text(text, roll)
         half_x, half_y = half_size
         center_x, center_y = line_center
 
         framebuffer.blit(text, (center_x - half_x, center_y - half_y))
 
     def render(self, framebuffer, orientation):
+        """
+        Renders the artifical horizon to the framebuffer
+        
+        Arguments:
+            framebuffer {Surface} -- Target framebuffer to draw to.
+            orientation {orientation} -- The airplane's orientation (roll & pitch)
+        """
+
         self.task_timer.start()
+
+        # Creating aliases to the functions saves time...
         draw_line = pygame.draw.lines
         rot_text = pygame.transform.rotate
+        pitch = orientation.pitch
+        roll = orientation.roll
 
-        [self.__render_reference_line__(framebuffer, reference_angle, draw_line, rot_text, orientation)
-            for reference_angle in self.__pitch_elements__]
+        # Calculating the coordinates ahead of time...
+        lines_centers_and_angles = [self.__get_line_coords__(
+            pitch, roll, reference_angle) for reference_angle in self.__pitch_elements__]
+        # ... only to use filter to throw them out saves time.
+        # This allows for the cores to be used and removes the conditionals
+        # from the actual render function.
+        lines_centers_and_angles = filter(
+            lambda center:
+            center[1][1] >= 0 and center[1][1] <= self.__height__, lines_centers_and_angles)
+
+        [self.__render_reference_line__(framebuffer, line_info, draw_line, rot_text, roll)
+            for line_info in lines_centers_and_angles]
 
         self.task_timer.stop()
 
     def __get_line_coords__(self, pitch, roll, reference_angle):
         """
         Get the coordinate for the lines for a given pitch and roll.
+        
+        Arguments:
+            pitch {float} -- The pitch of the plane.
+            roll {float} -- The roll of the plane.
+            reference_angle {int} -- The pitch angle to be marked on the AH.
+        
+        Returns:
+            [tuple] -- An array[4] of the X/Y line coords.
         """
 
-        if reference_angle == 0:
-            length = self.__long_line_width__
-        else:
-            length = self.__short_line_width__
 
-        pitch = int(pitch)
-        roll = int(roll)
+        length = self.__long_line_width__ if reference_angle == 0 else self.__short_line_width__
+
+        roll_int = int(roll)
 
         ahrs_center_x, ahrs_center_y = self.__center__
         pitch_offset = self.__pixels_per_degree_y__ * \
             (-pitch + reference_angle)
 
-        roll_delta = 90 - roll
+        roll_delta = 90 - roll_int
 
-        center_x = ahrs_center_x - (pitch_offset * COS_RADIANS_BY_DEGREES[roll_delta]) + 0.5
-        center_y = ahrs_center_y - (pitch_offset * SIN_RADIANS_BY_DEGREES[roll_delta]) + 0.5
+        center_x = ahrs_center_x - \
+            (pitch_offset * COS_RADIANS_BY_DEGREES[roll_delta]) + 0.5
+        center_y = ahrs_center_y - \
+            (pitch_offset * SIN_RADIANS_BY_DEGREES[roll_delta]) + 0.5
 
         center_x = int(center_x)
         center_y = int(center_y)
 
-        x_len = int(length * COS_RADIANS_BY_DEGREES[roll] + 0.5)
-        y_len = int(length * SIN_RADIANS_BY_DEGREES[roll] + 0.5)
+        x_len = int(length * COS_RADIANS_BY_DEGREES[roll_int] + 0.5)
+        y_len = int(length * SIN_RADIANS_BY_DEGREES[roll_int] + 0.5)
 
         half_x_len = x_len >> 1
         half_y_len = y_len >> 1
@@ -93,7 +126,7 @@ class ArtificialHorizon(AhrsElement):
         start_y = center_y + half_y_len
         end_y = center_y - half_y_len
 
-        return [[start_x, start_y], [end_x, end_y]], (center_x, center_y)
+        return [[start_x, start_y], [end_x, end_y]], (center_x, center_y), reference_angle
 
 
 if __name__ == '__main__':
