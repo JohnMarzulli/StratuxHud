@@ -15,19 +15,30 @@
       "name": "AHRS"
     },
     {
-      "elements": ["Compass", "ADSB Target Bugs", "ADSB Reticles"],
+      "elements": [
+        "Compass",
+        "ADSB Target Bugs Only",
+        "ADSB Target Bugs",
+        "ADSB Reticles"
+      ],
       "name": "Traffic"
     },
     {
-      "elements": ["Traffic List"],
+      "elements": [
+        "Traffic List"
+      ],
       "name": "Traffic List"
     },
     {
-      "elements": ["Time"],
+      "elements": [
+        "Time"
+      ],
       "name": "Universal Time"
     },
     {
-      "elements": ["System Info"],
+      "elements": [
+        "System Info"
+      ],
       "name": "Diagnostics"
     },
     {

@@ -219,16 +219,17 @@ class HudDataCache(object):
             use_alpha {bool} -- Should alpha be used? (default: {False})
 
         Returns:
-            [type] -- The texture.
+            [tuple] -- The texture and the size of the texture
         """
 
         if text not in HudDataCache.TEXT_TEXTURE_CACHE or force_regen:
             texture = font.render(text, True, text_color, background_color)
+            size = texture.get_size()
 
             if use_alpha:
                 texture = texture.convert()
 
-            HudDataCache.TEXT_TEXTURE_CACHE[text] = texture
+            HudDataCache.TEXT_TEXTURE_CACHE[text] = texture, size
             HudDataCache.__CACHE_ADDITION_COUNT__ += 1
 
         HudDataCache.__CACHE_ENTRY_LAST_USED__[text] = datetime.datetime.now()

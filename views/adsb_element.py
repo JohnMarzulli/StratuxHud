@@ -41,21 +41,21 @@ class AdsbElement(object):
         self.__width__ = framebuffer_size[0]
         self.start_fade_threshold = (
             configuration.CONFIGURATION.max_minutes_before_removal * 60) / 2
-    
+
     def __get_speed_string__(self, speed):
         """
         Gets the string to display for the speed. Uses the units configured by the user.
-        
+
         Arguments:
             speed {number} -- The raw speed from the sensor.
-        
+
         Returns:
             string -- A string with the speed and the correct units.
         """
 
         speed_units = configuration.CONFIGURATION.__get_config_value__(
             Configuration.DISTANCE_UNITS_KEY, units.STATUTE)
-        
+
         return units.get_converted_units_string(speed_units, speed, units.SPEED)
 
     def __get_distance_string__(self, distance):
@@ -178,50 +178,34 @@ class AdsbElement(object):
 
         return [bearing_text, distance_text, altitude_text]
 
-    def __render_heading_bug__(self,
-                               framebuffer,
-                               identifier_text,
-                               additional_info_text,
-                               center_x,
-                               target_bug_scale,
-                               is_on_ground,
-                               time_since_last_report=0.0):
+    def __render_info_card__(self,
+                             framebuffer,
+                             identifier_text,
+                             additional_info_text,
+                             center_x,
+                             time_since_last_report=0.0):
         """
         Renders a targetting reticle on the screen.
         Assumes the X/Y projection has already been performed.
         """
 
-        # Only draw the ones that would not be on the screen
-        reticle, reticle_edge_positon_y = self.get_below_reticle(
-            center_x, target_bug_scale)
-
-        bug_color = RED
-
-        if is_on_ground:
-            bug_color = BLUE
-
         card_color = self.__get_card_color__(time_since_last_report)
 
-        pygame.draw.polygon(framebuffer, bug_color, reticle)
-
-        texture = hud_elements.HudDataCache.get_cached_text_texture(
-            identifier_text, self.__font__, BLACK, card_color, False, False)
-        text_width, text_height = texture.get_size()
-
-        additional_info_textures = [texture]
-        widest_texture = text_width
-        for additional_text in additional_info_text:
-            info_texture = hud_elements.HudDataCache.get_cached_text_texture(
-                additional_text, self.__font__, BLACK, card_color, False, False)
-            additional_info_textures.append(info_texture)
-            info_size_x, info_size_y = info_texture.get_size()
-            if widest_texture < info_size_x:
-                widest_texture = info_size_x
+        # Render all of the textures and then
+        # find which one is the widest.
+        all_text = [identifier_text] + additional_info_text
+        all_textures_and_sizes = [hud_elements.HudDataCache.get_cached_text_texture(
+            text, self.__font__, BLACK, card_color, False, False) for text in all_text]
+        widest_texture = max(all_textures_and_sizes,
+                             key=lambda x: x[1][0])[1][0]
+        text_height = all_textures_and_sizes[0][1][1]
 
         info_spacing = 1.2
+        texture_height = int(
+            (len(all_textures_and_sizes) * info_spacing) * text_height)
 
-        info_position_y = reticle_edge_positon_y - \
-            int((len(additional_info_textures) * info_spacing) * text_height)
+        info_position_y = ((self.__height__ >> 1) -
+                           (texture_height >> 1) - text_height)
 
         edge_left = (center_x - (widest_texture >> 1))
         edge_right = (center_x + (widest_texture >> 1))
@@ -250,16 +234,16 @@ class AdsbElement(object):
                           BLACK, True, [fill_top_left, fill_top_right, fill_bottom_right, fill_bottom_left], 6)
 
         self.__render_info_text__(
-            additional_info_textures, center_x, framebuffer, info_position_y, info_spacing)
+            all_textures_and_sizes, center_x, framebuffer, info_position_y, info_spacing)
 
     def __get_card_color__(self, time_since_last_report):
         """
         Gets the color the card should be based on how long it has been
         since the traffic has had a report.
-        
+
         Arguments:
             time_since_last_report {float} -- The number of seconds since the last traffic report.
-        
+
         Returns:
             float[] -- The RGB tuple/array of the color the target card should be.
         """
@@ -280,8 +264,8 @@ class AdsbElement(object):
             return YELLOW
 
     def __render_info_text__(self, additional_info_textures, center_x, framebuffer, info_position_y, info_spacing):
-        for info_texture in additional_info_textures:
-            width_x, width_y = info_texture.get_size()
+        for info_texture, size in additional_info_textures:
+            width_x, width_y = size
             half_width = width_x >> 1
             x_pos = center_x - half_width
 

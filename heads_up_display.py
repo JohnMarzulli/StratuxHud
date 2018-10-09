@@ -95,7 +95,7 @@ class HeadsUpDisplay(object):
 
     def __render_view_title__(self, text):
         try:
-            texture = hud_elements.HudDataCache.get_cached_text_texture(
+            texture, size = hud_elements.HudDataCache.get_cached_text_texture(
                 text,
                 self.__detail_font__,
                 display.BLUE,
@@ -189,9 +189,10 @@ class HeadsUpDisplay(object):
                         self.log('CACHE, {}, Textures, {}, {}, {}'.format(
                             now,
                             hud_elements.HudDataCache.get_texture_cache_size(),
-                            hud_elements.HudDataCache.get_texture_cache_miss_count(True),
+                            hud_elements.HudDataCache.get_texture_cache_miss_count(
+                                True),
                             hud_elements.HudDataCache.get_texture_cache_purge_count(True)))
-                        
+
                         self.log('CONNECTION MANAGER, {}, ConnectionManager, {}, {}, {}'.format(
                             now,
                             self.__connection_manager__.CONNECT_ATTEMPTS,
@@ -267,10 +268,13 @@ class HeadsUpDisplay(object):
         position.
         """
 
-        rendered_text = self.__detail_font__.render(
-            text, True, color, background_color)
-        text_width, text_height = rendered_text.get_size()
-
+        rendered_text, (text_width, text_height) = hud_elements.HudDataCache.get_cached_text_texture(
+                text,
+                self.__detail_font__,
+                color,
+                background_color,
+                True)
+        
         text = pygame.transform.rotate(rendered_text, roll)
 
         self.__backpage_framebuffer__.blit(

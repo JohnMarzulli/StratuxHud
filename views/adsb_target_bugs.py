@@ -28,17 +28,13 @@ class AdsbTargetBugs(AdsbElement):
     def __render_traffic_heading_bug__(self, traffic_report, heading, orientation, framebuffer):
         """
         Render a single heading bug to the framebuffer.
-        
+
         Arguments:
             traffic_report {Traffic} -- The traffic we want to render a bug for.
             heading {int} -- Our current heading.
             orientation {Orientation} -- Our plane's current orientation.
             framebuffer {Framebuffer} -- What we are going to draw to.
         """
-
-        # Render using the Above us bug
-        # target_bug_scale = 0.04
-        target_bug_scale = get_reticle_size(traffic_report.distance)
 
         heading_bug_x = get_heading_bug_x(
             heading, traffic_report.bearing, self.__pixels_per_degree_x__)
@@ -47,14 +43,13 @@ class AdsbTargetBugs(AdsbElement):
             traffic_report, orientation)
 
         try:
-            self.__render_heading_bug__(framebuffer,
-                                        str(traffic_report.get_identifer()),
-                                        additional_info_text,
-                                        heading_bug_x,
-                                        target_bug_scale,
-                                        traffic_report.is_on_ground(),
-                                        traffic_report.get_age())
-        except:
+            self.__render_info_card__(framebuffer,
+                                      str(traffic_report.get_identifer()),
+                                      additional_info_text,
+                                      heading_bug_x,
+                                      traffic_report.get_age())
+        except Exception as ex:
+            print("EX:{}".format(ex))
             pass
 
     def render(self, framebuffer, orientation):

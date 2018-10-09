@@ -10,6 +10,7 @@ from lib.simulated_values import SimulatedValue
 
 HEADING_NOT_AVAILABLE = '---'
 
+
 class StratuxStatus(object):
 
     def __get_status__(self, key):
@@ -55,9 +56,10 @@ class StratuxStatus(object):
             except:
                 self.__status_json__ = {}
 
-
             self.cpu_temp = self.__get_status__('CPUTemp')
-            self.satellites_locked = self.__get_status__('GPS_satellites_locked')
+            self.satellites_locked = self.__get_status__(
+                'GPS_satellites_locked')
+
 
 class StratuxCapabilities(object):
     """
@@ -288,13 +290,10 @@ class AhrsStratux(object):
         if keys is None:
             return default
 
-        for key in keys:
-            value = self.__get_value__(ahrs_json, key, default)
+        values = [self.__get_value__(ahrs_json, key, default) for key in keys]
+        values = filter(lambda x: x != default, values)
 
-            if value is not default:
-                return value
-
-        return default
+        return values[0] if values is not None and len(values) > 0 else default
 
     def update(self):
         """
@@ -333,7 +332,8 @@ class AhrsStratux(object):
         new_ahrs_data.groundspeed = self.__get_value__(
             ahrs_json, 'GPSGroundSpeed', 0.0)
         new_ahrs_data.g_load = self.__get_value__(ahrs_json, 'AHRSGLoad', 1.0)
-        new_ahrs_data.utc_time = self.__get_value_with_fallback__(ahrs_json, 'GPSTime', str(datetime.datetime.utcnow()))
+        new_ahrs_data.utc_time = self.__get_value_with_fallback__(
+            ahrs_json, 'GPSTime', str(datetime.datetime.utcnow()))
         self.data_source_available = True
         # except:
         #    self.data_source_available = False

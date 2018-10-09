@@ -23,8 +23,8 @@ class ArtificialHorizon(AhrsElement):
         for reference_angle in range(-degrees_of_pitch, degrees_of_pitch + 1, 10):
             text = font.render(str(reference_angle),
                                True,
-                               WHITE,
-                               BLACK).convert()
+                               WHITE)
+                               # BLACK).convert()
             size_x, size_y = text.get_size()
             self.__pitch_elements__[reference_angle] = (
                 text, (size_x >> 1, size_y >> 1))
