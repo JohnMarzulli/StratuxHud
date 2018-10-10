@@ -29,7 +29,7 @@ class ArtificialHorizon(AhrsElement):
         size_x, size_y = text.get_size()
 
         return (text, (size_x >> 1, size_y >> 1))
-
+    
     def __generate_rotated_reference_angle__(self, reference_angle):
         """
         Returns the text for the reference angle rotated.
@@ -45,7 +45,12 @@ class ArtificialHorizon(AhrsElement):
         reference_angle, half_size = self.__generate_reference_angle__(
             reference_angle)
         rotated_angles = {roll: rotate(reference_angle, roll)
-                          for roll in range(-360, 361, 1)}
+                          for roll in range(-45, 46, 1)}
+        
+        # Make sure that the un-rolled version is the original
+        # so as to not have any artifacts for later rotations
+        # that get added.
+        rotated_angles[0] = reference_angle
 
         return rotated_angles, half_size
 
@@ -79,7 +84,17 @@ class ArtificialHorizon(AhrsElement):
         draw_line(framebuffer, GREEN, False, line_coords, 4)
 
         text, half_size = self.__pitch_elements__[reference_angle]
-        text = text[int(roll)]
+        roll = int(roll)
+        # Since we will start with a limited number of pre-cached
+        # pre-rotated textures (to improve boot time),
+        # add any missing rotated textures using the upright
+        # as the base.
+        if roll not in text:
+            rotated_surface = pygame.transform.rotate(text[0], roll)
+            self.__pitch_elements__[reference_angle][0][roll] = rotated_surface
+            text[roll] = rotated_surface
+            print("Miss for {}/{}".format(reference_angle, roll))
+        text = text[roll]
         half_x, half_y = half_size
         center_x, center_y = line_center
 
