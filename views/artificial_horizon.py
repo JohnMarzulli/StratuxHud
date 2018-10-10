@@ -60,7 +60,7 @@ class ArtificialHorizon(AhrsElement):
         self.__center__ = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
         self.__long_line_width__ = self.__framebuffer_size__[0] * 0.4
         self.__short_line_width__ = self.__framebuffer_size__[0] * 0.2
-        self.__pixels_per_degree_y__ = pixels_per_degree_y
+        self.__pixels_per_degree_y__ = int(pixels_per_degree_y)
         self.__height__ = framebuffer_size[1]
         self.__font__ = font
 
@@ -93,7 +93,7 @@ class ArtificialHorizon(AhrsElement):
             rotated_surface = pygame.transform.rotate(text[0], roll)
             self.__pitch_elements__[reference_angle][0][roll] = rotated_surface
             text[roll] = rotated_surface
-            print("Miss for {}/{}".format(reference_angle, roll))
+
         text = text[roll]
         half_x, half_y = half_size
         center_x, center_y = line_center

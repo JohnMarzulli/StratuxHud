@@ -1,10 +1,12 @@
 {
     "data_source": "stratux", 
     "declination": 0.0, 
+    "degrees_of_pitch": 90, 
     "distance_units": "statute", 
     "flip_horizontal": false, 
     "flip_vertical": false, 
     "ownship": "N701GV", 
+    "pitch_degrees_scaler": 4.0, 
     "stratux_address": "192.168.10.1", 
     "traffic_report_removal_minutes": 1.0
 }

@@ -46,9 +46,6 @@ class HeadsUpDisplay(object):
     Class to handle the HUD work...
     """
 
-    DEGREES_OF_PITCH = 90
-    PITCH_DEGREES_DISPLAY_SCALER = 2.0
-
     def __level_ahrs__(self):
         """
         Sends the command to the Stratux to level the AHRS.
@@ -199,6 +196,9 @@ class HeadsUpDisplay(object):
                             self.__connection_manager__.SHUTDOWNS,
                             self.__connection_manager__.SILENT_TIMEOUTS))
 
+                        self.log('OVERALL, FPS, {0}, {0}, {0}'.format(
+                            clock.get_fps()))
+
                         self.log("-----------------------------------")
             except Exception as e:
                 self.warn("LOOP:" + str(e))
@@ -252,7 +252,7 @@ class HeadsUpDisplay(object):
                 hud_element.render(
                     self.__backpage_framebuffer__, orientation)
             except Exception as e:
-                self.warn('ELEMENT EX:{}'.format(e))
+                self.warn('ELEMENT {} EX:{}'.format(element_name, e))
             timer.stop()
             timer_string = timer.to_string()
 
@@ -269,12 +269,12 @@ class HeadsUpDisplay(object):
         """
 
         rendered_text, (text_width, text_height) = hud_elements.HudDataCache.get_cached_text_texture(
-                text,
-                self.__detail_font__,
-                color,
-                background_color,
-                True)
-        
+            text,
+            self.__detail_font__,
+            color,
+            background_color,
+            True)
+
         text = pygame.transform.rotate(rendered_text, roll)
 
         self.__backpage_framebuffer__.blit(
@@ -331,7 +331,7 @@ class HeadsUpDisplay(object):
             if use_detail_font:
                 font = self.__detail_font__
 
-            return hud_element_class(HeadsUpDisplay.DEGREES_OF_PITCH,
+            return hud_element_class(CONFIGURATION.get_degrees_of_pitch(),
                                      self.__pixels_per_degree_y__, font, (self.__width__, self.__height__))
         except Exception as e:
             self.warn("Unable to build element {0}:{1}".format(
@@ -460,8 +460,8 @@ class HeadsUpDisplay(object):
 
         self.__aircraft__ = Aircraft()
 
-        self.__pixels_per_degree_y__ = (
-            self.__height__ / HeadsUpDisplay.DEGREES_OF_PITCH) * HeadsUpDisplay.PITCH_DEGREES_DISPLAY_SCALER
+        self.__pixels_per_degree_y__ = int((self.__height__ / CONFIGURATION.get_degrees_of_pitch()) * \
+            CONFIGURATION.get_pitch_degrees_display_scaler())
 
         self.__ahrs_not_available_element__ = self.__build_ahrs_hud_element(
             ahrs_not_available.AhrsNotAvailable)

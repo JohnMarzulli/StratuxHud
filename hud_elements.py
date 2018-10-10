@@ -81,7 +81,7 @@ class HudDataCache(object):
     def get_texture_cache_miss_count(reset=False):
         """
         Returns the number of cache misses the cache has had.
-        
+
         Returns:
             int -- The number of total cache misses.
         """
@@ -93,12 +93,12 @@ class HudDataCache(object):
         HudDataCache.__LOCK__.release()
 
         return result
-    
+
     @staticmethod
     def get_texture_cache_purge_count(reset=False):
         """
         Get the total number of textures purged from the cache.
-        
+
         Returns:
             int -- The total number of textures purged from the system.
         """
@@ -111,12 +111,12 @@ class HudDataCache(object):
         HudDataCache.__LOCK__.release()
 
         return result
-    
+
     @staticmethod
     def get_texture_cache_size():
         """
         Gets the current size of the texture cache.
-        
+
         Returns:
             int -- The number of entries in the texture cache.
         """
@@ -318,10 +318,10 @@ def run_ahrs_hud_element(element_type, use_detail_font=True):
 
     __aircraft__ = AhrsSimulation()
 
-    __pixels_per_degree_y__ = (
-        __height__ / HeadsUpDisplay.DEGREES_OF_PITCH) * HeadsUpDisplay.PITCH_DEGREES_DISPLAY_SCALER
+    __pixels_per_degree_y__ = (__height__ / configuration.CONFIGURATION.get_degrees_of_pitch()
+                               ) * configuration.CONFIGURATION.get_pitch_degrees_display_scaler()
 
-    hud_element = element_type(HeadsUpDisplay.DEGREES_OF_PITCH,
+    hud_element = element_type(configuration.CONFIGURATION.get_degrees_of_pitch(),
                                __pixels_per_degree_y__, font, (__width__, __height__))
 
     while True:
@@ -376,10 +376,10 @@ def run_adsb_hud_element(element_type, use_detail_font=True):
 
     __aircraft__ = AhrsSimulation()
 
-    __pixels_per_degree_y__ = (
-        __height__ / HeadsUpDisplay.DEGREES_OF_PITCH) * HeadsUpDisplay.PITCH_DEGREES_DISPLAY_SCALER
+    __pixels_per_degree_y__ = (__height__ / configuration.CONFIGURATION.get_degrees_of_pitch()) * \
+        configuration.CONFIGURATION.get_pitch_degrees_display_scaler()
 
-    hud_element = element_type(HeadsUpDisplay.DEGREES_OF_PITCH,
+    hud_element = element_type(configuration.CONFIGURATION.get_degrees_of_pitch(),
                                __pixels_per_degree_y__, font,
                                (__width__, __height__))
 

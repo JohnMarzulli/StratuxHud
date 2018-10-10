@@ -63,6 +63,11 @@ class Configuration(object):
     MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT_KEY = "traffic_report_removal_minutes"
     DISTANCE_UNITS_KEY = "distance_units"
     DECLINATION_KEY = "declination"
+    DEGREES_OF_PITCH_KEY = 'degrees_of_pitch'
+    PITCH_DEGREES_DISPLAY_SCALER_KEY = 'pitch_degrees_scaler'
+
+    DEFAULT_DEGREES_OF_PITCH = 90
+    DEFAULT_PITCH_DEGREES_DISPLAY_SCALER = 2.0
 
     def get_elements_list(self):
         with open(VIEW_ELEMENTS_FILE) as json_config_file:
@@ -88,7 +93,7 @@ class Configuration(object):
                 return json_config['views']
         except:
             return []
-    
+
     def write_views_list(self, view_config):
         with open(VIEWS_FILE, 'w') as configfile:
             configfile.write(view_config)
@@ -116,7 +121,9 @@ class Configuration(object):
             Configuration.OWNSHIP_KEY: self.ownship,
             Configuration.MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT_KEY: self.max_minutes_before_removal,
             Configuration.DISTANCE_UNITS_KEY: self.get_units(),
-            Configuration.DECLINATION_KEY: self.get_declination()
+            Configuration.DECLINATION_KEY: self.get_declination(),
+            Configuration.DEGREES_OF_PITCH_KEY: self.get_degrees_of_pitch(),
+            Configuration.PITCH_DEGREES_DISPLAY_SCALER_KEY: self.get_pitch_degrees_display_scaler()
         }
 
         return json.dumps(config_dictionary, indent=4, sort_keys=True)
@@ -139,25 +146,24 @@ class Configuration(object):
         if json_config is None:
             return
 
-        if Configuration.STRATUX_ADDRESS_KEY in json_config:
-            self.__configuration__[
-                Configuration.STRATUX_ADDRESS_KEY] = json_config[Configuration.STRATUX_ADDRESS_KEY]
+        set_from_maps = [Configuration.STRATUX_ADDRESS_KEY,
+                         Configuration.DATA_SOURCE_KEY]
 
-        if Configuration.DATA_SOURCE_KEY in json_config:
-            self.__configuration__[
-                Configuration.DATA_SOURCE_KEY] = json_config[Configuration.DATA_SOURCE_KEY]
+        for key in set_from_maps:
+            if key in json_config:
+                self.__configuration__[key] = json_config[key]
 
         if Configuration.FLIP_HORIZONTAL_KEY in json_config:
-            self.flip_horizontal = bool(
-                json_config[Configuration.FLIP_HORIZONTAL_KEY])
-            self.__configuration__[
-                Configuration.FLIP_HORIZONTAL_KEY] = self.flip_horizontal
+            self.flip_horizontal = \
+                bool(json_config[Configuration.FLIP_HORIZONTAL_KEY])
+            self.__configuration__[Configuration.FLIP_HORIZONTAL_KEY] = \
+                self.flip_horizontal
 
         if Configuration.FLIP_VERTICAL_KEY in json_config:
-            self.flip_vertical = bool(
-                json_config[Configuration.FLIP_VERTICAL_KEY])
-            self.__configuration__[
-                Configuration.FLIP_VERTICAL_KEY] = self.flip_vertical
+            self.flip_vertical = \
+                bool(json_config[Configuration.FLIP_VERTICAL_KEY])
+            self.__configuration__[Configuration.FLIP_VERTICAL_KEY] = \
+                self.flip_vertical
 
         if Configuration.OWNSHIP_KEY in json_config:
             self.ownship = json_config[Configuration.OWNSHIP_KEY]
@@ -180,6 +186,18 @@ class Configuration(object):
             self.__configuration__[
                 Configuration.DECLINATION_KEY] = self.declination
 
+        if Configuration.DEGREES_OF_PITCH_KEY in json_config:
+            self.degrees_of_pitch = int(
+                json_config[Configuration.DEGREES_OF_PITCH_KEY])
+            self.__configuration__[
+                Configuration.DEGREES_OF_PITCH_KEY] = self.degrees_of_pitch
+
+        if Configuration.PITCH_DEGREES_DISPLAY_SCALER_KEY in json_config:
+            self.pitch_degrees_display_scaler = float(
+                json_config[Configuration.PITCH_DEGREES_DISPLAY_SCALER_KEY])
+            self.__configuration__[
+                Configuration.PITCH_DEGREES_DISPLAY_SCALER_KEY] = self.pitch_degrees_display_scaler
+
     def __get_config_value__(self, key, default_value):
         """
         Returns a configuration value, default if not found.
@@ -189,6 +207,26 @@ class Configuration(object):
             return self.__configuration__[key]
 
         return default_value
+
+    def get_degrees_of_pitch(self):
+        """
+        Returns the number of degrees of pitch for the AH ladder.
+
+        Returns:
+            float -- Returns the number of degrees of pitch for the AH ladder.
+        """
+
+        return self.degrees_of_pitch
+
+    def get_pitch_degrees_display_scaler(self):
+        """
+        Returns the amount of adjustment to the pitch ladder
+
+        Returns:
+            [type] -- [description]
+        """
+
+        return self.pitch_degrees_display_scaler
 
     def get_declination(self):
         """
@@ -247,6 +285,8 @@ class Configuration(object):
             return json_config
 
     def __init__(self, json_config_file):
+        self.degrees_of_pitch = Configuration.DEFAULT_DEGREES_OF_PITCH
+        self.pitch_degrees_display_scaler = Configuration.DEFAULT_PITCH_DEGREES_DISPLAY_SCALER
         self.__configuration__ = self.__load_configuration__(json_config_file)
         self.ownship = self.__get_config_value__(Configuration.OWNSHIP_KEY, '')
         self.max_minutes_before_removal = self.__get_config_value__(
@@ -255,6 +295,8 @@ class Configuration(object):
         self.flip_horizontal = False
         self.flip_vertical = False
         self.declination = 0.0
+
+        self.set_from_json(self.__configuration__)
 
         # Example config
         # "stratux_address": "192.168.10.1",
@@ -267,21 +309,20 @@ class Configuration(object):
         #   "declination": 0.0
 
         try:
-            self.flip_horizontal = self.__configuration__[
-                Configuration.FLIP_HORIZONTAL_KEY]
+            self.flip_horizontal = \
+                self.__configuration__[Configuration.FLIP_HORIZONTAL_KEY]
         except:
             pass
 
         try:
-            self.flip_vertical = self.__configuration__[
-                Configuration.FLIP_VERTICAL_KEY]
+            self.flip_vertical = \
+                self.__configuration__[Configuration.FLIP_VERTICAL_KEY]
         except:
             pass
 
         try:
-            self.declination = float(self.__configuration__[
-                Configuration.DECLINATION_KEY
-            ])
+            self.declination = \
+                float(self.__configuration__[Configuration.DECLINATION_KEY])
         except:
             pass
 
