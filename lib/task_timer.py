@@ -20,9 +20,7 @@ class RollingStats(object):
         self.__running_average__ = Queue.Queue(self.__max_running_average__)
         self.__running_sum__ = 0.0
         self.__running_average_count__ = 0
-        self.slowest = None
         self.last = None
-        self.fastest = None
         self.average = 0.0
     
     def reset(self):
@@ -30,8 +28,6 @@ class RollingStats(object):
         Resets the rolling mean and maximums.
         """
 
-        self.fastest = None
-        self.slowest = None
         self.average = 0.0
         self.__running_average__ = Queue.Queue(self.__max_running_average__)
         self.__running_sum__ = 0.0
@@ -56,12 +52,6 @@ class RollingStats(object):
 
         self.average = float(self.__running_sum__ /
                              self.__running_average_count__)
-
-        if self.slowest is None or self.slowest < self.last:
-            self.slowest = self.last
-
-        if self.fastest is None or self.fastest > self.last:
-            self.fastest = self.last
     
     def to_string(self):
         """
@@ -74,9 +64,11 @@ class RollingStats(object):
         try:
             if self.last is None:
                 return "{0}: NO DATA".format(self.task_name)
+            
+            slowest = max(self.__running_average__.queue) if not self.__running_average__.empty() else None
 
-            if self.slowest is not None:
-                slowest_text = "{0:.1f}".format(self.slowest)
+            if slowest is not None:
+                slowest_text = "{0:.1f}".format(slowest)
             else:
                 slowest_text = '---'
 
