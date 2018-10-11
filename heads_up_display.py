@@ -18,7 +18,7 @@ import traffic
 from aircraft import Aircraft
 from configuration import *
 from lib.recurring_task import RecurringTask
-from lib.task_timer import TaskTimer
+from lib.task_timer import TaskTimer, RollingStats
 import hud_elements
 import targets
 import restful_host
@@ -156,6 +156,10 @@ class HeadsUpDisplay(object):
                 self.__view_index__]
             self.__render_view_title__(view_name)
 
+            self.__texture_cache_size__.push(hud_elements.HudDataCache.get_texture_cache_size())
+            self.__texture_cache_misses__.push(hud_elements.HudDataCache.get_texture_cache_miss_count(True))
+            self.__texture_cache_purges__.push(hud_elements.HudDataCache.get_texture_cache_purge_count(True))
+
             try:
                 if view_uses_ahrs and not self.__aircraft__.is_ahrs_available():
                     self.__ahrs_not_available_element__.render(
@@ -183,12 +187,9 @@ class HeadsUpDisplay(object):
                             self.log('RENDER, {}, {}'.format(
                                 now, element_times))
 
-                        self.log('CACHE, {}, Textures, {}, {}, {}'.format(
-                            now,
-                            hud_elements.HudDataCache.get_texture_cache_size(),
-                            hud_elements.HudDataCache.get_texture_cache_miss_count(
-                                True),
-                            hud_elements.HudDataCache.get_texture_cache_purge_count(True)))
+                        self.log('CACHE, {}, {}'.format(now, self.__texture_cache_size__.to_string()))
+                        self.log('CACHE, {}, {}'.format(now, self.__texture_cache_misses__.to_string()))
+                        self.log('CACHE, {}, {}'.format(now, self.__texture_cache_purges__.to_string()))
 
                         self.log('CONNECTION MANAGER, {}, ConnectionManager, {}, {}, {}'.format(
                             now,
@@ -196,8 +197,7 @@ class HeadsUpDisplay(object):
                             self.__connection_manager__.SHUTDOWNS,
                             self.__connection_manager__.SILENT_TIMEOUTS))
 
-                        self.log('OVERALL, FPS, {0}, {0}, {0}'.format(
-                            clock.get_fps()))
+                        self.log('OVERALL, {}, {}'.format(now, self.__fps__.to_string()))
 
                         self.log("-----------------------------------")
             except Exception as e:
@@ -234,7 +234,8 @@ class HeadsUpDisplay(object):
                 self.__backpage_framebuffer__, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)
             self.__backpage_framebuffer__.blit(flipped, [0, 0])
             pygame.display.flip()
-            clock.tick(MAX_FRAMERATE)
+            clock.tick() #MAX_FRAMERATE)
+            self.__fps__.push(clock.get_fps())
 
         return True
 
@@ -427,10 +428,16 @@ class HeadsUpDisplay(object):
         self.__last_perf_render__ = None
         self.__logger__ = logger
         self.__view_element_timers = {}
+        self.__fps__ = RollingStats('FPS')
+        self.__texture_cache_size__ = RollingStats('TextureCacheSize')
+        self.__texture_cache_misses__ = RollingStats('TextureCacheMisses')
+        self.__texture_cache_purges__ = RollingStats('TextureCachePurges')
 
         self.render_perf = TaskTimer("Render")
         self.orient_perf = TaskTimer("Orient")
         self.cache_perf = TaskTimer("Cache")
+
+        self.__fps__.push(0)
 
         adsb_traffic_address = "ws://{0}/traffic".format(
             CONFIGURATION.stratux_address())
