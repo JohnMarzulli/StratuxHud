@@ -143,17 +143,17 @@ class HeadsUpDisplay(object):
         try:
             if not self.__handle_input__():
                 return False
+            
+            render_times = []
 
             self.orient_perf.start()
             orientation = self.__aircraft__.get_orientation()
             self.orient_perf.stop()
 
+            self.render_perf.start()
             self.__backpage_framebuffer__.fill(display.BLACK)
 
-            self.render_perf.start()
-
-            view_name, view, view_uses_ahrs = self.__hud_views__[
-                self.__view_index__]
+            view_name, view, view_uses_ahrs = self.__hud_views__[self.__view_index__]
             self.__render_view_title__(view_name)
 
             self.__texture_cache_size__.push(hud_elements.HudDataCache.get_texture_cache_size())
@@ -175,35 +175,37 @@ class HeadsUpDisplay(object):
                     # and improve readability
                     render_times = [self.__render_view_element__(
                         hud_element, orientation) for hud_element in view]
-
-                    now = datetime.datetime.utcnow()
-
-                    if (self.__last_perf_render__ is None) or (now - self.__last_perf_render__).total_seconds() > 60:
-                        self.__last_perf_render__ = now
-
-                        self.log("---- VIEW ELEMENT RENDER TIMES ----")
-
-                        for element_times in render_times:
-                            self.log('RENDER, {}, {}'.format(
-                                now, element_times))
-
-                        self.log('CACHE, {}, {}'.format(now, self.__texture_cache_size__.to_string()))
-                        self.log('CACHE, {}, {}'.format(now, self.__texture_cache_misses__.to_string()))
-                        self.log('CACHE, {}, {}'.format(now, self.__texture_cache_purges__.to_string()))
-
-                        self.log('CONNECTION MANAGER, {}, ConnectionManager, {}, {}, {}'.format(
-                            now,
-                            self.__connection_manager__.CONNECT_ATTEMPTS,
-                            self.__connection_manager__.SHUTDOWNS,
-                            self.__connection_manager__.SILENT_TIMEOUTS))
-
-                        self.log('OVERALL, {}, {}'.format(now, self.__fps__.to_string()))
-
-                        self.log("-----------------------------------")
             except Exception as e:
                 self.warn("LOOP:" + str(e))
+            finally:
+                self.render_perf.stop()
+            
+            now = datetime.datetime.utcnow()
 
-            self.render_perf.stop()
+            if (self.__last_perf_render__ is None) or (now - self.__last_perf_render__).total_seconds() > 60:
+                self.__last_perf_render__ = now
+
+                self.log("---- VIEW ELEMENT RENDER TIMES ----")
+
+                for element_times in render_times:
+                    self.log('RENDER, {}, {}'.format(
+                        now, element_times))
+
+                self.log('CACHE, {}, {}'.format(now, self.__texture_cache_size__.to_string()))
+                self.log('CACHE, {}, {}'.format(now, self.__texture_cache_misses__.to_string()))
+                self.log('CACHE, {}, {}'.format(now, self.__texture_cache_purges__.to_string()))
+                
+                self.log('FRAME. {}, {}'.format(now, self.render_perf.to_string()))
+
+                self.log('CONNECTION MANAGER, {}, ConnectionManager, {}, {}, {}'.format(
+                    now,
+                    self.__connection_manager__.CONNECT_ATTEMPTS,
+                    self.__connection_manager__.SHUTDOWNS,
+                    self.__connection_manager__.SILENT_TIMEOUTS))
+
+                self.log('OVERALL, {}, {}'.format(now, self.__fps__.to_string()))
+
+                self.log("-----------------------------------")
 
             if self.__should_render_perf__:
                 debug_status_left = int(self.__width__ >> 1)
@@ -433,9 +435,9 @@ class HeadsUpDisplay(object):
         self.__texture_cache_misses__ = RollingStats('TextureCacheMisses')
         self.__texture_cache_purges__ = RollingStats('TextureCachePurges')
 
-        self.render_perf = TaskTimer("Render")
-        self.orient_perf = TaskTimer("Orient")
-        self.cache_perf = TaskTimer("Cache")
+        self.render_perf = TaskTimer('Render')
+        self.orient_perf = TaskTimer('Orient')
+        self.cache_perf = TaskTimer('Cache')
 
         self.__fps__.push(0)
 
