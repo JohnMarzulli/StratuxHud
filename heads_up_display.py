@@ -143,24 +143,24 @@ class HeadsUpDisplay(object):
             if not self.__handle_input__():
                 return False
             
-            
             render_times = []
 
             orientation = self.__aircraft__.get_orientation()
 
-            self.__backpage_framebuffer__.fill(display.BLACK)
-
-            self.__texture_cache_size__.push(hud_elements.HudDataCache.get_texture_cache_size())
-            self.__texture_cache_misses__.push(hud_elements.HudDataCache.get_texture_cache_miss_count(True))
-            self.__texture_cache_purges__.push(hud_elements.HudDataCache.get_texture_cache_purge_count(True))
+            # self.__texture_cache_size__.push(hud_elements.HudDataCache.get_texture_cache_size())
+            # self.__texture_cache_misses__.push(hud_elements.HudDataCache.get_texture_cache_miss_count(True))
+            # self.__texture_cache_purges__.push(hud_elements.HudDataCache.get_texture_cache_purge_count(True))
 
             view_name, view, view_uses_ahrs = self.__hud_views__[self.__view_index__]
             show_unavailable = view_uses_ahrs and not self.__aircraft__.is_ahrs_available()
 
             current_fps = int(clock.get_fps())
+            self.__backpage_framebuffer__.fill(display.BLACK)
 
             self.frame_setup.stop()
             self.render_perf.start()
+
+            #self.__backpage_framebuffer__.fill(display.BLACK)
 
             self.__render_view_title__(view_name)
 
@@ -175,7 +175,7 @@ class HeadsUpDisplay(object):
             # and improve readability
             try:
                 render_times = [self.__ahrs_not_available_element__.render(self.__backpage_framebuffer__, orientation)] if show_unavailable \
-                    else [self.__render_view_element__(hud_element, orientation) for hud_element in view]                    
+                     else [self.__render_view_element__(hud_element, orientation) for hud_element in view]                    
             except Exception as e:
                 self.warn("LOOP:" + str(e))
             finally:
@@ -188,23 +188,20 @@ class HeadsUpDisplay(object):
                 self.__last_perf_render__ = now
 
                 [self.log('RENDER, {}, {}'.format(now, element_times)) for element_times in render_times]
-                    
 
-                """
-                self.log('CACHE, {}, {}'.format(now, self.__texture_cache_size__.to_string()))
-                self.log('CACHE, {}, {}'.format(now, self.__texture_cache_misses__.to_string()))
-                self.log('CACHE, {}, {}'.format(now, self.__texture_cache_purges__.to_string()))
-                """
+                # self.log('CACHE, {}, {}'.format(now, self.__texture_cache_size__.to_string()))
+                # self.log('CACHE, {}, {}'.format(now, self.__texture_cache_misses__.to_string()))
+                # self.log('CACHE, {}, {}'.format(now, self.__texture_cache_purges__.to_string()))
                 
                 self.log('FRAME. {}, {}'.format(now, self.render_perf.to_string()))
                 self.log('FRAME, {}, {}'.format(now, self.frame_setup.to_string()))
                 self.log('FRAME, {}, {}'.format(now, self.frame_cleanup.to_string()))
 
-                self.log('CONNECTION MANAGER, {}, ConnectionManager, {}, {}, {}'.format(
-                    now,
-                    self.__connection_manager__.CONNECT_ATTEMPTS,
-                    self.__connection_manager__.SHUTDOWNS,
-                    self.__connection_manager__.SILENT_TIMEOUTS))
+                # self.log('CONNECTION MANAGER, {}, ConnectionManager, {}, {}, {}'.format(
+                #     now,
+                #     self.__connection_manager__.CONNECT_ATTEMPTS,
+                #     self.__connection_manager__.SHUTDOWNS,
+                #     self.__connection_manager__.SILENT_TIMEOUTS))
 
                 self.log('OVERALL, {}, {}'.format(now, self.__fps__.to_string()))
 
@@ -215,21 +212,22 @@ class HeadsUpDisplay(object):
                 debug_status_left = int(self.__width__ >> 1)
                 debug_status_top = int(self.__height__ * 0.2)
                 render_perf_text = '{} / {}fps'.format(self.render_perf.to_string(), current_fps)
-                cache_perf_text = self.cache_perf.to_string()
+                # cache_perf_text = self.cache_perf.to_string()
 
                 self.__render_text__(render_perf_text, display.BLACK,
                                      debug_status_left, debug_status_top, 0, display.YELLOW)
-                debug_status_top += int(self.__font__.get_height() * 1.1)
-                debug_status_top += int(self.__font__.get_height() * 1.1)
-                self.__render_text__(cache_perf_text, display.BLACK,
-                                     debug_status_left, debug_status_top, 0, display.YELLOW)
+                # debug_status_top += int(self.__font__.get_height() * 1.1)
+                # debug_status_top += int(self.__font__.get_height() * 1.1)
+                # self.__render_text__(cache_perf_text, display.BLACK,
+                #                      debug_status_left, debug_status_top, 0, display.YELLOW)
         finally:
             # Change the frame buffer
-            flipped = pygame.transform.flip(
-                self.__backpage_framebuffer__, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)
-            self.__backpage_framebuffer__.blit(flipped, [0, 0])
+            if CONFIGURATION.flip_horizontal or CONFIGURATION.flip_vertical:
+                flipped = pygame.transform.flip(
+                    self.__backpage_framebuffer__, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)
+                self.__backpage_framebuffer__.blit(flipped, [0, 0])
             pygame.display.flip()
-            clock.tick() #MAX_FRAMERATE)
+            clock.tick(MAX_FRAMERATE)
             self.__fps__.push(current_fps)
             self.frame_cleanup.stop()
 
