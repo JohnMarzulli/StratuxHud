@@ -142,12 +142,13 @@ class HeadsUpDisplay(object):
             self.frame_setup.start()
             if not self.__handle_input__():
                 return False
-            
+
             render_times = []
 
             orientation = self.__aircraft__.get_orientation()
 
-            view_name, view, view_uses_ahrs = self.__hud_views__[self.__view_index__]
+            view_name, view, view_uses_ahrs = self.__hud_views__[
+                self.__view_index__]
             show_unavailable = view_uses_ahrs and not self.__aircraft__.is_ahrs_available()
 
             current_fps = int(clock.get_fps())
@@ -157,7 +158,6 @@ class HeadsUpDisplay(object):
             self.render_perf.start()
 
             self.__render_view_title__(view_name)
-
 
             # Order of drawing is important
             # The pitch lines are drawn before the other
@@ -169,36 +169,41 @@ class HeadsUpDisplay(object):
             # and improve readability
             try:
                 render_times = [self.__ahrs_not_available_element__.render(self.__backpage_framebuffer__, orientation)] if show_unavailable \
-                     else [self.__render_view_element__(hud_element, orientation) for hud_element in view]                    
+                    else [self.__render_view_element__(hud_element, orientation) for hud_element in view]
             except Exception as e:
                 self.warn("LOOP:" + str(e))
             finally:
                 self.render_perf.stop()
 
-            self.frame_cleanup.start()            
+            self.frame_cleanup.start()
             now = datetime.datetime.utcnow()
 
             if (self.__last_perf_render__ is None) or (now - self.__last_perf_render__).total_seconds() > 60:
                 self.__last_perf_render__ = now
 
-                [self.log('RENDER, {}, {}'.format(now, element_times)) for element_times in render_times]
-                
-                self.log('FRAME. {}, {}'.format(now, self.render_perf.to_string()))
-                self.log('FRAME, {}, {}'.format(now, self.frame_setup.to_string()))
-                self.log('FRAME, {}, {}'.format(now, self.frame_cleanup.to_string()))
+                [self.log('RENDER, {}, {}'.format(now, element_times))
+                 for element_times in render_times]
 
-                self.log('OVERALL, {}, {}'.format(now, self.__fps__.to_string()))
+                self.log('FRAME. {}, {}'.format(
+                    now, self.render_perf.to_string()))
+                self.log('FRAME, {}, {}'.format(
+                    now, self.frame_setup.to_string()))
+                self.log('FRAME, {}, {}'.format(
+                    now, self.frame_cleanup.to_string()))
+
+                self.log('OVERALL, {}, {}'.format(
+                    now, self.__fps__.to_string()))
 
                 self.log("-----------------------------------")
-        
 
             if self.__should_render_perf__:
                 debug_status_left = int(self.__width__ >> 1)
                 debug_status_top = int(self.__height__ * 0.2)
-                render_perf_text = '{} / {}fps'.format(self.render_perf.to_string(), current_fps)
+                render_perf_text = '{} / {}fps'.format(
+                    self.render_perf.to_string(), current_fps)
 
                 self.__render_text__(render_perf_text, display.BLACK,
-                                     debug_status_left, debug_status_top, 0, display.YELLOW)
+                                     debug_status_left, debug_status_top, display.YELLOW)
         finally:
             # Change the frame buffer
             if CONFIGURATION.flip_horizontal or CONFIGURATION.flip_vertical:
@@ -236,23 +241,18 @@ class HeadsUpDisplay(object):
 
             return 'Element View Timer Error:{}'.format(ex)
 
-    def __render_text__(self, text, color, position_x, position_y, roll, background_color=None):
+    def __render_text__(self, text, color, position_x, position_y, background_color=None):
         """
         Renders the text with the results centered on the given
         position.
         """
 
-        rendered_text, (text_width, text_height) = hud_elements.HudDataCache.get_cached_text_texture(
-            text,
-            self.__detail_font__,
-            color,
-            background_color,
-            True)
+        rendered_text = self.__detail_font__.render(text, True, color, background_color)
+        (text_width, text_height) = rendered_text.get_size()
 
-        text = pygame.transform.rotate(rendered_text, roll)
-
-        self.__backpage_framebuffer__.blit(
-            text, (position_x - (text_width >> 1), position_y - (text_height >> 1)))
+        self.__backpage_framebuffer__.blit(rendered_text,
+                                           (position_x - (text_width >> 1),
+                                            position_y - (text_height >> 1)))
 
         return text_width, text_height
 
@@ -441,8 +441,8 @@ class HeadsUpDisplay(object):
 
         self.__aircraft__ = Aircraft()
 
-        self.__pixels_per_degree_y__ = int((self.__height__ / CONFIGURATION.get_degrees_of_pitch()) * \
-            CONFIGURATION.get_pitch_degrees_display_scaler())
+        self.__pixels_per_degree_y__ = int((self.__height__ / CONFIGURATION.get_degrees_of_pitch()) *
+                                           CONFIGURATION.get_pitch_degrees_display_scaler())
 
         self.__ahrs_not_available_element__ = self.__build_ahrs_hud_element(
             ahrs_not_available.AhrsNotAvailable)
