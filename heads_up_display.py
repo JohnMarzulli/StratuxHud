@@ -139,53 +139,53 @@ class HeadsUpDisplay(object):
         """
 
         try:
+            self.frame_setup.start()
             if not self.__handle_input__():
                 return False
             
+            
             render_times = []
 
-            self.orient_perf.start()
             orientation = self.__aircraft__.get_orientation()
-            self.orient_perf.stop()
 
-            self.render_perf.start()
             self.__backpage_framebuffer__.fill(display.BLACK)
 
-            view_name, view, view_uses_ahrs = self.__hud_views__[self.__view_index__]
-            self.__render_view_title__(view_name)
-
-            """
             self.__texture_cache_size__.push(hud_elements.HudDataCache.get_texture_cache_size())
             self.__texture_cache_misses__.push(hud_elements.HudDataCache.get_texture_cache_miss_count(True))
             self.__texture_cache_purges__.push(hud_elements.HudDataCache.get_texture_cache_purge_count(True))
-            """
 
+            view_name, view, view_uses_ahrs = self.__hud_views__[self.__view_index__]
+            show_unavailable = view_uses_ahrs and not self.__aircraft__.is_ahrs_available()
+
+            current_fps = int(clock.get_fps())
+
+            self.frame_setup.stop()
+            self.render_perf.start()
+
+            self.__render_view_title__(view_name)
+
+
+            # Order of drawing is important
+            # The pitch lines are drawn before the other
+            # reference information so they will be pushed to the
+            # background.
+            # The reference text is also intentionally
+            # drawn with a black background
+            # to overdraw the pitch lines
+            # and improve readability
             try:
-                if view_uses_ahrs and not self.__aircraft__.is_ahrs_available():
-                    self.__ahrs_not_available_element__.render(
-                        self.__backpage_framebuffer__, orientation)
-                else:
-                    # Order of drawing is important
-                    # The pitch lines are drawn before the other
-                    # reference information so they will be pushed to the
-                    # background.
-                    # The reference text is also intentionally
-                    # drawn with a black background
-                    # to overdraw the pitch lines
-                    # and improve readability
-                    render_times = [self.__render_view_element__(
-                        hud_element, orientation) for hud_element in view]
+                render_times = [self.__ahrs_not_available_element__.render(self.__backpage_framebuffer__, orientation)] if show_unavailable \
+                    else [self.__render_view_element__(hud_element, orientation) for hud_element in view]                    
             except Exception as e:
                 self.warn("LOOP:" + str(e))
             finally:
                 self.render_perf.stop()
-            
+
+            self.frame_cleanup.start()            
             now = datetime.datetime.utcnow()
 
             if (self.__last_perf_render__ is None) or (now - self.__last_perf_render__).total_seconds() > 60:
                 self.__last_perf_render__ = now
-
-                self.log("---- VIEW ELEMENT RENDER TIMES ----")
 
                 [self.log('RENDER, {}, {}'.format(now, element_times)) for element_times in render_times]
                     
@@ -197,6 +197,8 @@ class HeadsUpDisplay(object):
                 """
                 
                 self.log('FRAME. {}, {}'.format(now, self.render_perf.to_string()))
+                self.log('FRAME, {}, {}'.format(now, self.frame_setup.to_string()))
+                self.log('FRAME, {}, {}'.format(now, self.frame_cleanup.to_string()))
 
                 self.log('CONNECTION MANAGER, {}, ConnectionManager, {}, {}, {}'.format(
                     now,
@@ -207,29 +209,17 @@ class HeadsUpDisplay(object):
                 self.log('OVERALL, {}, {}'.format(now, self.__fps__.to_string()))
 
                 self.log("-----------------------------------")
-            
-            current_fps = int(clock.get_fps())
+        
 
             if self.__should_render_perf__:
                 debug_status_left = int(self.__width__ >> 1)
                 debug_status_top = int(self.__height__ * 0.2)
                 render_perf_text = '{} / {}fps'.format(self.render_perf.to_string(), current_fps)
                 cache_perf_text = self.cache_perf.to_string()
-                orient_perf_text = self.orient_perf.to_string()
-
-                perf_len = len(render_perf_text)
-                orient_len = len(orient_perf_text)
-
-                if perf_len > orient_len:
-                    orient_perf_text = orient_perf_text.ljust(perf_len)
-                else:
-                    render_perf_text = render_perf_text.ljust(orient_len)
 
                 self.__render_text__(render_perf_text, display.BLACK,
                                      debug_status_left, debug_status_top, 0, display.YELLOW)
                 debug_status_top += int(self.__font__.get_height() * 1.1)
-                self.__render_text__(orient_perf_text, display.BLACK,
-                                     debug_status_left, debug_status_top, 0, display.YELLOW)
                 debug_status_top += int(self.__font__.get_height() * 1.1)
                 self.__render_text__(cache_perf_text, display.BLACK,
                                      debug_status_left, debug_status_top, 0, display.YELLOW)
@@ -241,6 +231,7 @@ class HeadsUpDisplay(object):
             pygame.display.flip()
             clock.tick() #MAX_FRAMERATE)
             self.__fps__.push(current_fps)
+            self.frame_cleanup.stop()
 
         return True
 
@@ -439,7 +430,8 @@ class HeadsUpDisplay(object):
         self.__texture_cache_purges__ = RollingStats('TextureCachePurges')
 
         self.render_perf = TaskTimer('Render')
-        self.orient_perf = TaskTimer('Orient')
+        self.frame_setup = TaskTimer('Setup')
+        self.frame_cleanup = TaskTimer('Cleanup')
         self.cache_perf = TaskTimer('Cache')
 
         self.__fps__.push(0)
@@ -582,11 +574,6 @@ class HeadsUpDisplay(object):
 
         if event.key in [pygame.K_KP_MINUS, pygame.K_MINUS]:
             self.__view_index__ -= 1
-
-        if event.key in [pygame.K_r]:
-            self.render_perf.reset()
-            self.orient_perf.reset()
-            self.cache_perf.reset()
 
         if event.key in [pygame.K_BACKSPACE]:
             self.__level_ahrs__()
