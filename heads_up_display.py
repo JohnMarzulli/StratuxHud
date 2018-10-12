@@ -101,8 +101,7 @@ class HeadsUpDisplay(object):
             top_border = 0
             position = (left_border, top_border)
 
-            self.__backpage_framebuffer__.blit(
-                texture, position)
+            surface.blit(texture, position)
         except:
             pass
 
@@ -152,7 +151,8 @@ class HeadsUpDisplay(object):
             show_unavailable = view_uses_ahrs and not self.__aircraft__.is_ahrs_available()
 
             current_fps = int(clock.get_fps())
-            self.__backpage_framebuffer__.fill(display.BLACK)
+            surface = pygame.display.get_surface()
+            surface.fill(display.BLACK)
 
             self.frame_setup.stop()
             self.render_perf.start()
@@ -168,7 +168,7 @@ class HeadsUpDisplay(object):
             # to overdraw the pitch lines
             # and improve readability
             try:
-                render_times = [self.__ahrs_not_available_element__.render(self.__backpage_framebuffer__, orientation)] if show_unavailable \
+                render_times = [self.__ahrs_not_available_element__.render(surface, orientation)] if show_unavailable \
                     else [self.__render_view_element__(hud_element, orientation) for hud_element in view]
             except Exception as e:
                 self.warn("LOOP:" + str(e))
@@ -208,10 +208,10 @@ class HeadsUpDisplay(object):
             # Change the frame buffer
             if CONFIGURATION.flip_horizontal or CONFIGURATION.flip_vertical:
                 flipped = pygame.transform.flip(
-                    self.__backpage_framebuffer__, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)
-                self.__backpage_framebuffer__.blit(flipped, [0, 0])
-            pygame.display.update()
-            clock.tick(MAX_FRAMERATE)
+                    surface, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)
+                surface.blit(flipped, [0, 0])
+            pygame.display.flip()
+            clock.tick() #MAX_FRAMERATE)
             self.__fps__.push(current_fps)
             self.frame_cleanup.stop()
 
@@ -221,6 +221,7 @@ class HeadsUpDisplay(object):
         element_name = str(hud_element)
 
         try:
+            surface = pygame.display.get_surface()
             if element_name not in self.__view_element_timers:
                 self.__view_element_timers[element_name] = TaskTimer(
                     element_name)
@@ -228,8 +229,7 @@ class HeadsUpDisplay(object):
             timer = self.__view_element_timers[element_name]
             timer.start()
             try:
-                hud_element.render(
-                    self.__backpage_framebuffer__, orientation)
+                hud_element.render(surface, orientation)
             except Exception as e:
                 self.warn('ELEMENT {} EX:{}'.format(element_name, e))
             timer.stop()
@@ -249,10 +249,11 @@ class HeadsUpDisplay(object):
 
         rendered_text = self.__detail_font__.render(text, True, color, background_color)
         (text_width, text_height) = rendered_text.get_size()
+        surface = pygame.display.get_surface()
 
-        self.__backpage_framebuffer__.blit(rendered_text,
-                                           (position_x - (text_width >> 1),
-                                            position_y - (text_height >> 1)))
+        surface.blit(rendered_text,
+                        (position_x - (text_width >> 1),
+                        position_y - (text_height >> 1)))
 
         return text_width, text_height
 
@@ -477,26 +478,27 @@ class HeadsUpDisplay(object):
         texture = self.__loading_font__.render("BOOTING", True, display.RED)
         text_width, text_height = texture.get_size()
 
-        self.__backpage_framebuffer__.blit(texture, ((
+        surface = pygame.display.get_surface()
+        surface.blit(texture, ((
             self.__width__ >> 1) - (text_width >> 1), self.__detail_font__.get_height()))
 
         y = (self.__height__ >> 2) + (self.__height__ >> 3)
         for text in disclaimer_text:
             texture = self.__detail_font__.render(text, True, display.YELLOW)
             text_width, text_height = texture.get_size()
-            self.__backpage_framebuffer__.blit(
+            surface.blit(
                 texture, ((self.__width__ >> 1) - (text_width >> 1), y))
             y += text_height + (text_height >> 3)
 
         texture = self.__detail_font__.render(
             'Version {}'.format(VERSION), True, display.GREEN)
         text_width, text_height = texture.get_size()
-        self.__backpage_framebuffer__.blit(texture, ((
+        surface.blit(texture, ((
             self.__width__ >> 1) - (text_width >> 1), self.__height__ - text_height))
 
         flipped = pygame.transform.flip(
-            self.__backpage_framebuffer__, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)
-        self.__backpage_framebuffer__.blit(flipped, [0, 0])
+            surface, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)
+        surface.blit(flipped, [0, 0])
         pygame.display.flip()
 
     def __handle_input__(self):
