@@ -55,7 +55,7 @@ def display_init():
             raise Exception('No suitable video driver found!')
 
         size = DEFAULT_SCREEN_SIZE
-        screen_mode = pygame.HWACCEL | pygame.HWSURFACE | pygame.DOUBLEBUF
+        screen_mode = pygame.HWACCEL # | pygame.DOUBLEBUF # HWSURFACE
         # NOTE - HWSURFACE and DOUBLEBUF cause problems...
         # DOUBLEBUF
         # https://stackoverflow.com/questions/6395923/any-way-to-speed-up-python-and-pygame
