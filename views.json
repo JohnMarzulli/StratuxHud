@@ -2,18 +2,6 @@
   "views": [
     {
       "elements": [
-        "Level Reference",
-        "Artificial Horizon",
-        "Compass",
-        "Altitude",
-        "G Load",
-        "Roll Indicator",
-        "Groundspeed"
-      ],
-      "name": "AHRS Only"
-    },
-    {
-      "elements": [
         "ADSB Target Bugs Only",
         "Level Reference",
         "Artificial Horizon",
@@ -56,6 +44,18 @@
     {
       "elements": [],
       "name": ""
+    },
+    {
+      "elements": [
+        "Level Reference",
+        "Artificial Horizon",
+        "Compass",
+        "Altitude",
+        "G Load",
+        "Roll Indicator",
+        "Groundspeed"
+      ],
+      "name": "AHRS Only"
     }
   ]
 }
