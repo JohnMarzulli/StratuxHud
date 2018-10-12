@@ -30,10 +30,8 @@ from views import (adsb_on_screen_reticles, adsb_target_bugs, adsb_target_bugs_o
                    system_info,
                    target_count, time)
 
-# TODO - Add the G-Meter
 # TODO - Disable functionality based on the enabled StratuxCapabilities
 # TODO - Check for the key existence anyway... cross update the capabilities
-# TODO - Add roll indicator
 
 # Traffic description in https://github.com/cyoung/stratux/blob/master/notes/app-vendor-integration.md
 # WebSockets docs at https://ws4py.readthedocs.io/en/latest/
@@ -156,9 +154,11 @@ class HeadsUpDisplay(object):
             view_name, view, view_uses_ahrs = self.__hud_views__[self.__view_index__]
             self.__render_view_title__(view_name)
 
+            """
             self.__texture_cache_size__.push(hud_elements.HudDataCache.get_texture_cache_size())
             self.__texture_cache_misses__.push(hud_elements.HudDataCache.get_texture_cache_miss_count(True))
             self.__texture_cache_purges__.push(hud_elements.HudDataCache.get_texture_cache_purge_count(True))
+            """
 
             try:
                 if view_uses_ahrs and not self.__aircraft__.is_ahrs_available():
@@ -187,13 +187,14 @@ class HeadsUpDisplay(object):
 
                 self.log("---- VIEW ELEMENT RENDER TIMES ----")
 
-                for element_times in render_times:
-                    self.log('RENDER, {}, {}'.format(
-                        now, element_times))
+                [self.log('RENDER, {}, {}'.format(now, element_times)) for element_times in render_times]
+                    
 
+                """
                 self.log('CACHE, {}, {}'.format(now, self.__texture_cache_size__.to_string()))
                 self.log('CACHE, {}, {}'.format(now, self.__texture_cache_misses__.to_string()))
                 self.log('CACHE, {}, {}'.format(now, self.__texture_cache_purges__.to_string()))
+                """
                 
                 self.log('FRAME. {}, {}'.format(now, self.render_perf.to_string()))
 
@@ -206,11 +207,13 @@ class HeadsUpDisplay(object):
                 self.log('OVERALL, {}, {}'.format(now, self.__fps__.to_string()))
 
                 self.log("-----------------------------------")
+            
+            current_fps = int(clock.get_fps())
 
             if self.__should_render_perf__:
                 debug_status_left = int(self.__width__ >> 1)
                 debug_status_top = int(self.__height__ * 0.2)
-                render_perf_text = self.render_perf.to_string()
+                render_perf_text = '{} / {}fps'.format(self.render_perf.to_string(), current_fps)
                 cache_perf_text = self.cache_perf.to_string()
                 orient_perf_text = self.orient_perf.to_string()
 
@@ -237,7 +240,7 @@ class HeadsUpDisplay(object):
             self.__backpage_framebuffer__.blit(flipped, [0, 0])
             pygame.display.flip()
             clock.tick() #MAX_FRAMERATE)
-            self.__fps__.push(clock.get_fps())
+            self.__fps__.push(current_fps)
 
         return True
 
