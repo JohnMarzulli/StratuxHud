@@ -88,7 +88,7 @@ class HeadsUpDisplay(object):
 
         return 0
 
-    def __render_view_title__(self, text):
+    def __render_view_title__(self, text, surface):
         try:
             texture, size = hud_elements.HudDataCache.get_cached_text_texture(
                 text,
@@ -157,7 +157,7 @@ class HeadsUpDisplay(object):
             self.frame_setup.stop()
             self.render_perf.start()
 
-            self.__render_view_title__(view_name)
+            self.__render_view_title__(view_name, surface)
 
             # Order of drawing is important
             # The pitch lines are drawn before the other
@@ -182,17 +182,13 @@ class HeadsUpDisplay(object):
                 self.__last_perf_render__ = now
 
                 [self.log('RENDER, {}, {}'.format(now, element_times))
-                 for element_times in render_times]
+                    for element_times in render_times]
 
-                self.log('FRAME. {}, {}'.format(
-                    now, self.render_perf.to_string()))
-                self.log('FRAME, {}, {}'.format(
-                    now, self.frame_setup.to_string()))
-                self.log('FRAME, {}, {}'.format(
-                    now, self.frame_cleanup.to_string()))
+                [self.log('FRAME, {}, {}'.format(now, self.__frame_timers__[aspect].to_string()))
+                    for aspect in self.__frame_timers__.keys()]
 
-                self.log('OVERALL, {}, {}'.format(
-                    now, self.__fps__.to_string()))
+                self.log('OVERALL, {}, {}'.format(now,
+                                                  self.__fps__.to_string()))
 
                 self.log("-----------------------------------")
 
@@ -211,7 +207,7 @@ class HeadsUpDisplay(object):
                     surface, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)
                 surface.blit(flipped, [0, 0])
             pygame.display.flip()
-            clock.tick() #MAX_FRAMERATE)
+            clock.tick()  # MAX_FRAMERATE)
             self.__fps__.push(current_fps)
             self.frame_cleanup.stop()
 
@@ -247,13 +243,14 @@ class HeadsUpDisplay(object):
         position.
         """
 
-        rendered_text = self.__detail_font__.render(text, True, color, background_color)
+        rendered_text = self.__detail_font__.render(
+            text, True, color, background_color)
         (text_width, text_height) = rendered_text.get_size()
         surface = pygame.display.get_surface()
 
         surface.blit(rendered_text,
-                        (position_x - (text_width >> 1),
-                        position_y - (text_height >> 1)))
+                     (position_x - (text_width >> 1),
+                         position_y - (text_height >> 1)))
 
         return text_width, text_height
 
@@ -410,6 +407,10 @@ class HeadsUpDisplay(object):
         self.render_perf = TaskTimer('Render')
         self.frame_setup = TaskTimer('Setup')
         self.frame_cleanup = TaskTimer('Cleanup')
+
+        self.__frame_timers__ = {'Setup': self.frame_setup,
+                                 'Render': self.render_perf, 'Cleanup': self.frame_cleanup}
+
         self.cache_perf = TaskTimer('Cache')
 
         self.__fps__.push(0)
