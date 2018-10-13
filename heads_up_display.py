@@ -30,10 +30,8 @@ from views import (adsb_on_screen_reticles, adsb_target_bugs, adsb_target_bugs_o
                    system_info,
                    target_count, time)
 
-# TODO - Add the G-Meter
 # TODO - Disable functionality based on the enabled StratuxCapabilities
 # TODO - Check for the key existence anyway... cross update the capabilities
-# TODO - Add roll indicator
 
 # Traffic description in https://github.com/cyoung/stratux/blob/master/notes/app-vendor-integration.md
 # WebSockets docs at https://ws4py.readthedocs.io/en/latest/
@@ -90,7 +88,7 @@ class HeadsUpDisplay(object):
 
         return 0
 
-    def __render_view_title__(self, text):
+    def __render_view_title__(self, text, surface):
         try:
             texture, size = hud_elements.HudDataCache.get_cached_text_texture(
                 text,
@@ -103,8 +101,7 @@ class HeadsUpDisplay(object):
             top_border = 0
             position = (left_border, top_border)
 
-            self.__backpage_framebuffer__.blit(
-                texture, position)
+            surface.blit(texture, position)
         except:
             pass
 
@@ -141,103 +138,78 @@ class HeadsUpDisplay(object):
         """
 
         try:
+            self.frame_setup.start()
             if not self.__handle_input__():
                 return False
-            
+
             render_times = []
 
-            self.orient_perf.start()
             orientation = self.__aircraft__.get_orientation()
-            self.orient_perf.stop()
 
+            view_name, view, view_uses_ahrs = self.__hud_views__[
+                self.__view_index__]
+            show_unavailable = view_uses_ahrs and not self.__aircraft__.is_ahrs_available()
+
+            current_fps = int(clock.get_fps())
+            surface = pygame.display.get_surface()
+            surface.fill(display.BLACK)
+
+            self.frame_setup.stop()
             self.render_perf.start()
-            self.__backpage_framebuffer__.fill(display.BLACK)
 
-            view_name, view, view_uses_ahrs = self.__hud_views__[self.__view_index__]
-            self.__render_view_title__(view_name)
+            self.__render_view_title__(view_name, surface)
 
-            self.__texture_cache_size__.push(hud_elements.HudDataCache.get_texture_cache_size())
-            self.__texture_cache_misses__.push(hud_elements.HudDataCache.get_texture_cache_miss_count(True))
-            self.__texture_cache_purges__.push(hud_elements.HudDataCache.get_texture_cache_purge_count(True))
-
+            # Order of drawing is important
+            # The pitch lines are drawn before the other
+            # reference information so they will be pushed to the
+            # background.
+            # The reference text is also intentionally
+            # drawn with a black background
+            # to overdraw the pitch lines
+            # and improve readability
             try:
-                if view_uses_ahrs and not self.__aircraft__.is_ahrs_available():
-                    self.__ahrs_not_available_element__.render(
-                        self.__backpage_framebuffer__, orientation)
-                else:
-                    # Order of drawing is important
-                    # The pitch lines are drawn before the other
-                    # reference information so they will be pushed to the
-                    # background.
-                    # The reference text is also intentionally
-                    # drawn with a black background
-                    # to overdraw the pitch lines
-                    # and improve readability
-                    render_times = [self.__render_view_element__(
-                        hud_element, orientation) for hud_element in view]
+                render_times = [self.__ahrs_not_available_element__.render(surface, orientation)] if show_unavailable \
+                    else [self.__render_view_element__(hud_element, orientation) for hud_element in view]
             except Exception as e:
                 self.warn("LOOP:" + str(e))
             finally:
                 self.render_perf.stop()
-            
+
+            self.frame_cleanup.start()
             now = datetime.datetime.utcnow()
 
             if (self.__last_perf_render__ is None) or (now - self.__last_perf_render__).total_seconds() > 60:
                 self.__last_perf_render__ = now
 
-                self.log("---- VIEW ELEMENT RENDER TIMES ----")
+                [self.log('RENDER, {}, {}'.format(now, element_times))
+                    for element_times in render_times]
 
-                for element_times in render_times:
-                    self.log('RENDER, {}, {}'.format(
-                        now, element_times))
+                [self.log('FRAME, {}, {}'.format(now, self.__frame_timers__[aspect].to_string()))
+                    for aspect in self.__frame_timers__.keys()]
 
-                self.log('CACHE, {}, {}'.format(now, self.__texture_cache_size__.to_string()))
-                self.log('CACHE, {}, {}'.format(now, self.__texture_cache_misses__.to_string()))
-                self.log('CACHE, {}, {}'.format(now, self.__texture_cache_purges__.to_string()))
-                
-                self.log('FRAME. {}, {}'.format(now, self.render_perf.to_string()))
-
-                self.log('CONNECTION MANAGER, {}, ConnectionManager, {}, {}, {}'.format(
-                    now,
-                    self.__connection_manager__.CONNECT_ATTEMPTS,
-                    self.__connection_manager__.SHUTDOWNS,
-                    self.__connection_manager__.SILENT_TIMEOUTS))
-
-                self.log('OVERALL, {}, {}'.format(now, self.__fps__.to_string()))
+                self.log('OVERALL, {}, {}'.format(now,
+                                                  self.__fps__.to_string()))
 
                 self.log("-----------------------------------")
 
             if self.__should_render_perf__:
                 debug_status_left = int(self.__width__ >> 1)
                 debug_status_top = int(self.__height__ * 0.2)
-                render_perf_text = self.render_perf.to_string()
-                cache_perf_text = self.cache_perf.to_string()
-                orient_perf_text = self.orient_perf.to_string()
-
-                perf_len = len(render_perf_text)
-                orient_len = len(orient_perf_text)
-
-                if perf_len > orient_len:
-                    orient_perf_text = orient_perf_text.ljust(perf_len)
-                else:
-                    render_perf_text = render_perf_text.ljust(orient_len)
+                render_perf_text = '{} / {}fps'.format(
+                    self.render_perf.to_string(), current_fps)
 
                 self.__render_text__(render_perf_text, display.BLACK,
-                                     debug_status_left, debug_status_top, 0, display.YELLOW)
-                debug_status_top += int(self.__font__.get_height() * 1.1)
-                self.__render_text__(orient_perf_text, display.BLACK,
-                                     debug_status_left, debug_status_top, 0, display.YELLOW)
-                debug_status_top += int(self.__font__.get_height() * 1.1)
-                self.__render_text__(cache_perf_text, display.BLACK,
-                                     debug_status_left, debug_status_top, 0, display.YELLOW)
+                                     debug_status_left, debug_status_top, display.YELLOW)
         finally:
             # Change the frame buffer
-            flipped = pygame.transform.flip(
-                self.__backpage_framebuffer__, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)
-            self.__backpage_framebuffer__.blit(flipped, [0, 0])
+            if CONFIGURATION.flip_horizontal or CONFIGURATION.flip_vertical:
+                flipped = pygame.transform.flip(
+                    surface, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)
+                surface.blit(flipped, [0, 0])
             pygame.display.flip()
-            clock.tick() #MAX_FRAMERATE)
-            self.__fps__.push(clock.get_fps())
+            clock.tick()  # MAX_FRAMERATE)
+            self.__fps__.push(current_fps)
+            self.frame_cleanup.stop()
 
         return True
 
@@ -245,6 +217,7 @@ class HeadsUpDisplay(object):
         element_name = str(hud_element)
 
         try:
+            surface = pygame.display.get_surface()
             if element_name not in self.__view_element_timers:
                 self.__view_element_timers[element_name] = TaskTimer(
                     element_name)
@@ -252,8 +225,7 @@ class HeadsUpDisplay(object):
             timer = self.__view_element_timers[element_name]
             timer.start()
             try:
-                hud_element.render(
-                    self.__backpage_framebuffer__, orientation)
+                hud_element.render(surface, orientation)
             except Exception as e:
                 self.warn('ELEMENT {} EX:{}'.format(element_name, e))
             timer.stop()
@@ -265,23 +237,20 @@ class HeadsUpDisplay(object):
 
             return 'Element View Timer Error:{}'.format(ex)
 
-    def __render_text__(self, text, color, position_x, position_y, roll, background_color=None):
+    def __render_text__(self, text, color, position_x, position_y, background_color=None):
         """
         Renders the text with the results centered on the given
         position.
         """
 
-        rendered_text, (text_width, text_height) = hud_elements.HudDataCache.get_cached_text_texture(
-            text,
-            self.__detail_font__,
-            color,
-            background_color,
-            True)
+        rendered_text = self.__detail_font__.render(
+            text, True, color, background_color)
+        (text_width, text_height) = rendered_text.get_size()
+        surface = pygame.display.get_surface()
 
-        text = pygame.transform.rotate(rendered_text, roll)
-
-        self.__backpage_framebuffer__.blit(
-            text, (position_x - (text_width >> 1), position_y - (text_height >> 1)))
+        surface.blit(rendered_text,
+                     (position_x - (text_width >> 1),
+                         position_y - (text_height >> 1)))
 
         return text_width, text_height
 
@@ -436,7 +405,12 @@ class HeadsUpDisplay(object):
         self.__texture_cache_purges__ = RollingStats('TextureCachePurges')
 
         self.render_perf = TaskTimer('Render')
-        self.orient_perf = TaskTimer('Orient')
+        self.frame_setup = TaskTimer('Setup')
+        self.frame_cleanup = TaskTimer('Cleanup')
+
+        self.__frame_timers__ = {'Setup': self.frame_setup,
+                                 'Render': self.render_perf, 'Cleanup': self.frame_cleanup}
+
         self.cache_perf = TaskTimer('Cache')
 
         self.__fps__.push(0)
@@ -469,8 +443,8 @@ class HeadsUpDisplay(object):
 
         self.__aircraft__ = Aircraft()
 
-        self.__pixels_per_degree_y__ = int((self.__height__ / CONFIGURATION.get_degrees_of_pitch()) * \
-            CONFIGURATION.get_pitch_degrees_display_scaler())
+        self.__pixels_per_degree_y__ = int((self.__height__ / CONFIGURATION.get_degrees_of_pitch()) *
+                                           CONFIGURATION.get_pitch_degrees_display_scaler())
 
         self.__ahrs_not_available_element__ = self.__build_ahrs_hud_element(
             ahrs_not_available.AhrsNotAvailable)
@@ -505,26 +479,27 @@ class HeadsUpDisplay(object):
         texture = self.__loading_font__.render("BOOTING", True, display.RED)
         text_width, text_height = texture.get_size()
 
-        self.__backpage_framebuffer__.blit(texture, ((
+        surface = pygame.display.get_surface()
+        surface.blit(texture, ((
             self.__width__ >> 1) - (text_width >> 1), self.__detail_font__.get_height()))
 
         y = (self.__height__ >> 2) + (self.__height__ >> 3)
         for text in disclaimer_text:
             texture = self.__detail_font__.render(text, True, display.YELLOW)
             text_width, text_height = texture.get_size()
-            self.__backpage_framebuffer__.blit(
+            surface.blit(
                 texture, ((self.__width__ >> 1) - (text_width >> 1), y))
             y += text_height + (text_height >> 3)
 
         texture = self.__detail_font__.render(
             'Version {}'.format(VERSION), True, display.GREEN)
         text_width, text_height = texture.get_size()
-        self.__backpage_framebuffer__.blit(texture, ((
+        surface.blit(texture, ((
             self.__width__ >> 1) - (text_width >> 1), self.__height__ - text_height))
 
         flipped = pygame.transform.flip(
-            self.__backpage_framebuffer__, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)
-        self.__backpage_framebuffer__.blit(flipped, [0, 0])
+            surface, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)
+        surface.blit(flipped, [0, 0])
         pygame.display.flip()
 
     def __handle_input__(self):
@@ -579,11 +554,6 @@ class HeadsUpDisplay(object):
 
         if event.key in [pygame.K_KP_MINUS, pygame.K_MINUS]:
             self.__view_index__ -= 1
-
-        if event.key in [pygame.K_r]:
-            self.render_perf.reset()
-            self.orient_perf.reset()
-            self.cache_perf.reset()
 
         if event.key in [pygame.K_BACKSPACE]:
             self.__level_ahrs__()

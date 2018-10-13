@@ -12,7 +12,7 @@
         "Groundspeed",
         "ADSB Reticles"
       ],
-      "name": "AHRS"
+      "name": "AHRS + ADS-B"
     },
     {
       "elements": [
@@ -44,6 +44,18 @@
     {
       "elements": [],
       "name": ""
+    },
+    {
+      "elements": [
+        "Level Reference",
+        "Artificial Horizon",
+        "Compass",
+        "Altitude",
+        "G Load",
+        "Roll Indicator",
+        "Groundspeed"
+      ],
+      "name": "AHRS Only"
     }
   ]
 }

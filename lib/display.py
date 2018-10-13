@@ -36,7 +36,7 @@ def display_init():
         size = 320, 240
         screen = pygame.display.set_mode(size)
     else:
-        drivers = ['directfb', 'fbcon', 'svgalib', 'directx', 'windib']
+        drivers = ['fbcon', 'directfb', 'svgalib', 'directx', 'windib']
         found = False
         for driver in drivers:
             if not os.getenv('SDL_VIDEODRIVER'):
@@ -55,7 +55,7 @@ def display_init():
             raise Exception('No suitable video driver found!')
 
         size = DEFAULT_SCREEN_SIZE
-        screen_mode = pygame.HWACCEL  # | pygame.HWSURFACE | pygame.DOUBLEBUF
+        screen_mode = pygame.HWACCEL
         # NOTE - HWSURFACE and DOUBLEBUF cause problems...
         # DOUBLEBUF
         # https://stackoverflow.com/questions/6395923/any-way-to-speed-up-python-and-pygame
@@ -69,6 +69,6 @@ def display_init():
             screen_mode |= pygame.FULLSCREEN
             size = pygame.display.Info().current_w, pygame.display.Info().current_h
 
-        screen = pygame.display.set_mode(size, screen_mode)
+        screen = pygame.display.set_mode(size, screen_mode, 16)
 
     return screen, size
