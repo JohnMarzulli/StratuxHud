@@ -74,11 +74,9 @@ class AdsbOnScreenReticles(AdsbElement):
 
         border_space = int(reticle_size_px * 1.2)
 
-        if center_y < border_space:
-            center_y = border_space
-
-        if center_y > (self.__height__ - border_space):
-            center_y = int(self.__height__ - border_space)
+        center_y = border_space if center_y < border_space else center_y
+        center_y = int(self.__height__ - border_space) \
+            if center_y > (self.__height__ - border_space) else center_y
 
         pygame.draw.lines(framebuffer,
                           BLACK, True, reticle_lines, 20)
@@ -114,13 +112,9 @@ class AdsbOnScreenReticles(AdsbElement):
         sin_roll = SIN_RADIANS_BY_DEGREES[int_roll]
         ox, oy = self.__center__
 
-        for x_y in reticle:
-            px, py = x_y
-
-            qx = ox + cos_roll * (px - ox) - sin_roll * (py - oy)
-            qy = oy + sin_roll * (px - ox) + cos_roll * (py - oy)
-
-            translated_points.append([qx, qy])
+        translated_points = [[(ox + cos_roll * (x_y[0] - ox) - sin_roll * (x_y[1] - oy)),
+                              (oy + sin_roll * (x_y[0] - ox) + cos_roll * (x_y[1] - oy))]
+                             for x_y in reticle]
 
         return translated_points
 

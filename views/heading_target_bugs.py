@@ -95,7 +95,7 @@ class HeadingTargetBugs(AdsbElement):
 
             # Render using the Above us bug
             # target_bug_scale = 0.04
-            target_bug_scale = get_reticle_size(distance_miles)
+            # target_bug_scale = get_reticle_size(distance_miles)
 
             heading_bug_x = get_heading_bug_x(
                 heading, bearing_to_target, self.__pixels_per_degree_x__)
@@ -103,12 +103,11 @@ class HeadingTargetBugs(AdsbElement):
             additional_info_text = self.__get_additional_target_text__(
                 time_until_drop, delta_altitude, units.get_feet_from_miles(distance_miles))
 
-            self.__render_heading_bug__(framebuffer,
-                                        "{0:.1f}".format(utils.apply_declination(bearing_to_target)),
-                                        additional_info_text,
-                                        heading_bug_x,
-                                        target_bug_scale,
-                                        False)
+            self.__render_info_card__(framebuffer,
+                                      "{0:.1f}".format(utils.apply_declination(bearing_to_target)),
+                                      additional_info_text,
+                                      heading_bug_x,
+                                      False)
         self.task_timer.stop()
 
 

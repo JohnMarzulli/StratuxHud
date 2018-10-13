@@ -70,7 +70,8 @@ class AdsbTrafficListing(AdsbElement):
     def __get_pre_padded_text_reports__(self, traffic_reports, max_identifier_length, max_bearing_length, max_altitude_length, max_distance_length, pre_padded_text):
         # Do not list traffic too far away, or on the ground.
         # Only show what can fit on the screen
-        reports_to_show = filter(lambda x: x.distance < imperial_occlude and not x.is_on_ground(), traffic_reports)
+        reports_to_show = filter(
+            lambda x: x.distance < imperial_occlude and not x.is_on_ground(), traffic_reports)
         reports_to_show = reports_to_show[:self.__max_reports__]
 
         for traffic in reports_to_show:
@@ -127,15 +128,14 @@ class AdsbTrafficListing(AdsbElement):
             traffic_reports)
 
         if len(padded_traffic_reports) == 0:
-            framebuffer.blit(HudDataCache.get_cached_text_texture("NO TRAFFIC", self.__font__),
+            framebuffer.blit(HudDataCache.get_cached_text_texture("NO TRAFFIC", self.__font__)[0],
                              (x_pos, y_pos))
 
         for identifier, traffic_report in padded_traffic_reports:
-            traffic_text_texture = HudDataCache.get_cached_text_texture(
-                traffic_report, self.__font__)
+            traffic_text_texture = HudDataCache.get_cached_text_texture(traffic_report,
+                                                                        self.__font__)[0]
 
-            framebuffer.blit(
-                traffic_text_texture, (x_pos, y_pos))
+            framebuffer.blit(traffic_text_texture, (x_pos, y_pos))
 
             y_pos += self.__next_line_distance__
         self.task_timer.stop()

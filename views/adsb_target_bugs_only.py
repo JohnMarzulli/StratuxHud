@@ -5,12 +5,13 @@ from adsb_element import AdsbElement
 from hud_elements import get_reticle_size, get_heading_bug_x, HudDataCache, imperial_occlude
 
 import testing
+import lib.display as display
 testing.load_imports()
 
 from lib.task_timer import TaskTimer
 
 
-class AdsbTargetBugs(AdsbElement):
+class AdsbTargetBugsOnly(AdsbElement):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
         AdsbElement.__init__(
             self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size)
@@ -22,7 +23,7 @@ class AdsbTargetBugs(AdsbElement):
         self.__next_line_distance__ = int(font.get_height() * 1.5)
         self.__max_reports__ = int(
             (self.__height__ - self.__listing_text_start_y__) / self.__next_line_distance__)
-        self.__top_border__ = int(self.__height__ * 0.2)
+        self.__top_border__ = 0
         self.__bottom_border__ = self.__height__ - int(self.__height__ * 0.1)
 
     def __render_traffic_heading_bug__(self, traffic_report, heading, orientation, framebuffer):
@@ -36,20 +37,22 @@ class AdsbTargetBugs(AdsbElement):
             framebuffer {Framebuffer} -- What we are going to draw to.
         """
 
+        # Render using the Above us bug
+        # target_bug_scale = 0.04
+        target_bug_scale = get_reticle_size(traffic_report.distance)
+
         heading_bug_x = get_heading_bug_x(
             heading, traffic_report.bearing, self.__pixels_per_degree_x__)
 
-        additional_info_text = self.__get_additional_target_text__(
-            traffic_report, orientation)
-
         try:
-            self.__render_info_card__(framebuffer,
-                                      str(traffic_report.get_identifer()),
-                                      additional_info_text,
-                                      heading_bug_x,
-                                      traffic_report.get_age())
-        except Exception as ex:
-            print("EX:{}".format(ex))
+            is_below = (orientation.alt - 100) > traffic_report.altitude
+            reticle, reticle_edge_positon_y = self.get_below_reticle(
+                heading_bug_x, target_bug_scale) if is_below else self.get_above_reticle(heading_bug_x, target_bug_scale)
+
+            bug_color = display.BLUE if traffic_report.is_on_ground() == True else display.RED
+
+            pygame.draw.polygon(framebuffer, bug_color, reticle)
+        except:
             pass
 
     def render(self, framebuffer, orientation):
@@ -65,13 +68,8 @@ class AdsbTargetBugs(AdsbElement):
             self.task_timer.stop()
             return
 
-        # Draw the heading bugs in reverse order so the traffic closest to
-        # us will be the most visible
-        traffic_bug_reports = sorted(
-            traffic_reports, key=lambda traffic: traffic.distance, reverse=True)
-
         reports_to_show = filter(lambda x: x.distance < imperial_occlude and math.fabs(
-            x.altitude - orientation.alt) < 5000.0, traffic_bug_reports)
+            x.altitude - orientation.alt) < 5000.0, traffic_reports)
 
         [self.__render_traffic_heading_bug__(
             traffic_report, heading, orientation, framebuffer) for traffic_report in reports_to_show]

@@ -36,7 +36,7 @@ Main entry code for Stratux HUD
 #
 # Powershell to extract CSV perf data from logs:
 # ```
-# (((((get-content C:\Users\jmarzulli\Desktop\20181003_long_run_stratux_hud.log) -replace "^.* - INFO - ", "") -replace "\<.*?\..*?\.", "") -replace " object.*\>", "") -replace "---.*-", "") | Where {$_ -ne ""}
+# (((((get-content stratux_hud.log) -replace "^.* - INFO - ", "") -replace "\<.*?\..*?\.", "") -replace " object.*\>", "") -replace "---.*-", "") | Where {$_ -ne ""}
 # ```
 
 
