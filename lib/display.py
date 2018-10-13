@@ -69,6 +69,6 @@ def display_init():
             screen_mode |= pygame.FULLSCREEN
             size = pygame.display.Info().current_w, pygame.display.Info().current_h
 
-        screen = pygame.display.set_mode(size, screen_mode, 16)
+        screen = pygame.display.set_mode(size, screen_mode)
 
     return screen, size

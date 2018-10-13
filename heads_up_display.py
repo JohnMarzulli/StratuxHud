@@ -206,7 +206,7 @@ class HeadsUpDisplay(object):
                 flipped = pygame.transform.flip(
                     surface, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)
                 surface.blit(flipped, [0, 0])
-            pygame.display.flip()
+            pygame.display.update()
             clock.tick()  # MAX_FRAMERATE)
             self.__fps__.push(current_fps)
             self.frame_cleanup.stop()
