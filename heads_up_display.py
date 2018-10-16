@@ -75,6 +75,8 @@ class HeadsUpDisplay(object):
         Runs the update/render logic loop.
         """
 
+        self.log('Initialized screen size to {}x{}'.format(self.__width__, self.__height__))
+
         # Make sure that the disclaimer is visible for long enough.
         sleep(5)
 
@@ -207,7 +209,7 @@ class HeadsUpDisplay(object):
                     surface, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)
                 surface.blit(flipped, [0, 0])
             pygame.display.update()
-            clock.tick()  # MAX_FRAMERATE)
+            clock.tick(MAX_FRAMERATE)
             self.__fps__.push(current_fps)
             self.frame_cleanup.stop()
 
@@ -422,6 +424,7 @@ class HeadsUpDisplay(object):
 
         self.__backpage_framebuffer__, screen_size = display.display_init()  # args.debug)
         self.__width__, self.__height__ = screen_size
+
         pygame.mouse.set_visible(False)
 
         pygame.font.init()
