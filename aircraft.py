@@ -306,14 +306,19 @@ class AhrsStratux(object):
             configuration.CONFIGURATION.stratux_address())
 
         try:
-            ahrs_json = self.__stratux_session__.get(url, timeout=0.5).json()
+            ahrs_json = self.__stratux_session__.get(url, timeout=self.__timeout__).json()
+            self.__last_update__ = datetime.datetime.utcnow()
 
         except KeyboardInterrupt:
             raise
         except SystemExit:
             raise
         except:
-            self.data_source_available = False
+            # If we are spamming the REST too quickly, then we may loose a single update.
+            # Do no consider the service unavailable unless we are
+            # way below the max target framerate.
+            delta_time = datetime.datetime.utcnow() - self.__last_update__
+            self.data_source_available = delta_time.microseconds < self.__min_update_microseconds__
 
             return
 
@@ -407,6 +412,8 @@ class AhrsStratux(object):
             self.__lock__.release()
 
     def __init__(self):
+        self.__min_update_microseconds__ = int(1000000.0 / (configuration.MAX_FRAMERATE / 10.0))
+        self.__timeout__ = 1.0 / (configuration.MAX_FRAMERATE / 8.0)
         self.__stratux_session__ = requests.Session()
 
         self.ahrs_data = AhrsData()
@@ -417,6 +424,7 @@ class AhrsStratux(object):
             'UpdateCapabilities', 15, self.__update_capabilities__)
 
         self.__lock__ = threading.Lock()
+        self.__last_update__ = datetime.datetime.utcnow()
 
 
 class Aircraft(object):
@@ -438,8 +446,9 @@ class Aircraft(object):
         elif configuration.CONFIGURATION.data_source() == configuration.DataSourceNames.STRATUX:
             self.ahrs_source = AhrsStratux()
 
-        recurring_task.RecurringTask(
-            'UpdateAhrs', 1.0 / (configuration.MAX_FRAMERATE * 2), self.__update_orientation__)
+        recurring_task.RecurringTask('UpdateAhrs',
+                                     1.0 / (configuration.MAX_FRAMERATE * 2.0),
+                                     self.__update_orientation__)
 
     def is_ahrs_available(self):
         """
