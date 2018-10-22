@@ -28,8 +28,6 @@ class HeadingTargetBugs(AdsbElement):
         self.__listing_text_start_x__ = int(
             self.__framebuffer_size__[0] * 0.01)
         self.__next_line_distance__ = int(font.get_height() * 1.5)
-        self.__max_reports__ = int(
-            (self.__height__ - self.__listing_text_start_y__) / self.__next_line_distance__)
         self.__top_border__ = int(self.__height__ * 0.2)
         self.__bottom_border__ = self.__height__ - int(self.__height__ * 0.1)
 
