@@ -57,10 +57,13 @@ You may use a number pad as input device. I used velcro to secure the number pad
 
 ## Views
 
+- AHRS + ADS-B
 - Traffic
-- AHRS
-- Traffic List (Text only)
-- Blank
+- Traffic List
+- Universal Time
+- Diagnostics
+- (Blank)
+- AHRS Only
 
 ### Traffic View
 
