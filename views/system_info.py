@@ -91,7 +91,7 @@ def get_websocket_uptime():
     """
 
     if AdsbTrafficClient.INSTANCE is not None:
-        connection_uptime = (datetime.datetime.now()
+        connection_uptime = (datetime.datetime.utcnow()
                              - AdsbTrafficClient.INSTANCE.create_time).total_seconds()
 
         if connection_uptime < 60:
