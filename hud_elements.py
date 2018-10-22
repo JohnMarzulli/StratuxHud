@@ -22,6 +22,8 @@ SIN_RADIANS_BY_DEGREES = {}
 COS_RADIANS_BY_DEGREES = {}
 
 imperial_nearby = 3000.0
+max_altitude_delta = 5000.0
+max_target_bugs = 25
 imperial_occlude = units.feet_to_sm * 5
 imperial_faraway = units.feet_to_sm * 2
 imperial_superclose = units.feet_to_sm / 4.0
@@ -124,7 +126,7 @@ class HudDataCache(object):
         """
 
         lsu = HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_key]
-        time_since_last_use = (datetime.datetime.now() - lsu).total_seconds()
+        time_since_last_use = (datetime.datetime.utcnow() - lsu).total_seconds()
 
         return texture_key if time_since_last_use > HudDataCache.__CACHE_INVALIDATION_TIME__ else None
 
@@ -139,7 +141,7 @@ class HudDataCache(object):
         textures_to_purge = []
         HudDataCache.__LOCK__.acquire()
         try:
-            now = datetime.datetime.now()
+            now = datetime.datetime.utcnow()
             textures_to_purge = [HudDataCache.__get_purge_key__(now, texture_key)
                                  for texture_key in HudDataCache.__CACHE_ENTRY_LAST_USED__]
             textures_to_purge = filter(lambda x: x is not None,
@@ -181,7 +183,7 @@ class HudDataCache(object):
 
                 HudDataCache.TEXT_TEXTURE_CACHE[text] = texture, size
 
-            HudDataCache.__CACHE_ENTRY_LAST_USED__[text] = datetime.datetime.now()
+            HudDataCache.__CACHE_ENTRY_LAST_USED__[text] = datetime.datetime.utcnow()
             result = HudDataCache.TEXT_TEXTURE_CACHE[text]
         finally:
             HudDataCache.__LOCK__.release()
