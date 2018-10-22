@@ -22,8 +22,6 @@ class AdsbOnScreenReticles(AdsbElement):
         self.__listing_text_start_x__ = int(
             self.__framebuffer_size__[0] * 0.01)
         self.__next_line_distance__ = int(font.get_height() * 1.5)
-        self.__max_reports__ = int(
-            (self.__height__ - self.__listing_text_start_y__) / self.__next_line_distance__)
         self.__top_border__ = int(self.__height__ * 0.1)
         self.__bottom_border__ = self.__height__ - self.__top_border__
 
@@ -71,9 +69,9 @@ class AdsbOnScreenReticles(AdsbElement):
         # Get the traffic, and bail out of we have none
         traffic_reports = HudDataCache.get_reliable_traffic()
 
-        # Do not render reticles for things to far away
-        traffic_reports = filter(lambda x: x.distance < imperial_occlude and not x.is_on_ground(),
+        traffic_reports = filter(lambda x: not x.is_on_ground(),
                                  traffic_reports)
+        traffic_reports = traffic_reports[:max_target_bugs]
 
         [self.__render_on_screen_reticle__(framebuffer, orientation, traffic)
          for traffic in traffic_reports]
