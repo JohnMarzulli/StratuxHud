@@ -106,7 +106,7 @@ class TaskTimer(object):
     def start(self):
         self.stop()
 
-        self.__start_time__ = datetime.datetime.now()
+        self.__start_time__ = datetime.datetime.utcnow()
         self.is_running = True
 
     def stop(self):
@@ -115,7 +115,7 @@ class TaskTimer(object):
 
         self.is_running = False
 
-        value = (datetime.datetime.now() - self.__start_time__).total_seconds() * 1000.0
+        value = (datetime.datetime.utcnow() - self.__start_time__).total_seconds() * 1000.0
         self.__stats__.push(value)
 
 
