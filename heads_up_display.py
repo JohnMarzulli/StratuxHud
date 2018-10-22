@@ -21,6 +21,7 @@ from lib.recurring_task import RecurringTask
 from lib.task_timer import TaskTimer, RollingStats
 import hud_elements
 import targets
+import traffic
 import restful_host
 from views import (adsb_on_screen_reticles, adsb_target_bugs, adsb_target_bugs_only,
                    adsb_traffic_listing, ahrs_not_available, altitude,
@@ -191,6 +192,10 @@ class HeadsUpDisplay(object):
 
                 self.log('OVERALL, {}, {}'.format(now,
                                                   self.__fps__.to_string()))
+
+                self.log('TRAFFIC, {0}, MessagesReceived, {1}, {1}, {1}'.format(now,
+                        traffic.Traffic.TRAFFIC_REPORTS_RECEIVED))
+                traffic.Traffic.TRAFFIC_REPORTS_RECEIVED = 0
 
                 self.log("-----------------------------------")
 
