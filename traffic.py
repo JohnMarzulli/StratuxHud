@@ -19,6 +19,7 @@ import configuration
 import lib.recurring_task as recurring_task
 from lib.simulated_values import SimulatedValue
 
+
 # TODO - More work around making this a BG
 
 
@@ -37,6 +38,8 @@ class Traffic(object):
     ICAO_ADDR_KEY = 'Icao_addr'
     POSITION_VALID_KEY = 'Position_valid'
     BEARING_DISTANCE_VALID_KEY = 'BearingDist_valid'
+
+    TRAFFIC_REPORTS_RECEIVED = 0
 
     """
     Holds an instance of a traffic callout.
@@ -111,7 +114,7 @@ class Traffic(object):
         """
         Returns the age of this report in total seconds.
         """
-        delta = datetime.datetime.now() - self.time_decoded
+        delta = datetime.datetime.utcnow() - self.time_decoded
         return delta.total_seconds()
 
     def get_identifer(self):
@@ -187,7 +190,7 @@ class Traffic(object):
         self.icao_address = None
         self.tail_number = None
         self.position_valid = None
-        self.time_decoded = datetime.datetime.now()
+        self.time_decoded = datetime.datetime.utcnow()
         self.latitude = None
         self.longitude = None
         self.distance = None
@@ -246,7 +249,7 @@ class Traffic(object):
             self.position_valid = self.__json__[Traffic.POSITION_VALID_KEY]
             self.bearing_distance_valid = self.__json__[
                 Traffic.BEARING_DISTANCE_VALID_KEY]
-            self.time_decoded = datetime.datetime.now()
+            self.time_decoded = datetime.datetime.utcnow()
 
             if Traffic.LATITUDE_KEY in self.__json__:
                 self.latitude = self.__json__[Traffic.LATITUDE_KEY]
@@ -409,13 +412,8 @@ class TrafficManager(object):
 
         self.__lock__.acquire()
         try:
-            potential_traffic_idents = [identifier
-                                        if self.traffic[identifier].is_valid_report()
-                                        and configuration.CONFIGURATION.ownship not in str(self.traffic[identifier].get_identifer())
-                                        else None for identifier in self.traffic]
-
-            traffic_with_position = filter(
-                lambda x: x is not None, potential_traffic_idents)
+            traffic_with_position = {k: v for k, v in self.traffic.iteritems() if v is not None and v.is_valid_report(
+            ) and configuration.CONFIGURATION.ownship not in str(v.get_identifer())}
             actionable_traffic = [self.traffic[identifier]
                                   for identifier in traffic_with_position]
         finally:
@@ -487,7 +485,7 @@ class AdsbTrafficClient(WebSocketClient):
     def __init__(self, socket_address):
         WebSocketClient.__init__(self, socket_address)
 
-        self.create_time = datetime.datetime.now()
+        self.create_time = datetime.datetime.utcnow()
         self.__update_task__ = None
         self.__manage_connection_task__ = None
         self.last_message_received_time = None
@@ -567,9 +565,10 @@ class AdsbTrafficClient(WebSocketClient):
 
         self.is_connected = True
         self.is_connecting = False
-        self.last_message_received_time = datetime.datetime.now()
+        self.last_message_received_time = datetime.datetime.utcnow()
 
         try:
+            Traffic.TRAFFIC_REPORTS_RECEIVED += 1
             adsb_traffic = json.loads(m.data)
             AdsbTrafficClient.TRAFFIC_MANAGER.handle_traffic_report(
                 adsb_traffic)
@@ -605,7 +604,7 @@ class ConnectionManager(object):
     Performs the connections and re-connects.
     """
 
-    def __init__(self, socket_address):
+    def __init__(self, socket_address, logger=None):
         self.__is_shutting_down__ = False
         self.__manage_connection_task__ = None
         self.__socket_address__ = socket_address
@@ -616,45 +615,89 @@ class ConnectionManager(object):
         self.CONNECT_ATTEMPTS = 0
         self.SHUTDOWNS = 0
         self.SILENT_TIMEOUTS = 0
+        self.__last_action_time__ = datetime.datetime.utcnow()
+        self.__logger__ = logger
+
+    def log(self, text):
+        """
+        Logs the given text if a logger is available.
+
+        Arguments:
+            text {string} -- The text to log
+        """
+
+        if self.__logger__ is not None:
+            self.__logger__.log_info_message(text)
+        else:
+            print(text)
+
+    def warn(self, text):
+        """
+        Logs the given text if a logger is available AS A WARNING.
+
+        Arguments:
+            text {string} -- The text to log
+        """
+
+        if self.__logger__ is not None:
+            self.__logger__.log_warning_message(text)
+        else:
+            print(text)
 
     def pong_stratux(self):
         """
         Send pong to the Stratux
         """
-
         ping.verbose_pong(configuration.CONFIGURATION.stratux_address())
+
+    def ping_stratux(self):
+        """
+        Run a complete ping against the Stratux.
+        This keeps the connection alive.
+        """
+        ping.verbose_ping(configuration.CONFIGURATION.stratux_address())
+
+    def __get_time_since_last_action__(self):
+        return (datetime.datetime.utcnow() - self.__last_action_time__).total_seconds() / 60.0
 
     def __manage_connection__(self):
         """
         Handles the connection.
         """
 
-        while not self.__is_shutting_down__:
-            create = AdsbTrafficClient.INSTANCE is None
-            restart = False
-            if AdsbTrafficClient.INSTANCE is not None:
-                is_silent_timeout = self.__is_connection_silently_timed_out__()
-                restart |= is_silent_timeout
-                restart |= not (
-                    AdsbTrafficClient.INSTANCE.is_connected or AdsbTrafficClient.INSTANCE.is_connecting)
+        self.ping_stratux()
 
-                if restart:
-                    print("SHUTTING DOWN EXISTING CONNECTION")
-                    AdsbTrafficClient.INSTANCE.shutdown()
-                    create = True
+        create = AdsbTrafficClient.INSTANCE is None
+        restart = False
+        if AdsbTrafficClient.INSTANCE is not None:
+            is_silent_timeout = self.__is_connection_silently_timed_out__()
+            restart |= is_silent_timeout
+            restart |= not (AdsbTrafficClient.INSTANCE.is_connected
+                            or AdsbTrafficClient.INSTANCE.is_connecting)
 
-                    if is_silent_timeout:
-                        self.SILENT_TIMEOUTS += 1
+            if restart:
+                self.warn('__manage_connection__() - SHUTTING DOWN EXISTING CONNECTION after {:.1f} minutes'.format(
+                    self.__get_time_since_last_action__()))
+                self.__last_action_time__ = datetime.datetime.utcnow()
+                AdsbTrafficClient.INSTANCE.shutdown()
+                create = True
 
-            if create:
-                self.CONNECT_ATTEMPTS += 1
-                print("ATTEMPTING TO CONNECT")
-                AdsbTrafficClient.INSTANCE = AdsbTrafficClient(
-                    self.__socket_address__)
-                AdsbTrafficClient.INSTANCE.run_in_background()
-                time.sleep(30 if not self.__is_shutting_down__ else 0)
-            else:
-                time.sleep(1)
+                if is_silent_timeout:
+                    self.warn("   => Silent timeout!")
+                    self.SILENT_TIMEOUTS += 1
+
+        if create:
+            self.__last_action_time__ = datetime.datetime.utcnow()
+            self.CONNECT_ATTEMPTS += 1
+            self.warn('__manage_connection__() - ATTEMPTING TO CONNECT after {:.1f} minutes'.format(
+                self.__get_time_since_last_action__()))
+            AdsbTrafficClient.INSTANCE = AdsbTrafficClient(
+                self.__socket_address__)
+            AdsbTrafficClient.INSTANCE.run_in_background()
+            time.sleep(30 if not self.__is_shutting_down__ else 0)
+        else:
+            # self.log('__manage_connection__ => OK')
+            time.sleep(1)
 
     def shutdown(self):
         """
@@ -670,6 +713,32 @@ class ConnectionManager(object):
             AdsbTrafficClient.INSTANCE.shutdown()
             AdsbTrafficClient.INSTANCE = None
 
+    def get_last_ping_time(self):
+        """
+        When was the last time a ping message was received?
+
+        Returns:
+            datetime -- The UTC time the last ping was received.
+        """
+
+        ping_last_received_time = ping.LastReceived.LAST_RECIEVED
+        ping_last_received_time = self.__last_action_time__ if ping_last_received_time is None else ping_last_received_time
+
+        return ping_last_received_time
+
+    def get_last_message_time(self):
+        """
+        When was the last time a traffic message was received?
+
+        Returns:
+            datetime -- The UTC time the last traffic message was received.
+        """
+
+        msg_last_received_time = AdsbTrafficClient.INSTANCE.last_message_received_time
+        msg_last_received_time = self.__last_action_time__ if msg_last_received_time is None else msg_last_received_time
+
+        return msg_last_received_time
+
     def __is_connection_silently_timed_out__(self):
         """
         Tries to determine if the socket has stopped sending us data.
@@ -678,32 +747,31 @@ class ConnectionManager(object):
             bool -- True if we think the socket has closed.
         """
 
-        now = datetime.datetime.now()
-
-        msg_last_received_time = AdsbTrafficClient.INSTANCE.last_message_received_time
-        ping_last_received_time = ping.LAST_RECIEVED
-        last_received = msg_last_received_time
+        now = datetime.datetime.utcnow()
 
         # Use the ping reception to augment the last message reception time
         # If the SDRs are not receiving any traffic, then no updates will be
         # sent... but the connection is still very much open and active.
-        if ping_last_received_time is None:
-            last_received = msg_last_received_time
-        elif msg_last_received_time is None \
-                or ping_last_received_time < msg_last_received_time:
-            last_received = ping_last_received_time
+        msg_last_received_time = self.get_last_message_time()
+        msg_last_received_delta = (
+            now - msg_last_received_time).total_seconds()
+        ping_last_received_time = self.get_last_ping_time()
+        ping_last_received_delta = (
+            now - ping_last_received_time).total_seconds()
 
-        if last_received is not None:
-            connection_uptime = (now
-                                 - AdsbTrafficClient.INSTANCE.create_time).total_seconds()
-            time_since_last_msg = (now - last_received).total_seconds()
+        connection_uptime = (
+            now - AdsbTrafficClient.INSTANCE.create_time).total_seconds()
 
-            if time_since_last_msg > 15:
-                print("{0:.1f} seconds connection uptime".format(
-                    connection_uptime))
-                print("{0:.1f} since last msg".format(time_since_last_msg))
+        if msg_last_received_delta > 60 \
+                and ping_last_received_delta > 15:
+            self.warn("{0:.1f} seconds connection uptime".format(
+                connection_uptime))
+            self.warn('Last report message was at {}'.format(
+                msg_last_received_time))
+            self.warn('Last PING was at {}'.format(ping_last_received_time))
 
-                return not AdsbTrafficClient.INSTANCE.is_connecting
+            return not AdsbTrafficClient.INSTANCE.is_connecting
+
         return False
 
 

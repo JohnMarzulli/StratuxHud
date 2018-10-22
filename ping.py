@@ -73,8 +73,10 @@ else:
 ICMP_ECHO_REPLY = 0
 ICMP_ECHO_REQUEST = 8  # Seems to be the same on Solaris.
 
-LAST_RECIEVED = datetime.utcnow()
+class LastReceived(object):
+    LAST_RECIEVED = datetime.utcnow()
 
+last_ping_instance = LastReceived()
 
 def checksum(source_string):
     """
@@ -117,7 +119,8 @@ def receive_one_ping(my_socket, ID, timeout):
         if whatReady[0] == []:  # Timeout
             return
 
-        LAST_RECIEVED = datetime.utcnow()
+        LastReceived.LAST_RECIEVED = datetime.utcnow()
+        print('PING KeepAlive _RECEIVED_ at {}'.format(LastReceived.LAST_RECIEVED))
         timeReceived = default_timer()
         recPacket, addr = my_socket.recvfrom(1024)
         icmpHeader = recPacket[20:28]
@@ -159,6 +162,7 @@ def send_one_pong(my_socket, dest_addr, ID):
     )
     packet = header + data
     my_socket.sendto(packet, (dest_addr, 1))  # Don't know about the 1
+    print('KeepAlive PONG _SENT_ at {}'.format(datetime.utcnow()))
 
 
 def send_one_ping(my_socket, dest_addr, ID):
@@ -186,6 +190,7 @@ def send_one_ping(my_socket, dest_addr, ID):
     )
     packet = header + data
     my_socket.sendto(packet, (dest_addr, 1))  # Don't know about the 1
+    print('KeepAlive PING _SENT_ at {}'.format(datetime.utcnow()))
 
 
 def do_one(dest_addr, timeout):
