@@ -307,7 +307,7 @@ class AhrsStratux(object):
 
         try:
             ahrs_json = self.__stratux_session__.get(url, timeout=self.__timeout__).json()
-            self.__last_update__ = datetime.datetime.utcnow()
+            self.__last_update__ = datetime.datetime.utcnow() if ahrs_json is not None else self.__last_update__
 
         except KeyboardInterrupt:
             raise
@@ -318,7 +318,7 @@ class AhrsStratux(object):
             # Do no consider the service unavailable unless we are
             # way below the max target framerate.
             delta_time = datetime.datetime.utcnow() - self.__last_update__
-            self.data_source_available = delta_time.microseconds < self.__min_update_microseconds__
+            self.data_source_available = delta_time.total_seconds() < (self.__min_update_microseconds__ / 1000000.0)
 
             return
 
