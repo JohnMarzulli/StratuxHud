@@ -496,6 +496,15 @@ class AdsbTrafficClient(WebSocketClient):
         self.hb = ws4py.websocket.Heartbeat(self)
         self.hb.start()
 
+    def keep_alive(self):
+        """
+        Sends the current date/time to the otherside of the socket
+        as a form of keepalive.
+        """
+
+        print('Socket KeepAlive sent {}'.format(datetime.datetime.utcnow()))
+        self.send(str(datetime.datetime.utcnow()))
+
     def shutdown(self):
         """
         Stops the WebSocket and reception tasks.
@@ -595,8 +604,6 @@ class AdsbTrafficClient(WebSocketClient):
         self.__update_task__ = recurring_task.RecurringTask(
             'TrafficUpdate', 0.1, self.run_forever, start_immediate=False)
 
-        # recurring_task.RecurringTask('TrafficDump', 1.0, self.__dump_traffic_diag__)
-
 
 class ConnectionManager(object):
     """
@@ -656,6 +663,9 @@ class ConnectionManager(object):
         This keeps the connection alive.
         """
         ping.verbose_ping(configuration.CONFIGURATION.stratux_address())
+
+        if AdsbTrafficClient.INSTANCE is not None:
+            AdsbTrafficClient.INSTANCE.keep_alive()
 
     def __get_time_since_last_action__(self):
         return (datetime.datetime.utcnow() - self.__last_action_time__).total_seconds() / 60.0
