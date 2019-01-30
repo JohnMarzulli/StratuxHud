@@ -33,6 +33,12 @@ Main entry code for Stratux HUD
 # pip install pygame
 # pip install requests
 # pip instal ws4py
+#
+# Powershell to extract CSV perf data from logs:
+# ```
+# (((((get-content stratux_hud.log) -replace "^.* - INFO - ", "") -replace "\<.*?\..*?\.", "") -replace " object.*\>", "") -replace "---.*-", "") | Where {$_ -ne ""}
+# ```
+
 
 import logging
 import logging.handlers

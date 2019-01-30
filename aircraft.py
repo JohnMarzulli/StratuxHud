@@ -10,6 +10,7 @@ from lib.simulated_values import SimulatedValue
 
 HEADING_NOT_AVAILABLE = '---'
 
+
 class StratuxStatus(object):
 
     def __get_status__(self, key):
@@ -55,9 +56,10 @@ class StratuxStatus(object):
             except:
                 self.__status_json__ = {}
 
-
             self.cpu_temp = self.__get_status__('CPUTemp')
-            self.satellites_locked = self.__get_status__('GPS_satellites_locked')
+            self.satellites_locked = self.__get_status__(
+                'GPS_satellites_locked')
+
 
 class StratuxCapabilities(object):
     """
@@ -288,13 +290,10 @@ class AhrsStratux(object):
         if keys is None:
             return default
 
-        for key in keys:
-            value = self.__get_value__(ahrs_json, key, default)
+        values = [self.__get_value__(ahrs_json, key, default) for key in keys]
+        values = filter(lambda x: x != default, values)
 
-            if value is not default:
-                return value
-
-        return default
+        return values[0] if values is not None and len(values) > 0 else default
 
     def update(self):
         """
@@ -307,14 +306,22 @@ class AhrsStratux(object):
             configuration.CONFIGURATION.stratux_address())
 
         try:
-            ahrs_json = self.__stratux_session__.get(url, timeout=0.5).json()
+            ahrs_json = self.__stratux_session__.get(
+                url, timeout=self.__timeout__).json()
+            self.__last_update__ = datetime.datetime.utcnow(
+            ) if ahrs_json is not None else self.__last_update__
 
         except KeyboardInterrupt:
             raise
         except SystemExit:
             raise
         except:
-            self.data_source_available = False
+            # If we are spamming the REST too quickly, then we may loose a single update.
+            # Do no consider the service unavailable unless we are
+            # way below the max target framerate.
+            delta_time = datetime.datetime.utcnow() - self.__last_update__
+            self.data_source_available = delta_time.total_seconds() < (
+                self.__min_update_microseconds__ / 1000000.0)
 
             return
 
@@ -333,7 +340,8 @@ class AhrsStratux(object):
         new_ahrs_data.groundspeed = self.__get_value__(
             ahrs_json, 'GPSGroundSpeed', 0.0)
         new_ahrs_data.g_load = self.__get_value__(ahrs_json, 'AHRSGLoad', 1.0)
-        new_ahrs_data.utc_time = self.__get_value_with_fallback__(ahrs_json, 'GPSTime', str(datetime.datetime.utcnow()))
+        new_ahrs_data.utc_time = self.__get_value_with_fallback__(
+            ahrs_json, 'GPSTime', str(datetime.datetime.utcnow()))
         self.data_source_available = True
         # except:
         #    self.data_source_available = False
@@ -387,16 +395,8 @@ class AhrsStratux(object):
         Atomically sets the AHRS data.
         """
         self.__lock__.acquire()
-        try:
-            self.ahrs_data = new_ahrs_data
-
-            if new_ahrs_data.roll != None:
-                self.ahrs_data.roll = new_ahrs_data.roll
-
-            if new_ahrs_data.pitch != None:
-                self.ahrs_data.pitch = new_ahrs_data.pitch
-        finally:
-            self.__lock__.release()
+        self.ahrs_data = new_ahrs_data
+        self.__lock__.release()
 
     def __update_capabilities__(self):
         """
@@ -415,6 +415,9 @@ class AhrsStratux(object):
             self.__lock__.release()
 
     def __init__(self):
+        self.__min_update_microseconds__ = int(
+            1000000.0 / (configuration.MAX_FRAMERATE / 10.0))
+        self.__timeout__ = 1.0 / (configuration.MAX_FRAMERATE / 8.0)
         self.__stratux_session__ = requests.Session()
 
         self.ahrs_data = AhrsData()
@@ -425,6 +428,7 @@ class AhrsStratux(object):
             'UpdateCapabilities', 15, self.__update_capabilities__)
 
         self.__lock__ = threading.Lock()
+        self.__last_update__ = datetime.datetime.utcnow()
 
 
 class Aircraft(object):
@@ -446,8 +450,9 @@ class Aircraft(object):
         elif configuration.CONFIGURATION.data_source() == configuration.DataSourceNames.STRATUX:
             self.ahrs_source = AhrsStratux()
 
-        recurring_task.RecurringTask(
-            'UpdateAhrs', 1.0 / (configuration.MAX_FRAMERATE * 2), self.__update_orientation__)
+        recurring_task.RecurringTask('UpdateAhrs',
+                                     1.0 / (configuration.MAX_FRAMERATE * 2.0),
+                                     self.__update_orientation__)
 
     def is_ahrs_available(self):
         """

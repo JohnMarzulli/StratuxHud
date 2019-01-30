@@ -22,6 +22,8 @@ SIN_RADIANS_BY_DEGREES = {}
 COS_RADIANS_BY_DEGREES = {}
 
 imperial_nearby = 3000.0
+max_altitude_delta = 5000.0
+max_target_bugs = 25
 imperial_occlude = units.feet_to_sm * 5
 imperial_faraway = units.feet_to_sm * 2
 imperial_superclose = units.feet_to_sm / 4.0
@@ -70,62 +72,10 @@ class HudDataCache(object):
     TEXT_TEXTURE_CACHE = {}
     __CACHE_ENTRY_LAST_USED__ = {}
     __CACHE_INVALIDATION_TIME__ = 60 * 5
-    __CACHE_ADDITION_COUNT__ = 0
-    __CACHE_PURGE_COUNT__ = 0
 
     RELIABLE_TRAFFIC = []
 
     __LOCK__ = threading.Lock()
-
-    @staticmethod
-    def get_texture_cache_miss_count(reset=False):
-        """
-        Returns the number of cache misses the cache has had.
-        
-        Returns:
-            int -- The number of total cache misses.
-        """
-
-        HudDataCache.__LOCK__.acquire()
-        result = HudDataCache.__CACHE_ADDITION_COUNT__
-        if reset:
-            HudDataCache.__CACHE_ADDITION_COUNT__ = 0
-        HudDataCache.__LOCK__.release()
-
-        return result
-    
-    @staticmethod
-    def get_texture_cache_purge_count(reset=False):
-        """
-        Get the total number of textures purged from the cache.
-        
-        Returns:
-            int -- The total number of textures purged from the system.
-        """
-
-        HudDataCache.__LOCK__.acquire()
-        result = HudDataCache.__CACHE_PURGE_COUNT__
-
-        if reset:
-            HudDataCache.__CACHE_PURGE_COUNT__ = 0
-        HudDataCache.__LOCK__.release()
-
-        return result
-    
-    @staticmethod
-    def get_texture_cache_size():
-        """
-        Gets the current size of the texture cache.
-        
-        Returns:
-            int -- The number of entries in the texture cache.
-        """
-
-        HudDataCache.__LOCK__.acquire()
-        result = len(HudDataCache.TEXT_TEXTURE_CACHE)
-        HudDataCache.__LOCK__.release()
-
-        return result
 
     @staticmethod
     def update_traffic_reports():
@@ -159,7 +109,6 @@ class HudDataCache(object):
         try:
             del HudDataCache.TEXT_TEXTURE_CACHE[texture_to_purge]
             del HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_to_purge]
-            HudDataCache.__CACHE_PURGE_COUNT__ += 1
         finally:
             return True
 
@@ -177,7 +126,7 @@ class HudDataCache(object):
         """
 
         lsu = HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_key]
-        time_since_last_use = (datetime.datetime.now() - lsu).total_seconds()
+        time_since_last_use = (datetime.datetime.utcnow() - lsu).total_seconds()
 
         return texture_key if time_since_last_use > HudDataCache.__CACHE_INVALIDATION_TIME__ else None
 
@@ -192,7 +141,7 @@ class HudDataCache(object):
         textures_to_purge = []
         HudDataCache.__LOCK__.acquire()
         try:
-            now = datetime.datetime.now()
+            now = datetime.datetime.utcnow()
             textures_to_purge = [HudDataCache.__get_purge_key__(now, texture_key)
                                  for texture_key in HudDataCache.__CACHE_ENTRY_LAST_USED__]
             textures_to_purge = filter(lambda x: x is not None,
@@ -219,21 +168,27 @@ class HudDataCache(object):
             use_alpha {bool} -- Should alpha be used? (default: {False})
 
         Returns:
-            [type] -- The texture.
+            [tuple] -- The texture and the size of the texture
         """
 
-        if text not in HudDataCache.TEXT_TEXTURE_CACHE or force_regen:
-            texture = font.render(text, True, text_color, background_color)
+        result = None
+        HudDataCache.__LOCK__.acquire()
+        try:
+            if text not in HudDataCache.TEXT_TEXTURE_CACHE or force_regen:
+                texture = font.render(text, True, text_color, background_color)
+                size = texture.get_size()
 
-            if use_alpha:
-                texture = texture.convert()
+                if use_alpha:
+                    texture = texture.convert()
 
-            HudDataCache.TEXT_TEXTURE_CACHE[text] = texture
-            HudDataCache.__CACHE_ADDITION_COUNT__ += 1
+                HudDataCache.TEXT_TEXTURE_CACHE[text] = texture, size
 
-        HudDataCache.__CACHE_ENTRY_LAST_USED__[text] = datetime.datetime.now()
-        return HudDataCache.TEXT_TEXTURE_CACHE[text]
-
+            HudDataCache.__CACHE_ENTRY_LAST_USED__[text] = datetime.datetime.utcnow()
+            result = HudDataCache.TEXT_TEXTURE_CACHE[text]
+        finally:
+            HudDataCache.__LOCK__.release()
+        
+        return result
 
 def get_heading_bug_x(heading, bearing, degrees_per_pixel):
     """
@@ -317,10 +272,10 @@ def run_ahrs_hud_element(element_type, use_detail_font=True):
 
     __aircraft__ = AhrsSimulation()
 
-    __pixels_per_degree_y__ = (
-        __height__ / HeadsUpDisplay.DEGREES_OF_PITCH) * HeadsUpDisplay.PITCH_DEGREES_DISPLAY_SCALER
+    __pixels_per_degree_y__ = (__height__ / configuration.CONFIGURATION.get_degrees_of_pitch()
+                               ) * configuration.CONFIGURATION.get_pitch_degrees_display_scaler()
 
-    hud_element = element_type(HeadsUpDisplay.DEGREES_OF_PITCH,
+    hud_element = element_type(configuration.CONFIGURATION.get_degrees_of_pitch(),
                                __pixels_per_degree_y__, font, (__width__, __height__))
 
     while True:
@@ -375,10 +330,10 @@ def run_adsb_hud_element(element_type, use_detail_font=True):
 
     __aircraft__ = AhrsSimulation()
 
-    __pixels_per_degree_y__ = (
-        __height__ / HeadsUpDisplay.DEGREES_OF_PITCH) * HeadsUpDisplay.PITCH_DEGREES_DISPLAY_SCALER
+    __pixels_per_degree_y__ = (__height__ / configuration.CONFIGURATION.get_degrees_of_pitch()) * \
+        configuration.CONFIGURATION.get_pitch_degrees_display_scaler()
 
-    hud_element = element_type(HeadsUpDisplay.DEGREES_OF_PITCH,
+    hud_element = element_type(configuration.CONFIGURATION.get_degrees_of_pitch(),
                                __pixels_per_degree_y__, font,
                                (__width__, __height__))
 

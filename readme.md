@@ -57,81 +57,74 @@ You may use a number pad as input device. I used velcro to secure the number pad
 
 ## Views
 
+- AHRS + ADS-B
 - Traffic
-- AHRS
-- Traffic List (Text only)
-- Blank
+- Traffic List
+- Universal Time
+- Diagnostics
+- (Blank)
+- AHRS Only
+
+### AHRS + ADS-B View
+
+![Traffic View Screenshot](media/ahrs_plus_adsb_view.jpg)
+
+This view shows attitude information along with targetting bugs that show the relative position and distance of traffic.
+
+In this example:
+
+- There are five potential targets, all at a higher altitude. Three are relatively far away. The one directly behind us (far right hand side) is the closest.
+- One of the five targets is within our field of view and has a targetting reticle.
+- With are at a level pitch and roll.
+- We are 309 feet MSL.
+- We are traveling forward a 0.4MPH (taxing)
+- We have a GPS heading of 12, but do not have enough forward speed to obtain a heading from the AHRS chip. If the AHRS chip is unable to produce a reliable heading, `---` is shown for that portion of the heading.
+
+*NOTE:* This is the default view on startup. If you would like to switch to the `AHRS Only` You may press `-` on the keypad.
 
 ### Traffic View
 
-#### TRAFFIC EXAMPLE
-
 ![Traffic View Screenshot](media/traffic_view.jpg)
 
-We are receiving ADS-B from three planes.
-N705JA is right ahead of us, bearing 90. We have a GPS track of 112 degrees.
-N705JA is 1.1 statute miles ahead, and 2,200 feet above.
-We have a large red target reticle that shows where N705JA actually is outside the cockpit.
+This view shows a heading strip, target bugs, targetting reticles, and "information cards" about our potential traffic.
 
-Delta Airlines flight 39 is also ahead of us, and slightly to the right.
-It is further away, so the red reticle is smaller.
-
-Note tha a red triangle points from the information card to the heading strip where the traffic is.
-
-The closer the traffic, the larger the heading bug.
-
-#### Traffic View Explanation
-
-This shows you all of the traffic with reliable ADSB data.
-
-_NOTE: Any planes further than 10SM are excluded from this view._
-
-It attempts to prioritize traffic by distance.
-
-At the bottom is a heading strip. It shows you in text with a green background your GPS track and your gyro based direction. Combined they will give you an idea of any crab being maintained.
-
-To the left and right are the headings 180 degrees from center.
-
-Drawn above the heading strip are red "bugs". The larger the heading bug, the closer the traffic is.
-
-Right above each bug is a yellow "card" that shows you information about that traffic.
-
-At the top is the Tail Number, and if that is not available, a unique identifier that is broadcast.
-The next line is the bearing to the traffic.
-Below that is the distance to the target.
-Finally, the bottom line is the relative altitude in hundreds of feet. (+2 would be 200' above you.)
-
-Cards are drawn so the furthest traffic is "at the bottom of the stack". This prioritizes the closest traffic to have all content readable.
-
-### AHRS View
-
-#### AHRS VIEW EXAMPLE
-
-![Traffic View Screenshot](media/ahrs_view.jpg)
-
-We have a GPS track of 153 degrees.
-We are in a 28 degree turn to the left.
-We are 15 degrees nose up.
-Our GPS altitude is 309'
-We are experiencing 0.8Gs, less than normal gravity.
+In this example, `N2803K` is almost directly ahead of us (middle of the screen).
+The plane is 1.5 statute miles away, with a bearing of 51 degrees. We are currently on a heading of 012 degrees. The traffic is 500 feet above us.
 
 ### Traffic Listing View
 
-### TRAFFIC LISTING VIEW EXAMPLE
-
 ![Traffic View Screenshot](media/traffic_listing_view.jpg)
 
-This shows us _at most_ the five closest planes.
+This shows us _at most_ the eight closest planes.
 
-_NOTE: Any planes further than 10SM are excluded from this view._
+The *IDENT(ifier will be the tail number when available, otherwise the IACO identifier or callsign may be used.
+The *BEAR*ing is the heading to take to fly to that target.
+The *DIST*ance is the distance to the target.
+The *ALT*itude is given in relative terms, with two digits dropped.
 
-Here we see N435SP is the closest plane, bearing 345, 1.0 statute miles away, and 1,300' above us.
+In this example, the closest target is QXE2382. We may see that plane if we looked out the cockpit at a heading of 276. The plane is only 1 statue mile away, and 11,200 feet above us.
 
-N705JA is the second closest plane. It is Bearing 78, 1.2 statues miles away and 2,300 feet above us.
+### Diagnostics View
+
+![Traffic View Screenshot](media/diagnostics_view.jpg)
+
+The diagnostics view is designed to help give some troubleshooting ability.
+If a value is set for "OWNSHIP" (See the configuration file section), then any report from that tailnumber is ignored.
+The IP addressis provided so you may use the configuration webpage if you set it up.
+
+### Universal Time
+
+Shows the current time in UTC at the bottom of the screen.
 
 ### Blank
 
 A blank screen so no information is displayed.
+
+### AHRS View
+
+![Traffic View Screenshot](media/ahrs_view.jpg)
+
+This is a similar view to `AHRS + ADS-B`, but removes any AHRS information.
 
 ## Parts List
 
@@ -234,7 +227,16 @@ Make sure you are using a high quality power cable if you are using a Pi 3B+
 
 ## Appendix
 
-Teleprompter sample: <https://telepromptermirror.com/sample/>
+### Hardware Performance
+
+| Board                          | Screen         | Frames Per Second |
+| ------------------------------ | -------------- | ----------------- |
+| Rasp Pi 2                      | Sun Founder 5" | ~25FPS to ~30FPS  |
+| Rasp Pi 3 (stand alone)        | HUDLY          | 60FPS             |
+| Rasp Pi 3 (Running on Stratux) | HUDLY          | 60FPS             |
+| Rasp Pi 3B+                    | HUDLY          | 60FPS             |
+
+Please note that the frame rate is capped at 60FPS. Drawing any faster will not be detectable using the reccomended output systems. Reducing the framerate will reduce the powerdraw.
 
 ## Acknowledgements And Credits
 

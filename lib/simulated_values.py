@@ -25,7 +25,7 @@ class SimulatedValue(object):
         """
         Changes the value.
         """
-        current_time = datetime.datetime.now()
+        current_time = datetime.datetime.utcnow()
         self.__dt__ = (current_time - self.__last_sim__).total_seconds()
         self.__last_sim__ = current_time
         self.value += self.direction() * self.__rate__ * self.__dt__
@@ -49,4 +49,4 @@ class SimulatedValue(object):
         self.__offset__ = offset
         self.value = initial_value
         self.__dt__ = 1.0 / 60.0
-        self.__last_sim__ = datetime.datetime.now()
+        self.__last_sim__ = datetime.datetime.utcnow()

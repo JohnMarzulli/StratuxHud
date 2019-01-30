@@ -52,3 +52,5 @@ Temporary Items
 .pytest_cache/
 StratuxHud.egg-info
 stratux_hud.log.*
+*.csv
+*.xlsx

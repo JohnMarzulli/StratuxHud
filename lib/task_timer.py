@@ -2,44 +2,46 @@ import datetime
 import time
 import Queue
 
+class RollingStats(object):
+    """
+    Class to keep a rolling means.
+    """
 
-class TaskTimer(object):
-    def __init__(self, task_name):
+    def __init__(self, name):
+        """
+        Creates a new mean tracker.
+        
+        Arguments:
+            name {string} -- The name of the task being tracked.
+        """
+
+        self.task_name = name
         self.__max_running_average__ = 120
         self.__running_average__ = Queue.Queue(self.__max_running_average__)
         self.__running_sum__ = 0.0
         self.__running_average_count__ = 0
-        self.__start_time__ = None
-        self.slowest = None
         self.last = None
-        self.fastest = None
         self.average = 0.0
-        self.is_running = False
-        self.task_name = task_name
-
+    
     def reset(self):
-        self.stop()
-        self.fastest = None
-        self.slowest = None
+        """
+        Resets the rolling mean and maximums.
+        """
+
         self.average = 0.0
         self.__running_average__ = Queue.Queue(self.__max_running_average__)
         self.__running_sum__ = 0.0
         self.__running_average_count__ = 0.0
+    
+    def push(self, value):
+        """
+        Adds a new value to be tracked in the mean.
+        
+        Arguments:
+            value {float} -- The new value to be averaged.
+        """
 
-    def start(self):
-        self.stop()
-
-        self.__start_time__ = datetime.datetime.now()
-        self.is_running = True
-
-    def stop(self):
-        if not self.is_running:
-            return
-
-        self.is_running = False
-
-        self.last = (datetime.datetime.now() -
-                     self.__start_time__).total_seconds() * 1000.0
+        self.last = value
         self.__running_average__.put(self.last)
         self.__running_sum__ += self.last
         self.__running_average_count__ += 1
@@ -50,20 +52,23 @@ class TaskTimer(object):
 
         self.average = float(self.__running_sum__ /
                              self.__running_average_count__)
-
-        if self.slowest is None or self.slowest < self.last:
-            self.slowest = self.last
-
-        if self.fastest is None or self.fastest > self.last:
-            self.fastest = self.last
-
+    
     def to_string(self):
+        """
+        Returns a string representation of the rolling mean data.
+        
+        Returns:
+            string -- A string representing the data.
+        """
+
         try:
             if self.last is None:
                 return "{0}: NO DATA".format(self.task_name)
+            
+            slowest = max(self.__running_average__.queue) if not self.__running_average__.empty() else None
 
-            if self.slowest is not None:
-                slowest_text = "{0:.1f}".format(self.slowest)
+            if slowest is not None:
+                slowest_text = "{0:.1f}".format(slowest)
             else:
                 slowest_text = '---'
 
@@ -82,6 +87,40 @@ class TaskTimer(object):
                                                 slowest_text)
         except:
             return '---'
+
+class TaskTimer(object):
+    """
+    Class to track how long a task takes.
+    """
+
+    def __init__(self, task_name):
+        self.__stats__ = RollingStats(task_name)
+        self.__start_time__ = None
+        self.is_running = False
+        self.task_name = task_name
+
+    def reset(self):
+        self.stop()
+        self.__stats__.reset()
+
+    def start(self):
+        self.stop()
+
+        self.__start_time__ = datetime.datetime.utcnow()
+        self.is_running = True
+
+    def stop(self):
+        if not self.is_running:
+            return
+
+        self.is_running = False
+
+        value = (datetime.datetime.utcnow() - self.__start_time__).total_seconds() * 1000.0
+        self.__stats__.push(value)
+
+
+    def to_string(self):
+        return self.__stats__.to_string()
 
 
 if __name__ == '__main__':
