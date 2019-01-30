@@ -765,20 +765,22 @@ class ConnectionManager(object):
         msg_last_received_time = self.get_last_message_time()
         msg_last_received_delta = (
             now - msg_last_received_time).total_seconds()
-        ping_last_received_time = self.get_last_ping_time()
-        ping_last_received_delta = (
-            now - ping_last_received_time).total_seconds()
+        
+        # Do we want to include the ping as a reception time?
+        # ping_last_received_time = self.get_last_ping_time()
+        # ping_last_received_delta = (
+        #     now - ping_last_received_time).total_seconds()
 
         connection_uptime = (
             now - AdsbTrafficClient.INSTANCE.create_time).total_seconds()
 
-        if msg_last_received_delta > 60 \
-                and ping_last_received_delta > 15:
+        if msg_last_received_delta > 60: #
+            #     and ping_last_received_delta > 15:
             self.warn("{0:.1f} seconds connection uptime".format(
                 connection_uptime))
             self.warn('Last report message was at {}'.format(
                 msg_last_received_time))
-            self.warn('Last PING was at {}'.format(ping_last_received_time))
+            # self.warn('Last PING was at {}'.format(ping_last_received_time))
 
             return not AdsbTrafficClient.INSTANCE.is_connecting
 
