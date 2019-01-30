@@ -229,7 +229,7 @@ Make sure you are using a high quality power cable if you are using a Pi 3B+
 
 ### Hardware Performance
 
-| Board                          | Screen         | Frames Per Second |
+| Board                          | Screen         | Frames Per Second (AHRS View Only)|
 | ------------------------------ | -------------- | ----------------- |
 | Rasp Pi 2                      | Sun Founder 5" | ~25FPS to ~30FPS  |
 | Rasp Pi 3 (stand alone)        | HUDLY          | 60FPS             |
