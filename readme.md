@@ -12,23 +12,25 @@ There are two versions that can be built:
 
 ### Recommended
 
-Using the "HUDLY Classic" projector and a Raspberry Pi 3.
+Using the "Kivic HUD 2nd Gen" projector and a Raspberry Pi 3.
 
-![HUDLY Version](media/hudly_on_ground.jpg)
+![Kivic Version](media/hudly_on_ground.jpg)
 
-Estimated cost is $300
+Estimated cost is $270
 
 - $40 for RaspberryPi 3
-- $215 for HUDLY projector
+- $195 for Kivic 2nd Gen projector
 - Fans, case, cables
 
-Requires your aircraft to have a "12 Volt" cigarette power outlet.
+Uses 5V USB power.
+
+_*NOTE:*_ This project initially used and reccomendedly the "HUDLY Classic" projector which is no longer available.
 
 ### Alternative, Less Expensive Version
 
 A self contained system that uses a 3D printed case and teleprompter glass. This version can be built for the cost of a Raspberry Pi and the 3D print.
 
-_NOTE:_ This version does have visibility issues in daylight conditions. The HUDLY Version is fully daylight visible.
+_NOTE:_ This version does have visibility issues in daylight conditions. Using an automotic HUD projector will result in full daylight visibility.
 
 ![Teleprompter Glass Version In Flight](media/in_flight.jpg)
 
@@ -139,12 +141,10 @@ _NOTE:_ This _does not_ include a power source. You will need to supply ship pow
 - [Micro SD Card](https://www.amazon.com/SanDisk-Ultra-Micro-Adapter-SDSQUNC-016G-GN6MA/dp/B010Q57SEE/ref=sr_1_10?s=pc&ie=UTF8&qid=1529215944&sr=1-10&keywords=micro+sd+card)
 - [Rottay Mechanical Keypad](https://www.amazon.com/Number-Rottay-Mechanical-Numeric-backlit/dp/B076FTSY6J/ref=sr_1_3?ie=UTF8&qid=1529215627&sr=8-3&keywords=mechanical+keypad)
 
-### Recommended HUDLY Build
+### Recommended Kivic Build
 
-- [HUDLY Classic](https://gethudly.com/classic)
-  - _NOTE:_ You will most likely want to order the cigarette lighter powered version.
-  - _NOTE:_ You can order the iPhone or Android cable option based on your phone. It will not matter for the StratuxHud.
-- [12" HDMI Cable](https://www.amazon.com/StarTech-com-0-3m-Short-Speed-Cable/dp/B00K3HF276/ref=sr_1_11?s=electronics&ie=UTF8&qid=1529216822&sr=1-11&keywords=short%2Bhdmi%2Bcable&th=1)
+- [Kiviv HUD 2nd Gen](https://www.amazon.com/gp/product/B078GHFMG5/ref=ppx_yo_dt_b_asin_title_o01__o00_s00?ie=UTF8&psc=1)
+- [12' 3.5mm Analog Cable](https://www.amazon.com/gp/product/B008R39FKS/ref=ppx_yo_dt_b_asin_title_o01__o00_s00?ie=UTF8&psc=1)
 
 ### 3D Print Build
 
@@ -210,11 +210,12 @@ Make sure you are using a high quality power cable if you are using a Pi 3B+
 
 1. Save and quit.
 
-### HUDLY Based Setup
+### Kivic Based Setup
 
-1. Install the HUDLY projector per the HUDLY directions. It is handy to have the projector turned on to help locate the glass.
-2. Plug in the HDMI cable between the HUDLY input box and the Raspberry Pi.
-3. Plug the number pad into the Raspberry Pi
+1. Install the Kivic projector per the Kivic directions. Please note that there is a release clip and the unit is removable. Also note that the combiner glass can be adjusted fore and aft.
+2. Plug in the 3.5mm TRS cable between the Raspberry Pi and the Kivic. This is the same hole as the audio adapter for the Pi.
+3. Plug the number pad into the Raspberry Pi.
+4. You will need to run two Micro USB (5v) power cables. One to the HUD and one to the Raspberry Pi processing unit. These may be run from a battery bank, or from the ship's power *_if_* you have 5V USB outlets.
 
 ### Teleprompter Glass Based Setup
 
@@ -232,9 +233,9 @@ Make sure you are using a high quality power cable if you are using a Pi 3B+
 | Board                          | Screen         | Frames Per Second (AHRS View Only)|
 | ------------------------------ | -------------- | ----------------- |
 | Rasp Pi 2                      | Sun Founder 5" | ~25FPS to ~30FPS  |
-| Rasp Pi 3 (stand alone)        | HUDLY          | 60FPS             |
-| Rasp Pi 3 (Running on Stratux) | HUDLY          | 60FPS             |
-| Rasp Pi 3B+                    | HUDLY          | 60FPS             |
+| Rasp Pi 3 (stand alone)        | Kivic          | Pending Retesting |
+| Rasp Pi 3 (Running on Stratux) | Kivic          | 30FPS             |
+| Rasp Pi 3B+                    | Kivic          | Pending Retesting |
 
 Please note that the frame rate is capped at 60FPS. Drawing any faster will not be detectable using the reccomended output systems. Reducing the framerate will reduce the powerdraw.
 
