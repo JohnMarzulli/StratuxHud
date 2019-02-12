@@ -10,7 +10,7 @@ installs = ['pytest',
 
 setup(name='StratuxHud',
       version=configuration.VERSION,
-      python_requires='>=2.7',
+      python_requires='>=3.7',
       description='Graphics for a Heads Up Display projector powered by a Stratux receiver.',
       url='https://github.com/JohnMarzulli/StratuxHud',
       author='John Marzulli',

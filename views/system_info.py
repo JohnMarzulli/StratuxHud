@@ -5,19 +5,20 @@ import math
 
 import struct
 
-import testing
+from . import testing
 testing.load_imports()
 
+# pylint: disable=unused-wildcard-import
 from lib.display import *
 from lib.task_timer import TaskTimer
 import lib.colors as colors
 import lib.local_debug as local_debug
 import units
 import configuration
-from ahrs_element import AhrsElement
+from .ahrs_element import AhrsElement
 from traffic import AdsbTrafficClient
 
-import commands
+import subprocess
 
 NORMAL_TEMP = 50
 REDLINE_TEMP = 80
@@ -33,7 +34,7 @@ def get_ip_address():
 
     try:
         if not local_debug.is_debug():
-            ip_addr = commands.getoutput('hostname -I').strip()
+            ip_addr = subprocess.getoutput('hostname -I').strip()
             return (ip_addr, GREEN)
         else:
             host_name = socket.gethostname()

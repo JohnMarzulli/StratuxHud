@@ -1,12 +1,14 @@
 import pygame
 
-import testing
+from . import testing
 testing.load_imports()
 
+# pylint: disable=unused-wildcard-import
 from lib.display import *
+
 from lib.task_timer import TaskTimer
 import units
-from ahrs_element import AhrsElement
+from .ahrs_element import AhrsElement
 
 
 class Time(AhrsElement):

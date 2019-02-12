@@ -1,6 +1,6 @@
 import datetime
 import time
-import Queue
+import queue
 
 class RollingStats(object):
     """
@@ -14,10 +14,11 @@ class RollingStats(object):
         Arguments:
             name {string} -- The name of the task being tracked.
         """
+		# note Queue.Queue is now queue.Queue in 3.7
 
         self.task_name = name
         self.__max_running_average__ = 120
-        self.__running_average__ = Queue.Queue(self.__max_running_average__)
+        self.__running_average__ = queue.Queue(self.__max_running_average__)
         self.__running_sum__ = 0.0
         self.__running_average_count__ = 0
         self.last = None
@@ -29,7 +30,7 @@ class RollingStats(object):
         """
 
         self.average = 0.0
-        self.__running_average__ = Queue.Queue(self.__max_running_average__)
+        self.__running_average__ = queue.Queue(self.__max_running_average__)
         self.__running_sum__ = 0.0
         self.__running_average_count__ = 0.0
     

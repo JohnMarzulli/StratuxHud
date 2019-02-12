@@ -1,12 +1,12 @@
 import pygame
 
-import testing
+from . import testing
 testing.load_imports()
 
 from hud_elements import COS_RADIANS_BY_DEGREES, SIN_RADIANS_BY_DEGREES, run_ahrs_hud_element
 from lib.display import WHITE, BLACK, GREEN
 from lib.task_timer import TaskTimer
-from ahrs_element import AhrsElement
+from .ahrs_element import AhrsElement
 
 
 class ArtificialHorizon(AhrsElement):
@@ -64,7 +64,7 @@ class ArtificialHorizon(AhrsElement):
         self.__height__ = framebuffer_size[1]
         self.__font__ = font
 
-        self.__reference_angles__ = range(-degrees_of_pitch, degrees_of_pitch + 1, 10)
+        self.__reference_angles__ = list(range(-degrees_of_pitch, degrees_of_pitch + 1, 10))
         self.__pitch_elements__ = {reference_angle: self.__generate_rotated_reference_angle__(reference_angle)
                                    for reference_angle in self.__reference_angles__}
 
@@ -122,9 +122,7 @@ class ArtificialHorizon(AhrsElement):
         # ... only to use filter to throw them out saves time.
         # This allows for the cores to be used and removes the conditionals
         # from the actual render function.
-        lines_centers_and_angles = filter(
-            lambda center:
-            center[1][1] >= 0 and center[1][1] <= self.__height__, lines_centers_and_angles)
+        lines_centers_and_angles = [center for center in lines_centers_and_angles if center[1][1] >= 0 and center[1][1] <= self.__height__]
 
         [self.__render_reference_line__(framebuffer, line_info, draw_line, roll)
             for line_info in lines_centers_and_angles]

@@ -2,7 +2,7 @@
 Simple wrapper around a logger.
 """
 
-import utilities
+from . import utilities
 
 
 class Logger(object):

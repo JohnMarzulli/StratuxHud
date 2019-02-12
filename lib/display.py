@@ -9,7 +9,7 @@ import sys
 
 import pygame
 
-import local_debug
+import lib.local_debug as local_debug
 
 # The SunFounder 5" TFT
 DEFAULT_SCREEN_SIZE = 800, 480
@@ -27,6 +27,7 @@ def display_init():
     """
     Initializes PyGame to run on the current screen.
     """
+    # pylint: disable=no-member
 
     size = DEFAULT_SCREEN_SIZE
     disp_no = os.getenv('DISPLAY')
@@ -54,7 +55,7 @@ def display_init():
         if not found:
             raise Exception('No suitable video driver found!')
 
-        size = DEFAULT_SCREEN_SIZE
+        size = DEFAULT_SCREEN_SIZE       
         screen_mode = pygame.HWACCEL
         # NOTE - HWSURFACE and DOUBLEBUF cause problems...
         # DOUBLEBUF

@@ -76,7 +76,7 @@ def get_distance(starting_pos, ending_pos):
     lon2 = ending_pos[1]
 
     # convert decimal degrees to radians
-    lon1, lat1, lon2, lat2 = map(math.radians, [lon1, lat1, lon2, lat2])
+    lon1, lat1, lon2, lat2 = list(map(math.radians, [lon1, lat1, lon2, lat2]))
 
     # haversine formula
     delta_lon = lon2 - lon1

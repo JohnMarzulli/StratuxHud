@@ -1,11 +1,11 @@
 import pygame
 
-import testing
+from . import testing
 testing.load_imports()
 
 from lib.display import WHITE
 from lib.task_timer import TaskTimer
-from ahrs_element import AhrsElement
+from .ahrs_element import AhrsElement
 
 
 class LevelReference(AhrsElement):

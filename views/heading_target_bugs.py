@@ -5,11 +5,11 @@ View to render heading targets.
 
 import pygame
 
-from adsb_element import AdsbElement
+from .adsb_element import AdsbElement
 from hud_elements import HudDataCache, get_reticle_size, get_heading_bug_x
 import hud_elements
-import utils
-import testing
+from . import utils
+from . import testing
 testing.load_imports()
 
 from lib.task_timer import TaskTimer

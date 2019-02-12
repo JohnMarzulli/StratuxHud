@@ -1,6 +1,7 @@
 import pygame
 
-from adsb_element import *
+# pylint: disable=unused-wildcard-import
+from .adsb_element import *
 from hud_elements import *
 
 testing.load_imports()
@@ -69,8 +70,7 @@ class AdsbOnScreenReticles(AdsbElement):
         # Get the traffic, and bail out of we have none
         traffic_reports = HudDataCache.get_reliable_traffic()
 
-        traffic_reports = filter(lambda x: not x.is_on_ground(),
-                                 traffic_reports)
+        traffic_reports = [x for x in traffic_reports if not x.is_on_ground()]
         traffic_reports = traffic_reports[:max_target_bugs]
 
         [self.__render_on_screen_reticle__(framebuffer, orientation, traffic)

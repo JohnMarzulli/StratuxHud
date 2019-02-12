@@ -1,10 +1,10 @@
 import math
 import pygame
 
-from adsb_element import AdsbElement
+from .adsb_element import AdsbElement
 from hud_elements import get_reticle_size, get_heading_bug_x, HudDataCache, imperial_occlude, max_altitude_delta, max_target_bugs
 
-import testing
+from . import testing
 testing.load_imports()
 
 from lib.task_timer import TaskTimer
@@ -63,8 +63,7 @@ class AdsbTargetBugs(AdsbElement):
             self.task_timer.stop()
             return
 
-        traffic_reports = filter(lambda x: math.fabs(x.altitude - orientation.alt) < max_altitude_delta,
-                                 traffic_reports)
+        traffic_reports = [x for x in traffic_reports if math.fabs(x.altitude - orientation.alt) < max_altitude_delta]
         traffic_reports = traffic_reports[:max_target_bugs]
 
         # Draw the heading bugs in reverse order so the traffic closest to

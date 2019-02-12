@@ -87,13 +87,13 @@ def checksum(source_string):
     countTo = (len(source_string)/2)*2
     count = 0
     while count < countTo:
-        thisVal = ord(source_string[count + 1])*256 + ord(source_string[count])
+        thisVal = ord(chr(source_string[count + 1]))*256 + ord(chr(source_string[count]))
         sum = sum + thisVal
         sum = sum & 0xffffffff  # Necessary?
         count = count + 2
 
     if countTo < len(source_string):
-        sum = sum + ord(source_string[len(source_string) - 1])
+        sum = sum + ord(chr(source_string[len(source_string) - 1]))
         sum = sum & 0xffffffff  # Necessary?
 
     sum = (sum >> 16) + (sum & 0xffff)
@@ -113,18 +113,18 @@ def receive_one_ping(my_socket, ID, timeout):
     """
     timeLeft = timeout
     while True:
-        startedSelect = default_timer()
+        startedSelect = time.perf_counter()
         whatReady = select.select([my_socket], [], [], timeLeft)
-        howLongInSelect = (default_timer() - startedSelect)
+        howLongInSelect = (time.perf_counter() - startedSelect)
         if whatReady[0] == []:  # Timeout
             return
 
         LastReceived.LAST_RECIEVED = datetime.utcnow()
         print('PING KeepAlive _RECEIVED_ at {}'.format(LastReceived.LAST_RECIEVED))
         timeReceived = default_timer()
-        recPacket, addr = my_socket.recvfrom(1024)
+        recPacket, _addr = my_socket.recvfrom(1024)
         icmpHeader = recPacket[20:28]
-        type, code, checksum, packetID, sequence = struct.unpack(
+        type, _code, _checksum, packetID, _sequence = struct.unpack(
             "bbHHh", icmpHeader
         )
         # Filters out the echo request itself.
@@ -149,9 +149,11 @@ def send_one_pong(my_socket, dest_addr, ID):
     # Make a dummy header with a 0 checksum.
     header = struct.pack("bbHHh", ICMP_ECHO_REPLY, 0, my_checksum, ID, 1)
     bytesInDouble = struct.calcsize("d")
-    data = (192 - bytesInDouble) * "Q"
-    data = struct.pack("d", default_timer()) + data
 
+    # pylint: disable=anomalous-backslash-in-string
+    data = (192 - bytesInDouble) * b'\Q'
+    data = struct.pack("d",  time.perf_counter()) + data
+    
     # Calculate the checksum on the data and the dummy header.
     my_checksum = checksum(header + data)
 
@@ -177,8 +179,10 @@ def send_one_ping(my_socket, dest_addr, ID):
     # Make a dummy heder with a 0 checksum.
     header = struct.pack("bbHHh", ICMP_ECHO_REQUEST, 0, my_checksum, ID, 1)
     bytesInDouble = struct.calcsize("d")
-    data = (192 - bytesInDouble) * "Q"
-    data = struct.pack("d", default_timer()) + data
+
+    # pylint: disable=anomalous-backslash-in-string
+    data = (192 - bytesInDouble) * b'\Q'
+    data = struct.pack("d", time.perf_counter()) + data
 
     # Calculate the checksum on the data and the dummy header.
     my_checksum = checksum(header + data)
@@ -200,7 +204,9 @@ def do_one(dest_addr, timeout):
     icmp = socket.getprotobyname("icmp")
     try:
         my_socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, icmp)
-    except socket.error, (errno, msg):
+    except socket.error as e:
+        # pylint: disable=unbalanced-tuple-unpacking
+        (errno, msg) = e.args
         if errno == 1:
             # Operation not permitted
             msg = msg + (
@@ -226,7 +232,9 @@ def send_pong(dest_addr, timeout):
     icmp = socket.getprotobyname("icmp")
     try:
         my_socket = socket.socket(socket.AF_INET, socket.SOCK_RAW, icmp)
-    except socket.error, (errno, msg):
+    except socket.error as e:
+        # pylint: disable=unbalanced-tuple-unpacking
+        (errno, msg) = e.args
         if errno == 1:
             # Operation not permitted
             msg = msg + (
@@ -249,10 +257,11 @@ def verbose_pong(dest_addr, timeout=2, count=1):
     Send >count< ping to >dest_addr< with the given >timeout< and display
     the result.
     """
-    for i in xrange(count):
+	# note xrange in v2.7 is now range in 3.7
+    for _i in range(count):
         try:
             send_pong(dest_addr, timeout)
-        except socket.gaierror, e:
+        except socket.gaierror as e:
             print("failed. (socket error: '%s')" % e[1])
             break
 
@@ -262,11 +271,12 @@ def verbose_ping(dest_addr, timeout=2, count=1):
     Send >count< ping to >dest_addr< with the given >timeout< and display
     the result.
     """
-    for i in xrange(count):
+		# note xrange in v2.7 is now range in 3.7
+    for _i in range(count):
         print("ping %s..." % dest_addr)
         try:
             delay = do_one(dest_addr, timeout)
-        except socket.gaierror, e:
+        except socket.gaierror as e:
             print("failed. (socket error: '%s')" % e[1])
             break
 

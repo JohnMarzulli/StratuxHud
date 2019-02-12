@@ -291,7 +291,7 @@ class AhrsStratux(object):
             return default
 
         values = [self.__get_value__(ahrs_json, key, default) for key in keys]
-        values = filter(lambda x: x != default, values)
+        values = [x for x in values if x != default]
 
         return values[0] if values is not None and len(values) > 0 else default
 

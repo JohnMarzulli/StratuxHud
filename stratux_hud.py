@@ -13,7 +13,7 @@ Main entry code for Stratux HUD
 #
 # You can view the GNU General Public License at <http://www.gnu.org/licenses/>
 #
-# Written for Python 2.7
+# Originally written for Python 2.7, this release uses Python 3.7.2
 #
 # Includes provisions for the basic logic to be run
 # for development\testing under Windows or Mac
@@ -44,7 +44,8 @@ import logging
 import logging.handlers
 
 import heads_up_display
-from lib.logger import Logger
+import lib.logger
+Logger = lib.logger.Logger
 
 python_logger = logging.getLogger("stratux_hud")
 python_logger.setLevel(logging.DEBUG)

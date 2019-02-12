@@ -1,12 +1,14 @@
 import pygame
 
-from compass_and_heading_top_element import CompassAndHeadingTopElement
+from .compass_and_heading_top_element import CompassAndHeadingTopElement
 
-import testing
-import utils
+from . import testing
+from . import utils
 testing.load_imports()
 
+# pylint: disable=unused-wildcard-import
 from lib.display import *
+
 from lib.task_timer import TaskTimer
 import hud_elements
 
@@ -76,7 +78,7 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
 
         rendered_text = self.__font__.render(
             heading_text, True, BLACK, GREEN)
-        text_width, text_height = rendered_text.get_size()
+        text_width, _text_height = rendered_text.get_size()
 
         pygame.draw.polygon(framebuffer, GREEN,
                             self.__heading_text_box_lines__)

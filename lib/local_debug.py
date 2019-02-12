@@ -8,8 +8,8 @@ from sys import platform
 
 from sys import platform, version_info
 
-REQUIRED_PYTHON_VERSION = 2.7
-MAXIMUM_PYTHON_VERSION = 2.7
+REQUIRED_PYTHON_VERSION = 3.7
+MAXIMUM_PYTHON_VERSION = 3.7
 
 
 def validate_python_version():

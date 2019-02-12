@@ -2,12 +2,14 @@ import math
 
 import pygame
 
-import testing
+from . import testing
 testing.load_imports()
 
+# pylint: disable=unused-wildcard-import
 from lib.display import *
+
 from lib.task_timer import TaskTimer
-from ahrs_element import AhrsElement
+from .ahrs_element import AhrsElement
 
 
 class RollIndicator(AhrsElement):
@@ -39,7 +41,7 @@ class RollIndicator(AhrsElement):
         roll_texture = self.__font__.render(
             attitude_text, True, BLACK, WHITE)
         texture_size = roll_texture.get_size()
-        text_half_width, text_half_height = texture_size
+        text_half_width, _text_half_height = texture_size
         text_half_width = int(text_half_width / 2)
         framebuffer.blit(
             roll_texture, (self.__center__[0] - text_half_width, self.__text_y_pos__))

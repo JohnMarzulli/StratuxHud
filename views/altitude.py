@@ -1,11 +1,11 @@
 import pygame
 
-import testing
+from . import testing
 testing.load_imports()
 
 import lib.display as display
 from lib.task_timer import TaskTimer
-from ahrs_element import AhrsElement
+from .ahrs_element import AhrsElement
 
 
 class Altitude(AhrsElement):
@@ -22,7 +22,7 @@ class Altitude(AhrsElement):
         altitude_text = str(int(orientation.alt)) + "' MSL"
         alt_texture = self.__font__.render(
             altitude_text, True, display.WHITE, display.BLACK)
-        text_width, text_height = alt_texture.get_size()
+        text_width, _text_height = alt_texture.get_size()
 
         framebuffer.blit(
             alt_texture, (self.__rhs__ - text_width, self.__text_y_pos__))

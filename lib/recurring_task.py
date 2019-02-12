@@ -19,7 +19,7 @@ class RecurringTask(object):
 
     @staticmethod
     def kill_all():
-        timeout_sec = 5
+        _timeout_sec = 5
         for task in RecurringTask.__SPAWNED_TASKS__:  # list of your processes
             print('Killing task {}'.format(task.__task_name__))
 

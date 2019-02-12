@@ -47,8 +47,9 @@ class Targets(object):
         """
         Creates a new target manager.
         """
-
-        TARGET_MANAGER = self
+		
+        # commented to avoid pylint warning
+        #TARGET_MANAGER = self
 
         self.targets = []
 

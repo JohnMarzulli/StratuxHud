@@ -1,10 +1,10 @@
 import math
 import pygame
 
-from adsb_element import AdsbElement
+from .adsb_element import AdsbElement
 from hud_elements import get_reticle_size, get_heading_bug_x, HudDataCache, max_altitude_delta, max_target_bugs
 
-import testing
+from . import testing
 import lib.display as display
 testing.load_imports()
 
@@ -66,7 +66,7 @@ class AdsbTargetBugsOnly(AdsbElement):
             self.task_timer.stop()
             return
 
-        reports_to_show = filter(lambda x: math.fabs(x.altitude - orientation.alt) < max_altitude_delta, traffic_reports)
+        reports_to_show = [x for x in traffic_reports if math.fabs(x.altitude - orientation.alt) < max_altitude_delta]
         reports_to_show = reports_to_show[:max_target_bugs]
 
         [self.__render_traffic_heading_bug__(

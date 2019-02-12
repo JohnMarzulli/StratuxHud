@@ -1,14 +1,16 @@
 import math
 
 import pygame
-import utils
-import testing
+from . import utils
+from . import testing
 
 testing.load_imports()
 
 import units
 from configuration import Configuration
 import hud_elements
+
+# pylint: disable=unused-wildcard-import
 from lib.display import *
 from lib.task_timer import TaskTimer
 import lib.colors as colors

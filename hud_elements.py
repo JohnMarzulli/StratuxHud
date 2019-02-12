@@ -144,8 +144,7 @@ class HudDataCache(object):
             now = datetime.datetime.utcnow()
             textures_to_purge = [HudDataCache.__get_purge_key__(now, texture_key)
                                  for texture_key in HudDataCache.__CACHE_ENTRY_LAST_USED__]
-            textures_to_purge = filter(lambda x: x is not None,
-                                       textures_to_purge)
+            textures_to_purge = [x for x in textures_to_purge if x is not None]
             [HudDataCache.__purge_texture__(texture_to_purge)
              for texture_to_purge in textures_to_purge]
         finally:

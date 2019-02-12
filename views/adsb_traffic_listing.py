@@ -1,9 +1,11 @@
 import pygame
 
-from adsb_element import *
+# pylint: disable=unused-wildcard-import
+from .adsb_element import *
 from hud_elements import *
-import utils
-import testing
+
+from . import utils
+from . import testing
 testing.load_imports()
 
 from lib.task_timer import TaskTimer
@@ -76,7 +78,7 @@ class AdsbTrafficListing(AdsbElement):
 
     def __get_pre_padded_text_reports__(self, traffic_reports):
         # We do not want to show traffic on the ground.
-        reports_to_show = filter(lambda x: not x.is_on_ground(), traffic_reports)
+        reports_to_show = [x for x in traffic_reports if not x.is_on_ground()]
 
         # The __max_reports__ value is set based on the screen size
         # and how much can fit on the screen

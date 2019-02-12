@@ -158,7 +158,7 @@ class Traffic(object):
         lon2 = float(self.longitude)
 
         # convert decimal degrees to radians
-        lon1, lat1, lon2, lat2 = map(math.radians, [lon1, lat1, lon2, lat2])
+        lon1, lat1, lon2, lat2 = list(map(math.radians, [lon1, lat1, lon2, lat2]))
 
         # haversine formula
         dlon = lon2 - lon1
@@ -392,8 +392,7 @@ class TrafficManager(object):
             traffic_without_position = [self.traffic[identifier]
                                         if not self.traffic[identifier].is_valid_report()
                                         else None for identifier in self.traffic]
-            traffic_without_position = filter(
-                lambda x: x is not None, traffic_without_position)
+            traffic_without_position = [x for x in traffic_without_position if x is not None]
         finally:
             self.__lock__.release()
 
@@ -412,7 +411,7 @@ class TrafficManager(object):
 
         self.__lock__.acquire()
         try:
-            traffic_with_position = {k: v for k, v in self.traffic.iteritems() if v is not None and v.is_valid_report(
+            traffic_with_position = {k: v for k, v in self.traffic.items() if v is not None and v.is_valid_report(
             ) and configuration.CONFIGURATION.ownship not in str(v.get_identifer())}
             actionable_traffic = [self.traffic[identifier]
                                   for identifier in traffic_with_position]
@@ -556,7 +555,7 @@ class AdsbTrafficClient(WebSocketClient):
         print("Attempting to reconnect...")
         try:
             self.close_connection()
-        except KeyboardInterrupt, SystemExit:
+        except KeyboardInterrupt as _e: 
             raise
         except:
             print("Issue trying to close_connection")

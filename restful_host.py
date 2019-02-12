@@ -8,10 +8,10 @@ import datetime
 import socket
 import json
 import shutil
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import os
 import re
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, HTTPServer
 import lib.utilities as utilities
 import configuration
 import lib.local_debug as local_debug
@@ -189,7 +189,7 @@ class RestfulHost(BaseHTTPRequestHandler):
             self.__handle_request__(route, method)
 
     def get_route(self):
-        for path, route in RestfulHost.ROUTES.iteritems():
+        for path, route in RestfulHost.ROUTES.items():
             if re.match(path, self.path):
                 return route
         return None

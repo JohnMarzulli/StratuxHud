@@ -16,6 +16,7 @@ import lib.local_debug as local_debug
 import lib.utilities as utilities
 import traffic
 from aircraft import Aircraft
+# pylint: disable=unused-wildcard-import
 from configuration import *
 from lib.recurring_task import RecurringTask
 from lib.task_timer import TaskTimer, RollingStats
@@ -93,7 +94,7 @@ class HeadsUpDisplay(object):
 
     def __render_view_title__(self, text, surface):
         try:
-            texture, size = hud_elements.HudDataCache.get_cached_text_texture(
+            texture, _size = hud_elements.HudDataCache.get_cached_text_texture(
                 text,
                 self.__detail_font__,
                 display.BLUE,
@@ -139,6 +140,8 @@ class HeadsUpDisplay(object):
         Returns:
             bool -- True if the code should run for another tick.
         """
+
+        current_fps = 0 # initialize up front avoids exception
 
         try:
             self.frame_setup.start()
@@ -190,7 +193,7 @@ class HeadsUpDisplay(object):
                 [self.log('FRAME, {}, {}'.format(now, self.__frame_timers__[aspect].to_string()))
                     for aspect in self.__frame_timers__.keys()]
 
-                self.log('OVERALL, {}, {}'.format(now,
+                self.log('OVERALL, {}, {}'.format(now, 
                                                   self.__fps__.to_string()))
 
                 self.log('TRAFFIC, {0}, MessagesReceived, {1}, {1}, {1}'.format(now,
@@ -538,7 +541,7 @@ class HeadsUpDisplay(object):
         Returns:
             bool -- True if the loop should continue, False if it should quit.
         """
-
+        # pylint: disable=no-member
         if event.type == pygame.QUIT:
             utilities.shutdown()
             return False

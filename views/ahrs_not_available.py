@@ -1,5 +1,5 @@
 import pygame
-import testing
+from . import testing
 
 testing.load_imports()
 
