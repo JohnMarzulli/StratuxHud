@@ -69,9 +69,9 @@ TARGET_MANAGER = Targets()
 
 
 if __name__ == '__main__':
-    print("Have {0} targets.".format(len(TARGET_MANAGER.targets)))
+    print(f"Have {len(TARGET_MANAGER.targets)} targets.")
 
     for target in TARGET_MANAGER.targets:
-        print("Target: {0}, {1} : {2}".format(target[0], target[1], target[2]))
+        print(f"Target: {target[0]}, {target[1]} : {target[2]}")
     
     TARGET_MANAGER.save()

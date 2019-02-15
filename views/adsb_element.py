@@ -174,9 +174,8 @@ class AdsbElement(object):
         delta_sign = ''
         if altitude_delta > 0:
             delta_sign = '+'
-        altitude_text = "{0}{1}".format(delta_sign, altitude_delta)
-        bearing_text = "{0}".format(
-            int(utils.apply_declination(traffic_report.bearing)))
+        altitude_text = f"{delta_sign}{altitude_delta}"
+        bearing_text = f"{int(utils.apply_declination(traffic_report.bearing))}"
 
         return [bearing_text, distance_text, altitude_text]
 

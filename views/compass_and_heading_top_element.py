@@ -119,10 +119,11 @@ class CompassAndHeadingTopElement(AhrsElement):
 
         # Render the text that is showing our AHRS and GPS headings
         cover_old_rendering_spaces = " "
-        heading_text = "{0}{1} | {2}{0}".format(cover_old_rendering_spaces,
-                                                str(int(utils.apply_declination(
-                                                    orientation.get_onscreen_projection_display_heading()))).rjust(3),
-                                                str(int(utils.apply_declination(orientation.gps_heading))).rjust(3))
+        heading_text = f"{cover_old_rendering_spaces}" \
+                     + f"{int(utils.apply_declination(orientation.get_onscreen_projection_display_heading()))}".rjust(3) \
+                     + " | " \
+                     + f"{int(utils.apply_declination(orientation.gps_heading))}".rjust(3) \
+                     + f"{cover_old_rendering_spaces}"
 
         rendered_text = self.__font__.render(
             heading_text, True, display.GREEN, display.BLACK)

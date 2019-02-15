@@ -353,7 +353,7 @@ def run_adsb_hud_element(element_type, use_detail_font=True):
 
 if __name__ == '__main__':
     for distance in range(0, int(2.5 * units.feet_to_sm), int(units.feet_to_sm / 10.0)):
-        print("{0}' -> {1}".format(distance, get_reticle_size(distance)))
+        print(f"{distance}' -> {get_reticle_size(distance)}")
 
     heading = 327
     pitch = 0
@@ -362,10 +362,8 @@ if __name__ == '__main__':
     altitude_delta = 1000
     pixels_per_degree = 10
     for bearing in range(0, 360, 10):
-        print("Bearing {0} -> {1}px".format(bearing,
-                                            get_heading_bug_x(heading, bearing, 2.2222222)))
+        print(f"Bearing {bearing} -> {get_heading_bug_x(heading, bearing, 2.2222222)}px")
         x, y = get_onscreen_traffic_projection__(
             heading, pitch, roll, bearing, distance, altitude_delta, pixels_per_degree)
-        print("    {0}, {1}".format(x + 400, y + 240))
-        print("TRUE: {0} -> {1} MAG".format(bearing,
-                                            utils.apply_declination(bearing)))
+        print(f"    {x + 400}, {y + 240}")
+        print(f"TRUE: {bearing} -> {utils.apply_declination(bearing)}")

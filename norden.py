@@ -181,10 +181,10 @@ if __name__ == '__main__':
         free_fall_time = get_free_fall_time(units.get_meters_from_feet(
             test_altitude), flour_sack_weight, flour_sack_k)
 
-        print('-----------')
-        print('INPUT          :{0}'.format(test_altitude))
-        print('Time           :{0}'.format(time_to_impact))
-        print('Free_fall      :{0}'.format(free_fall_time))
+        print("-----------")
+        print(f"INPUT          :{test_altitude}")
+        print(f"Time           :{time_to_impact}")
+        print(f"Free_fall      :{free_fall_time}")
 
     altitude_feet = 250 # time in fall was about 6.5
     ground_speed_mph = 60  # MPH
@@ -205,12 +205,11 @@ if __name__ == '__main__':
     bearing_to_target = get_bearing(
         runway_number_position, target_center_position)
 
-    print("Free_fall:{0}".format(get_free_fall_time(
-        units.get_meters_from_feet(altitude_feet), flour_sack_weight, flour_sack_k)))
-    print("Distance(miles):{0}".format(distance_miles))
-    print("Distance(meters):{0}".format(distance_meters))
-    print("Time to target:{0}".format(time_to_target))
-    print("Time to impact:{0}".format(time_to_impact))
-    print("Time until drop:{0}".format(time_until_drop))
-    print("Distance(miles):{0}".format(distance_miles))
-    print("Bearing to target:{0}".format(bearing_to_target))
+    print(f"{get_free_fall_time(units.get_meters_from_feet(altitude_feet), flour_sack_weight, flour_sack_k)}")
+    print(f"Distance(miles):{distance_miles}")
+    print(f"Distance(meters):{distance_meters}")
+    print(f"Time to target:{time_to_target}")
+    print(f"Time to impact:{time_to_impact}")
+    print(f"Time until drop:{time_until_drop}")
+    print(f"Distance(miles):{distance_miles}")
+    print(f"Bearing to target:{bearing_to_target}")

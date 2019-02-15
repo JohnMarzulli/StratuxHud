@@ -51,8 +51,8 @@ class HeadingTargetBugs(AdsbElement):
             altitude_delta = 0
 
         distance_text = self.__get_distance_string__(distance_meters)
-        altitude_text = "{0:.1f}AGL".format(altitude_delta)
-        time_until_drop = "{0:.1f}S".format(time_until_drop)
+        altitude_text = f"{altitude_delta:.1f}AGL"
+        time_until_drop = f"{time_until_drop:.1f}S"
 
         return [altitude_text, distance_text, time_until_drop]
 
@@ -102,7 +102,7 @@ class HeadingTargetBugs(AdsbElement):
                 time_until_drop, delta_altitude, units.get_feet_from_miles(distance_miles))
 
             self.__render_info_card__(framebuffer,
-                                      "{0:.1f}".format(utils.apply_declination(bearing_to_target)),
+                                      f"{utils.apply_declination(bearing_to_target):.1f}",
                                       additional_info_text,
                                       heading_bug_x,
                                       False)

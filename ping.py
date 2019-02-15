@@ -61,6 +61,7 @@ import struct
 import select
 import time
 from datetime import datetime
+import configuration
 
 if sys.platform == "win32":
     # On Windows, the best timer is time.clock()
@@ -291,4 +292,4 @@ if __name__ == '__main__':
     # verbose_ping("heise.de")
     # verbose_ping("google.com")
     # verbose_ping("a-test-url-taht-is-not-available.com")
-    verbose_ping("192.168.10.1")
+    verbose_ping(configuration.CONFIGURATION.stratux_address)

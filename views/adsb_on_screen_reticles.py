@@ -84,7 +84,7 @@ class AdsbOnScreenReticles(AdsbElement):
         Assumes the X/Y projection has already been performed.
         """
 
-        center_x, center_y = pos
+        _center_x, center_y = pos
         border_space = int(reticle_size_px * 1.2)
 
         center_y = border_space if center_y < border_space else center_y

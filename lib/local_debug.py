@@ -20,17 +20,15 @@ def validate_python_version():
         Exception -- If the  version of Python is not new enough.
     """
 
-    python_version = float('{}.{}'.format(
-        version_info.major, version_info.minor))
-    error_text = 'Requires Python {}'.format(REQUIRED_PYTHON_VERSION)
+    python_version = float(f"{version_info.major}.{version_info.minor}")
+    error_text = f"Requires Python {REQUIRED_PYTHON_VERSION}"
 
     if python_version < REQUIRED_PYTHON_VERSION:
         print(error_text)
         raise Exception(error_text)
 
     if python_version > MAXIMUM_PYTHON_VERSION:
-        print('Python version {} is newer than the maximum allowed version of {}'.format(
-            python_version, MAXIMUM_PYTHON_VERSION))
+        print(f"Python version {python_version} is newer than the maximum allowed version of {MAXIMUM_PYTHON_VERSION}")
 
 
 def is_debug():

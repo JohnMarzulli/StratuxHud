@@ -96,13 +96,13 @@ def get_websocket_uptime():
                              - AdsbTrafficClient.INSTANCE.create_time).total_seconds()
 
         if connection_uptime < 60:
-            return ("{} seconds".format(int(connection_uptime)), YELLOW)
+            return (f"{int(connection_uptime)} seconds", YELLOW)
         elif connection_uptime < 360:
-            return ("{0:.1f} minutes".format(connection_uptime / 60), GREEN)
+            return (f"{connection_uptime / 60:.1f} minutes", GREEN)
         elif connection_uptime < 216000:
-            return ("{0:.1f} hours".format(connection_uptime / 3600), GREEN)
+            return (f"{connection_uptime / 3600:.1f} hours", GREEN)
         else:
-            return ("{0:.1f} days".format(connection_uptime / 216000), GREEN)
+            return (f"{connection_uptime / 216000:.1f} days", GREEN)
     else:
         return ("DISCONNECTED", RED)
 

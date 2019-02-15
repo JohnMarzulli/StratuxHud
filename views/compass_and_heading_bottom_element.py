@@ -71,10 +71,8 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
          for heading_mark_to_render in self.__heading_strip__[heading]]
 
         # Render the text that is showing our AHRS and GPS headings
-        heading_text = "{0} | {1}".format(
-            utils.apply_declination(
-                orientation.get_onscreen_projection_display_heading()),
-            utils.apply_declination(orientation.gps_heading))
+        heading_text = f"{utils.apply_declination(orientation.get_onscreen_projection_display_heading())} | " \
+                     + f"{utils.apply_declination(orientation.gps_heading)}"
 
         rendered_text = self.__font__.render(
             heading_text, True, BLACK, GREEN)

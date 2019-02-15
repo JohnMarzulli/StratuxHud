@@ -16,7 +16,7 @@ class AdsbTargetBugsOnly(AdsbElement):
         AdsbElement.__init__(
             self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size)
 
-        self.task_timer = TaskTimer('AdsbTargetBugs')
+        self.task_timer = TaskTimer("AdsbTargetBugs")
         self.__listing_text_start_y__ = int(self.__font__.get_height() * 4)
         self.__listing_text_start_x__ = int(
             self.__framebuffer_size__[0] * 0.01)
@@ -44,7 +44,7 @@ class AdsbTargetBugsOnly(AdsbElement):
 
         try:
             is_below = (orientation.alt - 100) > traffic_report.altitude
-            reticle, reticle_edge_positon_y = self.get_below_reticle(
+            reticle, _reticle_edge_positon_y = self.get_below_reticle(
                 heading_bug_x, target_bug_scale) if is_below else self.get_above_reticle(heading_bug_x, target_bug_scale)
 
             bug_color = display.BLUE if traffic_report.is_on_ground() == True else display.RED

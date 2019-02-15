@@ -237,13 +237,13 @@ class HeadsUpDisplay(object):
             try:
                 hud_element.render(surface, orientation)
             except Exception as e:
-                self.warn('ELEMENT {} EX:{}'.format(element_name, e))
+                self.warn(f"ELEMENT {element_name} EX:{e}")
             timer.stop()
             timer_string = timer.to_string()
 
             return timer_string
         except Exception as ex:
-            self.warn('__render_view_element__ EX:{}'.format(ex))
+            self.warn(f"__render_view_element__ EX:{ex}")
 
             return 'Element View Timer Error:{}'.format(ex)
 
@@ -377,8 +377,7 @@ class HeadsUpDisplay(object):
                     hud_views.append(
                         (view_name, new_view_elements, is_ahrs_view))
                 except Exception as ex:
-                    self.log(
-                        "While attempting to load view={}, EX:{}".format(view, ex))
+                    self.log(f"While attempting to load view={view}, EX:{ex}")
 
         return hud_views
 
@@ -502,8 +501,7 @@ class HeadsUpDisplay(object):
                 texture, ((self.__width__ >> 1) - (text_width >> 1), y))
             y += text_height + (text_height >> 3)
 
-        texture = self.__detail_font__.render(
-            'Version {}'.format(VERSION), True, display.GREEN)
+        texture = self.__detail_font__.render(f"Version {VERSION}", True, display.GREEN)
         text_width, text_height = texture.get_size()
         surface.blit(texture, ((
             self.__width__ >> 1) - (text_width >> 1), self.__height__ - text_height))
@@ -597,4 +595,7 @@ class HeadsUpDisplay(object):
 
 if __name__ == '__main__':
     hud = HeadsUpDisplay(None)
-    sys.exit(hud.run())
+    try:
+        sys.exit(hud.run())
+    except SystemExit:
+        pass

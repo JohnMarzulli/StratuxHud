@@ -22,7 +22,7 @@ class SkidAndGs(AhrsElement):
 
     def render(self, framebuffer, orientation):
         self.task_timer.start()
-        g_load_text = "{0:.1f}Gs".format(orientation.g_load)
+        g_load_text = f"{orientation.g_load:.1f}Gs"
         texture = self.__font__.render(
             g_load_text, True, WHITE, BLACK)
         text_width, _text_height = texture.get_size()

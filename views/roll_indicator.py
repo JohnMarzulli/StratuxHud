@@ -24,7 +24,7 @@ class RollIndicator(AhrsElement):
 
         for reference_angle in range(-180, 181):
             text = font.render(
-                "{0:3}".format(int(math.fabs(reference_angle))), True, WHITE, BLACK)
+                f"{int(math.fabs(reference_angle)):3}", True, WHITE, BLACK)
             size_x, size_y = text.get_size()
             self.__roll_elements__[reference_angle] = (
                 text, (size_x >> 1, size_y >> 1))
@@ -36,7 +36,7 @@ class RollIndicator(AhrsElement):
         pitch_direction = ''
         if pitch > 0:
             pitch_direction = '+'
-        attitude_text = "{0}{1:3} | {2:3}".format(pitch_direction, pitch, roll)
+        attitude_text = f"{pitch_direction}{pitch:3} | {roll:3}"
 
         roll_texture = self.__font__.render(
             attitude_text, True, BLACK, WHITE)

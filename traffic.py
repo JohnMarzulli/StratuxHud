@@ -430,7 +430,7 @@ class TrafficManager(object):
         self.__lock__.acquire()
         try:
             traffic_report = Traffic(json_report)
-            identifier = str(traffic_report.icao_address)
+            identifier = f"{traffic_report.icao_address}"
             if traffic_report.icao_address in self.traffic:
                 self.traffic[identifier].update(json_report)
             else:
@@ -799,13 +799,14 @@ if __name__ == '__main__':
             print("position_valid:")
             reports = AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
             for traffic_report in reports:
-                print("    {0} {1} {2}".format(traffic_report.get_identifer(
-                ), traffic_report.bearing, traffic_report.distance))
+                print(f"    {traffic_report.get_identifer()} " \
+                    + f"{traffic_report.bearing} " \
+                    + f"{traffic_report.distance}")
 
             print("Other:")
             reports = AdsbTrafficClient.TRAFFIC_MANAGER.get_unreliable_traffic()
             for traffic_report in reports:
-                print("    {0}".format(traffic_report.get_identifer()))
+                print(f"    {traffic_report.get_identifer()}")
 
             print("---------------")
 

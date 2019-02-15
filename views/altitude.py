@@ -19,7 +19,7 @@ class Altitude(AhrsElement):
 
     def render(self, framebuffer, orientation):
         self.task_timer.start()
-        altitude_text = str(int(orientation.alt)) + "' MSL"
+        altitude_text = f"{int(orientation.alt)}' MSL"
         alt_texture = self.__font__.render(
             altitude_text, True, display.WHITE, display.BLACK)
         text_width, _text_height = alt_texture.get_size()

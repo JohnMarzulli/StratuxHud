@@ -162,7 +162,7 @@ def shutdown(seconds=30):
     """
 
     if not local_debug.is_debug():
-        subprocess.Popen(["sudo shutdown -h {0}".format(int(seconds))],
+        subprocess.Popen([f"sudo shutdown -h {int(seconds)}"],
                          shell=True, stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT)
 

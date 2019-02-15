@@ -2,6 +2,7 @@
 For converting units.
 """
 
+import configuration
 
 STATUTE = "statute"
 NAUTICAL = "knots"
@@ -144,26 +145,30 @@ def get_converted_units_string(units, distance, unit_type=DISTANCE):
     '100.0MPH'
     """
 
+    # added this to be able to stop potentially 
+    # distracting decimal number flickering
+    precision = configuration.CONFIGURATION.speed_precision
+
     if units is None:
         units = STATUTE
 
     if units != METRIC:
         if distance < IMPERIAL_NEARBY and unit_type != SPEED:
-            return "{0:.0f}".format(distance) + "'"
+            return f"{distance:.0f}'"
 
+        # in-line string interpolation allows configured precision to be used 
         if units == NAUTICAL:
-            return "{0:.1f}{1}".format(distance / feet_to_nm, UNIT_LABELS[NAUTICAL][unit_type])
+            return f"{distance / feet_to_nm:.{precision}f} {UNIT_LABELS[NAUTICAL][unit_type]}"
 
-        return "{0:.1f}{1}".format(distance / feet_to_sm, UNIT_LABELS[STATUTE][unit_type])
+        return f"{distance / feet_to_sm:.{precision}f} {UNIT_LABELS[STATUTE][unit_type]}"
     else:
         conversion = distance / feet_to_km
 
         if conversion < 0.5 and units != SPEED:
-            return "{0:.1f}{1}".format(conversion,  UNIT_LABELS[METRIC][unit_type])
+            return f"{conversion:.1f}{UNIT_LABELS[METRIC][unit_type]}"
+        return f"{distance / feet_to_m:.1f}m"
 
-        return "{0:.1f}m".format(distance / feet_to_m)
-
-    return "{0:.0f}'".format(distance)
+    return f"{distance:.0f}'"
 
 
 if __name__ == '__main__':
