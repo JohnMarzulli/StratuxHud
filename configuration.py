@@ -66,8 +66,15 @@ class Configuration(object):
     DEGREES_OF_PITCH_KEY = 'degrees_of_pitch'
     PITCH_DEGREES_DISPLAY_SCALER_KEY = 'pitch_degrees_scaler'
 
+    # Added this key and associated values so a user can have a preference  
+    # of displaying speed either as a whole number or as a decimal number.
+    # See units.py for application of this value within a formatted string.   
+    SPEED_PRECISION_KEY = "speed_precision"
+    DEFAULT_SPEED_PRECISION = 1
+
     DEFAULT_DEGREES_OF_PITCH = 90
     DEFAULT_PITCH_DEGREES_DISPLAY_SCALER = 2.0
+    
 
     def get_elements_list(self):
         with open(VIEW_ELEMENTS_FILE) as json_config_file:
@@ -123,7 +130,8 @@ class Configuration(object):
             Configuration.DISTANCE_UNITS_KEY: self.get_units(),
             Configuration.DECLINATION_KEY: self.get_declination(),
             Configuration.DEGREES_OF_PITCH_KEY: self.get_degrees_of_pitch(),
-            Configuration.PITCH_DEGREES_DISPLAY_SCALER_KEY: self.get_pitch_degrees_display_scaler()
+            Configuration.PITCH_DEGREES_DISPLAY_SCALER_KEY: self.get_pitch_degrees_display_scaler(),
+            Configuration.SPEED_PRECISION_KEY: self.get_speed_precision()
         }
 
         return json.dumps(config_dictionary, indent=4, sort_keys=True)
@@ -198,6 +206,13 @@ class Configuration(object):
             self.__configuration__[
                 Configuration.PITCH_DEGREES_DISPLAY_SCALER_KEY] = self.pitch_degrees_display_scaler
 
+        # added so user can control speed precision in the display
+        if Configuration.SPEED_PRECISION_KEY in json_config:
+            self.speed_precision = int(
+                json_config[Configuration.SPEED_PRECISION_KEY])
+            self.__configuration__[
+                Configuration.SPEED_PRECISION_KEY] = self.speed_precision
+
     def __get_config_value__(self, key, default_value):
         """
         Returns a configuration value, default if not found.
@@ -237,6 +252,12 @@ class Configuration(object):
         """
 
         return self.declination
+
+    def get_speed_precision(self):
+        """
+        Returns the precision of the displayed speed value as an integer
+        """
+        return self.speed_precision
 
     def get_units(self):
         """
@@ -295,7 +316,7 @@ class Configuration(object):
         self.flip_horizontal = False
         self.flip_vertical = False
         self.declination = 0.0
-
+        self.speed_precision = Configuration.DEFAULT_SPEED_PRECISION
         self.set_from_json(self.__configuration__)
 
         # Example config
@@ -306,7 +327,8 @@ class Configuration(object):
         #   "flip_vertical": false,
         #   "ownship": "N701GV",
         #   "data_source": "stratux",
-        #   "declination": 0.0
+        #   "declination": 0.0,
+        #   "speed_precision": 1
 
         try:
             self.flip_horizontal = \

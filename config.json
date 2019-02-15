@@ -5,8 +5,9 @@
     "distance_units": "statute", 
     "flip_horizontal": false, 
     "flip_vertical": false, 
-    "ownship": "N701GV", 
+    "ownship": "N129BZ", 
     "pitch_degrees_scaler": 4.0, 
     "stratux_address": "192.168.10.1", 
-    "traffic_report_removal_minutes": 1.0
+    "traffic_report_removal_minutes": 1.0,
+    "speed_precision": 0
 }
