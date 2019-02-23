@@ -6,7 +6,7 @@ This project aims to bring an affordable heads up display system into ANY cockpi
 
 The focus is to improve traffic awareness and to reduce the amount of time pilots reference tablets or an EFB.
 
-_*NOTE:*_ This project relies on having a [Stratux](http://stratux.me/) build with AHRS and GPS. A suitable build can be done for less than $150 (USD).
+_*NOTE:*_ This project relies on having a [Stratux](http://stratux.me/) build with AHRS and GPS. A suitable build can be done for less than \$150 (USD).
 
 There are two versions that can be built:
 
@@ -14,12 +14,12 @@ There are two versions that can be built:
 
 Using the "Kivic HUD 2nd Gen" projector and a Raspberry Pi 3.
 
-![Kivic Version](media/hudly_on_ground.jpg)
+![Kivic Version](media/kivic_in_flight.jpg)
 
-Estimated cost is $270
+Estimated cost is \$270
 
-- $40 for RaspberryPi 3
-- $195 for Kivic 2nd Gen projector
+- \$40 for RaspberryPi 3
+- \$195 for Kivic 2nd Gen projector
 - Fans, case, cables
 
 Uses 5V USB power.
@@ -34,11 +34,11 @@ _NOTE:_ This version does have visibility issues in daylight conditions. Using a
 
 ![Teleprompter Glass Version In Flight](media/in_flight.jpg)
 
-Estimated Cost is $140
+Estimated Cost is \$140
 
-- $40 for a RaspberryPi 3
-- $45 for the LCD screen
-- $20 for Teleprompter Glass and shipping.
+- \$40 for a RaspberryPi 3
+- \$45 for the LCD screen
+- \$20 for Teleprompter Glass and shipping.
 - Cost of 3D printing the special case.
 - Cables
 
@@ -56,6 +56,7 @@ You may use a number pad as input device. I used velcro to secure the number pad
 | =         | Toggle rendering debug information                                           |
 | Esc       | Send shutdown commands to both the HUD controller _*and*_ the Stratux        |
 | q         | (_Full keyboard only_) Quit to the command line.                             |
+| 0/Ins     | Force a connection reset between the HUD and the Stratux                     |
 
 ## Views
 
@@ -82,7 +83,7 @@ In this example:
 - We are traveling forward a 0.4MPH (taxing)
 - We have a GPS heading of 12, but do not have enough forward speed to obtain a heading from the AHRS chip. If the AHRS chip is unable to produce a reliable heading, `---` is shown for that portion of the heading.
 
-*NOTE:* This is the default view on startup. If you would like to switch to the `AHRS Only` You may press `-` on the keypad.
+_NOTE:_ This is the default view on startup. If you would like to switch to the `AHRS Only` You may press `-` on the keypad.
 
 ### Traffic View
 
@@ -102,7 +103,7 @@ This shows us _at most_ the eight closest planes.
 The *IDENT(ifier will be the tail number when available, otherwise the IACO identifier or callsign may be used.
 The *BEAR*ing is the heading to take to fly to that target.
 The *DIST*ance is the distance to the target.
-The *ALT*itude is given in relative terms, with two digits dropped.
+The *ALT\*itude is given in relative terms, with two digits dropped.
 
 In this example, the closest target is QXE2382. We may see that plane if we looked out the cockpit at a heading of 276. The plane is only 1 statue mile away, and 11,200 feet above us.
 
@@ -215,7 +216,7 @@ Make sure you are using a high quality power cable if you are using a Pi 3B+
 1. Install the Kivic projector per the Kivic directions. Please note that there is a release clip and the unit is removable. Also note that the combiner glass can be adjusted fore and aft.
 2. Plug in the 3.5mm TRS cable between the Raspberry Pi and the Kivic. This is the same hole as the audio adapter for the Pi.
 3. Plug the number pad into the Raspberry Pi.
-4. You will need to run two Micro USB (5v) power cables. One to the HUD and one to the Raspberry Pi processing unit. These may be run from a battery bank, or from the ship's power *_if_* you have 5V USB outlets.
+4. You will need to run two Micro USB (5v) power cables. One to the HUD and one to the Raspberry Pi processing unit. These may be run from a battery bank, or from the ship's power _*if*_ you have 5V USB outlets.
 
 ### Teleprompter Glass Based Setup
 
@@ -230,12 +231,12 @@ Make sure you are using a high quality power cable if you are using a Pi 3B+
 
 ### Hardware Performance
 
-| Board                          | Screen         | Frames Per Second (AHRS View Only)|
-| ------------------------------ | -------------- | ----------------- |
-| Rasp Pi 2                      | Sun Founder 5" | ~25FPS to ~30FPS  |
-| Rasp Pi 3 (stand alone)        | Kivic          | Pending Retesting |
-| Rasp Pi 3 (Running on Stratux) | Kivic          | 30FPS             |
-| Rasp Pi 3B+                    | Kivic          | Pending Retesting |
+| Board                          | Screen         | Frames Per Second (AHRS View Only) |
+| ------------------------------ | -------------- | ---------------------------------- |
+| Rasp Pi 2                      | Sun Founder 5" | ~25FPS to ~30FPS                   |
+| Rasp Pi 3 (stand alone)        | Kivic          | Pending Retesting                  |
+| Rasp Pi 3 (Running on Stratux) | Kivic          | 30FPS                              |
+| Rasp Pi 3B+                    | Kivic          | 50FPS                              |
 
 Please note that the frame rate is capped at 60FPS. Drawing any faster will not be detectable using the reccomended output systems. Reducing the framerate will reduce the powerdraw.
 

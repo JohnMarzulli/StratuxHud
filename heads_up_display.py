@@ -57,6 +57,16 @@ class HeadsUpDisplay(object):
             requests.Session().post(url, timeout=2)
         except:
             pass
+    
+    def __reset_websocket__(self):
+        """
+        Resets the websocket to essentially reset the receiver unit.
+        """
+        try:
+            self.__connection_manager__.reset()
+        except:
+            pass
+
 
     def __shutdown_stratux__(self):
         """
@@ -577,6 +587,9 @@ class HeadsUpDisplay(object):
 
         if event.key in [pygame.K_EQUALS, pygame.K_KP_EQUALS]:
             self.__should_render_perf__ = not self.__should_render_perf__
+        
+        if event.key in [pygame.K_KP0, pygame.K_0, pygame.K_INSERT]:
+            self.__reset_websocket__()
 
         return True
 
