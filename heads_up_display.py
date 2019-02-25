@@ -477,8 +477,6 @@ class HeadsUpDisplay(object):
         if self.__logger__ is not None:
             logger = self.__logger__.logger
 
-        self.__logger__.log_info_message("Initialized graphics to {} x {}".format(self.__width__, self.__height__))
-
         self.web_server = restful_host.HudServer()
         RecurringTask("rest_host", 0.1, self.web_server.run,
                       start_immediate=False)
