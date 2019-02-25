@@ -145,7 +145,8 @@ _NOTE:_ This _does not_ include a power source. You will need to supply ship pow
 ### Recommended Kivic Build
 
 - [Kiviv HUD 2nd Gen](https://www.amazon.com/gp/product/B078GHFMG5/ref=ppx_yo_dt_b_asin_title_o01__o00_s00?ie=UTF8&psc=1)
-- [12' 3.5mm Analog Cable](https://www.amazon.com/gp/product/B008R39FKS/ref=ppx_yo_dt_b_asin_title_o01__o00_s00?ie=UTF8&psc=1)
+- [6' 3.5mm Analog Cable](https://www.amazon.com/gp/product/B074TDHRCC/ref=ppx_yo_dt_b_asin_title_o00_s01?ie=UTF8&psc=1)
+- [_OPTIONAL_ 3/4" Wire Braiding](https://www.amazon.com/gp/product/B073YL3HMC/ref=ppx_yo_dt_b_asin_title_o00_s01?ie=UTF8&psc=1)
 
 ### 3D Print Build
 
@@ -161,20 +162,21 @@ _NOTE:_ This _does not_ include a power source. You will need to supply ship pow
 3. Plug in the power to the Pi.
 4. Press ctrl+alt+f1 to quit from the GUI to the desktop
 5. `sudo raspi-config`
-6. boot options -> desktop / cli -> "Console auto-login"
-7. "Advanced options" -> "Expand Filesystem"
-8. "OK"
-9. "Finish"
-10. "Yes"
-11. Wait for the reboot
-12. `sudo raspi-config`
-13. "Network options" -> "WiFi"
-14. Choose your country. Pressing "u" will take you to USA.
-15. Enter your network name and password.
-16. "Interfacing Options" -> "Enable SSH"
-17. "Localization" -> "Change Keyboard Layout" -> "Generic 104"
-18. "Other" -> "English US" -> "Default" -> "No compose" -> "Yes"
-19. "Finish"
+6. `Boot Options` -> `Desktop / CLI` -> `Console Autologin`
+7. `Advanced Options` -> `Expand Filesystem`
+8. `Advanced Options` -> `Memory Split` -> "128"
+9. "OK"
+10. "Finish"
+11. "Yes"
+12. Wait for the reboot
+13. `sudo raspi-config`
+14. "Network options" -> "WiFi"
+15. Choose your country. Pressing "u" will take you to USA.
+16. Enter your network name and password.
+17. "Interfacing Options" -> "Enable SSH"
+18. "Localization" -> "Change Keyboard Layout" -> "Generic 104"
+19. "Other" -> "English US" -> "Default" -> "No compose" -> "Yes"
+20. "Finish"
 
 #### Raspberry Pi 3B+
 
@@ -217,6 +219,7 @@ Make sure you are using a high quality power cable if you are using a Pi 3B+
 2. Plug in the 3.5mm TRS cable between the Raspberry Pi and the Kivic. This is the same hole as the audio adapter for the Pi.
 3. Plug the number pad into the Raspberry Pi.
 4. You will need to run two Micro USB (5v) power cables. One to the HUD and one to the Raspberry Pi processing unit. These may be run from a battery bank, or from the ship's power _*if*_ you have 5V USB outlets.
+5. You may use the _optional_ sleeving to help keep the install tidy.
 
 ### Teleprompter Glass Based Setup
 
@@ -228,6 +231,16 @@ Make sure you are using a high quality power cable if you are using a Pi 3B+
 6. Plug the number pad into the Raspberry Pi
 
 ## Appendix
+
+### Revision History
+
+| Date       | Version | Major Changes                                                                                                      |
+| ---------- | ------- | ------------------------------------------------------------------------------------------------------------------ |
+| TBD        | 1.4     | Add connection reset button. Fixes issues with the Diagnostic view running of of space. Initial port to Python 3.7 |
+| 2019-01-31 | 1.3     | Improvements to the communication with the Stratux. Update directions for Kivic install.                           |
+| 2018-10-13 | 1.2     | Major performance increases                                                                                        |
+| 2018-09-07 | 1.1     | New system to allow views to be configurarable                                                                     |
+| 2018-07-17 | 1.0     | Initial release                                                                                                    |
 
 ### Hardware Performance
 

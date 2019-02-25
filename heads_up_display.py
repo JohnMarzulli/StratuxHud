@@ -440,6 +440,7 @@ class HeadsUpDisplay(object):
         self.__backpage_framebuffer__, screen_size = display.display_init()  # args.debug)
         self.__width__, self.__height__ = screen_size
 
+
         pygame.mouse.set_visible(False)
 
         pygame.font.init()
@@ -475,6 +476,8 @@ class HeadsUpDisplay(object):
 
         if self.__logger__ is not None:
             logger = self.__logger__.logger
+
+        self.__logger__.log_info_message("Initialized graphics to {} x {}".format(self.__width__, self.__height__))
 
         self.web_server = restful_host.HudServer()
         RecurringTask("rest_host", 0.1, self.web_server.run,

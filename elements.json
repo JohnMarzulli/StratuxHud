@@ -25,7 +25,7 @@
   },
   "System Info": {
     "class": "system_info.SystemInfo",
-    "detail_font": false
+    "detail_font": true
   },
   "Groundspeed": {
     "class": "groundspeed.Groundspeed",
