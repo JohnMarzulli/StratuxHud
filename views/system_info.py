@@ -131,6 +131,7 @@ class SystemInfo(AhrsElement):
         self.__update_temp_timer__ = 0
         self.__ip_address__ = get_ip_address()
         self.__cpu_temp__ = None
+        self.__framebuffer_size__ = framebuffer_size
 
     def render(self, framebuffer, orientation):
         self.task_timer.start()
@@ -147,6 +148,7 @@ class SystemInfo(AhrsElement):
 
         info_lines = [["VERSION     : ", [configuration.VERSION, YELLOW]]]
 
+
         addresses = self.__ip_address__[0].split(' ')
         for addr in addresses:
             info_lines.append(
@@ -159,6 +161,7 @@ class SystemInfo(AhrsElement):
         info_lines.append(["SOCKET      : ", get_websocket_uptime()])
         info_lines.append(["DECLINATION : ", [str(configuration.CONFIGURATION.get_declination()), BLUE]])
         info_lines.append(["OWNSHIP     : ", [configuration.CONFIGURATION.ownship, BLUE]])
+        info_lines.append(["DISPLAY RES : ", ["{} x {}".format(self.__framebuffer_size__[0], self.__framebuffer_size__[1]), BLUE]])
 
         render_y = self.__text_y_pos__
 
@@ -173,7 +176,7 @@ class SystemInfo(AhrsElement):
                 line[1][0], True, line[1][1], BLACK)
             framebuffer.blit(texture_rhs, (size[0], render_y))
 
-            render_y = render_y - (self.font_height * 1.2)
+            render_y = render_y - (self.font_height * 1.1)
 
         self.task_timer.stop()
 
