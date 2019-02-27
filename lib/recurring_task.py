@@ -29,10 +29,8 @@ class RecurringTask(object):
                 print('While shutting down EX:{}'.format(ex))
 
     def stop(self):
-        self.__lock__.acquire()
         self.__is_alive__ = False
         self.__is_running__ = False
-        self.__lock__.release()
 
     def is_running(self):
         """

@@ -1,3 +1,12 @@
+import commands
+from traffic import AdsbTrafficClient
+from ahrs_element import AhrsElement
+import configuration
+import units
+import lib.local_debug as local_debug
+import lib.colors as colors
+from lib.task_timer import TaskTimer
+from lib.display import *
 import pygame
 import socket
 import datetime
@@ -8,16 +17,6 @@ import struct
 import testing
 testing.load_imports()
 
-from lib.display import *
-from lib.task_timer import TaskTimer
-import lib.colors as colors
-import lib.local_debug as local_debug
-import units
-import configuration
-from ahrs_element import AhrsElement
-from traffic import AdsbTrafficClient
-
-import commands
 
 NORMAL_TEMP = 50
 REDLINE_TEMP = 80
@@ -128,22 +127,41 @@ class SystemInfo(AhrsElement):
 
         self.__left_x__ = int(framebuffer_size[0] * 0.01)
         self.__center_x__ = framebuffer_size[0] >> 1
+        self.__update_ip_timer__ = 0
+        self.__update_temp_timer__ = 0
+        self.__ip_address__ = get_ip_address()
+        self.__cpu_temp__ = None
+        self.__framebuffer_size__ = framebuffer_size
 
     def render(self, framebuffer, orientation):
         self.task_timer.start()
 
+        self.__update_ip_timer__ -= 1
+        if self.__update_ip_timer__ <= 0:
+            self.__ip_address__ = get_ip_address()
+            self.__update_ip_timer__ = 120
+        
+        self.__update_temp_timer__ -= 1
+        if self.__update_temp_timer__ <= 0:
+            self.__cpu_temp__ = get_cpu_temp()
+            self.__update_temp_timer__ = 60
+
+        info_lines = [["VERSION     : ", [configuration.VERSION, YELLOW]]]
+
+
+        addresses = self.__ip_address__[0].split(' ')
+        for addr in addresses:
+            info_lines.append(
+                ["IP          : ", (addr, self.__ip_address__[1])])
+
         # Status lines are pushed in as a stack.
         # First line in the array is at the bottom.
         # Last line in the array is towards the top.
-        info_lines = [
-            ["VERSION     : ", [configuration.VERSION, YELLOW]],
-            ["IP          : ", get_ip_address()],
-            ["HUD CPU     : ", get_cpu_temp()],
-            ["SOCKET      : ", get_websocket_uptime()],
-            ["DECLINATION : ", [
-                str(configuration.CONFIGURATION.get_declination()), BLUE]],
-            ["OWNSHIP     : ", [configuration.CONFIGURATION.ownship, BLUE]]
-        ]
+        info_lines.append(["HUD CPU     : ", self.__cpu_temp__])
+        info_lines.append(["SOCKET      : ", get_websocket_uptime()])
+        info_lines.append(["DECLINATION : ", [str(configuration.CONFIGURATION.get_declination()), BLUE]])
+        info_lines.append(["OWNSHIP     : ", [configuration.CONFIGURATION.ownship, BLUE]])
+        info_lines.append(["DISPLAY RES : ", ["{} x {}".format(self.__framebuffer_size__[0], self.__framebuffer_size__[1]), BLUE]])
 
         render_y = self.__text_y_pos__
 
@@ -158,7 +176,7 @@ class SystemInfo(AhrsElement):
                 line[1][0], True, line[1][1], BLACK)
             framebuffer.blit(texture_rhs, (size[0], render_y))
 
-            render_y = render_y - (self.font_height * 1.2)
+            render_y = render_y - (self.font_height * 1.1)
 
         self.task_timer.stop()
 
