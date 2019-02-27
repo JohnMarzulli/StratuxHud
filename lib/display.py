@@ -37,7 +37,9 @@ def display_init():
         size = 320, 240
         screen = pygame.display.set_mode(size)
     else:
-        drivers = ["fbcon", "directfb", "svgalib", "directx", "windib"]
+        # List of drivers:
+        # https://wiki.libsdl.org/FAQUsingSDL
+        drivers = ['fbcon', 'directfb', 'svgalib', 'directx', 'windib']
         found = False
         for driver in drivers:
             if not os.getenv("SDL_VIDEODRIVER"):

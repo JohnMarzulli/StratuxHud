@@ -494,7 +494,7 @@ class AdsbTrafficClient(WebSocketClient):
 
         self.hb = ws4py.websocket.Heartbeat(self)
         self.hb.start()
-
+    
     def keep_alive(self):
         """
         Sends the current date/time to the otherside of the socket
@@ -509,6 +509,8 @@ class AdsbTrafficClient(WebSocketClient):
         Stops the WebSocket and reception tasks.
         """
 
+        self.hb.stop()
+        self.hb = None
         self.is_connected = False
         self.is_connecting = False
 
@@ -707,6 +709,23 @@ class ConnectionManager(object):
         else:
             # self.log('__manage_connection__ => OK')
             time.sleep(1)
+
+    def reset(self):
+        """
+        Causes the WebSocket to reset.
+        """
+
+        try:
+            self.warn("Resetting the websocket at the user's request.")
+            if AdsbTrafficClient.INSTANCE is not None:
+                AdsbTrafficClient.INSTANCE.shutdown()
+
+            self.__last_action_time__ = datetime.datetime.utcnow()
+            AdsbTrafficClient.INSTANCE = AdsbTrafficClient(self.__socket_address__)
+            AdsbTrafficClient.INSTANCE.run_in_background()
+        finally:
+            self.warn("Finished with WebSocket connection reset attempt.")
+
 
     def shutdown(self):
         """
