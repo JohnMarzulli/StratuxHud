@@ -150,6 +150,8 @@ class HeadsUpDisplay(object):
             bool -- True if the code should run for another tick.
         """
 
+        current_fps = 0 # initialize up front avoids exception
+
         try:
             self.frame_setup.start()
             if not self.__handle_input__():
