@@ -414,7 +414,7 @@ class HeadsUpDisplay(object):
     def __update_aithre__(self):
         # Note - $BUG - $TODO
         # not seeing the  print statements
-        if aithre.sensor is not None and aithre.sensor.is_connected():
+        if aithre.sensor is not None:
             try:
                 aithre.sensor.update()
                 self.log("Aithre updated")
