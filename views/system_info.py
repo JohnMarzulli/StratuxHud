@@ -202,8 +202,8 @@ class SystemInfo(AhrsElement):
                 battery = aithre.sensor.get_battery()
                 if battery is not None:
                     battery_stats = ["{}%".format(battery), get_aithre_battery_color(battery)]
-            except:
-                battery_stats = ["ERROR", RED]
+            except Exception as ex:
+                battery_stats = ["{}".format(ex), RED]
 
             info_lines.append(["AITHRE BAT  : ", battery_stats])
 
@@ -213,8 +213,8 @@ class SystemInfo(AhrsElement):
 
                 if co_ppm is not None:
                     co_stats = ["{}".format(co_ppm), get_aithre_co_color(co_ppm)]
-            except:
-                co_stats = ["ERROR", RED]
+            except Exception as ex:
+                co_stats = ["{}".format(ex), RED]
 
             info_lines.append(["AITHRE CO   : ", co_stats])
 
