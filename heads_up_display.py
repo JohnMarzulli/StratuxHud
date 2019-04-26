@@ -421,7 +421,7 @@ class HeadsUpDisplay(object):
                 co_level = self.aithre.get_co_level()
                 bat_level = self.aithre.get_battery()
 
-                print("CO:{}ppm, BAT:{}$".format(co_level, bat_level))
+                print("CO:{}ppm, BAT:{}%".format(co_level, bat_level))
         elif CONFIGURATION.aithre_enabled:
             self.aithre = Aithre()
             print("Aithre created")
