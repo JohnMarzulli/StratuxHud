@@ -414,23 +414,23 @@ class HeadsUpDisplay(object):
     def __update_aithre__(self):
         # Note - $BUG - $TODO
         # not seeing the  print statements
-        if aithre.sensor is not None:
+        if aithre.sensor is not None and aithre.sensor.is_connected():
             try:
                 aithre.sensor.update()
-                print("Aithre updated")
+                self.log("Aithre updated")
                 if aithre.sensor.is_connected():
                     co_level = aithre.sensor.get_co_level()
                     bat_level = aithre.sensor.get_battery()
 
-                    print("CO:{}ppm, BAT:{}%".format(co_level, bat_level))
+                    self.log("CO:{}ppm, BAT:{}%".format(co_level, bat_level))
             except:
-                print("Error attempting to update Aithre sensor values")
+                self.warn("Error attempting to update Aithre sensor values")
         elif CONFIGURATION.aithre_enabled:
             try:
                 aithre.sensor = aithre.Aithre()
-                print("Aithre created")
+                self.log("Aithre created")
             except:
-                print("Error attempting to connect to Aithre")
+                self.warn("Error attempting to connect to Aithre")
 
     def __init__(self, logger):
         """
