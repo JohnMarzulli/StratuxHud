@@ -7,8 +7,8 @@ if not local_debug.is_debug():
     from bluepy.btle import UUID, Peripheral, Scanner, DefaultDelegate
 else:
     from lib.simulated_values import SimulatedValue
-    aithre_co_simulator = SimulatedValue(1, 50, 1)
-    aithre_bat_simulator = SimulatedValue(10, 100, -1, 85)
+    aithre_co_simulator = SimulatedValue(1, 50, 1, -25, 25)
+    aithre_bat_simulator = SimulatedValue(10, 50, -1, 15, 50)
 
 # The Aithre is always expected to have a public address
 AITHRE_ADDR_TYPE = "public"
@@ -26,15 +26,17 @@ BAT_OFFSET = "24509DDEFCD711E88EB2F2801F1B9FD1"
 CO_SAFE = 10
 CO_WARNING = 49
 
+BATTERY_SAFE = 75
+BATTERY_WARNING = 25
 
 def get_service_value(addr, addr_type, offset):
     # Generate fake values for debugging
     # and for the development of the visuals.
     if local_debug.is_debug():
         if offset in CO_OFFSET:
-            return int(aithre_co_simulator.value)
+            return int(aithre_co_simulator.get_value())
         else:
-            return int(aithre_bat_simulator.value)
+            return int(aithre_bat_simulator.get_value())
 
     # print("get_name({})".format(addr))
     try:
