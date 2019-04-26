@@ -1,7 +1,14 @@
 import sys
 import time
 import datetime
-from bluepy.btle import UUID, Peripheral, Scanner, DefaultDelegate
+import lib.local_debug as local_debug
+
+if not local_debug.is_debug():
+    from bluepy.btle import UUID, Peripheral, Scanner, DefaultDelegate
+else:
+    from lib.simulated_values import SimulatedValue
+    aithre_co_simulator = SimulatedValue(1, 50, 1)
+    aithre_bat_simulator = SimulatedValue(10, 100, -1, 85)
 
 # The Aithre is always expected to have a public address
 AITHRE_ADDR_TYPE = "public"
@@ -9,18 +16,30 @@ AITHRE_ADDR_TYPE = "public"
 # Service UUID for the carbon monoxide reading.
 # Will be a single character whose ASCII
 # value is the parts per milloion 0 - 255 inclusive
-CO_OFFSET = "BCD466FE07034D85A021AE8B771E4922" 
+CO_OFFSET = "BCD466FE07034D85A021AE8B771E4922"
 
 # A single character wholes ASCII value is
 # the percentage of the battert reminaing.
 # The value will be 0 to 100 inclusive.
 BAT_OFFSET = "24509DDEFCD711E88EB2F2801F1B9FD1"
 
+CO_SAFE = 10
+CO_WARNING = 49
+
+
 def get_service_value(addr, addr_type, offset):
+    # Generate fake values for debugging
+    # and for the development of the visuals.
+    if local_debug.is_debug():
+        if offset in CO_OFFSET:
+            return int(aithre_co_simulator.value)
+        else:
+            return int(aithre_bat_simulator.value)
+
     # print("get_name({})".format(addr))
     try:
         # print("   Peripheral()")
-        p = Peripheral(addr, addr_type) # bluepy.btle.ADDR_TYPE_PUBLIC)
+        p = Peripheral(addr, addr_type)  # bluepy.btle.ADDR_TYPE_PUBLIC)
         # print("   p.getChar()")
         ch_all = p.getCharacteristics(uuid=offset)
         # print(ch_all)
@@ -48,9 +67,13 @@ def get_aithre(mac_adr):
 
     return co, bat
 
+
 def get_aithre_mac():
     print("get_aithre_mac()")
     try:
+        if local_debug.is_debug():
+            return None
+
         scanner = Scanner()
         devices = scanner.scan(2)
         for dev in devices:
@@ -69,11 +92,17 @@ def get_aithre_mac():
     except Exception as ex:
         print("Outter loop ex={}".format(ex))
 
-    return  None
+    return None
+
 
 CO_SCAN_PERIOD = 15
+
+if local_debug.is_debug():
+    CO_SCAN_PERIOD = 1.0
+
 OFFLINE = "OFFLINE"
-    
+
+
 class Aithre(object):
     def __init__(self):
         self._mac_ = None
@@ -83,7 +112,7 @@ class Aithre(object):
         self._update_mac_()
 
     def is_connected(self):
-        return self._mac_ is not None and self._levels_ is not None
+        return (self._mac_ is not None and self._levels_ is not None) or local_debug.is_debug()
 
     def update(self):
         update = False
@@ -92,7 +121,8 @@ class Aithre(object):
             update = True
 
         if self._last_update_ is not None:
-            report_age = (datetime.datetime.utcnow() - self._last_update_).total_seconds()
+            report_age = (datetime.datetime.utcnow() -
+                          self._last_update_).total_seconds()
             update = report_age >= CO_SCAN_PERIOD
 
         if update:
@@ -107,7 +137,12 @@ class Aithre(object):
     def _update_levels(self):
         if self._mac_ is None:
             print("mac is none")
-            return
+
+            if local_debug.is_debug():
+                aithre_co_simulator.simulate()
+                aithre_bat_simulator.simulate()
+            else:
+                return
 
         try:
             print("Attempting update")
@@ -134,6 +169,7 @@ class Aithre(object):
 
         return OFFLINE
 
+
 if __name__ == '__main__':
     sensor = Aithre()
 
@@ -141,4 +177,3 @@ if __name__ == '__main__':
         sensor.update()
         print("CO:{} BAT{}".format(sensor.get_co_level(), sensor.get_battery()))
         time.sleep(CO_SCAN_PERIOD)
-
