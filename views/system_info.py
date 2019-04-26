@@ -1,6 +1,7 @@
 import commands
 from traffic import AdsbTrafficClient
 from ahrs_element import AhrsElement
+import aithre
 import configuration
 import units
 import lib.local_debug as local_debug
@@ -81,6 +82,45 @@ def get_cpu_temp():
         return ('---', GRAY)
 
 
+def get_aithre_co_color(co_ppm):
+    """
+    Returns the color code for the carbon monoxide levels
+    
+    Arguments:
+        co_ppm {int} -- Integer containing the Parts Per Million of CO
+    
+    Returns:
+        color -- The color to display
+    """
+    color = BLUE
+
+    if co_ppm > aithre.CO_WARNING:
+        color = RED
+    elif co_ppm > aithre.CO_SAFE:
+        color = YELLOW
+    
+    return color
+
+def get_aithre_battery_color(battery_percent):
+    """
+    Returns the color code for the Aithre battery level.
+    
+    Arguments:
+        battery_percent {int} -- The percentage of battery.
+    
+    Returns:
+        color -- The color to show the battery percentage in.
+    """
+    color = RED
+
+    if battery_percent >= aithre.BATTERY_SAFE:
+        color = GREEN
+    elif battery_percent >= aithre.BATTERY_WARNING:
+        color = YELLOW
+    
+    return color
+
+
 def get_websocket_uptime():
     """
     Returns how long the websocket has been up and connected.
@@ -146,20 +186,27 @@ class SystemInfo(AhrsElement):
             self.__cpu_temp__ = get_cpu_temp()
             self.__update_temp_timer__ = 60
 
-        info_lines = [["VERSION     : ", [configuration.VERSION, YELLOW]]]
+        info_lines = [["VERSION     : ", [configuration.VERSION, YELLOW]],
+                      ["DECLINATION : ", [str(configuration.CONFIGURATION.get_declination()), BLUE]]]
 
 
         addresses = self.__ip_address__[0].split(' ')
         for addr in addresses:
             info_lines.append(
                 ["IP          : ", (addr, self.__ip_address__[1])])
+        
+        if aithre.sensor is not None:
+            battery = aithre.sensor.get_battery()
+            info_lines.append(["AITHRE BAT  : ", ["{}%".format(battery), get_aithre_battery_color(battery)]])
+            
+            co_ppm = aithre.sensor.get_co_level()
+            info_lines.append(["AITHRE CO   : ", ["{}".format(co_ppm), get_aithre_co_color(co_ppm)]])
 
         # Status lines are pushed in as a stack.
         # First line in the array is at the bottom.
         # Last line in the array is towards the top.
         info_lines.append(["HUD CPU     : ", self.__cpu_temp__])
         info_lines.append(["SOCKET      : ", get_websocket_uptime()])
-        info_lines.append(["DECLINATION : ", [str(configuration.CONFIGURATION.get_declination()), BLUE]])
         info_lines.append(["OWNSHIP     : ", [configuration.CONFIGURATION.ownship, BLUE]])
         info_lines.append(["DISPLAY RES : ", ["{} x {}".format(self.__framebuffer_size__[0], self.__framebuffer_size__[1]), BLUE]])
 

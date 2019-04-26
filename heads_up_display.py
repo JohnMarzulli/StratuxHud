@@ -23,7 +23,7 @@ import hud_elements
 import targets
 import traffic
 import restful_host
-from aithre import Aithre
+import aithre
 from views import (adsb_on_screen_reticles, adsb_target_bugs, adsb_target_bugs_only,
                    adsb_traffic_listing, ahrs_not_available, altitude,
                    artificial_horizon, compass_and_heading_bottom_element,
@@ -414,16 +414,16 @@ class HeadsUpDisplay(object):
     def __update_aithre__(self):
         # Note - $BUG - $TODO
         # not seeing the  print statements
-        if self.aithre is not None:
-            self.aithre.update()
+        if aithre.sensor is not None:
+            aithre.sensor.update()
             print("Aithre updated")
-            if self.aithre.is_connected():
-                co_level = self.aithre.get_co_level()
-                bat_level = self.aithre.get_battery()
+            if aithre.sensor.is_connected():
+                co_level = aithre.sensor.get_co_level()
+                bat_level = aithre.sensor.get_battery()
 
                 print("CO:{}ppm, BAT:{}%".format(co_level, bat_level))
         elif CONFIGURATION.aithre_enabled:
-            self.aithre = Aithre()
+            aithre.sensor = aithre.Aithre()
             print("Aithre created")
 
     def __init__(self, logger):
@@ -479,7 +479,6 @@ class HeadsUpDisplay(object):
         self.__show_boot_screen__()
 
         self.__aircraft__ = Aircraft()
-        self.aithre = None
 
         self.__pixels_per_degree_y__ = int((self.__height__ / CONFIGURATION.get_degrees_of_pitch()) *
                                            CONFIGURATION.get_pitch_degrees_display_scaler())
