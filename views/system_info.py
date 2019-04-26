@@ -203,7 +203,7 @@ class SystemInfo(AhrsElement):
                 if battery is not None:
                     battery_stats = ["{}%".format(battery), get_aithre_battery_color(battery)]
             except:
-                battery_stats = ["ERROR".format(battery), RED]
+                battery_stats = ["ERROR", RED]
 
             info_lines.append(["AITHRE BAT  : ", battery_stats])
 
