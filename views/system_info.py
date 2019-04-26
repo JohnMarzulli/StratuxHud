@@ -197,10 +197,19 @@ class SystemInfo(AhrsElement):
         
         if aithre.sensor is not None:
             battery = aithre.sensor.get_battery()
-            info_lines.append(["AITHRE BAT  : ", ["{}%".format(battery), get_aithre_battery_color(battery)]])
-            
+            battery_stats = ["DISCONNECTED", RED]
+            if battery is not None:
+                battery_stats = ["{}%".format(battery), get_aithre_battery_color(battery)]
+
+            info_lines.append(["AITHRE BAT  : ", battery_stats])
+
             co_ppm = aithre.sensor.get_co_level()
-            info_lines.append(["AITHRE CO   : ", ["{}".format(co_ppm), get_aithre_co_color(co_ppm)]])
+            co_stats = ["DISCONNECTED", RED]
+
+            if co_ppm is not None:
+                co_stats = ["{}".format(co_ppm), get_aithre_co_color(co_ppm)]
+
+            info_lines.append(["AITHRE CO   : ", co_stats])
 
         # Status lines are pushed in as a stack.
         # First line in the array is at the bottom.
