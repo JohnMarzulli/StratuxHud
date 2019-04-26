@@ -196,18 +196,25 @@ class SystemInfo(AhrsElement):
                 ["IP          : ", (addr, self.__ip_address__[1])])
         
         if aithre.sensor is not None:
-            battery = aithre.sensor.get_battery()
             battery_stats = ["DISCONNECTED", RED]
-            if battery is not None:
-                battery_stats = ["{}%".format(battery), get_aithre_battery_color(battery)]
+
+            try:
+                battery = aithre.sensor.get_battery()
+                if battery is not None:
+                    battery_stats = ["{}%".format(battery), get_aithre_battery_color(battery)]
+            except:
+                battery_stats = ["ERROR".format(battery), RED]
 
             info_lines.append(["AITHRE BAT  : ", battery_stats])
 
-            co_ppm = aithre.sensor.get_co_level()
             co_stats = ["DISCONNECTED", RED]
+            try:
+                co_ppm = aithre.sensor.get_co_level()
 
-            if co_ppm is not None:
-                co_stats = ["{}".format(co_ppm), get_aithre_co_color(co_ppm)]
+                if co_ppm is not None:
+                    co_stats = ["{}".format(co_ppm), get_aithre_co_color(co_ppm)]
+            except:
+                co_stats = ["ERROR", RED]
 
             info_lines.append(["AITHRE CO   : ", co_stats])
 
