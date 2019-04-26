@@ -8,7 +8,7 @@ if not local_debug.is_debug():
 else:
     from lib.simulated_values import SimulatedValue
     aithre_co_simulator = SimulatedValue(1, 50, 1, -25, 25)
-    aithre_bat_simulator = SimulatedValue(10, 50, -1, 15, 50)
+    aithre_bat_simulator = SimulatedValue(1, 50, -1, 35, 50)
 
 # The Aithre is always expected to have a public address
 AITHRE_ADDR_TYPE = "public"
@@ -171,10 +171,14 @@ class Aithre(object):
 
         return OFFLINE
 
+# Global singleton for all to
+# get to the Aithre
+try:
+    sensor = Aithre()
+except:
+    sensor = None
 
 if __name__ == '__main__':
-    sensor = Aithre()
-
     while True:
         sensor.update()
         print("CO:{} BAT{}".format(sensor.get_co_level(), sensor.get_battery()))
