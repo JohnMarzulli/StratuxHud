@@ -108,7 +108,7 @@ OFFLINE = "OFFLINE"
 class Aithre(object):
     def __init__(self):
         self._mac_ = None
-        self._levels = None
+        self._levels_ = None
 
         self._update_mac_()
 

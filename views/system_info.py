@@ -85,10 +85,10 @@ def get_cpu_temp():
 def get_aithre_co_color(co_ppm):
     """
     Returns the color code for the carbon monoxide levels
-    
+
     Arguments:
         co_ppm {int} -- Integer containing the Parts Per Million of CO
-    
+
     Returns:
         color -- The color to display
     """
@@ -98,16 +98,17 @@ def get_aithre_co_color(co_ppm):
         color = RED
     elif co_ppm > aithre.CO_SAFE:
         color = YELLOW
-    
+
     return color
+
 
 def get_aithre_battery_color(battery_percent):
     """
     Returns the color code for the Aithre battery level.
-    
+
     Arguments:
         battery_percent {int} -- The percentage of battery.
-    
+
     Returns:
         color -- The color to show the battery percentage in.
     """
@@ -117,7 +118,7 @@ def get_aithre_battery_color(battery_percent):
         color = GREEN
     elif battery_percent >= aithre.BATTERY_WARNING:
         color = YELLOW
-    
+
     return color
 
 
@@ -180,7 +181,7 @@ class SystemInfo(AhrsElement):
         if self.__update_ip_timer__ <= 0:
             self.__ip_address__ = get_ip_address()
             self.__update_ip_timer__ = 120
-        
+
         self.__update_temp_timer__ -= 1
         if self.__update_temp_timer__ <= 0:
             self.__cpu_temp__ = get_cpu_temp()
@@ -189,19 +190,19 @@ class SystemInfo(AhrsElement):
         info_lines = [["VERSION     : ", [configuration.VERSION, YELLOW]],
                       ["DECLINATION : ", [str(configuration.CONFIGURATION.get_declination()), BLUE]]]
 
-
         addresses = self.__ip_address__[0].split(' ')
         for addr in addresses:
             info_lines.append(
                 ["IP          : ", (addr, self.__ip_address__[1])])
-        
+
         if aithre.sensor is not None:
             battery_stats = ["DISCONNECTED", RED]
 
             try:
                 battery = aithre.sensor.get_battery()
                 if battery is not None:
-                    battery_stats = ["{}%".format(battery), get_aithre_battery_color(battery)]
+                    battery_stats = ["{}%".format(
+                        battery), get_aithre_battery_color(battery)]
             except Exception as ex:
                 battery_stats = ["{}".format(ex), RED]
 
@@ -212,7 +213,8 @@ class SystemInfo(AhrsElement):
                 co_ppm = aithre.sensor.get_co_level()
 
                 if co_ppm is not None:
-                    co_stats = ["{}".format(co_ppm), get_aithre_co_color(co_ppm)]
+                    co_stats = ["{}".format(
+                        co_ppm), get_aithre_co_color(co_ppm)]
             except Exception as ex:
                 co_stats = ["{}".format(ex), RED]
 
@@ -223,8 +225,10 @@ class SystemInfo(AhrsElement):
         # Last line in the array is towards the top.
         info_lines.append(["HUD CPU     : ", self.__cpu_temp__])
         info_lines.append(["SOCKET      : ", get_websocket_uptime()])
-        info_lines.append(["OWNSHIP     : ", [configuration.CONFIGURATION.ownship, BLUE]])
-        info_lines.append(["DISPLAY RES : ", ["{} x {}".format(self.__framebuffer_size__[0], self.__framebuffer_size__[1]), BLUE]])
+        info_lines.append(
+            ["OWNSHIP     : ", [configuration.CONFIGURATION.ownship, BLUE]])
+        info_lines.append(["DISPLAY RES : ", ["{} x {}".format(
+            self.__framebuffer_size__[0], self.__framebuffer_size__[1]), BLUE]])
 
         render_y = self.__text_y_pos__
 
@@ -243,6 +247,59 @@ class SystemInfo(AhrsElement):
 
         self.task_timer.stop()
 
+
+class Aithre(AhrsElement):
+    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
+        self.task_timer = TaskTimer('Aithre')
+        self.__font__ = font
+        center_y = framebuffer_size[1] >> 2
+        text_half_height = int(font.get_height()) >> 1
+        self.__text_y_pos__ = center_y - text_half_height
+        self.__lhs__ = 0
+
+    def get_aithre_co_color(self, co_ppm):
+        """
+        Returns the color code for the carbon monoxide levels
+
+        Arguments:
+            co_ppm {int} -- Integer containing the Parts Per Million of CO
+
+        Returns:
+            color -- The color to display
+        """
+        color = BLUE
+
+        if co_ppm > aithre.CO_WARNING:
+            color = RED
+        elif co_ppm > aithre.CO_SAFE:
+            color = YELLOW
+
+        return color
+
+    def render(self, framebuffer, orientation):
+        self.task_timer.start()
+
+        if aithre.sensor is not None:
+            co_level = aithre.sensor.get_co_level()
+
+            if isinstance(co_level, basestring):
+                co_color = RED
+                co_ppm_text = co_level
+            else:
+                co_color = self.get_aithre_co_color(co_level)
+                co_ppm_text = str(int(co_level)) + " PPM"
+
+            co_ppm_texture = self.__font__.render(
+                co_ppm_text, True, co_color, BLACK)
+
+            framebuffer.blit(
+                co_ppm_texture, (self.__lhs__, self.__text_y_pos__))
+        self.task_timer.stop()
+
+
+if __name__ == '__main__':
+    import hud_elements
+    hud_elements.run_ahrs_hud_element(Aithre)
 
 if __name__ == '__main__':
     import hud_elements
