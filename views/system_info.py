@@ -282,9 +282,9 @@ class Aithre(AhrsElement):
         if aithre.sensor is not None:
             co_level = aithre.sensor.get_co_level()
 
-            if isinstance(co_level, basestring):
+            if co_level is None or isinstance(co_level, basestring):
                 co_color = RED
-                co_ppm_text = co_level
+                co_ppm_text = "OFFLINE"
             else:
                 co_color = self.get_aithre_co_color(co_level)
                 co_ppm_text = str(int(co_level)) + " PPM"
