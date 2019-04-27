@@ -65,7 +65,7 @@ class Configuration(object):
     DECLINATION_KEY = "declination"
     DEGREES_OF_PITCH_KEY = 'degrees_of_pitch'
     PITCH_DEGREES_DISPLAY_SCALER_KEY = 'pitch_degrees_scaler'
-    AITHRE_KEY='aithre'
+    AITHRE_KEY = 'aithre'
 
     DEFAULT_DEGREES_OF_PITCH = 90
     DEFAULT_PITCH_DEGREES_DISPLAY_SCALER = 2.0
@@ -125,7 +125,7 @@ class Configuration(object):
             Configuration.DECLINATION_KEY: self.get_declination(),
             Configuration.DEGREES_OF_PITCH_KEY: self.get_degrees_of_pitch(),
             Configuration.PITCH_DEGREES_DISPLAY_SCALER_KEY: self.get_pitch_degrees_display_scaler(),
-            Configuration.AITHRE_KEY: self.get_aithre()
+            Configuration.AITHRE_KEY: self.aithre_enabled
         }
 
         return json.dumps(config_dictionary, indent=4, sort_keys=True)
@@ -158,7 +158,7 @@ class Configuration(object):
         if Configuration.AITHRE_KEY in json_config:
             self.aithre_enabled = bool(json_config[Configuration.AITHRE_KEY])
             self.__configuration__[Configuration.AITHRE_KEY] = \
-                    self.aithre_enabled
+                self.aithre_enabled
 
         if Configuration.FLIP_HORIZONTAL_KEY in json_config:
             self.flip_horizontal = \
