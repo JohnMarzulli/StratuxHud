@@ -109,7 +109,6 @@ class Aithre(object):
     def __init__(self):
         self._mac_ = None
         self._levels = None
-        self._last_update_ = None
 
         self._update_mac_()
 
@@ -117,18 +116,7 @@ class Aithre(object):
         return (self._mac_ is not None and self._levels_ is not None) or local_debug.is_debug()
 
     def update(self):
-        update = False
-
-        if self._last_update_ is None or self._levels_ is None:
-            update = True
-
-        if self._last_update_ is not None:
-            report_age = (datetime.datetime.utcnow() -
-                          self._last_update_).total_seconds()
-            update = report_age >= CO_SCAN_PERIOD
-
-        if update:
-            self._update_levels()
+        self._update_levels()
 
     def _update_mac_(self):
         try:
@@ -149,10 +137,7 @@ class Aithre(object):
         try:
             print("Attempting update")
             self._levels_ = get_aithre(self._mac_)
-            self._last_update_ = datetime.datetime.utcnow()
         except Exception as ex:
-            self._last_update_ = None
-
             # In case the read fails, we will want to
             # attempt to find the MAC of the Aithre again.
 
