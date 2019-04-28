@@ -1,6 +1,7 @@
 import sys
 import time
 import datetime
+from configuration import CONFIGURATION
 import lib.local_debug as local_debug
 
 if not local_debug.is_debug():
@@ -29,7 +30,11 @@ CO_WARNING = 49
 BATTERY_SAFE = 75
 BATTERY_WARNING = 25
 
+
 def get_service_value(addr, addr_type, offset):
+    if not CONFIGURATION.aithre_enabled:
+        return None
+
     # Generate fake values for debugging
     # and for the development of the visuals.
     if local_debug.is_debug():
@@ -58,12 +63,14 @@ def get_service_value(addr, addr_type, offset):
         return ord(res)
     except Exception as ex:
         print("   ex in get_name={}".format(ex))
-        pass
 
     return None
 
 
 def get_aithre(mac_adr):
+    if not CONFIGURATION.aithre_enabled:
+        return None, None
+
     co = get_service_value(mac_adr, AITHRE_ADDR_TYPE, CO_OFFSET)
     bat = get_service_value(mac_adr, AITHRE_ADDR_TYPE, BAT_OFFSET)
 
@@ -71,6 +78,9 @@ def get_aithre(mac_adr):
 
 
 def get_aithre_mac():
+    if not CONFIGURATION.aithre_enabled:
+        return None
+
     print("get_aithre_mac()")
     try:
         if local_debug.is_debug():
@@ -119,12 +129,18 @@ class Aithre(object):
         self._update_levels()
 
     def _update_mac_(self):
+        if not CONFIGURATION.aithre_enabled:
+            return
+
         try:
             self._mac_ = get_aithre_mac()
         except:
             self._mac_ = None
 
     def _update_levels(self):
+        if not CONFIGURATION.aithre_enabled:
+            return
+
         if self._mac_ is None:
             print("mac is none")
 
@@ -145,16 +161,23 @@ class Aithre(object):
             print("update() ex={}".format(ex))
 
     def get_battery(self):
+        if not CONFIGURATION.aithre_enabled:
+            return None
+
         if self._levels_ is not None:
             return self._levels_[1]
 
         return OFFLINE
 
     def get_co_level(self):
+        if not CONFIGURATION.aithre_enabled:
+            return None
+
         if self._levels_ is not None:
             return self._levels_[0]
 
         return OFFLINE
+
 
 # Global singleton for all to
 # get to the Aithre
