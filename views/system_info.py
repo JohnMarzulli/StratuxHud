@@ -173,6 +173,7 @@ class SystemInfo(AhrsElement):
         self.__ip_address__ = get_ip_address()
         self.__cpu_temp__ = None
         self.__framebuffer_size__ = framebuffer_size
+        self.__line_spacing__ = 1.05
 
     def render(self, framebuffer, orientation):
         self.task_timer.start()
@@ -195,7 +196,7 @@ class SystemInfo(AhrsElement):
             info_lines.append(
                 ["IP          : ", (addr, self.__ip_address__[1])])
 
-        if aithre.sensor is not None:
+        if aithre.sensor is not None and configuration.CONFIGURATION.aithre_enabled:
             battery_stats = ["DISCONNECTED", RED]
 
             try:
@@ -213,7 +214,7 @@ class SystemInfo(AhrsElement):
                 co_ppm = aithre.sensor.get_co_level()
 
                 if co_ppm is not None:
-                    co_stats = ["{}".format(
+                    co_stats = ["{} ppm".format(
                         co_ppm), get_aithre_co_color(co_ppm)]
             except Exception as ex:
                 co_stats = ["{}".format(ex), RED]
@@ -243,7 +244,7 @@ class SystemInfo(AhrsElement):
                 line[1][0], True, line[1][1], BLACK)
             framebuffer.blit(texture_rhs, (size[0], render_y))
 
-            render_y = render_y - (self.font_height * 1.1)
+            render_y = render_y - (self.font_height * self.__line_spacing__)
 
         self.task_timer.stop()
 
@@ -257,24 +258,6 @@ class Aithre(AhrsElement):
         self.__text_y_pos__ = center_y - text_half_height
         self.__lhs__ = 0
 
-    def get_aithre_co_color(self, co_ppm):
-        """
-        Returns the color code for the carbon monoxide levels
-
-        Arguments:
-            co_ppm {int} -- Integer containing the Parts Per Million of CO
-
-        Returns:
-            color -- The color to display
-        """
-        color = BLUE
-
-        if co_ppm > aithre.CO_WARNING:
-            color = RED
-        elif co_ppm > aithre.CO_SAFE:
-            color = YELLOW
-
-        return color
 
     def render(self, framebuffer, orientation):
         self.task_timer.start()
@@ -286,7 +269,7 @@ class Aithre(AhrsElement):
                 co_color = RED
                 co_ppm_text = "OFFLINE"
             else:
-                co_color = self.get_aithre_co_color(co_level)
+                co_color = get_aithre_co_color(co_level)
                 co_ppm_text = str(int(co_level)) + " PPM"
 
             co_ppm_texture = self.__font__.render(
