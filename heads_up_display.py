@@ -58,7 +58,7 @@ class HeadsUpDisplay(object):
             requests.Session().post(url, timeout=2)
         except:
             pass
-    
+
     def __reset_websocket__(self):
         """
         Resets the websocket to essentially reset the receiver unit.
@@ -67,7 +67,6 @@ class HeadsUpDisplay(object):
             self.__connection_manager__.reset()
         except:
             pass
-
 
     def __shutdown_stratux__(self):
         """
@@ -87,7 +86,8 @@ class HeadsUpDisplay(object):
         Runs the update/render logic loop.
         """
 
-        self.log('Initialized screen size to {}x{}'.format(self.__width__, self.__height__))
+        self.log('Initialized screen size to {}x{}'.format(
+            self.__width__, self.__height__))
 
         # Make sure that the disclaimer is visible for long enough.
         sleep(5)
@@ -151,7 +151,7 @@ class HeadsUpDisplay(object):
             bool -- True if the code should run for another tick.
         """
 
-        current_fps = 0 # initialize up front avoids exception
+        current_fps = 0  # initialize up front avoids exception
 
         try:
             self.frame_setup.start()
@@ -207,7 +207,7 @@ class HeadsUpDisplay(object):
                                                   self.__fps__.to_string()))
 
                 self.log('TRAFFIC, {0}, MessagesReceived, {1}, {1}, {1}'.format(now,
-                        traffic.Traffic.TRAFFIC_REPORTS_RECEIVED))
+                                                                                traffic.Traffic.TRAFFIC_REPORTS_RECEIVED))
                 traffic.Traffic.TRAFFIC_REPORTS_RECEIVED = 0
 
                 self.log("-----------------------------------")
@@ -412,8 +412,9 @@ class HeadsUpDisplay(object):
         hud_elements.HudDataCache.update_traffic_reports()
 
     def __update_aithre__(self):
-        # Note - $BUG - $TODO
-        # not seeing the  print statements
+        if not CONFIGURATION.aithre_enabled:
+            return
+
         if aithre.sensor is not None:
             try:
                 aithre.sensor.update()
@@ -463,7 +464,6 @@ class HeadsUpDisplay(object):
 
         self.__backpage_framebuffer__, screen_size = display.display_init()  # args.debug)
         self.__width__, self.__height__ = screen_size
-
 
         pygame.mouse.set_visible(False)
 
@@ -614,7 +614,7 @@ class HeadsUpDisplay(object):
 
         if event.key in [pygame.K_EQUALS, pygame.K_KP_EQUALS]:
             self.__should_render_perf__ = not self.__should_render_perf__
-        
+
         if event.key in [pygame.K_KP0, pygame.K_0, pygame.K_INSERT]:
             self.__reset_websocket__()
 
