@@ -201,9 +201,12 @@ class SystemInfo(AhrsElement):
 
             try:
                 battery = aithre.sensor.get_battery()
+                battery_suffix = "%"
+                if isinstance(battery, basestring):
+                    battery_suffix = ""
                 if battery is not None:
-                    battery_stats = ["{}%".format(
-                        battery), get_aithre_battery_color(battery)]
+                    battery_stats = ["{}{}".format(
+                        battery, battery_suffix), get_aithre_battery_color(battery)]
             except Exception as ex:
                 battery_stats = ["{}".format(ex), RED]
 
@@ -262,7 +265,7 @@ class Aithre(AhrsElement):
     def render(self, framebuffer, orientation):
         self.task_timer.start()
 
-        if aithre.sensor is not None:
+        if aithre.sensor is not None and configuration.CONFIGURATION.aithre_enabled:
             co_level = aithre.sensor.get_co_level()
 
             if co_level is None or isinstance(co_level, basestring):
