@@ -32,12 +32,12 @@ def get_ip_address():
     """
 
     try:
-        if local_debug.IS_LINUX:
-            host_name = socket.gethostname()
-            return (socket.gethostbyname(host_name), GREEN)
-        else:
+        if local_debug.IS_LINUX and local_debug.IS_PI:
             ip_addr = commands.getoutput('hostname -I').strip()
             return (ip_addr, GREEN)
+        else:
+            host_name = socket.gethostname()
+            return (socket.gethostbyname(host_name), GREEN)
     except:
         return ('UNKNOWN', RED)
 
@@ -68,18 +68,18 @@ def get_cpu_temp():
     color = GREEN
 
     try:
-        # if not local_debug.is_debug():
-        raspberry_pi_temp = open('/sys/class/thermal/thermal_zone0/temp')
-        temp = float(raspberry_pi_temp.read())
-        temp = temp/1000
-        # else:
-        #    temp = float(datetime.datetime.utcnow().second) + 30.0
+        if local_debug.IS_PI:
+            raspberry_pi_temp = open('/sys/class/thermal/thermal_zone0/temp')
+            temp = float(raspberry_pi_temp.read())
+            temp = temp/1000
 
-        color = get_cpu_temp_text_color(temp)
+            color = get_cpu_temp_text_color(temp)
 
-        return ("{0}C".format(int(math.floor(temp))), color)
+            return ("{0}C".format(int(math.floor(temp))), color)
     except:
         return ('---', GRAY)
+
+    return ('---', GRAY)
 
 
 def get_aithre_co_color(co_ppm):
