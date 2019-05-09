@@ -4,14 +4,16 @@ RaspberryPi specific code to enable for
 debugging on a Mac or Windows host.
 """
 
-from sys import platform
-
-from sys import platform, version_info
+import platform
+from sys import platform as os_platform
+from sys import version_info
 
 REQUIRED_PYTHON_VERSION = 2.7
 MAXIMUM_PYTHON_VERSION = 2.7
 
-IS_LINUX = 'linux' in platform
+IS_LINUX = 'linux' in os_platform
+DETECTED_CPU = platform.machine()
+IS_PI = "arm" in DETECTED_CPU
 
 def validate_python_version():
     """
@@ -38,6 +40,6 @@ def is_debug():
     returns True if this should be run as a local debug (Mac or Windows).
     """
 
-    return platform in ["win32", "darwin"]
+    return os_platform in ["win32", "darwin"]
 
 validate_python_version()
