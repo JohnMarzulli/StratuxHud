@@ -65,11 +65,11 @@ def display_init():
         # TODO - Use "convert" on text without ALPHA...
         # https://en.wikipedia.org/wiki/PyPy
 
-        if local_debug.is_debug():
-            screen_mode |= pygame.RESIZABLE
-        else:
+        if local_debug.IS_PI:
             screen_mode |= pygame.FULLSCREEN
             size = pygame.display.Info().current_w, pygame.display.Info().current_h
+        else:
+            screen_mode |= pygame.RESIZABLE
 
         screen = pygame.display.set_mode(size, screen_mode)
 
