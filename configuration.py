@@ -8,7 +8,7 @@ EARTH_RADIUS_KILOMETERS_MILES = 6371
 MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT = 2
 MAX_FRAMERATE = 60
 
-VERSION = "1.4.0"
+VERSION = "1.5.0"
 
 __config_file__ = './config.json'
 __heading_bugs_file__ = './heading_bugs.json'
