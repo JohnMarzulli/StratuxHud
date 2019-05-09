@@ -585,7 +585,7 @@ class HeadsUpDisplay(object):
 
         if event.key in [pygame.K_ESCAPE]:
             utilities.shutdown(0)
-            if not local_debug.is_debug():
+            if local_debug.IS_PI:
                 self.__shutdown_stratux__()
 
             return False
