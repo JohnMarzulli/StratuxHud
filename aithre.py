@@ -4,7 +4,7 @@ import datetime
 from configuration import CONFIGURATION
 import lib.local_debug as local_debug
 
-if not local_debug.is_debug():
+if local_debug.IS_LINUX:
     from bluepy.btle import UUID, Peripheral, Scanner, DefaultDelegate
 else:
     from lib.simulated_values import SimulatedValue
@@ -37,7 +37,7 @@ def get_service_value(addr, addr_type, offset):
 
     # Generate fake values for debugging
     # and for the development of the visuals.
-    if local_debug.is_debug():
+    if local_debug.IS_LINUX:
         if offset in CO_OFFSET:
             return int(aithre_co_simulator.get_value())
         else:
@@ -83,7 +83,7 @@ def get_aithre_mac():
 
     print("get_aithre_mac()")
     try:
-        if local_debug.is_debug():
+        if local_debug.IS_LINUX:
             return None
 
         scanner = Scanner()
@@ -109,7 +109,7 @@ def get_aithre_mac():
 
 CO_SCAN_PERIOD = 15
 
-if local_debug.is_debug():
+if local_debug.IS_LINUX:
     CO_SCAN_PERIOD = 1.0
 
 OFFLINE = "OFFLINE"
@@ -123,7 +123,7 @@ class Aithre(object):
         self._update_mac_()
 
     def is_connected(self):
-        return (self._mac_ is not None and self._levels_ is not None) or local_debug.is_debug()
+        return (self._mac_ is not None and self._levels_ is not None) or not local_debug.IS_LINUX
 
     def update(self):
         self._update_levels()
@@ -144,7 +144,7 @@ class Aithre(object):
         if self._mac_ is None:
             print("mac is none")
 
-            if local_debug.is_debug():
+            if not local_debug.IS_LINUX:
                 aithre_co_simulator.simulate()
                 aithre_bat_simulator.simulate()
             else:
