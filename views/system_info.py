@@ -32,12 +32,12 @@ def get_ip_address():
     """
 
     try:
-        if not local_debug.is_debug():
-            ip_addr = commands.getoutput('hostname -I').strip()
-            return (ip_addr, GREEN)
-        else:
+        if local_debug.IS_LINUX:
             host_name = socket.gethostname()
             return (socket.gethostbyname(host_name), GREEN)
+        else:
+            ip_addr = commands.getoutput('hostname -I').strip()
+            return (ip_addr, GREEN)
     except:
         return ('UNKNOWN', RED)
 

@@ -11,6 +11,7 @@ from sys import platform, version_info
 REQUIRED_PYTHON_VERSION = 2.7
 MAXIMUM_PYTHON_VERSION = 2.7
 
+IS_LINUX = 'linux' in platform
 
 def validate_python_version():
     """
@@ -31,7 +32,6 @@ def validate_python_version():
     if python_version > MAXIMUM_PYTHON_VERSION:
         print('Python version {} is newer than the maximum allowed version of {}'.format(
             python_version, MAXIMUM_PYTHON_VERSION))
-
 
 def is_debug():
     """
