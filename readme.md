@@ -245,12 +245,12 @@ Make sure you are using a high quality power cable if you are using a Pi 3B+
 
 ### Hardware Performance
 
-| Board                          | Screen         | Frames Per Second (AHRS View Only) |
-| ------------------------------ | -------------- | ---------------------------------- |
-| Rasp Pi 2                      | Sun Founder 5" | ~25FPS to ~30FPS                   |
-| Rasp Pi 3 (stand alone)        | Kivic          | Pending Retesting                  |
-| Rasp Pi 3 (Running on Stratux) | Kivic          | 30FPS                              |
-| Rasp Pi 3B+                    | Kivic          | 50FPS                              |
+| Board                          | Screen         | Frames Per Second (AHRS View Only) | Notes                   |
+| ------------------------------ | -------------- | ---------------------------------- | ----------------------- |
+| Rasp Pi 2                      | Sun Founder 5" | ~25FPS to ~30FPS                   | Not reccomended         |
+| Rasp Pi 3 (stand alone)        | Kivic          | 30FPS - 50FPS                      | Reccomended             |
+| Rasp Pi 3 (Running on Stratux) | Kivic          | 30FPS                              | Not supported           |
+| Rasp Pi 3B+                    | Kivic          | 40FPS - 60FPS                      | Does not support Aithre |
 
 Please note that the frame rate is capped at 60FPS. Drawing any faster will not be detectable using the reccomended output systems. Reducing the framerate will reduce the powerdraw.
 
