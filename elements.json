@@ -1,4 +1,8 @@
 {
+  "Aithre": {
+    "class": "system_info.Aithre",
+    "detail_font": true
+  },
   "Compass": {
     "class": "compass_and_heading_bottom_element.CompassAndHeadingBottomElement",
     "detail_font": true

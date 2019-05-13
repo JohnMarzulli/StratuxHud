@@ -8,7 +8,7 @@ EARTH_RADIUS_KILOMETERS_MILES = 6371
 MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT = 2
 MAX_FRAMERATE = 60
 
-VERSION = "1.4.0"
+VERSION = "1.5.0"
 
 __config_file__ = './config.json'
 __heading_bugs_file__ = './heading_bugs.json'
@@ -65,6 +65,7 @@ class Configuration(object):
     DECLINATION_KEY = "declination"
     DEGREES_OF_PITCH_KEY = 'degrees_of_pitch'
     PITCH_DEGREES_DISPLAY_SCALER_KEY = 'pitch_degrees_scaler'
+    AITHRE_KEY = 'aithre'
 
     DEFAULT_DEGREES_OF_PITCH = 90
     DEFAULT_PITCH_DEGREES_DISPLAY_SCALER = 2.0
@@ -123,7 +124,8 @@ class Configuration(object):
             Configuration.DISTANCE_UNITS_KEY: self.get_units(),
             Configuration.DECLINATION_KEY: self.get_declination(),
             Configuration.DEGREES_OF_PITCH_KEY: self.get_degrees_of_pitch(),
-            Configuration.PITCH_DEGREES_DISPLAY_SCALER_KEY: self.get_pitch_degrees_display_scaler()
+            Configuration.PITCH_DEGREES_DISPLAY_SCALER_KEY: self.get_pitch_degrees_display_scaler(),
+            Configuration.AITHRE_KEY: self.aithre_enabled
         }
 
         return json.dumps(config_dictionary, indent=4, sort_keys=True)
@@ -152,6 +154,11 @@ class Configuration(object):
         for key in set_from_maps:
             if key in json_config:
                 self.__configuration__[key] = json_config[key]
+
+        if Configuration.AITHRE_KEY in json_config:
+            self.aithre_enabled = bool(json_config[Configuration.AITHRE_KEY])
+            self.__configuration__[Configuration.AITHRE_KEY] = \
+                self.aithre_enabled
 
         if Configuration.FLIP_HORIZONTAL_KEY in json_config:
             self.flip_horizontal = \
@@ -295,6 +302,7 @@ class Configuration(object):
         self.flip_horizontal = False
         self.flip_vertical = False
         self.declination = 0.0
+        self.aithre_enabled = False
 
         self.set_from_json(self.__configuration__)
 
@@ -323,6 +331,12 @@ class Configuration(object):
         try:
             self.declination = \
                 float(self.__configuration__[Configuration.DECLINATION_KEY])
+        except:
+            pass
+
+        try:
+            self.aithre_enabled = \
+                bool(self.__configuration__[Configuration.AITHRE_KEY])
         except:
             pass
 
