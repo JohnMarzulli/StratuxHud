@@ -37,7 +37,7 @@ def get_service_value(addr, addr_type, offset):
 
     # Generate fake values for debugging
     # and for the development of the visuals.
-    if local_debug.IS_LINUX:
+    if not local_debug.IS_LINUX:
         if offset in CO_OFFSET:
             return int(aithre_co_simulator.get_value())
         else:
@@ -83,7 +83,7 @@ def get_aithre_mac():
 
     print("get_aithre_mac()")
     try:
-        if local_debug.IS_LINUX:
+        if not local_debug.IS_LINUX:
             return None
 
         scanner = Scanner()
@@ -116,7 +116,37 @@ OFFLINE = "OFFLINE"
 
 
 class Aithre(object):
-    def __init__(self):
+    def log(self, text):
+        """
+        Logs the given text if a logger is available.
+
+        Arguments:
+            text {string} -- The text to log
+        """
+
+        if self.__logger__ is not None:
+            self.__logger__.log_info_message(text)
+        else:
+            print("INFO:{}".format(text))
+
+    def warn(self, text):
+        """
+        Logs the given text if a logger is available AS A WARNING.
+
+        Arguments:
+            text {string} -- The text to log
+        """
+
+        if self.__logger__ is not None:
+            self.__logger__.log_warning_message(text)
+        else:
+            print("WARN:{}".format(text))
+
+    def __init__(self, logger = None):
+        self.__logger__ = logger
+
+        self.warn("Initializing new Aithre object")
+
         self._mac_ = None
         self._levels_ = None
 
@@ -134,31 +164,31 @@ class Aithre(object):
 
         try:
             self._mac_ = get_aithre_mac()
-        except:
+        except Exception as e:
             self._mac_ = None
+            self.warn("Got EX={} during MAC update.".format(e))
 
     def _update_levels(self):
         if not CONFIGURATION.aithre_enabled:
             return
 
         if self._mac_ is None:
-            print("mac is none")
-
             if not local_debug.IS_LINUX:
                 aithre_co_simulator.simulate()
                 aithre_bat_simulator.simulate()
             else:
+                self.warn("Aithre MAC is none")
                 return
 
         try:
-            print("Attempting update")
+            self.log("Attempting update")
             self._levels_ = get_aithre(self._mac_)
         except Exception as ex:
             # In case the read fails, we will want to
             # attempt to find the MAC of the Aithre again.
 
             self._mac_ = None
-            print("update() ex={}".format(ex))
+            self.warn("update() ex={}".format(ex))
 
     def get_battery(self):
         if not CONFIGURATION.aithre_enabled:

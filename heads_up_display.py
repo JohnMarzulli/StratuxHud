@@ -428,7 +428,7 @@ class HeadsUpDisplay(object):
                 self.warn("Error attempting to update Aithre sensor values")
         elif CONFIGURATION.aithre_enabled:
             try:
-                aithre.sensor = aithre.Aithre()
+                aithre.sensor = aithre.Aithre(self.__logger__)
                 self.log("Aithre created")
             except:
                 self.warn("Error attempting to connect to Aithre")
