@@ -424,6 +424,8 @@ class HeadsUpDisplay(object):
                     bat_level = aithre.sensor.get_battery()
 
                     self.log("CO:{}ppm, BAT:{}%".format(co_level, bat_level))
+                else:
+                    self.log("Aithre is enabled, but not connected.")
             except:
                 self.warn("Error attempting to update Aithre sensor values")
         elif CONFIGURATION.aithre_enabled:

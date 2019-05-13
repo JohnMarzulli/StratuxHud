@@ -173,12 +173,14 @@ class Aithre(object):
             return
 
         if self._mac_ is None:
+            self.log("Aithre MAC is none while attempting to update levels.")
             if not local_debug.IS_LINUX:
+                self.log("... and this is not a Linux machine, so attempting to simulate.")
                 aithre_co_simulator.simulate()
                 aithre_bat_simulator.simulate()
             else:
-                self.warn("Aithre MAC is none")
-                return
+                self.warn("Aithre MAC is none, attempting to connect.")
+                self._update_mac_()
 
         try:
             self.log("Attempting update")
@@ -188,7 +190,7 @@ class Aithre(object):
             # attempt to find the MAC of the Aithre again.
 
             self._mac_ = None
-            self.warn("update() ex={}".format(ex))
+            self.warn("Exception while attempting to update the cached levels.update() E={}".format(ex))
 
     def get_battery(self):
         if not CONFIGURATION.aithre_enabled:
