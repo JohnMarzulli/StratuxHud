@@ -320,8 +320,7 @@ class AhrsStratux(object):
             # Do no consider the service unavailable unless we are
             # way below the max target framerate.
             delta_time = datetime.datetime.utcnow() - self.__last_update__
-            self.data_source_available = delta_time.total_seconds() < (
-                self.__min_update_microseconds__ / 1000000.0)
+            self.data_source_available = delta_time.total_seconds() < self.__min_update_seconds__
 
             return
 
@@ -415,8 +414,9 @@ class AhrsStratux(object):
             self.__lock__.release()
 
     def __init__(self):
-        self.__min_update_microseconds__ = int(
-            1000000.0 / (configuration.MAX_FRAMERATE / 10.0))
+        # If an update to the AHRS takes longer than this,
+        # then the AHRS should be considered not available.
+        self.__min_update_seconds__ = 0.3
         self.__timeout__ = 1.0 / (configuration.MAX_FRAMERATE / 8.0)
         self.__stratux_session__ = requests.Session()
 
