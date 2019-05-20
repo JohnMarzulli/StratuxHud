@@ -460,7 +460,7 @@ class AhrsStratux(LoggingObject):
         # If an update to the AHRS takes longer than this,
         # then the AHRS should be considered not available.
         self.__min_update_seconds__ = 0.3
-        self.__timeout__ = 1.0 / (configuration.MAX_FRAMERATE / 8.0)
+        self.__timeout__ = configuration.TARGET_AHRS_FRAMERATE
         self.__stratux_session__ = requests.Session()
 
         self.ahrs_data = AhrsData()
@@ -496,7 +496,7 @@ class Aircraft(LoggingObject):
             self.ahrs_source = AhrsStratux(logger)
 
         recurring_task.RecurringTask('UpdateAhrs',
-                                     1.0 / (configuration.MAX_FRAMERATE),
+                                     1.0 / configuration.TARGET_AHRS_FRAMERATE,
                                      self.__update_orientation__)
 
     def is_ahrs_available(self):
