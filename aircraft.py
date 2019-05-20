@@ -37,7 +37,7 @@ class LoggingObject(object):
             self.__logger__.log_warning_message(text)
         else:
             print(text)
-    
+
     def __init__(self, logger):
         self.__logger__ = logger
 
@@ -344,21 +344,24 @@ class AhrsStratux(LoggingObject):
             configuration.CONFIGURATION.stratux_address())
 
         try:
-            ahrs_json = self.__stratux_session__.get(
-                url, timeout=self.__timeout__).json()
-            self.__last_update__ = datetime.datetime.utcnow(
-            ) if ahrs_json is not None else self.__last_update__
+            ahrs_json = self.__stratux_session__.get(url,
+                                                     timeout=self.__timeout__).json()
+
+            if ahrs_json is not None:
+                self.__last_update__ = datetime.datetime.utcnow()
 
         except KeyboardInterrupt:
             raise
         except SystemExit:
             raise
-        except:
+        except Exception as ex:
             # If we are spamming the REST too quickly, then we may loose a single update.
             # Do no consider the service unavailable unless we are
             # way below the max target framerate.
             delta_time = datetime.datetime.utcnow() - self.__last_update__
             self.data_source_available = delta_time.total_seconds() < self.__min_update_seconds__
+
+            self.warn('AHRS.update() ex={}'.format(ex))
 
             return
 
@@ -493,7 +496,7 @@ class Aircraft(LoggingObject):
             self.ahrs_source = AhrsStratux(logger)
 
         recurring_task.RecurringTask('UpdateAhrs',
-                                     1.0 / (configuration.MAX_FRAMERATE * 2.0),
+                                     1.0 / (configuration.MAX_FRAMERATE),
                                      self.__update_orientation__)
 
     def is_ahrs_available(self):
