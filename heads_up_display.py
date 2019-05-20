@@ -486,7 +486,7 @@ class HeadsUpDisplay(object):
             font_name, font_size_loading, True, False)
         self.__show_boot_screen__()
 
-        self.__aircraft__ = Aircraft()
+        self.__aircraft__ = Aircraft(self.__logger__)
 
         self.__pixels_per_degree_y__ = int((self.__height__ / CONFIGURATION.get_degrees_of_pitch()) *
                                            CONFIGURATION.get_pitch_degrees_display_scaler())
