@@ -460,11 +460,9 @@ class AhrsStratux(LoggingObject):
         # If an update to the AHRS takes longer than this,
         # then the AHRS should be considered not available.
         self.__min_update_seconds__ = 0.3
-        # Make the timeout a reasonable short time.
-        # If the target FPS is 30 (default)
-        # then this will cause the timeouts to occur at
-        # a response any slower than 7FPS
-        self.__timeout__ = (1.0 / configuration.TARGET_AHRS_FRAMERATE) * 4
+        # Make the timeout a reasonable time.
+        # This allows a rate as low as 4FPS
+        self.__timeout__ = (1.0 / 4.0)
         self.__stratux_session__ = requests.Session()
 
         self.ahrs_data = AhrsData()
