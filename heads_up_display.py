@@ -227,9 +227,9 @@ class HeadsUpDisplay(object):
                     surface, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)
                 surface.blit(flipped, [0, 0])
             pygame.display.update()
-            clock.tick(MAX_FRAMERATE)
             self.__fps__.push(current_fps)
             self.frame_cleanup.stop()
+            clock.tick(MAX_FRAMERATE)
 
         return True
 
@@ -486,7 +486,7 @@ class HeadsUpDisplay(object):
             font_name, font_size_loading, True, False)
         self.__show_boot_screen__()
 
-        self.__aircraft__ = Aircraft()
+        self.__aircraft__ = Aircraft(self.__logger__)
 
         self.__pixels_per_degree_y__ = int((self.__height__ / CONFIGURATION.get_degrees_of_pitch()) *
                                            CONFIGURATION.get_pitch_degrees_display_scaler())

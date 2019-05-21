@@ -260,6 +260,7 @@ class Aithre(AhrsElement):
         text_half_height = int(font.get_height()) >> 1
         self.__text_y_pos__ = center_y - text_half_height
         self.__lhs__ = 0
+        self.__has_been_connected__ = False
 
 
     def render(self, framebuffer, orientation):
@@ -269,11 +270,16 @@ class Aithre(AhrsElement):
             co_level = aithre.sensor.get_co_level()
 
             if co_level is None or isinstance(co_level, basestring):
-                co_color = RED
-                co_ppm_text = "OFFLINE"
+                if self.__has_been_connected__:
+                    co_color = RED
+                    co_ppm_text = "OFFLINE"
+                else:
+                    self.task_timer.stop()
+                    return
             else:
                 co_color = get_aithre_co_color(co_level)
                 co_ppm_text = str(int(co_level)) + " PPM"
+                self.__has_been_connected__ = True
 
             co_ppm_texture = self.__font__.render(
                 co_ppm_text, True, co_color, BLACK)

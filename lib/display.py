@@ -31,10 +31,10 @@ def display_init():
     size = DEFAULT_SCREEN_SIZE
     disp_no = os.getenv('DISPLAY')
     if disp_no:
-        # if False:
-        # print "I'm running under X display = {0}".format(disp_no)
-        size = 320, 240
-        screen = pygame.display.set_mode(size)
+        screen_mode = (pygame.FULLSCREEN if local_debug.IS_PI else pygame.RESIZABLE) \
+            | pygame.HWACCEL
+        print("Running under X{}, flags={}".format(disp_no, screen_mode))
+        screen = pygame.display.set_mode(size, screen_mode)
     else:
         # List of drivers:
         # https://wiki.libsdl.org/FAQUsingSDL

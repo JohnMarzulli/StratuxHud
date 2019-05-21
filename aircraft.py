@@ -11,8 +11,38 @@ from lib.simulated_values import SimulatedValue
 HEADING_NOT_AVAILABLE = '---'
 
 
-class StratuxStatus(object):
+class LoggingObject(object):
+    def log(self, text):
+        """
+        Logs the given text if a logger is available.
 
+        Arguments:
+            text {string} -- The text to log
+        """
+
+        if self.__logger__ is not None:
+            self.__logger__.log_info_message(text)
+        else:
+            print(text)
+
+    def warn(self, text):
+        """
+        Logs the given text if a logger is available AS A WARNING.
+
+        Arguments:
+            text {string} -- The text to log
+        """
+
+        if self.__logger__ is not None:
+            self.__logger__.log_warning_message(text)
+        else:
+            print(text)
+
+    def __init__(self, logger):
+        self.__logger__ = logger
+
+
+class StratuxStatus(LoggingObject):
     def __get_status__(self, key):
         if key is None:
             return False
@@ -27,15 +57,18 @@ class StratuxStatus(object):
                 raise
             except SystemExit:
                 raise
-            except:
+            except Exception as ex:
+                self.warn("__get_status__ EX={}".format(ex))
                 return False
 
         return False
 
-    def __init__(self, stratux_address, stratux_session, simulation_mode=False):
+    def __init__(self, stratux_address, stratux_session, logger, simulation_mode=False):
         """
         Builds a list of Capabilities of the stratux.
         """
+
+        super(StratuxStatus, self).__init__(logger)
 
         if stratux_address is None or simulation_mode:
             self.__status_json__ = None
@@ -53,7 +86,8 @@ class StratuxStatus(object):
                 raise
             except SystemExit:
                 raise
-            except:
+            except Exception as ex:
+                self.warn("__get_status__ EX={}".format(ex))
                 self.__status_json__ = {}
 
             self.cpu_temp = self.__get_status__('CPUTemp')
@@ -61,7 +95,7 @@ class StratuxStatus(object):
                 'GPS_satellites_locked')
 
 
-class StratuxCapabilities(object):
+class StratuxCapabilities(LoggingObject):
     """
     Get the capabilities of the Stratux, so we know what can be used
     in the HUD.
@@ -81,15 +115,18 @@ class StratuxCapabilities(object):
                 raise
             except SystemExit:
                 raise
-            except:
+            except Exception as ex:
+                self.warn("__get_capability__ EX={}".format(ex))
                 return False
 
         return False
 
-    def __init__(self, stratux_address, stratux_session, simulation_mode=False):
+    def __init__(self, stratux_address, stratux_session, logger=None, simulation_mode=False):
         """
         Builds a list of Capabilities of the stratux.
         """
+
+        super(StratuxCapabilities, self).__init__(logger)
 
         if stratux_address is None or simulation_mode:
             self.__capabilities_json__ = None
@@ -108,8 +145,9 @@ class StratuxCapabilities(object):
                 raise
             except SystemExit:
                 raise
-            except:
+            except Exception as ex:
                 self.__capabilities_json__ = {}
+                self.warn("EX in __init__ ex={}".format(ex))
 
             self.traffic_enabled = self.__get_capability__('UAT_Enabled')
             self.gps_enabled = self.__get_capability__('GPS_Enabled')
@@ -255,7 +293,7 @@ class AhrsSimulation(object):
         self.capabilities = StratuxCapabilities(None, None, True)
 
 
-class AhrsStratux(object):
+class AhrsStratux(LoggingObject):
     """
     Class to pull actual AHRS data from a Stratux (or Stratus)
     """
@@ -306,22 +344,24 @@ class AhrsStratux(object):
             configuration.CONFIGURATION.stratux_address())
 
         try:
-            ahrs_json = self.__stratux_session__.get(
-                url, timeout=self.__timeout__).json()
-            self.__last_update__ = datetime.datetime.utcnow(
-            ) if ahrs_json is not None else self.__last_update__
+            ahrs_json = self.__stratux_session__.get(url,
+                                                     timeout=self.__timeout__).json()
+
+            if ahrs_json is not None:
+                self.__last_update__ = datetime.datetime.utcnow()
 
         except KeyboardInterrupt:
             raise
         except SystemExit:
             raise
-        except:
+        except Exception as ex:
             # If we are spamming the REST too quickly, then we may loose a single update.
             # Do no consider the service unavailable unless we are
             # way below the max target framerate.
             delta_time = datetime.datetime.utcnow() - self.__last_update__
-            self.data_source_available = delta_time.total_seconds() < (
-                self.__min_update_microseconds__ / 1000000.0)
+            self.data_source_available = delta_time.total_seconds() < self.__min_update_seconds__
+
+            self.warn('AHRS.update() ex={}'.format(ex))
 
             return
 
@@ -408,16 +448,21 @@ class AhrsStratux(object):
         self.__lock__.acquire()
         try:
             self.capabilities = StratuxCapabilities(
-                configuration.CONFIGURATION.stratux_address(), self.__stratux_session__)
+                configuration.CONFIGURATION.stratux_address(), self.__stratux_session__, self.__logger__)
             self.stratux_status = StratuxStatus(
-                configuration.CONFIGURATION.stratux_address(), self.__stratux_session__)
+                configuration.CONFIGURATION.stratux_address(), self.__stratux_session__, self.__logger__)
         finally:
             self.__lock__.release()
 
-    def __init__(self):
-        self.__min_update_microseconds__ = int(
-            1000000.0 / (configuration.MAX_FRAMERATE / 10.0))
-        self.__timeout__ = 1.0 / (configuration.MAX_FRAMERATE / 8.0)
+    def __init__(self, logger):
+        super(AhrsStratux, self).__init__(logger)
+
+        # If an update to the AHRS takes longer than this,
+        # then the AHRS should be considered not available.
+        self.__min_update_seconds__ = 0.3
+        # Make the timeout a reasonable time.
+        # This allows a rate as low as 4FPS
+        self.__timeout__ = (1.0 / 4.0)
         self.__stratux_session__ = requests.Session()
 
         self.ahrs_data = AhrsData()
@@ -431,7 +476,7 @@ class AhrsStratux(object):
         self.__last_update__ = datetime.datetime.utcnow()
 
 
-class Aircraft(object):
+class Aircraft(LoggingObject):
     def update_orientation_in_background(self):
         print("starting")
         while True:
@@ -439,19 +484,21 @@ class Aircraft(object):
                 self.__update_orientation__()
             except KeyboardInterrupt:
                 raise
-            except:
-                print("error")
+            except Exception as ex:
+                self.warn("update_orientation_in_background ex={}".format(ex))
 
-    def __init__(self, force_simulation=False):
+    def __init__(self, logger=None, force_simulation=False):
+        super(Aircraft, self).__init__(logger)
+
         self.ahrs_source = None
 
         if force_simulation or configuration.CONFIGURATION.data_source() == configuration.DataSourceNames.SIMULATION:
             self.ahrs_source = AhrsSimulation()
         elif configuration.CONFIGURATION.data_source() == configuration.DataSourceNames.STRATUX:
-            self.ahrs_source = AhrsStratux()
+            self.ahrs_source = AhrsStratux(logger)
 
         recurring_task.RecurringTask('UpdateAhrs',
-                                     1.0 / (configuration.MAX_FRAMERATE * 2.0),
+                                     1.0 / configuration.TARGET_AHRS_FRAMERATE,
                                      self.__update_orientation__)
 
     def is_ahrs_available(self):
