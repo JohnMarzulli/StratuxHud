@@ -134,13 +134,13 @@ def get_converted_units_string(units, distance, unit_type=DISTANCE):
     >>> get_converted_units_string('statute', 0, DISTANCE)
     "0'"
     >>> get_converted_units_string('statute', 0, SPEED)
-    '0.0MPH'
+    '0 MPH'
     >>> get_converted_units_string('statute', 10, DISTANCE)
     "10'"
     >>> get_converted_units_string('statute', 5280, SPEED)
-    '1.0MPH'
+    '1 MPH'
     >>> get_converted_units_string('statute', 528000, SPEED)
-    '100.0MPH'
+    '100 MPH'
     """
 
     if units is None:
@@ -151,9 +151,9 @@ def get_converted_units_string(units, distance, unit_type=DISTANCE):
             return "{0:.0f}".format(distance) + "'"
 
         if units == NAUTICAL:
-            return "{0:.1f}{1}".format(distance / feet_to_nm, UNIT_LABELS[NAUTICAL][unit_type])
+            return "{0:.0f} {1}".format(distance / feet_to_nm, UNIT_LABELS[NAUTICAL][unit_type])
 
-        return "{0:.1f}{1}".format(distance / feet_to_sm, UNIT_LABELS[STATUTE][unit_type])
+        return "{0:.0f} {1}".format(distance / feet_to_sm, UNIT_LABELS[STATUTE][unit_type])
     else:
         conversion = distance / feet_to_km
 

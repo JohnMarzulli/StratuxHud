@@ -3,7 +3,7 @@ import pygame
 import testing
 testing.load_imports()
 
-from lib.display import *
+import lib.display as display
 from lib.task_timer import TaskTimer
 from ahrs_element import AhrsElement
 
@@ -20,9 +20,9 @@ class SkidAndGs(AhrsElement):
 
     def render(self, framebuffer, orientation):
         self.task_timer.start()
-        g_load_text = "{0:.1f}Gs".format(orientation.g_load)
+        g_load_text = "{0:.1f} Gs".format(orientation.g_load)
         texture = self.__font__.render(
-            g_load_text, True, WHITE, BLACK)
+            g_load_text, True, display.WHITE, display.BLACK)
         text_width, text_height = texture.get_size()
 
         framebuffer.blit(

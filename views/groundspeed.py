@@ -3,7 +3,7 @@ import pygame
 import testing
 testing.load_imports()
 
-from lib.display import *
+import lib.display as display
 from lib.task_timer import TaskTimer
 import units
 from ahrs_element import AhrsElement
@@ -32,7 +32,7 @@ class Groundspeed(AhrsElement):
             speed_units, orientation.groundspeed * units.feet_to_nm, units.SPEED)
 
         texture = self.__font__.render(
-            groundspeed_text, True, WHITE, BLACK)
+            groundspeed_text, True, display.WHITE, display.BLACK)
 
         framebuffer.blit(
             texture, (self.__left_x__, self.__text_y_pos__))
