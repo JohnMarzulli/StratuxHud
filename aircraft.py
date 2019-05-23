@@ -461,8 +461,7 @@ class AhrsStratux(LoggingObject):
         # then the AHRS should be considered not available.
         self.__min_update_seconds__ = 0.3
         # Make the timeout a reasonable time.
-        # This allows a rate as low as 4FPS
-        self.__timeout__ = (1.0 / 4.0)
+        self.__timeout__ = 0.5
         self.__stratux_session__ = requests.Session()
 
         self.ahrs_data = AhrsData()
