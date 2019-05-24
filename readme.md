@@ -6,7 +6,7 @@ This project aims to bring an affordable heads up display system into ANY cockpi
 
 The focus is to improve traffic awareness and to reduce the amount of time pilots reference tablets or an EFB.
 
-_*NOTE:*_ This project relies on having a [Stratux](http://stratux.me/) build with AHRS and GPS. A suitable build can be done for less than \$150 (USD).
+__NOTE:__ This project relies on having a [Stratux](http://stratux.me/) build with AHRS and GPS. A suitable build can be done for less than \$150 (USD).
 
 There are two versions that can be built:
 
@@ -24,7 +24,7 @@ Estimated cost is \$270
 
 Uses 5V USB power.
 
-_*NOTE:*_ This project initially used and reccomendedly the "HUDLY Classic" projector which is no longer available.
+__NOTE:__ This project initially used and reccomendedly the "HUDLY Classic" projector which is no longer available.
 
 ### Alternative, Less Expensive Version
 
@@ -48,15 +48,15 @@ Can be powered by a USB powerbank or USB power.
 
 You may use a number pad as input device. I used velcro to secure the number pad to my dashboard.
 
-| Key       | Action                                                                       |
-| --------- | ---------------------------------------------------------------------------- |
-| Backspace | Tell the Stratux that you are in a level position. Resets the AHRS to level. |
-| +         | Next view                                                                    |
-| -         | Previous view                                                                |
-| =         | Toggle rendering debug information                                           |
-| Esc       | Send shutdown commands to both the HUD controller _*and*_ the Stratux        |
-| q         | (_Full keyboard only_) Quit to the command line.                             |
-| 0/Ins     | Force a connection reset between the HUD and the Stratux                     |
+Key       | Action
+--------- | ----------------------------------------------------------------------------
+Backspace | Tell the Stratux that you are in a level position. Resets the AHRS to level.
++         | Next view
+-         | Previous view
+=         | Toggle rendering debug information
+Esc       | Send shutdown commands to both the HUD controller __and__ the Stratux
+q         | (_Full keyboard only_) Quit to the command line.
+0/Ins     | Force a connection reset between the HUD and the Stratux
 
 ## Views
 
@@ -91,8 +91,7 @@ _NOTE:_ This is the default view on startup. If you would like to switch to the 
 
 This view shows a heading strip, target bugs, targetting reticles, and "information cards" about our potential traffic.
 
-In this example, `N2803K` is almost directly ahead of us (middle of the screen).
-The plane is 1.5 statute miles away, with a bearing of 51 degrees. We are currently on a heading of 012 degrees. The traffic is 500 feet above us.
+In this example, `N2803K` is almost directly ahead of us (middle of the screen). The plane is 1.5 statute miles away, with a bearing of 51 degrees. We are currently on a heading of 012 degrees. The traffic is 500 feet above us.
 
 ### Traffic Listing View
 
@@ -100,20 +99,15 @@ The plane is 1.5 statute miles away, with a bearing of 51 degrees. We are curren
 
 This shows us _at most_ the eight closest planes.
 
-The *IDENT(ifier will be the tail number when available, otherwise the IACO identifier or callsign may be used.
-The *BEAR*ing is the heading to take to fly to that target.
-The *DIST*ance is the distance to the target.
-The *ALT\*itude is given in relative terms, with two digits dropped.
+The _IDENT(ifier will be the tail number when available, otherwise the IACO identifier or callsign may be used. The_ BEAR_ing is the heading to take to fly to that target. The_ DIST_ance is the distance to the target. The_ ALT*itude is given in relative terms, with two digits dropped.
 
-In this example, the closest target is QXE2382. We may see that plane if we looked out the cockpit at a heading of 276. The plane is only 1 statue mile away, and 11,200 feet above us.
+In this example, the closest target is QXE2382\. We may see that plane if we looked out the cockpit at a heading of 276\. The plane is only 1 statue mile away, and 11,200 feet above us.
 
 ### Diagnostics View
 
 ![Traffic View Screenshot](media/diagnostics_view.jpg)
 
-The diagnostics view is designed to help give some troubleshooting ability.
-If a value is set for "OWNSHIP" (See the configuration file section), then any report from that tailnumber is ignored.
-The IP addressis provided so you may use the configuration webpage if you set it up.
+The diagnostics view is designed to help give some troubleshooting ability. If a value is set for "OWNSHIP" (See the configuration file section), then any report from that tailnumber is ignored. The IP addressis provided so you may use the configuration webpage if you set it up.
 
 ### Universal Time
 
@@ -180,8 +174,7 @@ _NOTE:_ This _does not_ include a power source. You will need to supply ship pow
 
 #### Raspberry Pi 3B+
 
-If you are using a 3B+, it may suffer from undervoltage alerts.
-These may be relieved by the following command to update your Linux install to the latest:
+If you are using a 3B+, it may suffer from undervoltage alerts. These may be relieved by the following command to update your Linux install to the latest:
 
 ```bash
 sudo apt-get update && sudo apt-get dist-upgrade -y
@@ -195,17 +188,18 @@ Make sure you are using a high quality power cable if you are using a Pi 3B+
 2. `cd ~`
 3. `git clone https://github.com/JohnMarzulli/StratuxHud.git`
 4. `cd StratuxHud`
-5. `python --version`. Verify that your version is 2.7.14
-6. `sudo python setup.py develop`
-7. `sudo raspi-config`
-8. Choose "WiFi" again, and enter `stratux` as the SSID. No password.
-9. `sudo vim /etc/wpa_supplicant/wpa_supplicant.conf`
-10. Delete the section that contains your WiFi network, leaving the section that contains the Stratux network.
-11. More info on configuring Linux WiFi: <https://www.raspberrypi.org/forums/viewtopic.php?t=160620>
-12. Save and quit.
-13. Type "crontab -e"
-14. Select "Nano" (Option 1)
-15. Enter the following text at the _bottom_ of the file:
+5. `sudo apt-get install libgtk2.0-dev` a. Choose `Y` if prompted
+6. `python --version`. Verify that your version is 2.7.14
+7. `sudo python setup.py develop`
+8. `sudo raspi-config`
+9. Choose "WiFi" again, and enter `stratux` as the SSID. No password.
+10. `sudo vim /etc/wpa_supplicant/wpa_supplicant.conf`
+11. Delete the section that contains your WiFi network, leaving the section that contains the Stratux network.
+12. More info on configuring Linux WiFi: <https://www.raspberrypi.org/forums/viewtopic.php?t=160620>
+13. Save and quit.
+14. Type "crontab -e"
+15. Select "Nano" (Option 1)
+16. Enter the following text at the _bottom_ of the file:
 
 ```bash
 @reboot sudo python /home/pi/StratuxHud/stratux_hud.py &
@@ -218,7 +212,7 @@ Make sure you are using a high quality power cable if you are using a Pi 3B+
 1. Install the Kivic projector per the Kivic directions. Please note that there is a release clip and the unit is removable. Also note that the combiner glass can be adjusted fore and aft.
 2. Plug in the 3.5mm TRS cable between the Raspberry Pi and the Kivic. This is the same hole as the audio adapter for the Pi.
 3. Plug the number pad into the Raspberry Pi.
-4. You will need to run two Micro USB (5v) power cables. One to the HUD and one to the Raspberry Pi processing unit. These may be run from a battery bank, or from the ship's power _*if*_ you have 5V USB outlets.
+4. You will need to run two Micro USB (5v) power cables. One to the HUD and one to the Raspberry Pi processing unit. These may be run from a battery bank, or from the ship's power __if__ you have 5V USB outlets.
 5. You may use the _optional_ sleeving to help keep the install tidy.
 
 ### Teleprompter Glass Based Setup
@@ -234,23 +228,23 @@ Make sure you are using a high quality power cable if you are using a Pi 3B+
 
 ### Revision History
 
-| Date       | Version | Major Changes                                                                                                      |
-| ---------- | ------- | ------------------------------------------------------------------------------------------------------------------ |
-| TBD        | 1.5     | Support for the Aithre CO detector.                                                                                |
-| 2019-03-31 | 1.4     | Add connection reset button. Fixes issues with the Diagnostic view running of of space. Initial port to Python 3.7 |
-| 2019-01-31 | 1.3     | Improvements to the communication with the Stratux. Update directions for Kivic install.                           |
-| 2018-10-13 | 1.2     | Major performance increases                                                                                        |
-| 2018-09-07 | 1.1     | New system to allow views to be configurarable                                                                     |
-| 2018-07-17 | 1.0     | Initial release                                                                                                    |
+Date       | Version | Major Changes
+---------- | ------- | ------------------------------------------------------------------------------------------------------------------
+TBD        | 1.5     | Support for the Aithre CO detector.
+2019-03-31 | 1.4     | Add connection reset button. Fixes issues with the Diagnostic view running of of space. Initial port to Python 3.7
+2019-01-31 | 1.3     | Improvements to the communication with the Stratux. Update directions for Kivic install.
+2018-10-13 | 1.2     | Major performance increases
+2018-09-07 | 1.1     | New system to allow views to be configurarable
+2018-07-17 | 1.0     | Initial release
 
 ### Hardware Performance
 
-| Board                          | Screen         | Frames Per Second (AHRS View Only) | Notes                   |
-| ------------------------------ | -------------- | ---------------------------------- | ----------------------- |
-| Rasp Pi 2                      | Sun Founder 5" | ~25FPS to ~30FPS                   | Not reccomended         |
-| Rasp Pi 3 (stand alone)        | Kivic          | 30FPS - 50FPS                      | Reccomended             |
-| Rasp Pi 3 (Running on Stratux) | Kivic          | 30FPS                              | Not supported           |
-| Rasp Pi 3B+                    | Kivic          | 40FPS - 60FPS                      | Does not support Aithre |
+Board                          | Screen         | Frames Per Second (AHRS View Only) | Notes
+------------------------------ | -------------- | ---------------------------------- | -----------------------
+Rasp Pi 2                      | Sun Founder 5" | ~25FPS to ~30FPS                   | Not reccomended
+Rasp Pi 3 (stand alone)        | Kivic          | 50FPS - 60FPS                      | Reccomended
+Rasp Pi 3 (Running on Stratux) | Kivic          | 30FPS                              | Not supported
+Rasp Pi 3B+                    | Kivic          | 55FPS - 60FPS                      | Reccomended
 
 Please note that the frame rate is capped at 60FPS. Drawing any faster will not be detectable using the reccomended output systems. Reducing the framerate will reduce the powerdraw.
 
@@ -272,4 +266,4 @@ The following components are used:
 
 This project is covered by the GPL v3 license.
 
-Please see [LICENSE](LICENSE)
+Please see <LICENSE>
