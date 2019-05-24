@@ -68,9 +68,9 @@ def get_cpu_temp():
     color = GREEN
 
     try:
-        if local_debug.IS_PI:
-            raspberry_pi_temp = open('/sys/class/thermal/thermal_zone0/temp')
-            temp = float(raspberry_pi_temp.read())
+        if local_debug.IS_LINUX:
+            linux_cpu_temp = open('/sys/class/thermal/thermal_zone0/temp')
+            temp = float(linux_cpu_temp.read())
             temp = temp/1000
 
             color = get_cpu_temp_text_color(temp)
