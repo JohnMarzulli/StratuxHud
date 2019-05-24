@@ -9,6 +9,8 @@ import pygame.gfxdraw
 import testing
 testing.load_imports()
 
+TWO_PI = 2.0 * math.pi
+
 
 class RollIndicatorText(AhrsElement):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
@@ -47,23 +49,37 @@ class RollIndicatorText(AhrsElement):
 
 
 def wrap_angle(angle):
+    """
+    Wraps an angle (degrees) to be between 0.0 and 360
+    Arguments:
+        angle {float} -- The input angle
+    Returns: and value that is between 0 and 360, inclusive.
+    """
+
     if angle < -360.0:
         return wrap_angle(angle + 360.0)
-    
+
     if angle > 360.0:
         return wrap_angle(angle - 360.0)
-    
+
     return angle
 
+
 def wrap_radians(radians):
-    two_pi = 2.0 * math.pi
+    """
+    Wraps an angle that is in radians to be between 0.0 and 2Pi
+    Arguments:
+        angle {float} -- The input angle
+    Returns: and value that is between 0 and 2Pi, inclusive.
+    """
     if radians < 0.0:
-         return wrap_radians(radians + two_pi)
-    
-    if radians > two_pi:
-         return wrap_angle(radians - two_pi)
-    
+        return wrap_radians(radians + TWO_PI)
+
+    if radians > TWO_PI:
+        return wrap_angle(radians - TWO_PI)
+
     return radians
+
 
 class RollIndicator(AhrsElement):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
@@ -80,8 +96,10 @@ class RollIndicator(AhrsElement):
         self.arc_box = [self.__center__[0] - self.arc_radius, self.__center__[1] - (
             self.arc_radius / 2), self.arc_radius * 2, (self.arc_radius * 2) * self.top_arc_squash]
         self.reference_line_size = 20
-        self.reference_arc_box = [self.arc_box[0], self.arc_box[1] - self.reference_line_size, self.arc_box[2], self.arc_box[3] - self.reference_line_size]
-        self.smaller_reference_arc_box = [self.arc_box[0], self.arc_box[1] - (self.reference_line_size/2), self.arc_box[2], self.arc_box[3] - (self.reference_line_size/2)]
+        self.reference_arc_box = [self.arc_box[0], self.arc_box[1] - self.reference_line_size,
+                                  self.arc_box[2], self.arc_box[3] - self.reference_line_size]
+        self.smaller_reference_arc_box = [self.arc_box[0], self.arc_box[1] - (
+            self.reference_line_size/2), self.arc_box[2], self.arc_box[3] - (self.reference_line_size/2)]
         self.half_pi = math.pi / 2.0
 
     def render(self, framebuffer, orientation):
@@ -96,7 +114,7 @@ class RollIndicator(AhrsElement):
                         self.arc_angle_adjust,
                         math.pi - self.arc_angle_adjust,
                         4)
-        
+
         # Draw the important reference angles
         for roll_angle in [-30, -15, 15, 30]:
             reference_roll_in_radians = math.radians(roll_angle + 90.0)
@@ -106,7 +124,7 @@ class RollIndicator(AhrsElement):
                             reference_roll_in_radians - self.roll_indicator_arc_radians,
                             reference_roll_in_radians + self.roll_indicator_arc_radians,
                             self.reference_line_size / 2)
-        
+
         # Draw the REALLY important reference angles longer
         for roll_angle in [-90, -60, -45, 0, 45, 60, 90]:
             reference_roll_in_radians = math.radians(roll_angle + 90.0)
@@ -117,7 +135,6 @@ class RollIndicator(AhrsElement):
                             reference_roll_in_radians + self.roll_indicator_arc_radians,
                             self.reference_line_size)
 
-        
         # Draws the current roll
         pygame.draw.arc(framebuffer,
                         display.YELLOW,
