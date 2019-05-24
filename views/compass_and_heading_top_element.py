@@ -140,6 +140,7 @@ class CompassAndHeadingTopElement(AhrsElement):
         Renders the text with the results centered on the given
         position.
         """
+        heading = int(heading)
         rendered_text, half_size = self.__heading_text__[heading]
 
         framebuffer.blit(
