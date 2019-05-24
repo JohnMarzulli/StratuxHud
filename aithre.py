@@ -32,6 +32,14 @@ BATTERY_WARNING = 25
 
 
 def get_service_value(addr, addr_type, offset):
+    """
+    Gets the value from a Blue Tooth Low Energy device.
+    Arguments:
+        addr {string} -- The address to get the value from
+        add_type {string} -- The type of address we are using.
+        offset {string} -- The offset from the device's address to get the value from
+    Returns: {int} -- The result of the fetch
+    """
     if not CONFIGURATION.aithre_enabled:
         return None
 
@@ -43,20 +51,12 @@ def get_service_value(addr, addr_type, offset):
         else:
             return int(aithre_bat_simulator.get_value())
 
-    # print("get_name({})".format(addr))
     try:
-        # print("   Peripheral()")
         p = Peripheral(addr, addr_type)  # bluepy.btle.ADDR_TYPE_PUBLIC)
-        # print("   p.getChar()")
         ch_all = p.getCharacteristics(uuid=offset)
-        # print(ch_all)
 
         if ch_all[0].supportsRead():
-            # print("ch[0].read()=")
             res = ch_all[0].read()
-            # print("Raw={}".format(res))
-            # print("Ord={}".format(ord(res)))
-            # print("done with read")
 
         p.disconnect()
 
@@ -68,6 +68,12 @@ def get_service_value(addr, addr_type, offset):
 
 
 def get_aithre(mac_adr):
+    """
+    Gets the current Aithre readings given a MAC for the Aithre
+    Arguments:
+        mac_adr {string} -- The MAC address of the Aithre to fetch from.
+    Returns: {(int, int)} -- The co and battery percentage of the Aithre
+    """
     if not CONFIGURATION.aithre_enabled:
         return None, None
 
@@ -78,10 +84,13 @@ def get_aithre(mac_adr):
 
 
 def get_aithre_mac():
+    """
+    Attempts to find an Aithre MAC using Blue Tooth low energy.
+    Returns: {string} None if a device was not found, otherwise the MAC of the Aithre
+    """
     if not CONFIGURATION.aithre_enabled:
         return None
 
-    print("get_aithre_mac()")
     try:
         if not local_debug.IS_LINUX:
             return None
@@ -93,10 +102,7 @@ def get_aithre_mac():
 
             for (adtype, desc, value) in dev.getScanData():
                 try:
-                    # print("     - {} {}={}".format(adtype, desc, value))
-
                     if "AITH" in value:
-                        print("FOUND at {}!".format(dev.addr))
                         return dev.addr
                 except Exception as ex:
                     print("DevScan loop - ex={}".format(ex))
