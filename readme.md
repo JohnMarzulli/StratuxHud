@@ -26,6 +26,8 @@ Uses 5V USB power.
 
 __NOTE:__ This project initially used and reccomendedly the "HUDLY Classic" projector which is no longer available.
 
+__NOTE:__ To have full functionality with a Stratux based unit, please use Stratux Version 1.4R5 or higher.
+
 ### Alternative, Less Expensive Version
 
 A self contained system that uses a 3D printed case and teleprompter glass. This version can be built for the cost of a Raspberry Pi and the 3D print.
