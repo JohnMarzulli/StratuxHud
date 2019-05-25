@@ -241,12 +241,17 @@ TBD        | 1.5     | Support for the Aithre CO detector.
 
 ### Hardware Performance
 
+Please note that performance characteristics are only shown for displays that are currently available for purchase.
+The Hudly Classic is intentionally not listed.
+
 Board                          | Screen         | Frames Per Second (AHRS View Only) | Notes
 ------------------------------ | -------------- | ---------------------------------- | -----------------------
 Rasp Pi 2                      | Sun Founder 5" | ~25FPS to ~30FPS                   | Not reccomended
 Rasp Pi 3 (stand alone)        | Kivic          | 50FPS - 60FPS                      | Reccomended
+Rasp Pi 3 (stand alone)        | Hudly Wireless | 25FPS - 30FPS                      | Reccomended
 Rasp Pi 3 (Running on Stratux) | Kivic          | 30FPS                              | Not supported
 Rasp Pi 3B+                    | Kivic          | 55FPS - 60FPS                      | Reccomended
+Rasp Pi 3B+                    | Hudly Wireless | 30FPS - 40FPS                      | Reccomended
 
 Please note that the frame rate is capped at 60FPS. Drawing any faster will not be detectable using the reccomended output systems. Reducing the framerate will reduce the powerdraw.
 
