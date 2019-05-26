@@ -6,7 +6,7 @@ This project aims to bring an affordable heads up display system into ANY cockpi
 
 The focus is to improve traffic awareness and to reduce the amount of time pilots reference tablets or an EFB.
 
-__NOTE:__ This project relies on having a [Stratux](http://stratux.me/) build with AHRS and GPS. A suitable build can be done for less than \$150 (USD).
+**NOTE:** This project relies on having a [Stratux](http://stratux.me/) build with AHRS and GPS. A suitable build can be done for less than \$150 (USD).
 
 There are two versions that can be built:
 
@@ -24,9 +24,9 @@ Estimated cost is \$270
 
 Uses 5V USB power.
 
-__NOTE:__ This project initially used and reccomendedly the "HUDLY Classic" projector which is no longer available.
+**NOTE:** This project initially used and reccomendedly the "HUDLY Classic" projector which is no longer available.
 
-__NOTE:__ To have full functionality with a Stratux based unit, please use Stratux Version 1.4R5 or higher.
+**NOTE:** To have full functionality with a Stratux based unit, please use Stratux Version 1.4R5 or higher.
 
 ### Alternative, Less Expensive Version
 
@@ -56,7 +56,7 @@ Backspace | Tell the Stratux that you are in a level position. Resets the AHRS t
 +         | Next view
 -         | Previous view
 =         | Toggle rendering debug information
-Esc       | Send shutdown commands to both the HUD controller __and__ the Stratux
+Esc       | Send shutdown commands to both the HUD controller **and** the Stratux
 q         | (_Full keyboard only_) Quit to the command line.
 0/Ins     | Force a connection reset between the HUD and the Stratux
 
@@ -191,17 +191,18 @@ Make sure you are using a high quality power cable if you are using a Pi 3B+
 3. `git clone https://github.com/JohnMarzulli/StratuxHud.git`
 4. `cd StratuxHud`
 5. `sudo apt-get install libgtk2.0-dev` a. Choose `Y` if prompted
-6. `python --version`. Verify that your version is 2.7.14
-7. `sudo python setup.py develop`
-8. `sudo raspi-config`
-9. Choose "WiFi" again, and enter `stratux` as the SSID. No password.
-10. `sudo vim /etc/wpa_supplicant/wpa_supplicant.conf`
-11. Delete the section that contains your WiFi network, leaving the section that contains the Stratux network.
-12. More info on configuring Linux WiFi: <https://www.raspberrypi.org/forums/viewtopic.php?t=160620>
-13. Save and quit.
-14. Type "crontab -e"
-15. Select "Nano" (Option 1)
-16. Enter the following text at the _bottom_ of the file:
+6. `sudo cp ./media/hud_logo.png /usr/share/plymouth/themes/pix/splash.png`
+7. `python --version`. Verify that your version is 2.7.14
+8. `sudo python setup.py develop`
+9. `sudo raspi-config`
+10. Choose "WiFi" again, and enter `stratux` as the SSID. No password.
+11. `sudo vim /etc/wpa_supplicant/wpa_supplicant.conf`
+12. Delete the section that contains your WiFi network, leaving the section that contains the Stratux network.
+13. More info on configuring Linux WiFi: <https://www.raspberrypi.org/forums/viewtopic.php?t=160620>
+14. Save and quit.
+15. Type "crontab -e"
+16. Select "Nano" (Option 1)
+17. Enter the following text at the _bottom_ of the file:
 
 ```bash
 @reboot sudo python /home/pi/StratuxHud/stratux_hud.py &
@@ -214,7 +215,7 @@ Make sure you are using a high quality power cable if you are using a Pi 3B+
 1. Install the Kivic projector per the Kivic directions. Please note that there is a release clip and the unit is removable. Also note that the combiner glass can be adjusted fore and aft.
 2. Plug in the 3.5mm TRS cable between the Raspberry Pi and the Kivic. This is the same hole as the audio adapter for the Pi.
 3. Plug the number pad into the Raspberry Pi.
-4. You will need to run two Micro USB (5v) power cables. One to the HUD and one to the Raspberry Pi processing unit. These may be run from a battery bank, or from the ship's power __if__ you have 5V USB outlets.
+4. You will need to run two Micro USB (5v) power cables. One to the HUD and one to the Raspberry Pi processing unit. These may be run from a battery bank, or from the ship's power **if** you have 5V USB outlets.
 5. You may use the _optional_ sleeving to help keep the install tidy.
 
 ### Teleprompter Glass Based Setup
@@ -232,7 +233,7 @@ Make sure you are using a high quality power cable if you are using a Pi 3B+
 
 Date       | Version | Major Changes
 ---------- | ------- | ------------------------------------------------------------------------------------------------------------------
-TBD        | 1.5     | Support for the Aithre CO detector.
+TBD        | 1.5     | Support for the Aithre CO detector. New roll indicator. Various performance improvements.
 2019-03-31 | 1.4     | Add connection reset button. Fixes issues with the Diagnostic view running of of space. Initial port to Python 3.7
 2019-01-31 | 1.3     | Improvements to the communication with the Stratux. Update directions for Kivic install.
 2018-10-13 | 1.2     | Major performance increases
@@ -241,11 +242,10 @@ TBD        | 1.5     | Support for the Aithre CO detector.
 
 ### Hardware Performance
 
-Please note that performance characteristics are only shown for displays that are currently available for purchase.
-The Hudly Classic is intentionally not listed.
+Please note that performance characteristics are only shown for displays that are currently available for purchase. The Hudly Classic is intentionally not listed.
 
 Board                          | Screen         | Frames Per Second (AHRS View Only) | Notes
------------------------------- | -------------- | ---------------------------------- | -----------------------
+------------------------------ | -------------- | ---------------------------------- | ---------------
 Rasp Pi 2                      | Sun Founder 5" | ~25FPS to ~30FPS                   | Not reccomended
 Rasp Pi 3 (stand alone)        | Kivic          | 50FPS - 60FPS                      | Reccomended
 Rasp Pi 3 (stand alone)        | Hudly Wireless | 25FPS - 30FPS                      | Reccomended
@@ -273,4 +273,7 @@ The following components are used:
 
 This project is covered by the GPL v3 license.
 
-Please see <LICENSE>
+Please see
+
+<license>
+</license>
