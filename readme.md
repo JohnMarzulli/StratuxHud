@@ -6,7 +6,7 @@ This project aims to bring an affordable heads up display system into ANY cockpi
 
 The focus is to improve traffic awareness and to reduce the amount of time pilots reference tablets or an EFB.
 
-**NOTE:** This project relies on having a [Stratux](http://stratux.me/) build with AHRS and GPS. A suitable build can be done for less than \$150 (USD).
+**NOTE:** This project relies on having a [Stratux](http://stratux.me/) build with AHRS and GPS. A suitable build can be done for less than $150 (USD).
 
 There are two versions that can be built:
 
@@ -16,10 +16,10 @@ Using the "Kivic HUD 2nd Gen" projector and a Raspberry Pi 3.
 
 ![Kivic Version](media/kivic_in_flight.jpg)
 
-Estimated cost is \$270
+Estimated cost is $270
 
-- \$40 for RaspberryPi 3
-- \$195 for Kivic 2nd Gen projector
+- $40 for RaspberryPi 3
+- $195 for Kivic 2nd Gen projector
 - Fans, case, cables
 
 Uses 5V USB power.
@@ -36,11 +36,11 @@ _NOTE:_ This version does have visibility issues in daylight conditions. Using a
 
 ![Teleprompter Glass Version In Flight](media/in_flight.jpg)
 
-Estimated Cost is \$140
+Estimated Cost is $140
 
-- \$40 for a RaspberryPi 3
-- \$45 for the LCD screen
-- \$20 for Teleprompter Glass and shipping.
+- $40 for a RaspberryPi 3
+- $45 for the LCD screen
+- $20 for Teleprompter Glass and shipping.
 - Cost of 3D printing the special case.
 - Cables
 
