@@ -60,7 +60,7 @@ Esc       | Send shutdown commands to both the HUD controller **and** the Stratu
 q         | (_Full keyboard only_) Quit to the command line.
 0/Ins     | Force a connection reset between the HUD and the Stratux
 
-## Views
+## Included (Default) Views
 
 - AHRS + ADS-B
 - Traffic
@@ -72,18 +72,18 @@ q         | (_Full keyboard only_) Quit to the command line.
 
 ### AHRS + ADS-B View
 
-![Traffic View Screenshot](media/ahrs_plus_adsb_view.jpg)
+![AHRS + ADS-B](media/ahrs_plus_adsb_view.jpg)
 
 This view shows attitude information along with targetting bugs that show the relative position and distance of traffic.
 
 In this example:
 
-- There are five potential targets, all at a higher altitude. Three are relatively far away. The one directly behind us (far right hand side) is the closest.
-- One of the five targets is within our field of view and has a targetting reticle.
-- With are at a level pitch and roll.
+- There are three (3) potential targets, all at a higher altitude. Two are relatively far away, one is closer.
+- One of the targets is within our field of view and has a targetting reticle.
+- With are rolled to the left slightly, less then 15 degrees.
 - We are 309 feet MSL.
-- We are traveling forward a 0.4MPH (taxing)
-- We have a GPS heading of 12, but do not have enough forward speed to obtain a heading from the AHRS chip. If the AHRS chip is unable to produce a reliable heading, `---` is shown for that portion of the heading.
+- We are stopped, with a groundspeed of 0MPH
+- We have a GPS heading of 236, but do not have enough forward speed to obtain a heading from the AHRS chip. If the AHRS chip is unable to produce a reliable heading, `---` is shown for that portion of the heading.
 
 _NOTE:_ This is the default view on startup. If you would like to switch to the `AHRS Only` You may press `-` on the keypad.
 
@@ -93,25 +93,27 @@ _NOTE:_ This is the default view on startup. If you would like to switch to the 
 
 This view shows a heading strip, target bugs, targetting reticles, and "information cards" about our potential traffic.
 
-In this example, `N2803K` is almost directly ahead of us (middle of the screen). The plane is 1.5 statute miles away, with a bearing of 51 degrees. We are currently on a heading of 012 degrees. The traffic is 500 feet above us.
+In this example, `N2849K` is almost directly behind us (far left screen). The plane is 1.5 statute miles away, with a bearing of 70 degrees, and 100 feet above us.
 
 ### Traffic Listing View
 
-![Traffic View Screenshot](media/traffic_listing_view.jpg)
+![Traffic Listing View Screenshot](media/traffic_listing_view.jpg)
 
 This shows us _at most_ the eight closest planes.
 
-The _IDENT(ifier will be the tail number when available, otherwise the IACO identifier or callsign may be used. The_ BEAR_ing is the heading to take to fly to that target. The_ DIST_ance is the distance to the target. The_ ALT*itude is given in relative terms, with two digits dropped.
+The *IDENT*ifier will be the tail number when available, otherwise the IACO identifier or callsign may be used. The *BEAR*ing is the heading to take to fly to that target. The *DIST*ance is the distance to the target. The *ALT*itude is given in relative terms, with two digits dropped.
 
-In this example, the closest target is QXE2382\. We may see that plane if we looked out the cockpit at a heading of 276\. The plane is only 1 statue mile away, and 11,200 feet above us.
+In this example, the closest target is N1213S. The plane is only 1.2 statue mile away, and 1,500 feet above us.
 
 ### Diagnostics View
 
-![Traffic View Screenshot](media/diagnostics_view.jpg)
+![Diagnostics View Screenshot](media/diagnostics_view.jpg)
 
 The diagnostics view is designed to help give some troubleshooting ability. If a value is set for "OWNSHIP" (See the configuration file section), then any report from that tailnumber is ignored. The IP addressis provided so you may use the configuration webpage if you set it up.
 
 ### Universal Time
+
+![Diagnostics View Screenshot](media/time_view.jpg)
 
 Shows the current time in UTC at the bottom of the screen.
 
