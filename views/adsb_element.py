@@ -58,7 +58,7 @@ class AdsbElement(object):
 
         return units.get_converted_units_string(speed_units, speed, units.SPEED)
 
-    def __get_distance_string__(self, distance):
+    def __get_distance_string__(self, distance, decimal_places=True):
         """
         Gets the distance string for display using the units
         from the configuration.
@@ -73,7 +73,7 @@ class AdsbElement(object):
         display_units = configuration.CONFIGURATION.__get_config_value__(
             Configuration.DISTANCE_UNITS_KEY, units.STATUTE)
 
-        return units.get_converted_units_string(display_units, distance)
+        return units.get_converted_units_string(display_units, distance, decimal_places=decimal_places)
 
     def __get_traffic_projection__(self, orientation, traffic):
         """

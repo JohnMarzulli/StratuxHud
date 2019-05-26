@@ -161,9 +161,7 @@ class SystemInfo(AhrsElement):
         self.task_timer = TaskTimer('Time')
         self.__font__ = font
         self.font_height = font.get_height()
-        text_half_height = int(self.font_height) >> 1
-        self.__text_y_pos__ = framebuffer_size[1] - \
-            text_half_height - self.font_height
+        self.__text_y_pos__ = framebuffer_size[1] - self.font_height
         self.__rhs__ = int(0.9 * framebuffer_size[0])
 
         self.__left_x__ = int(framebuffer_size[0] * 0.01)

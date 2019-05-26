@@ -29,7 +29,7 @@ class Groundspeed(AhrsElement):
             configuration.Configuration.DISTANCE_UNITS_KEY, units.STATUTE)
 
         groundspeed_text = units.get_converted_units_string(
-            speed_units, orientation.groundspeed * units.feet_to_nm, units.SPEED)
+            speed_units, orientation.groundspeed * units.feet_to_nm, unit_type=units.SPEED, decimal_places=False)
 
         texture = self.__font__.render(
             groundspeed_text, True, display.WHITE, display.BLACK)

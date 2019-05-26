@@ -64,7 +64,7 @@ class AdsbTrafficListing(AdsbElement):
     def __get_report_text__(self, traffic):
         identifier = str(traffic.get_identifer())
         altitude_delta = int(traffic.altitude / 100.0)
-        distance_text = self.__get_distance_string__(traffic.distance)
+        distance_text = self.__get_distance_string__(traffic.distance, True)
         delta_sign = ''
         if altitude_delta > 0:
             delta_sign = '+'
