@@ -472,8 +472,6 @@ class HeadsUpDisplay(object):
         pygame.font.init()
         self.__should_render_perf__ = False
 
-        font_name = "consolas,monaco,courier,arial,helvetica"
-
         font_size_std = int(self.__height__ / 10.0)
         font_size_detail = int(self.__height__ / 12.0)
         font_size_loading = int(self.__height__ / 4.0)
@@ -482,8 +480,8 @@ class HeadsUpDisplay(object):
             get_absolute_file_path("./assets/fonts/LiberationMono-Bold.ttf"), font_size_std)
         self.__detail_font__ = pygame.font.Font(
             get_absolute_file_path("./assets/fonts/LiberationMono-Bold.ttf"), font_size_detail)
-        self.__loading_font__ = pygame.font.SysFont(
-            font_name, font_size_loading, True, False)
+        self.__loading_font__ = pygame.font.Font(
+            get_absolute_file_path("./assets/fonts/LiberationMono-Regular.ttf"), font_size_loading)
         self.__show_boot_screen__()
 
         self.__aircraft__ = Aircraft(self.__logger__)
@@ -521,9 +519,9 @@ class HeadsUpDisplay(object):
         disclaimer_text = ['Not intended as',
                            'a primary collision evasion',
                            'or flight instrument system.',
-                           'For advisiory only.']
+                           'For advisory only.']
 
-        texture = self.__loading_font__.render("BOOTING", True, display.RED)
+        texture = self.__loading_font__.render("LOADING", True, display.RED)
         text_width, text_height = texture.get_size()
 
         surface = pygame.display.get_surface()

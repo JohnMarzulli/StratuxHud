@@ -173,7 +173,7 @@ class SystemInfo(AhrsElement):
         self.__ip_address__ = get_ip_address()
         self.__cpu_temp__ = None
         self.__framebuffer_size__ = framebuffer_size
-        self.__line_spacing__ = 1.05
+        self.__line_spacing__ = 1.01
 
     def render(self, framebuffer, orientation):
         self.task_timer.start()
