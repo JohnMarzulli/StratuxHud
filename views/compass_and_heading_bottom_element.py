@@ -70,8 +70,7 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
         [self.__render_heading_mark__(framebuffer, heading_mark_to_render[0], heading_mark_to_render[1])
          for heading_mark_to_render in self.__heading_strip__[heading]]
 
-        self._render_hallow_heading_box_(" ",
-                                         orientation,
+        self._render_hallow_heading_box_(orientation,
                                          framebuffer,
                                          self._heading_box_y_)
         self.task_timer.stop()

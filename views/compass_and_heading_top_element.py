@@ -117,19 +117,17 @@ class CompassAndHeadingTopElement(AhrsElement):
          for heading_mark_to_render in self.__heading_strip__[heading]]
 
         # Render the text that is showing our AHRS and GPS headings
-        cover_old_rendering_spaces = " "
         heading_y_pos = self.__font__.get_height() << 1
-        self._render_hallow_heading_box_(cover_old_rendering_spaces,
-                                         orientation,
+        self._render_hallow_heading_box_(orientation,
                                          framebuffer,
                                          heading_y_pos)
         self.task_timer.stop()
 
-    def _render_hallow_heading_box_(self, cover_old_rendering_spaces, orientation, framebuffer, heading_y_pos):
-        heading_text = "{0}{1} | {2}{0}".format(cover_old_rendering_spaces,
-                                                str(int(utils.apply_declination(
-                                                    orientation.get_onscreen_projection_display_heading()))).rjust(3),
-                                                str(int(utils.apply_declination(orientation.gps_heading))).rjust(3))
+    def _render_hallow_heading_box_(self, orientation, framebuffer, heading_y_pos):
+        heading_text = "{0} | {1}".format(
+            str(utils.apply_declination(
+                orientation.get_onscreen_projection_display_heading())).rjust(3),
+            str(utils.apply_declination(orientation.gps_heading)).rjust(3))
 
         rendered_text = self.__font__.render(
             heading_text, True, display.GREEN)
