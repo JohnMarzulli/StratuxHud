@@ -234,8 +234,8 @@ Make sure you are using a high quality power cable if you are using a Pi 3B+
 ### Revision History
 
 Date       | Version | Major Changes
----------- | ------- | ------------------------------------------------------------------------------------------------------------------
-TBD        | 1.5     | Support for the Aithre CO detector. New roll indicator. Various performance improvements.
+---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------
+TBD        | 1.5     | Support for the Aithre CO detector. New roll indicator. Various performance improvements. Visual warning if GPS is not plugged in.
 2019-03-31 | 1.4     | Add connection reset button. Fixes issues with the Diagnostic view running of of space. Initial port to Python 3.7
 2019-01-31 | 1.3     | Improvements to the communication with the Stratux. Update directions for Kivic install.
 2018-10-13 | 1.2     | Major performance increases

@@ -1,3 +1,4 @@
+from numbers import Number
 import hud_elements
 from lib.task_timer import TaskTimer
 from lib.display import *
@@ -61,14 +62,15 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
 
         heading = orientation.get_onscreen_projection_heading()
 
-        if heading < 0:
-            heading += 360
+        if isinstance(heading, Number):
+            if heading < 0:
+                heading += 360
 
-        if heading > 360:
-            heading -= 360
+            if heading > 360:
+                heading -= 360
 
-        [self.__render_heading_mark__(framebuffer, heading_mark_to_render[0], heading_mark_to_render[1])
-         for heading_mark_to_render in self.__heading_strip__[heading]]
+            [self.__render_heading_mark__(framebuffer, heading_mark_to_render[0], heading_mark_to_render[1])
+             for heading_mark_to_render in self.__heading_strip__[heading]]
 
         self._render_hallow_heading_box_(orientation,
                                          framebuffer,

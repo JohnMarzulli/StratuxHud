@@ -1,13 +1,13 @@
+import configuration
+from ahrs_element import AhrsElement
+import units
+from lib.task_timer import TaskTimer
+import lib.display as display
+from numbers import Number
 import pygame
 
 import testing
 testing.load_imports()
-
-import lib.display as display
-from lib.task_timer import TaskTimer
-import units
-from ahrs_element import AhrsElement
-import configuration
 
 
 class Groundspeed(AhrsElement):
@@ -29,10 +29,12 @@ class Groundspeed(AhrsElement):
             configuration.Configuration.DISTANCE_UNITS_KEY, units.STATUTE)
 
         groundspeed_text = units.get_converted_units_string(
-            speed_units, orientation.groundspeed * units.feet_to_nm, unit_type=units.SPEED, decimal_places=False)
+            speed_units, orientation.groundspeed * units.feet_to_nm, unit_type=units.SPEED, decimal_places=False) if orientation.groundspeed is not None and isinstance(orientation.groundspeed, Number) else "INOP"
+
+        display_color = display.WHITE if orientation is not None and orientation.groundspeed is not None and orientation.gps_online else display.RED
 
         texture = self.__font__.render(
-            groundspeed_text, True, display.WHITE, display.BLACK)
+            groundspeed_text, True, display_color, display.BLACK)
 
         framebuffer.blit(
             texture, (self.__left_x__, self.__text_y_pos__))

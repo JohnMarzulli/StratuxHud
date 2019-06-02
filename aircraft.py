@@ -222,7 +222,10 @@ class AhrsData(object):
         if self.__is_compass_heading_valid__():
             return int(self.compass_heading)
 
-        return int(self.gps_heading)
+        if self.gps_online:
+            return int(self.gps_heading)
+
+        return HEADING_NOT_AVAILABLE
 
     def get_onscreen_projection_display_heading(self):
         try:
@@ -233,14 +236,26 @@ class AhrsData(object):
 
         return HEADING_NOT_AVAILABLE
 
+    def get_onscreen_gps_heading(self):
+        """
+            Returns a safe display version of the GPS heading
+        """
+        return self.gps_heading if self.gps_online else HEADING_NOT_AVAILABLE
+
     def get_heading(self):
         try:
-            if self.compass_heading is None or self.compass_heading > 360 or self.compass_heading < 0 or self.compass_heading is '':
+            if (self.compass_heading is None
+                    or self.compass_heading > 360
+                    or self.compass_heading < 0
+                    or self.compass_heading is '') and self.gps_online:
                 return int(self.gps_heading)
 
-            return int(self.compass_heading)
+            if __is_compass_heading_valid__():
+                return int(self.compass_heading)
         except:
             return HEADING_NOT_AVAILABLE
+
+        return HEADING_NOT_AVAILABLE
 
     def __init__(self):
         self.roll = 0.0
@@ -254,6 +269,7 @@ class AhrsData(object):
         self.vertical_speed = 0
         self.g_load = 1.0
         self.utc_time = datetime.datetime.utcnow()
+        self.gps_online = True
 
 
 class AhrsSimulation(object):
@@ -333,7 +349,6 @@ class AhrsStratux(LoggingObject):
 
         return values[0] if values is not None and len(values) > 0 else default
 
-
     def update(self):
         """
         Grabs the AHRS (if available)
@@ -366,23 +381,28 @@ class AhrsStratux(LoggingObject):
 
             return
 
+        system_utc_time = str(datetime.datetime.utcnow())
+
         new_ahrs_data.roll = self.__get_value__(ahrs_json, 'AHRSRoll', 0.0)
         new_ahrs_data.pitch = self.__get_value__(ahrs_json, 'AHRSPitch', 0.0)
         new_ahrs_data.compass_heading = self.__get_value__(
             ahrs_json, 'AHRSGyroHeading', 1080)  # anything above 360 indicates "not available"
+        new_ahrs_data.gps_online = self.__get_value__(
+            ahrs_json, 'GPSFixQuality', 0) > 0
         new_ahrs_data.gps_heading = self.__get_value__(
-            ahrs_json, 'GPSTrueCourse', 0.0)
+            ahrs_json, 'GPSTrueCourse', 0.0) if new_ahrs_data.gps_online else HEADING_NOT_AVAILABLE
         new_ahrs_data.alt = self.__get_value_with_fallback__(
-            ahrs_json, ['GPSAltitudeMSL', 'BaroPressureAltitude'], None)
+            ahrs_json, ['GPSAltitudeMSL', 'BaroPressureAltitude'], None) if new_ahrs_data.gps_online else HEADING_NOT_AVAILABLE
         new_ahrs_data.position = (self.__get_value__(ahrs_json, 'GPSLatitude', None),
-            self.__get_value__(ahrs_json, 'GPSLongitude', None))
+                                  self.__get_value__(ahrs_json, 'GPSLongitude', None))
         new_ahrs_data.vertical_speed = self.__get_value__(
-            ahrs_json, 'GPSVerticalSpeed', 0.0)
+            ahrs_json, 'GPSVerticalSpeed', 0.0) if new_ahrs_data.gps_online else HEADING_NOT_AVAILABLE
         new_ahrs_data.groundspeed = self.__get_value__(
-            ahrs_json, 'GPSGroundSpeed', 0.0)
+            ahrs_json, 'GPSGroundSpeed', 0.0) if new_ahrs_data.gps_online else HEADING_NOT_AVAILABLE
         new_ahrs_data.g_load = self.__get_value__(ahrs_json, 'AHRSGLoad', 1.0)
         new_ahrs_data.utc_time = self.__get_value_with_fallback__(
-            ahrs_json, 'GPSTime', str(datetime.datetime.utcnow()))
+            ahrs_json, 'GPSTime', system_utc_time) if new_ahrs_data.gps_online else system_utc_time
+
         self.data_source_available = True
         # except:
         #    self.data_source_available = False
