@@ -1,3 +1,4 @@
+from numbers import Number
 from ahrs_element import AhrsElement
 from lib.task_timer import TaskTimer
 import hud_elements
@@ -68,8 +69,8 @@ class CompassAndHeadingTopElement(AhrsElement):
             to_the_left = (heading - heading_strip)
             to_the_right = (heading + heading_strip)
 
-            displayed_left = utils.apply_declination(to_the_left)
-            displayed_right = utils.apply_declination(to_the_right)
+            displayed_left = to_the_left
+            displayed_right = to_the_right
             if to_the_left < 0:
                 to_the_left += 360
 
@@ -127,7 +128,8 @@ class CompassAndHeadingTopElement(AhrsElement):
         heading_text = "{0} | {1}".format(
             str(utils.apply_declination(
                 orientation.get_onscreen_projection_display_heading())).rjust(3),
-            str(utils.apply_declination(orientation.gps_heading)).rjust(3))
+            str(utils.apply_declination(
+                orientation.get_onscreen_gps_heading())).rjust(3))
 
         rendered_text = self.__font__.render(
             heading_text, True, display.GREEN)
@@ -144,11 +146,12 @@ class CompassAndHeadingTopElement(AhrsElement):
         Renders the text with the results centered on the given
         position.
         """
-        heading = int(heading)
-        rendered_text, half_size = self.__heading_text__[heading]
+        if isinstance(heading, Number):
+            heading = int(heading)
+            rendered_text, half_size = self.__heading_text__[heading]
 
-        framebuffer.blit(
-            rendered_text, (position_x - half_size[0], position_y - half_size[1]))
+            framebuffer.blit(
+                rendered_text, (position_x - half_size[0], position_y - half_size[1]))
 
 
 if __name__ == '__main__':

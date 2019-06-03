@@ -1,11 +1,11 @@
+from ahrs_element import AhrsElement
+from lib.task_timer import TaskTimer
+from numbers import Number
+import lib.display as display
 import pygame
 
 import testing
 testing.load_imports()
-
-import lib.display as display
-from lib.task_timer import TaskTimer
-from ahrs_element import AhrsElement
 
 
 class Altitude(AhrsElement):
@@ -15,12 +15,14 @@ class Altitude(AhrsElement):
         center_y = framebuffer_size[1] >> 2
         text_half_height = int(font.get_height()) >> 1
         self.__text_y_pos__ = center_y - text_half_height
-        self.__rhs__ = int(framebuffer_size[0]) # was 0.9
+        self.__rhs__ = int(framebuffer_size[0])  # was 0.9
 
     def render(self, framebuffer, orientation):
         self.task_timer.start()
-        altitude_text = str(int(orientation.alt)) + "' MSL" if orientation.alt is not None else "INOP"
-        color = display.WHITE if orientation.alt is not None else display.RED
+        altitude_text = str(int(orientation.alt)) + \
+            "' MSL" if orientation.alt is not None and isinstance(
+                orientation.alt, Number) else "INOP"
+        color = display.WHITE if orientation.alt is not None and orientation.gps_online else display.RED
         alt_texture = self.__font__.render(
             altitude_text, True, color, display.BLACK)
         text_width, text_height = alt_texture.get_size()

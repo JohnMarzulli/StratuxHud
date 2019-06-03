@@ -22,9 +22,9 @@ def apply_declination(heading):
         return heading
 
     if new_heading < 0.0:
-        new_heading = new_heading + 360.0
+        new_heading = new_heading + 360
 
     if new_heading > 360.0:
-        new_heading = new_heading - 360.0
+        new_heading = new_heading - 360
 
     return new_heading
