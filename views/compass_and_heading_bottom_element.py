@@ -46,7 +46,7 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
 
         self.__render_heading_text__(
             framebuffer,
-            utils.apply_declination(heading),
+            heading,
             x_pos,
             self.compass_text_y)
 

@@ -69,8 +69,8 @@ class CompassAndHeadingTopElement(AhrsElement):
             to_the_left = (heading - heading_strip)
             to_the_right = (heading + heading_strip)
 
-            displayed_left = utils.apply_declination(to_the_left)
-            displayed_right = utils.apply_declination(to_the_right)
+            displayed_left = to_the_left
+            displayed_right = to_the_right
             if to_the_left < 0:
                 to_the_left += 360
 
