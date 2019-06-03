@@ -94,6 +94,57 @@ class StratuxStatus(LoggingObject):
             self.satellites_locked = self.__get_status__(
                 'GPS_satellites_locked')
 
+            # Results of a getStatus call
+            # {
+            #     "Version": "v1.5b2",
+            #     "Build": "8f4a52d7396c0dc20270e7644eebe5d9fc49eed9",
+            #     "HardwareBuild": "",
+            #     "Devices": 2,
+            #     "Connected_Users": 1,
+            #     "DiskBytesFree": 367050752,
+            #     "UAT_messages_last_minute": 0,
+            #     "UAT_messages_max": 38,
+            #     "ES_messages_last_minute": 1413,
+            #     "ES_messages_max": 6522,
+            #     "UAT_traffic_targets_tracking": 0,
+            #     "ES_traffic_targets_tracking": 5,
+            #     "Ping_connected": false,
+            #     "UATRadio_connected": false,
+            #     "GPS_satellites_locked": 12,
+            #     "GPS_satellites_seen": 13,
+            #     "GPS_satellites_tracked": 19,
+            #     "GPS_position_accuracy": 3,
+            #     "GPS_connected": true,
+            #     "GPS_solution": "GPS + SBAS (WAAS)",
+            #     "GPS_detected_type": 55,
+            #     "Uptime": 3261140,
+            #     "UptimeClock": "0001-01-01T00:54:21.14Z",
+            #     "CPUTemp": 49.925,
+            #     "CPUTempMin": 44.546,
+            #     "CPUTempMax": 55.843,
+            #     "NetworkDataMessagesSent": 3080,
+            #     "NetworkDataMessagesSentNonqueueable": 3080,
+            #     "NetworkDataBytesSent": 89047,
+            #     "NetworkDataBytesSentNonqueueable": 89047,
+            #     "NetworkDataMessagesSentLastSec": 3,
+            #     "NetworkDataMessagesSentNonqueueableLastSec": 3,
+            #     "NetworkDataBytesSentLastSec": 84,
+            #     "NetworkDataBytesSentNonqueueableLastSec": 84,
+            #     "UAT_METAR_total": 0,
+            #     "UAT_TAF_total": 0,
+            #     "UAT_NEXRAD_total": 0,
+            #     "UAT_SIGMET_total": 0,
+            #     "UAT_PIREP_total": 0,
+            #     "UAT_NOTAM_total": 0,
+            #     "UAT_OTHER_total": 0,
+            #     "Errors": [],
+            #     "Logfile_Size": 90107,
+            #     "AHRS_LogFiles_Size": 0,
+            #     "BMPConnected": true,
+            #     "IMUConnected": true,
+            #     "NightMode": false
+            # }
+
 
 class StratuxCapabilities(LoggingObject):
     """
@@ -155,59 +206,63 @@ class StratuxCapabilities(LoggingObject):
                 'BMP_Sensor_Enabled')
             self.ahrs_enabled = self.__get_capability__('IMU_Sensor_Enabled')
 
-    # http://192.168.10.1/getSettings - get device settings. Example output:
-    # {
-    # "UAT_Enabled": true,
-    # "ES_Enabled": false,
-    # "Ping_Enabled": false,
-    # "GPS_Enabled": true,
-    # "BMP_Sensor_Enabled": true,
-    # "IMU_Sensor_Enabled": true,
-    # "NetworkOutputs": [
-    #     {
-    #     "Conn": null,
-    #     "Ip": "",
-    #     "Port": 4000,
-    #     "Capability": 5,
-    #     "MessageQueueLen": 0,
-    #     "LastUnreachable": "0001-01-01T00:00:00Z",
-    #     "SleepFlag": false,
-    #     "FFCrippled": false
-    #     }
-    # ],
-    # "SerialOutputs": null,
-    # "DisplayTrafficSource": false,
-    # "DEBUG": false,
-    # "ReplayLog": false,
-    # "AHRSLog": false,
-    # "IMUMapping": [
-    #     -1,
-    #     0
-    # ],
-    # "SensorQuaternion": [
-    #     0.0068582877312501,
-    #     0.0067230280142738,
-    #     0.7140806859355,
-    #     -0.69999752767998
-    # ],
-    # "C": [
-    #     -0.019065523239845,
-    #     -0.99225684377575,
-    #     -0.019766228217414
-    # ],
-    # "D": [
-    #     -2.7707754753258,
-    #     5.544145023957,
-    #     -1.890621662038
-    # ],
-    # "PPM": 0,
-    # "OwnshipModeS": "F00000",
-    # "WatchList": "",
-    # "DeveloperMode": false,
-    # "GLimits": "",
-    # "StaticIps": [
-    # ]
-    # }
+            # http://192.168.10.1/getSettings - get device settings. Example output:
+            #
+            # {
+            #     "UAT_Enabled": true,
+            #     "ES_Enabled": true,
+            #     "Ping_Enabled": false,
+            #     "GPS_Enabled": true,
+            #     "BMP_Sensor_Enabled": true,
+            #     "IMU_Sensor_Enabled": true,
+            #     "NetworkOutputs": [
+            #         {
+            #             "Conn": null,
+            #             "Ip": "",
+            #             "Port": 4000,
+            #             "Capability": 5,
+            #             "MessageQueueLen": 0,
+            #             "LastUnreachable": "0001-01-01T00:00:00Z",
+            #             "SleepFlag": false,
+            #             "FFCrippled": false
+            #         }
+            #     ],
+            #     "SerialOutputs": null,
+            #     "DisplayTrafficSource": false,
+            #     "DEBUG": false,
+            #     "ReplayLog": false,
+            #     "AHRSLog": false,
+            #     "IMUMapping": [
+            #         2,
+            #         0
+            #     ],
+            #     "SensorQuaternion": [
+            #         0.017336041263077348,
+            #         0.7071029888451218,
+            #         0.7068942365539764,
+            #         -0.0023158510746434354
+            #     ],
+            #     "C": [
+            #         -0.02794518875698111,
+            #         0.021365398113956116,
+            #         -1.0051649525437176
+            #     ],
+            #     "D": [
+            #         -0.43015839106418047,
+            #         -0.0019837031159398175,
+            #         -1.2866603595080415
+            #     ],
+            #     "PPM": 0,
+            #     "OwnshipModeS": "F00000",
+            #     "WatchList": "",
+            #     "DeveloperMode": false,
+            #     "GLimits": "",
+            #     "StaticIps": [],
+            #     "WiFiSSID": "stratux",
+            #     "WiFiChannel": 1,
+            #     "WiFiSecurityEnabled": false,
+            #     "WiFiPassphrase": ""
+            # }
 
 
 class AhrsData(object):
@@ -411,45 +466,47 @@ class AhrsStratux(LoggingObject):
 
         # SAMPLE FULL JSON
         #
-        # {u'GPSAltitudeMSL': 68.041336,
-        # u'GPSFixQuality': 1,
-        #  u'AHRSGLoadMin': 0.3307450162084107
-        #  u'GPSHorizontalAccuracy': 4.2,
-        #  u'GPSLongitude': -122.36627,
-        #  u'GPSGroundSpeed': 16.749273158117294,
-        #  u'GPSLastFixLocalTime': u'0001-01-01T00:06:49.36Z',
-        #  u'AHRSMagHeading': 3276.7,
-        #  u'GPSSatellites': 7,
-        #  u'GPSSatellitesTracked': 12,
-        #  u'BaroPressureAltitude': -149.82413,
-        #  u'GPSPositionSampleRate': 0,
-        #  u'AHRSPitch': -1.6670512276023939,
-        #  u'GPSSatellitesSeen': 12,
-        #  u'GPSLastValidNMEAMessage': u'$PUBX,00,163529.60,4740.16729,N,12221.97653,W,1.939,G3,2.1,3.2,31.017,179.98,0.198,,1.93,2.43,1.89,7,0,0*4D',
-        # u'AHRSSlipSkid': -25.030695817203796,
-        #  u'GPSLastGPSTimeStratuxTime': u'0001-01-01T00:06:48.76Z',
-        #  u'GPSLastFixSinceMidnightUTC': 59729.6,
-        #  u'GPSLastValidNMEAMessageTime': u'0001-01-01T00:06:49.36Z',
-        #  u'GPSNACp': 10,
-        #  u'AHRSLastAttitudeTime': u'0001-01-01T00:06:49.4Z',
-        #  u'GPSTurnRate': 0,
-        #  u'AHRSTurnRate': -0.2607137769860283,
-        #  u'GPSLastGroundTrackTime': u'0001-01-01T00:06:49.36Z',
-        #  u'BaroVerticalSpeed': -11.46994,
-        #  u'GPSTrueCourse': 179.98,
-        #  u'BaroLastMeasurementTime': u'0001-01-01T00:06:49.4Z',
-        #  u'GPSVerticalAccuracy': 6.4,
-        #  u'AHRSGLoad': 0.8879934248943415,
-        #  u'BaroTemperature': 30.09,
-        #  u'AHRSGyroHeading': 184.67916154869323,
-        #  u'AHRSRoll': 26.382463342051672,
-        #  u'GPSGeoidSep': -61.67979,
-        #  u'AHRSGLoadMax': 1.0895587458493998,
-        #  u'GPSTime': u'2018-02-26T16:35:29Z',
-        #  u'GPSVerticalSpeed': -0.6496063,
-        #  u'GPSHeightAboveEllipsoid': 6.361549,
-        #  u'GPSLatitude': 47.669456,
-        #  u'AHRSStatus': 7}
+        # {
+        #     "GPSLastFixSinceMidnightUTC": 26705.5,
+        #     "GPSLatitude": 47.69124,
+        #     "GPSLongitude": -122.36745,
+        #     "GPSFixQuality": 2,
+        #     "GPSHeightAboveEllipsoid": 239.07481,
+        #     "GPSGeoidSep": -61.35171,
+        #     "GPSSatellites": 11,
+        #     "GPSSatellitesTracked": 18,
+        #     "GPSSatellitesSeen": 14,
+        #     "GPSHorizontalAccuracy": 2.2,
+        #     "GPSNACp": 11,
+        #     "GPSAltitudeMSL": 300.4265,
+        #     "GPSVerticalAccuracy": 4.4,
+        #     "GPSVerticalSpeed": -0.39041996,
+        #     "GPSLastFixLocalTime": "0001-01-01T00:59:50.37Z",
+        #     "GPSTrueCourse": 0,
+        #     "GPSTurnRate": 0,
+        #     "GPSGroundSpeed": 0.09990055628746748,
+        #     "GPSLastGroundTrackTime": "0001-01-01T00:59:50.37Z",
+        #     "GPSTime": "2019-06-03T07:25:04.6Z",
+        #     "GPSLastGPSTimeStratuxTime": "0001-01-01T00:59:49.47Z",
+        #     "GPSLastValidNMEAMessageTime": "0001-01-01T00:59:50.37Z",
+        #     "GPSLastValidNMEAMessage": "$PUBX,00,072505.50,4741.47430,N,12222.04701,W,72.870,D3,1.1,2.2,0.185,289.03,0.119,,1.07,1.64,1.20,11,0,0*79",
+        #     "GPSPositionSampleRate": 0,
+        #     "BaroTemperature": 36.12,
+        #     "BaroPressureAltitude": 243.29552,
+        #     "BaroVerticalSpeed": 1.0008061,
+        #     "BaroLastMeasurementTime": "0001-01-01T00:59:50.36Z",
+        #     "AHRSPitch": -0.04836615637379224,
+        #     "AHRSRoll": -0.36678574817765497,
+        #     "AHRSGyroHeading": 3276.7,
+        #     "AHRSMagHeading": 3276.7,
+        #     "AHRSSlipSkid": -0.05914792289016943,
+        #     "AHRSTurnRate": 3276.7,
+        #     "AHRSGLoad": 0.9988800063331206,
+        #     "AHRSGLoadMin": -0.0006306474610048851,
+        #     "AHRSGLoadMax": 1.0107446345882283,
+        #     "AHRSLastAttitudeTime": "0001-01-01T00:59:50.43Z",
+        #     "AHRSStatus": 7
+        # }
 
     def __set_ahrs_data__(self, new_ahrs_data):
         """
