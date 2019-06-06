@@ -1,6 +1,10 @@
 import json
 import os
 import units
+import requests
+import lib.recurring_task as recurring_task
+from receiver_capabilities import StratuxCapabilities
+from receiver_status import StratuxStatus
 
 EARTH_RADIUS_NAUTICAL_MILES = 3440
 EARTH_RADIUS_STATUTE_MILES = 3956
@@ -121,7 +125,6 @@ class Configuration(object):
             Configuration.DATA_SOURCE_KEY: self.data_source(),
             Configuration.FLIP_HORIZONTAL_KEY: self.flip_horizontal,
             Configuration.FLIP_VERTICAL_KEY: self.flip_vertical,
-            Configuration.OWNSHIP_KEY: self.ownship,
             Configuration.MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT_KEY: self.max_minutes_before_removal,
             Configuration.DISTANCE_UNITS_KEY: self.get_units(),
             Configuration.DECLINATION_KEY: self.get_declination(),
@@ -173,10 +176,6 @@ class Configuration(object):
                 bool(json_config[Configuration.FLIP_VERTICAL_KEY])
             self.__configuration__[Configuration.FLIP_VERTICAL_KEY] = \
                 self.flip_vertical
-
-        if Configuration.OWNSHIP_KEY in json_config:
-            self.ownship = json_config[Configuration.OWNSHIP_KEY]
-            self.__configuration__[Configuration.OWNSHIP_KEY] = self.ownship
 
         if Configuration.MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT_KEY in json_config:
             self.max_minutes_before_removal = float(
@@ -293,11 +292,22 @@ class Configuration(object):
             json_config = json.loads(json_config_text)
             return json_config
 
+    def __update_capabilities__(self):
+        """
+        Check occasionally to see if the settings
+        for the Stratux have been changed that would
+        affect what we should show and what is actually
+        available.
+        """
+        self.capabilities = StratuxCapabilities(
+            self.stratux_address(), self.__stratux_session__, None)
+        self.stratux_status = StratuxStatus(
+            self.stratux_address(), self.__stratux_session__, None)
+
     def __init__(self, json_config_file):
         self.degrees_of_pitch = Configuration.DEFAULT_DEGREES_OF_PITCH
         self.pitch_degrees_display_scaler = Configuration.DEFAULT_PITCH_DEGREES_DISPLAY_SCALER
         self.__configuration__ = self.__load_configuration__(json_config_file)
-        self.ownship = self.__get_config_value__(Configuration.OWNSHIP_KEY, '')
         self.max_minutes_before_removal = self.__get_config_value__(
             Configuration.MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT_KEY, MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT)
         self.log_filename = "stratux_hud.log"
@@ -305,6 +315,14 @@ class Configuration(object):
         self.flip_vertical = False
         self.declination = 0.0
         self.aithre_enabled = False
+        self.__stratux_session__ = requests.Session()
+
+        self.stratux_status = StratuxStatus(
+            self.stratux_address(), self.__stratux_session__, None)
+        self.capabilities = StratuxCapabilities(
+            self.stratux_address(), self.__stratux_session__, None)
+        recurring_task.RecurringTask(
+            'UpdateCapabilities', 15, self.__update_capabilities__)
 
         self.set_from_json(self.__configuration__)
 

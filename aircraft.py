@@ -7,262 +7,9 @@ import requests
 import configuration
 import lib.recurring_task as recurring_task
 from lib.simulated_values import SimulatedValue
+from logging_object import LoggingObject
 
 HEADING_NOT_AVAILABLE = '---'
-
-
-class LoggingObject(object):
-    def log(self, text):
-        """
-        Logs the given text if a logger is available.
-
-        Arguments:
-            text {string} -- The text to log
-        """
-
-        if self.__logger__ is not None:
-            self.__logger__.log_info_message(text)
-        else:
-            print(text)
-
-    def warn(self, text):
-        """
-        Logs the given text if a logger is available AS A WARNING.
-
-        Arguments:
-            text {string} -- The text to log
-        """
-
-        if self.__logger__ is not None:
-            self.__logger__.log_warning_message(text)
-        else:
-            print(text)
-
-    def __init__(self, logger):
-        self.__logger__ = logger
-
-
-class StratuxStatus(LoggingObject):
-    def __get_status__(self, key):
-        if key is None:
-            return False
-
-        if self.__status_json__ is None:
-            return False
-
-        if key in self.__status_json__:
-            try:
-                return bool(self.__status_json__[key])
-            except KeyboardInterrupt:
-                raise
-            except SystemExit:
-                raise
-            except Exception as ex:
-                self.warn("__get_status__ EX={}".format(ex))
-                return False
-
-        return False
-
-    def __init__(self, stratux_address, stratux_session, logger, simulation_mode=False):
-        """
-        Builds a list of Capabilities of the stratux.
-        """
-
-        super(StratuxStatus, self).__init__(logger)
-
-        if stratux_address is None or simulation_mode:
-            self.__status_json__ = None
-            self.cpu_temp = 50.0
-            self.satellites_locked = 0
-
-        else:
-            url = "http://{0}/getStatus".format(stratux_address)
-
-            try:
-                self.__status_json__ = stratux_session.get(
-                    url, timeout=2).json()
-
-            except KeyboardInterrupt:
-                raise
-            except SystemExit:
-                raise
-            except Exception as ex:
-                self.warn("__get_status__ EX={}".format(ex))
-                self.__status_json__ = {}
-
-            self.cpu_temp = self.__get_status__('CPUTemp')
-            self.satellites_locked = self.__get_status__(
-                'GPS_satellites_locked')
-
-            # Results of a getStatus call
-            # {
-            #     "Version": "v1.5b2",
-            #     "Build": "8f4a52d7396c0dc20270e7644eebe5d9fc49eed9",
-            #     "HardwareBuild": "",
-            #     "Devices": 2,
-            #     "Connected_Users": 1,
-            #     "DiskBytesFree": 367050752,
-            #     "UAT_messages_last_minute": 0,
-            #     "UAT_messages_max": 38,
-            #     "ES_messages_last_minute": 1413,
-            #     "ES_messages_max": 6522,
-            #     "UAT_traffic_targets_tracking": 0,
-            #     "ES_traffic_targets_tracking": 5,
-            #     "Ping_connected": false,
-            #     "UATRadio_connected": false,
-            #     "GPS_satellites_locked": 12,
-            #     "GPS_satellites_seen": 13,
-            #     "GPS_satellites_tracked": 19,
-            #     "GPS_position_accuracy": 3,
-            #     "GPS_connected": true,
-            #     "GPS_solution": "GPS + SBAS (WAAS)",
-            #     "GPS_detected_type": 55,
-            #     "Uptime": 3261140,
-            #     "UptimeClock": "0001-01-01T00:54:21.14Z",
-            #     "CPUTemp": 49.925,
-            #     "CPUTempMin": 44.546,
-            #     "CPUTempMax": 55.843,
-            #     "NetworkDataMessagesSent": 3080,
-            #     "NetworkDataMessagesSentNonqueueable": 3080,
-            #     "NetworkDataBytesSent": 89047,
-            #     "NetworkDataBytesSentNonqueueable": 89047,
-            #     "NetworkDataMessagesSentLastSec": 3,
-            #     "NetworkDataMessagesSentNonqueueableLastSec": 3,
-            #     "NetworkDataBytesSentLastSec": 84,
-            #     "NetworkDataBytesSentNonqueueableLastSec": 84,
-            #     "UAT_METAR_total": 0,
-            #     "UAT_TAF_total": 0,
-            #     "UAT_NEXRAD_total": 0,
-            #     "UAT_SIGMET_total": 0,
-            #     "UAT_PIREP_total": 0,
-            #     "UAT_NOTAM_total": 0,
-            #     "UAT_OTHER_total": 0,
-            #     "Errors": [],
-            #     "Logfile_Size": 90107,
-            #     "AHRS_LogFiles_Size": 0,
-            #     "BMPConnected": true,
-            #     "IMUConnected": true,
-            #     "NightMode": false
-            # }
-
-
-class StratuxCapabilities(LoggingObject):
-    """
-    Get the capabilities of the Stratux, so we know what can be used
-    in the HUD.
-    """
-
-    def __get_capability__(self, key):
-        if key is None:
-            return False
-
-        if self.__capabilities_json__ is None:
-            return False
-
-        if key in self.__capabilities_json__:
-            try:
-                return bool(self.__capabilities_json__[key])
-            except KeyboardInterrupt:
-                raise
-            except SystemExit:
-                raise
-            except Exception as ex:
-                self.warn("__get_capability__ EX={}".format(ex))
-                return False
-
-        return False
-
-    def __init__(self, stratux_address, stratux_session, logger=None, simulation_mode=False):
-        """
-        Builds a list of Capabilities of the stratux.
-        """
-
-        super(StratuxCapabilities, self).__init__(logger)
-
-        if stratux_address is None or simulation_mode:
-            self.__capabilities_json__ = None
-            self.traffic_enabled = False
-            self.gps_enabled = False
-            self.barometric_enabled = True
-            self.ahrs_enabled = True
-        else:
-            url = "http://{0}/getSettings".format(stratux_address)
-
-            try:
-                self.__capabilities_json__ = stratux_session.get(
-                    url, timeout=2).json()
-
-            except KeyboardInterrupt:
-                raise
-            except SystemExit:
-                raise
-            except Exception as ex:
-                self.__capabilities_json__ = {}
-                self.warn("EX in __init__ ex={}".format(ex))
-
-            self.traffic_enabled = self.__get_capability__('UAT_Enabled')
-            self.gps_enabled = self.__get_capability__('GPS_Enabled')
-            self.barometric_enabled = self.__get_capability__(
-                'BMP_Sensor_Enabled')
-            self.ahrs_enabled = self.__get_capability__('IMU_Sensor_Enabled')
-
-            # http://192.168.10.1/getSettings - get device settings. Example output:
-            #
-            # {
-            #     "UAT_Enabled": true,
-            #     "ES_Enabled": true,
-            #     "Ping_Enabled": false,
-            #     "GPS_Enabled": true,
-            #     "BMP_Sensor_Enabled": true,
-            #     "IMU_Sensor_Enabled": true,
-            #     "NetworkOutputs": [
-            #         {
-            #             "Conn": null,
-            #             "Ip": "",
-            #             "Port": 4000,
-            #             "Capability": 5,
-            #             "MessageQueueLen": 0,
-            #             "LastUnreachable": "0001-01-01T00:00:00Z",
-            #             "SleepFlag": false,
-            #             "FFCrippled": false
-            #         }
-            #     ],
-            #     "SerialOutputs": null,
-            #     "DisplayTrafficSource": false,
-            #     "DEBUG": false,
-            #     "ReplayLog": false,
-            #     "AHRSLog": false,
-            #     "IMUMapping": [
-            #         2,
-            #         0
-            #     ],
-            #     "SensorQuaternion": [
-            #         0.017336041263077348,
-            #         0.7071029888451218,
-            #         0.7068942365539764,
-            #         -0.0023158510746434354
-            #     ],
-            #     "C": [
-            #         -0.02794518875698111,
-            #         0.021365398113956116,
-            #         -1.0051649525437176
-            #     ],
-            #     "D": [
-            #         -0.43015839106418047,
-            #         -0.0019837031159398175,
-            #         -1.2866603595080415
-            #     ],
-            #     "PPM": 0,
-            #     "OwnshipModeS": "F00000",
-            #     "WatchList": "",
-            #     "DeveloperMode": false,
-            #     "GLimits": "",
-            #     "StaticIps": [],
-            #     "WiFiSSID": "stratux",
-            #     "WiFiChannel": 1,
-            #     "WiFiSecurityEnabled": false,
-            #     "WiFiPassphrase": ""
-            # }
 
 
 class AhrsData(object):
@@ -360,8 +107,6 @@ class AhrsSimulation(object):
         self.yaw_simulator = SimulatedValue(5, 60, 1, 30, 180)
         self.speed_simulator = SimulatedValue(5, 10, 1, 85)
         self.alt_simulator = SimulatedValue(10, 100, -1, 0, 200)
-
-        self.capabilities = StratuxCapabilities(None, None, True)
 
 
 class AhrsStratux(LoggingObject):
@@ -516,22 +261,6 @@ class AhrsStratux(LoggingObject):
         self.ahrs_data = new_ahrs_data
         self.__lock__.release()
 
-    def __update_capabilities__(self):
-        """
-        Check occasionally to see if the settings
-        for the Stratux have been changed that would
-        affect what we should show and what is actually
-        available.
-        """
-        self.__lock__.acquire()
-        try:
-            self.capabilities = StratuxCapabilities(
-                configuration.CONFIGURATION.stratux_address(), self.__stratux_session__, self.__logger__)
-            self.stratux_status = StratuxStatus(
-                configuration.CONFIGURATION.stratux_address(), self.__stratux_session__, self.__logger__)
-        finally:
-            self.__lock__.release()
-
     def __init__(self, logger):
         super(AhrsStratux, self).__init__(logger)
 
@@ -544,10 +273,6 @@ class AhrsStratux(LoggingObject):
 
         self.ahrs_data = AhrsData()
         self.data_source_available = False
-        self.capabilities = StratuxCapabilities(
-            configuration.CONFIGURATION.stratux_address(), self.__stratux_session__)
-        recurring_task.RecurringTask(
-            'UpdateCapabilities', 15, self.__update_capabilities__)
 
         self.__lock__ = threading.Lock()
         self.__last_update__ = datetime.datetime.utcnow()

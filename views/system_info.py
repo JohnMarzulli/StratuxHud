@@ -173,6 +173,45 @@ class SystemInfo(AhrsElement):
         self.__framebuffer_size__ = framebuffer_size
         self.__line_spacing__ = 1.01
 
+    def __get_aithre_text_and_color__(self):
+        """
+        Gets the text and text color for the Aithre status.
+        """
+
+        if aithre.sensor is None:
+            return ('DISCONNECTED', RED) if configuration.CONFIGURATION.aithre_enabled else ('DISABLED', BLUE)
+
+        battery_text = 'UNK'
+        battery_color = RED
+
+        try:
+            battery = aithre.sensor.get_battery()
+            battery_suffix = "%"
+            if isinstance(battery, basestring):
+                battery_suffix = ""
+            if battery is not None:
+                battery_color = get_aithre_battery_color(battery)
+                battery_text = "bat:{}{}".format(battery, battery_suffix)
+        except Exception as ex:
+            battery_text = 'ERR'
+
+        co_text = 'UNK'
+        co_color = RED
+
+        try:
+            co_ppm = aithre.sensor.get_co_level()
+
+            if co_ppm is not None:
+                co_text = 'co:{}ppm'.format(co_ppm)
+                co_color = get_aithre_co_color(co_ppm)
+        except Exception as ex:
+            co_text = 'ERR'
+
+        color = RED if co_color is RED or battery_color is RED else \
+            (YELLOW if co_color is YELLOW or battery_color is YELLOW else BLUE)
+
+        return ('{} {}'.format(co_text, battery_text), color)
+
     def render(self, framebuffer, orientation):
         self.task_timer.start()
 
@@ -194,33 +233,8 @@ class SystemInfo(AhrsElement):
             info_lines.append(
                 ["IP          : ", (addr, self.__ip_address__[1])])
 
-        if aithre.sensor is not None and configuration.CONFIGURATION.aithre_enabled:
-            battery_stats = ["DISCONNECTED", RED]
-
-            try:
-                battery = aithre.sensor.get_battery()
-                battery_suffix = "%"
-                if isinstance(battery, basestring):
-                    battery_suffix = ""
-                if battery is not None:
-                    battery_stats = ["{}{}".format(
-                        battery, battery_suffix), get_aithre_battery_color(battery)]
-            except Exception as ex:
-                battery_stats = ["{}".format(ex), RED]
-
-            info_lines.append(["AITHRE BAT  : ", battery_stats])
-
-            co_stats = ["DISCONNECTED", RED]
-            try:
-                co_ppm = aithre.sensor.get_co_level()
-
-                if co_ppm is not None:
-                    co_stats = ["{} ppm".format(
-                        co_ppm), get_aithre_co_color(co_ppm)]
-            except Exception as ex:
-                co_stats = ["{}".format(ex), RED]
-
-            info_lines.append(["AITHRE CO   : ", co_stats])
+        info_lines.append(
+            ["AITHRE      : ", self.__get_aithre_text_and_color__()])
 
         # Status lines are pushed in as a stack.
         # First line in the array is at the bottom.
@@ -228,7 +242,7 @@ class SystemInfo(AhrsElement):
         info_lines.append(["HUD CPU     : ", self.__cpu_temp__])
         info_lines.append(["SOCKET      : ", get_websocket_uptime()])
         info_lines.append(
-            ["OWNSHIP     : ", [configuration.CONFIGURATION.ownship, BLUE]])
+            ["OWNSHIP     : ", ["{}/{}".format(configuration.CONFIGURATION.capabilities.ownship_mode_s, configuration.CONFIGURATION.capabilities.ownship_icao), BLUE]])
         info_lines.append(["DISPLAY RES : ", ["{} x {}".format(
             self.__framebuffer_size__[0], self.__framebuffer_size__[1]), BLUE]])
 
@@ -259,7 +273,6 @@ class Aithre(AhrsElement):
         self.__text_y_pos__ = center_y - text_half_height
         self.__lhs__ = 0
         self.__has_been_connected__ = False
-
 
     def render(self, framebuffer, orientation):
         self.task_timer.start()
