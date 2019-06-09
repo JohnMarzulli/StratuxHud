@@ -38,9 +38,9 @@ __views_file__ = './views.json'
 # These are the user modified files
 # that are merged in with the system
 # defaults, overriding what is set.
-__user_views_file__ = '{}/views.json'.format(expanduser('~'))
-__user_config_file__ = '{}/config.json'.format(expanduser('~'))
-__heading_bugs_file__ = '{}/heading_bugs.json'.format(expanduser('~'))
+__user_views_file__ = '{}/hud_views.json'.format(expanduser('~'))
+__user_config_file__ = '{}/hud_config.json'.format(expanduser('~'))
+__heading_bugs_file__ = '{}/hud_heading_bugs.json'.format(expanduser('~'))
 
 __working_dir__ = os.path.dirname(os.path.abspath(__file__))
 
