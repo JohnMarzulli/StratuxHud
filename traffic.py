@@ -417,7 +417,8 @@ class TrafficManager(object):
                 if v is not None and v.is_valid_report()
                 and configuration.CONFIGURATION.capabilities.ownship_icao != v.icao_address
             }
-
+        except:
+            traffic_with_position = []
         finally:
             self.__lock__.release()
 
