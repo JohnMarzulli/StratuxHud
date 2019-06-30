@@ -101,7 +101,7 @@ In this example, `N2849K` is almost directly behind us (far left screen). The pl
 
 This shows us _at most_ the eight closest planes.
 
-The *IDENT*ifier will be the tail number when available, otherwise the IACO identifier or callsign may be used. The *BEAR*ing is the heading to take to fly to that target. The *DIST*ance is the distance to the target. The *ALT*itude is given in relative terms, with two digits dropped.
+The *IDENT*ifier will be the tail number when available, otherwise the ICAO identifier or callsign may be used. The *BEAR*ing is the heading to take to fly to that target. The *DIST*ance is the distance to the target. The *ALT*itude is given in relative terms, with two digits dropped.
 
 In this example, the closest target is N1213S. The plane is only 1.2 statue mile away, and 1,500 feet above us.
 
@@ -109,7 +109,7 @@ In this example, the closest target is N1213S. The plane is only 1.2 statue mile
 
 ![Diagnostics View Screenshot](media/diagnostics_view.jpg)
 
-The diagnostics view is designed to help give some troubleshooting ability. If a value is set for "OWNSHIP" (See the configuration file section), then any report from that tailnumber is ignored. The IP addressis provided so you may use the configuration webpage if you set it up.
+The diagnostics view is designed to help give some troubleshooting ability. If a value is set for "OWNSHIP" (See the configuration file section), then any report from that tailnumber is ignored. The IP address is provided so you may use the configuration webpage if you set it up.
 
 ### Universal Time
 
@@ -212,6 +212,12 @@ Make sure you are using a high quality power cable if you are using a Pi 3B+
 
 1. Save and quit.
 
+### Ownship
+
+You may have the HUD ignore your own aircraft using a "OWNSHIP" functionality. The OWNSHIP value is set using the Stratux. The HUD retrieves the Mode S code set as the OWNSHIP and then filters out all reports so they are ignored.
+
+Please refer to the Stratux documentation on how to set the OWNSHIP value.
+
 ### Kivic Based Setup
 
 1. Install the Kivic projector per the Kivic directions. Please note that there is a release clip and the unit is removable. Also note that the combiner glass can be adjusted fore and aft.
@@ -235,7 +241,7 @@ Make sure you are using a high quality power cable if you are using a Pi 3B+
 
 Date       | Version | Major Changes
 ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------
-TBD        | 1.5     | Support for the Aithre CO detector. New roll indicator. Various performance improvements. Visual warning if GPS is not plugged in.
+TBD        | 1.5     | Support for the Aithre CO detector. New roll indicator. Various performance improvements. Visual warning if GPS is not plugged in. Use the OWNSHIP config from the receiver instead of local config.
 2019-03-31 | 1.4     | Add connection reset button. Fixes issues with the Diagnostic view running of of space. Initial port to Python 3.7
 2019-01-31 | 1.3     | Improvements to the communication with the Stratux. Update directions for Kivic install.
 2018-10-13 | 1.2     | Major performance increases
