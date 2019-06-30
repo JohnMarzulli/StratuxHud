@@ -241,7 +241,7 @@ Please refer to the Stratux documentation on how to set the OWNSHIP value.
 
 Date       | Version | Major Changes
 ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------
-TBD        | 1.5     | Support for the Aithre CO detector. New roll indicator. Various performance improvements. Visual warning if GPS is not plugged in. Use the OWNSHIP config from the receiver instead of local config.
+2019-06-30 | 1.5     | Support for the Aithre CO detector. New roll indicator. Various performance improvements. Visual warning if GPS is not plugged in. Use the OWNSHIP config from the receiver instead of local config.
 2019-03-31 | 1.4     | Add connection reset button. Fixes issues with the Diagnostic view running of of space. Initial port to Python 3.7
 2019-01-31 | 1.3     | Improvements to the communication with the Stratux. Update directions for Kivic install.
 2018-10-13 | 1.2     | Major performance increases
@@ -268,6 +268,8 @@ Please note that the frame rate is capped at 60FPS. Drawing any faster will not 
 This project uses the Liberation family of fonts. They can be found at <https://pagure.io/liberation-fonts/>
 
 The initial project was inspired by Kris Knigga's PyAhrs project <https://github.com/kdknigga/pyahrs>
+
+Many thanks to the Aithre team for providing the unit used to develop the plugin, and for their support in understanding the Aithre interface.
 
 The following components are used:
 
