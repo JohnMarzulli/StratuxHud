@@ -412,12 +412,18 @@ class TrafficManager(object):
 
         self.__lock__.acquire()
         try:
-            traffic_with_position = {k: v for k, v in self.traffic.iteritems() if v is not None and v.is_valid_report(
-            ) and configuration.CONFIGURATION.ownship not in str(v.get_identifer())}
-            actionable_traffic = [self.traffic[identifier]
-                                  for identifier in traffic_with_position]
+            traffic_with_position = {
+                k: v for k, v in self.traffic.iteritems()
+                if v is not None and v.is_valid_report()
+                and configuration.CONFIGURATION.capabilities.ownship_icao != v.icao_address
+            }
+        except:
+            traffic_with_position = []
         finally:
             self.__lock__.release()
+
+        actionable_traffic = [self.traffic[identifier]
+                              for identifier in traffic_with_position]
 
         sorted_traffic = sorted(
             actionable_traffic, key=lambda traffic: traffic.distance)
@@ -495,7 +501,7 @@ class AdsbTrafficClient(WebSocketClient):
 
         self.hb = ws4py.websocket.Heartbeat(self)
         self.hb.start()
-    
+
     def keep_alive(self):
         """
         Sends the current date/time to the otherside of the socket
@@ -722,11 +728,11 @@ class ConnectionManager(object):
                 AdsbTrafficClient.INSTANCE.shutdown()
 
             self.__last_action_time__ = datetime.datetime.utcnow()
-            AdsbTrafficClient.INSTANCE = AdsbTrafficClient(self.__socket_address__)
+            AdsbTrafficClient.INSTANCE = AdsbTrafficClient(
+                self.__socket_address__)
             AdsbTrafficClient.INSTANCE.run_in_background()
         finally:
             self.warn("Finished with WebSocket connection reset attempt.")
-
 
     def shutdown(self):
         """
@@ -784,7 +790,7 @@ class ConnectionManager(object):
         msg_last_received_time = self.get_last_message_time()
         msg_last_received_delta = (
             now - msg_last_received_time).total_seconds()
-        
+
         # Do we want to include the ping as a reception time?
         # ping_last_received_time = self.get_last_ping_time()
         # ping_last_received_delta = (
@@ -793,7 +799,7 @@ class ConnectionManager(object):
         connection_uptime = (
             now - AdsbTrafficClient.INSTANCE.create_time).total_seconds()
 
-        if msg_last_received_delta > 60: #
+        if msg_last_received_delta > 60:
             #     and ping_last_received_delta > 15:
             self.warn("{0:.1f} seconds connection uptime".format(
                 connection_uptime))

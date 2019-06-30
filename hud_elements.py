@@ -80,8 +80,11 @@ class HudDataCache(object):
     @staticmethod
     def update_traffic_reports():
         HudDataCache.__LOCK__.acquire()
-        HudDataCache.RELIABLE_TRAFFIC = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
-        HudDataCache.__LOCK__.release()
+
+        try:
+            HudDataCache.RELIABLE_TRAFFIC = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
+        finally:
+            HudDataCache.__LOCK__.release()
 
     @staticmethod
     def get_reliable_traffic():
@@ -91,9 +94,12 @@ class HudDataCache(object):
         Returns:
             list -- A list of the reliable traffic.
         """
+        traffic_clone = None
         HudDataCache.__LOCK__.acquire()
-        traffic_clone = HudDataCache.RELIABLE_TRAFFIC[:]
-        HudDataCache.__LOCK__.release()
+        try:
+            traffic_clone = HudDataCache.RELIABLE_TRAFFIC[:]
+        finally:
+            HudDataCache.__LOCK__.release()
 
         return traffic_clone
 

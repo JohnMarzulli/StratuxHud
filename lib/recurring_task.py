@@ -36,12 +36,14 @@ class RecurringTask(object):
         """
         Returns True if the task is running.
         """
-
+        result = False
         self.__lock__.acquire()
-        result = self.__is_alive__ \
-            and self.__task_callback__ is not None \
-            and self.__is_running__
-        self.__lock__.release()
+        try:
+            result = self.__is_alive__ \
+                and self.__task_callback__ is not None \
+                and self.__is_running__
+        finally:
+            self.__lock__.release()
 
         return result
 

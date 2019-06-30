@@ -1,31 +1,48 @@
 import json
 import os
+from os.path import expanduser
 import units
+import requests
+import lib.recurring_task as recurring_task
+from receiver_capabilities import StratuxCapabilities
+from receiver_status import StratuxStatus
 
 EARTH_RADIUS_NAUTICAL_MILES = 3440
 EARTH_RADIUS_STATUTE_MILES = 3956
 EARTH_RADIUS_KILOMETERS_MILES = 6371
 MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT = 2
 MAX_FRAMERATE = 60
+TARGET_AHRS_FRAMERATE = 60
+AHRS_TIMEOUT = 1.0
 
-VERSION = "1.4.0"
+VERSION = "1.5.0"
 
+########################
+# Default Config Files #
+########################
+#
+# Base, default values.
+# There are two config files. One is the
+# default that everything falls back to
+# The other is the user saved and modified
+# file that is merged in
 __config_file__ = './config.json'
-__heading_bugs_file__ = './heading_bugs.json'
 __view_elements_file__ = './elements.json'
 __views_file__ = './views.json'
+
+
+#####################
+# User Config Files #
+#####################
+#
+# These are the user modified files
+# that are merged in with the system
+# defaults, overriding what is set.
+__user_views_file__ = '{}/hud_views.json'.format(expanduser('~'))
+__user_config_file__ = '{}/hud_config.json'.format(expanduser('~'))
+__heading_bugs_file__ = '{}/hud_heading_bugs.json'.format(expanduser('~'))
+
 __working_dir__ = os.path.dirname(os.path.abspath(__file__))
-
-
-def get_config_file_location():
-    """
-    Returns the location of the configuration file.
-
-    Returns:
-        string -- The path to the config file
-    """
-
-    return __config_file__
 
 
 def get_absolute_file_path(relative_path):
@@ -42,8 +59,8 @@ def get_absolute_file_path(relative_path):
     return os.path.join(__working_dir__, os.path.normpath(relative_path))
 
 
+# System Default Config Files
 DEFAULT_CONFIG_FILE = get_absolute_file_path(__config_file__)
-HEADING_BUGS_FILE = get_absolute_file_path(__heading_bugs_file__)
 VIEW_ELEMENTS_FILE = get_absolute_file_path(__view_elements_file__)
 VIEWS_FILE = get_absolute_file_path(__views_file__)
 
@@ -54,6 +71,13 @@ class DataSourceNames(object):
 
 
 class Configuration(object):
+    ###############################
+    # Hardcoded Config Fall Backs #
+    ###############################
+    #
+    # These are here in case the user does something
+    # bad to the default config files.
+    #
     DEFAULT_NETWORK_IP = "192.168.10.1"
     STRATUX_ADDRESS_KEY = "stratux_address"
     DATA_SOURCE_KEY = "data_source"
@@ -65,38 +89,65 @@ class Configuration(object):
     DECLINATION_KEY = "declination"
     DEGREES_OF_PITCH_KEY = 'degrees_of_pitch'
     PITCH_DEGREES_DISPLAY_SCALER_KEY = 'pitch_degrees_scaler'
+    AITHRE_KEY = 'aithre'
 
     DEFAULT_DEGREES_OF_PITCH = 90
     DEFAULT_PITCH_DEGREES_DISPLAY_SCALER = 2.0
 
     def get_elements_list(self):
-        with open(VIEW_ELEMENTS_FILE) as json_config_file:
-            json_config_text = json_config_file.read()
-            json_config = json.loads(json_config_text)
+        """
+        Returns the list of elements available for the views.
+        """
 
-            return json_config
+        return self.__load_config_from_json_file__(VIEW_ELEMENTS_FILE)
 
-        return {}
+    def __load_views_from_file__(self, file_name):
+        views_key = 'views'
+
+        try:
+            full_views_contents = self.__load_config_from_json_file__(
+                file_name)
+
+            if full_views_content is not None and views_key in full_views_content:
+                return full_views_contents[views_key]
+        except:
+            pass
+
+        return None
 
     def get_views_list(self):
         """
-        Returns a list of views that can be used by the HUD
+        Loads the view configuration file.
+        First looks for a user configuration file.
+        If there is one, and the file is valid, then
+        returns those contents.
+
+        If there is an issue with the user file,
+        then returns the system level default.
 
         Returns:
-            array -- Array of dictionary. Each element contains the name of the view and a list of elements it is made from. 
+            array -- Array of dictionary. Each element contains the name of the view and a list of elements it is made from.
         """
         try:
-            with open(VIEWS_FILE) as json_config_file:
-                json_config_text = json_config_file.read()
-                json_config = json.loads(json_config_text)
+            views = self.__load_views_from_file__(__user_views_file__)
 
-                return json_config['views']
+            if views is not None and any(views):
+                return views
+
+            return self.__load_views_from_file__(VIEWS_FILE)
         except:
             return []
 
     def write_views_list(self, view_config):
-        with open(VIEWS_FILE, 'w') as configfile:
-            configfile.write(view_config)
+        """
+        Writes the view configuration to the user's version of the file.
+        """
+
+        try:
+            with open(__user_views_file__, 'w') as configfile:
+                configfile.write(view_config)
+        except:
+            print("ERROR trying to write user views file.")
 
     def get_json_from_text(self, text):
         """
@@ -118,25 +169,29 @@ class Configuration(object):
             Configuration.DATA_SOURCE_KEY: self.data_source(),
             Configuration.FLIP_HORIZONTAL_KEY: self.flip_horizontal,
             Configuration.FLIP_VERTICAL_KEY: self.flip_vertical,
-            Configuration.OWNSHIP_KEY: self.ownship,
             Configuration.MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT_KEY: self.max_minutes_before_removal,
             Configuration.DISTANCE_UNITS_KEY: self.get_units(),
             Configuration.DECLINATION_KEY: self.get_declination(),
             Configuration.DEGREES_OF_PITCH_KEY: self.get_degrees_of_pitch(),
-            Configuration.PITCH_DEGREES_DISPLAY_SCALER_KEY: self.get_pitch_degrees_display_scaler()
+            Configuration.PITCH_DEGREES_DISPLAY_SCALER_KEY: self.get_pitch_degrees_display_scaler(),
+            Configuration.AITHRE_KEY: self.aithre_enabled
         }
 
         return json.dumps(config_dictionary, indent=4, sort_keys=True)
 
     def write_config(self):
         """
-        Writes the config file down to file.
+        Writes the config file to the user's file.
+
         """
 
-        config_to_write = self.get_json_from_config()
+        try:
+            config_to_write = self.get_json_from_config()
 
-        with open(get_config_file_location(), 'w') as configfile:
-            configfile.write(config_to_write)
+            with open(__user_config_file__, 'w') as configfile:
+                configfile.write(config_to_write)
+        except:
+            print("ERROR trying to write user config file.")
 
     def set_from_json(self, json_config):
         """
@@ -153,6 +208,11 @@ class Configuration(object):
             if key in json_config:
                 self.__configuration__[key] = json_config[key]
 
+        if Configuration.AITHRE_KEY in json_config:
+            self.aithre_enabled = bool(json_config[Configuration.AITHRE_KEY])
+            self.__configuration__[Configuration.AITHRE_KEY] = \
+                self.aithre_enabled
+
         if Configuration.FLIP_HORIZONTAL_KEY in json_config:
             self.flip_horizontal = \
                 bool(json_config[Configuration.FLIP_HORIZONTAL_KEY])
@@ -164,10 +224,6 @@ class Configuration(object):
                 bool(json_config[Configuration.FLIP_VERTICAL_KEY])
             self.__configuration__[Configuration.FLIP_VERTICAL_KEY] = \
                 self.flip_vertical
-
-        if Configuration.OWNSHIP_KEY in json_config:
-            self.ownship = json_config[Configuration.OWNSHIP_KEY]
-            self.__configuration__[Configuration.OWNSHIP_KEY] = self.ownship
 
         if Configuration.MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT_KEY in json_config:
             self.max_minutes_before_removal = float(
@@ -270,31 +326,73 @@ class Configuration(object):
             json_config_file {dictionary} -- JSON provided config decoded into a dictionary.
         """
 
+        if json_config is None:
+            return
+
         self.__configuration__.update(json_config)
         self.set_from_json(self.__configuration__)
         self.write_config()
 
-    def __load_configuration__(self, json_config_file):
+    def __load_config_from_json_file__(self, json_config_file):
+        """
+            Loads the complete configuration into the system.
+            Uses the default values as a base, then puts the
+            user's configuration overtop.
+        """
+        try:
+            with open(json_config_file) as json_config_file:
+                json_config_text = json_config_file.read()
+                json_config = json.loads(json_config_text)
+               
+                return json_config
+        except:
+            return {}
+
+    def __load_configuration__(self, default_config_file, user_config_file):
         """
         Loads the configuration.
         """
 
-        with open(json_config_file) as json_config_file:
-            json_config_text = json_config_file.read()
-            json_config = json.loads(json_config_text)
-            return json_config
+        config = self.__load_config_from_json_file__(default_config_file)
+        user_config = self.__load_config_from_json_file__(user_config_file)
 
-    def __init__(self, json_config_file):
+        if user_config is not None:
+            config.update(user_config)
+        
+        return config
+
+    def __update_capabilities__(self):
+        """
+        Check occasionally to see if the settings
+        for the Stratux have been changed that would
+        affect what we should show and what is actually
+        available.
+        """
+        self.capabilities = StratuxCapabilities(
+            self.stratux_address(), self.__stratux_session__, None)
+        self.stratux_status = StratuxStatus(
+            self.stratux_address(), self.__stratux_session__, None)
+
+    def __init__(self, default_config_file, user_config_file):
         self.degrees_of_pitch = Configuration.DEFAULT_DEGREES_OF_PITCH
         self.pitch_degrees_display_scaler = Configuration.DEFAULT_PITCH_DEGREES_DISPLAY_SCALER
-        self.__configuration__ = self.__load_configuration__(json_config_file)
-        self.ownship = self.__get_config_value__(Configuration.OWNSHIP_KEY, '')
+        self.__configuration__ = self.__load_configuration__(
+            default_config_file, user_config_file)
         self.max_minutes_before_removal = self.__get_config_value__(
             Configuration.MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT_KEY, MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT)
         self.log_filename = "stratux_hud.log"
         self.flip_horizontal = False
         self.flip_vertical = False
         self.declination = 0.0
+        self.aithre_enabled = False
+        self.__stratux_session__ = requests.Session()
+
+        self.stratux_status = StratuxStatus(
+            self.stratux_address(), self.__stratux_session__, None)
+        self.capabilities = StratuxCapabilities(
+            self.stratux_address(), self.__stratux_session__, None)
+        recurring_task.RecurringTask(
+            'UpdateCapabilities', 15, self.__update_capabilities__)
 
         self.set_from_json(self.__configuration__)
 
@@ -326,8 +424,14 @@ class Configuration(object):
         except:
             pass
 
+        try:
+            self.aithre_enabled = \
+                bool(self.__configuration__[Configuration.AITHRE_KEY])
+        except:
+            pass
 
-CONFIGURATION = Configuration(DEFAULT_CONFIG_FILE)
+
+CONFIGURATION = Configuration(DEFAULT_CONFIG_FILE, __user_config_file__)
 
 if __name__ == '__main__':
     from_config = CONFIGURATION.get_json_from_config()

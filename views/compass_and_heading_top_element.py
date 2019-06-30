@@ -1,12 +1,12 @@
+from numbers import Number
+from ahrs_element import AhrsElement
+from lib.task_timer import TaskTimer
+import hud_elements
+import lib.display as display
 import pygame
 import utils
 import testing
 testing.load_imports()
-
-import lib.display as display
-import hud_elements
-from lib.task_timer import TaskTimer
-from ahrs_element import AhrsElement
 
 
 class CompassAndHeadingTopElement(AhrsElement):
@@ -69,8 +69,8 @@ class CompassAndHeadingTopElement(AhrsElement):
             to_the_left = (heading - heading_strip)
             to_the_right = (heading + heading_strip)
 
-            displayed_left = utils.apply_declination(to_the_left)
-            displayed_right = utils.apply_declination(to_the_right)
+            displayed_left = to_the_left
+            displayed_right = to_the_right
             if to_the_left < 0:
                 to_the_left += 360
 
@@ -118,32 +118,40 @@ class CompassAndHeadingTopElement(AhrsElement):
          for heading_mark_to_render in self.__heading_strip__[heading]]
 
         # Render the text that is showing our AHRS and GPS headings
-        cover_old_rendering_spaces = " "
-        heading_text = "{0}{1} | {2}{0}".format(cover_old_rendering_spaces,
-                                                str(int(utils.apply_declination(
-                                                    orientation.get_onscreen_projection_display_heading()))).rjust(3),
-                                                str(int(utils.apply_declination(orientation.gps_heading))).rjust(3))
+        heading_y_pos = self.__font__.get_height() << 1
+        self._render_hallow_heading_box_(orientation,
+                                         framebuffer,
+                                         heading_y_pos)
+        self.task_timer.stop()
+
+    def _render_hallow_heading_box_(self, orientation, framebuffer, heading_y_pos):
+        heading_text = "{0} | {1}".format(
+            str(utils.apply_declination(
+                orientation.get_onscreen_projection_display_heading())).rjust(3),
+            str(utils.apply_declination(
+                orientation.get_onscreen_gps_heading())).rjust(3))
 
         rendered_text = self.__font__.render(
-            heading_text, True, display.GREEN, display.BLACK)
+            heading_text, True, display.GREEN)
         text_width, text_height = rendered_text.get_size()
 
         framebuffer.blit(
-            rendered_text, (self.__center_x__ - (text_width >> 1), text_height << 1))
+            rendered_text, (self.__center_x__ - (text_width >> 1), heading_y_pos))
 
         pygame.draw.lines(framebuffer, display.GREEN, True,
                           self.__heading_text_box_lines__, 2)
-        self.task_timer.stop()
 
     def __render_heading_text__(self, framebuffer, heading, position_x, position_y):
         """
         Renders the text with the results centered on the given
         position.
         """
-        rendered_text, half_size = self.__heading_text__[heading]
+        if isinstance(heading, Number):
+            heading = int(heading)
+            rendered_text, half_size = self.__heading_text__[heading]
 
-        framebuffer.blit(
-            rendered_text, (position_x - half_size[0], position_y - half_size[1]))
+            framebuffer.blit(
+                rendered_text, (position_x - half_size[0], position_y - half_size[1]))
 
 
 if __name__ == '__main__':

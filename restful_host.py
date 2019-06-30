@@ -25,6 +25,7 @@ COMMAND_PROCESSOR = None
 # EXAMPLES
 # Invoke-WebRequest -Uri "http://localhost:8080/settings" -Method GET -ContentType "application/json"
 # Invoke-WebRequest -Uri "http://localhost:8080/settings" -Method PUT -ContentType "application/json" -Body '{"flip_horizontal": true}'
+# curl -X PUT -d '{"declination": 17}' http://localhost:8080/settings
 
 ERROR_JSON = '{success: false}'
 

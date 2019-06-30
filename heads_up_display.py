@@ -23,6 +23,7 @@ import hud_elements
 import targets
 import traffic
 import restful_host
+import aithre
 from views import (adsb_on_screen_reticles, adsb_target_bugs, adsb_target_bugs_only,
                    adsb_traffic_listing, ahrs_not_available, altitude,
                    artificial_horizon, compass_and_heading_bottom_element,
@@ -57,7 +58,7 @@ class HeadsUpDisplay(object):
             requests.Session().post(url, timeout=2)
         except:
             pass
-    
+
     def __reset_websocket__(self):
         """
         Resets the websocket to essentially reset the receiver unit.
@@ -66,7 +67,6 @@ class HeadsUpDisplay(object):
             self.__connection_manager__.reset()
         except:
             pass
-
 
     def __shutdown_stratux__(self):
         """
@@ -86,7 +86,8 @@ class HeadsUpDisplay(object):
         Runs the update/render logic loop.
         """
 
-        self.log('Initialized screen size to {}x{}'.format(self.__width__, self.__height__))
+        self.log('Initialized screen size to {}x{}'.format(
+            self.__width__, self.__height__))
 
         # Make sure that the disclaimer is visible for long enough.
         sleep(5)
@@ -150,7 +151,7 @@ class HeadsUpDisplay(object):
             bool -- True if the code should run for another tick.
         """
 
-        current_fps = 0 # initialize up front avoids exception
+        current_fps = 0  # initialize up front avoids exception
 
         try:
             self.frame_setup.start()
@@ -206,7 +207,7 @@ class HeadsUpDisplay(object):
                                                   self.__fps__.to_string()))
 
                 self.log('TRAFFIC, {0}, MessagesReceived, {1}, {1}, {1}'.format(now,
-                        traffic.Traffic.TRAFFIC_REPORTS_RECEIVED))
+                                                                                traffic.Traffic.TRAFFIC_REPORTS_RECEIVED))
                 traffic.Traffic.TRAFFIC_REPORTS_RECEIVED = 0
 
                 self.log("-----------------------------------")
@@ -226,9 +227,9 @@ class HeadsUpDisplay(object):
                     surface, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)
                 surface.blit(flipped, [0, 0])
             pygame.display.update()
-            clock.tick(MAX_FRAMERATE)
             self.__fps__.push(current_fps)
             self.frame_cleanup.stop()
+            clock.tick(MAX_FRAMERATE)
 
         return True
 
@@ -331,7 +332,7 @@ class HeadsUpDisplay(object):
 
     def __load_view_elements(self):
         """
-        Loads the list of available view elements from the configuration
+        Loads the list of available view elements from thee ifconfiguration
         file. Returns it as a map of the element name (Human/kind) to
         the Python object that instantiates it, and if it uses the
         "detail" (aka Large) font or not.
@@ -366,6 +367,8 @@ class HeadsUpDisplay(object):
         """
 
         hud_views = []
+        existing_elements = {}
+        elements_requested = 0
 
         with open(VIEWS_FILE) as json_config_file:
             json_config_text = json_config_file.read()
@@ -378,9 +381,21 @@ class HeadsUpDisplay(object):
                     new_view_elements = []
 
                     for element_name in element_names:
+                        elements_requested += 1
                         element_config = view_elements[element_name]
-                        new_view_elements.append(self.__build_ahrs_hud_element(
-                            element_config[0], element_config[1]))
+                        element_hash_name = "{}{}".format(
+                            element_config[0], element_config[1])
+
+                        # Instantiating multiple elements of the same type/font
+                        # REALLY chews up memory.. and there is no
+                        # good reason to use new instances anyway.
+                        if element_hash_name not in existing_elements:
+                            new_element = self.__build_ahrs_hud_element(element_config[0], element_config[1])
+                            existing_elements[element_hash_name] = new_element
+                                                                                                                           
+
+                        new_view_elements.append(
+                            existing_elements[element_hash_name])
 
                     is_ahrs_view = self.__is_ahrs_view__(new_view_elements)
                     hud_views.append(
@@ -388,6 +403,8 @@ class HeadsUpDisplay(object):
                 except Exception as ex:
                     self.log(
                         "While attempting to load view={}, EX:{}".format(view, ex))
+
+        self.log("While loading, {} elements were requested, with {} unique being created.".format(elements_requested, len(existing_elements.keys())))
 
         return hud_views
 
@@ -409,6 +426,30 @@ class HeadsUpDisplay(object):
 
     def __update_traffic_reports__(self):
         hud_elements.HudDataCache.update_traffic_reports()
+
+    def __update_aithre__(self):
+        if not CONFIGURATION.aithre_enabled:
+            return
+
+        if aithre.sensor is not None:
+            try:
+                aithre.sensor.update()
+                self.log("Aithre updated")
+                if aithre.sensor.is_connected():
+                    co_level = aithre.sensor.get_co_level()
+                    bat_level = aithre.sensor.get_battery()
+
+                    self.log("CO:{}ppm, BAT:{}%".format(co_level, bat_level))
+                else:
+                    self.log("Aithre is enabled, but not connected.")
+            except:
+                self.warn("Error attempting to update Aithre sensor values")
+        elif CONFIGURATION.aithre_enabled:
+            try:
+                aithre.sensor = aithre.Aithre(self.__logger__)
+                self.log("Aithre created")
+            except:
+                self.warn("Error attempting to connect to Aithre")
 
     def __init__(self, logger):
         """
@@ -442,13 +483,10 @@ class HeadsUpDisplay(object):
         self.__backpage_framebuffer__, screen_size = display.display_init()  # args.debug)
         self.__width__, self.__height__ = screen_size
 
-
         pygame.mouse.set_visible(False)
 
         pygame.font.init()
         self.__should_render_perf__ = False
-
-        font_name = "consolas,monaco,courier,arial,helvetica"
 
         font_size_std = int(self.__height__ / 10.0)
         font_size_detail = int(self.__height__ / 12.0)
@@ -458,11 +496,11 @@ class HeadsUpDisplay(object):
             get_absolute_file_path("./assets/fonts/LiberationMono-Bold.ttf"), font_size_std)
         self.__detail_font__ = pygame.font.Font(
             get_absolute_file_path("./assets/fonts/LiberationMono-Bold.ttf"), font_size_detail)
-        self.__loading_font__ = pygame.font.SysFont(
-            font_name, font_size_loading, True, False)
+        self.__loading_font__ = pygame.font.Font(
+            get_absolute_file_path("./assets/fonts/LiberationMono-Regular.ttf"), font_size_loading)
         self.__show_boot_screen__()
 
-        self.__aircraft__ = Aircraft()
+        self.__aircraft__ = Aircraft(self.__logger__)
 
         self.__pixels_per_degree_y__ = int((self.__height__ / CONFIGURATION.get_degrees_of_pitch()) *
                                            CONFIGURATION.get_pitch_degrees_display_scaler())
@@ -486,6 +524,8 @@ class HeadsUpDisplay(object):
                       self.__purge_old_reports__, start_immediate=False)
         RecurringTask("update_traffic", 0.1,
                       self.__update_traffic_reports__, start_immediate=True)
+        RecurringTask("update_aithre", 5.0,
+                      self.__update_aithre__, start_immediate=True)
 
     def __show_boot_screen__(self):
         """
@@ -495,9 +535,9 @@ class HeadsUpDisplay(object):
         disclaimer_text = ['Not intended as',
                            'a primary collision evasion',
                            'or flight instrument system.',
-                           'For advisiory only.']
+                           'For advisory only.']
 
-        texture = self.__loading_font__.render("BOOTING", True, display.RED)
+        texture = self.__loading_font__.render("LOADING", True, display.RED)
         text_width, text_height = texture.get_size()
 
         surface = pygame.display.get_surface()
@@ -561,7 +601,7 @@ class HeadsUpDisplay(object):
 
         if event.key in [pygame.K_ESCAPE]:
             utilities.shutdown(0)
-            if not local_debug.is_debug():
+            if local_debug.IS_PI:
                 self.__shutdown_stratux__()
 
             return False
@@ -590,7 +630,7 @@ class HeadsUpDisplay(object):
 
         if event.key in [pygame.K_EQUALS, pygame.K_KP_EQUALS]:
             self.__should_render_perf__ = not self.__should_render_perf__
-        
+
         if event.key in [pygame.K_KP0, pygame.K_0, pygame.K_INSERT]:
             self.__reset_websocket__()
 

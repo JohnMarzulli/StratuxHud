@@ -5,7 +5,8 @@ from setuptools import setup
 installs = ['pytest',
             'pygame',
             'ws4py',
-            'requests']
+            'requests',
+            'bluepy']
 
 
 setup(name='StratuxHud',

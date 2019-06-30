@@ -41,6 +41,9 @@ class SimulatedValue(object):
             self.value = lower_limit
 
         return self.__offset__ + self.value
+    
+    def get_value(self):
+        return self.__offset__ + self.value
 
     def __init__(self, rate, limit, initial_direction, initial_value=0.0, offset=0.0):
         self.__rate__ = rate

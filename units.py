@@ -116,7 +116,7 @@ def get_meters_per_second_from_mph(speed):
     return mph_to_ms * speed
 
 
-def get_converted_units_string(units, distance, unit_type=DISTANCE):
+def get_converted_units_string(units, distance, unit_type=DISTANCE, decimal_places=True):
     """
     Given a base measurement (RAW from the ADS-B), a type of unit,
     and if it is speed or distance, returns a nice string for display.
@@ -133,36 +133,55 @@ def get_converted_units_string(units, distance, unit_type=DISTANCE):
 
     >>> get_converted_units_string('statute', 0, DISTANCE)
     "0'"
-    >>> get_converted_units_string('statute', 0, SPEED)
-    '0.0MPH'
+    >>> get_converted_units_string('statute', 0.0, DISTANCE, True)
+    "0'"
+    >>> get_converted_units_string('statute', 0, SPEED, False)
+    '0 MPH'
+    >>> get_converted_units_string('statute', 0, SPEED, True)
+    '0 MPH'
     >>> get_converted_units_string('statute', 10, DISTANCE)
     "10'"
     >>> get_converted_units_string('statute', 5280, SPEED)
-    '1.0MPH'
+    '1 MPH'
+    >>> get_converted_units_string('statute', 5280, SPEED, False)
+    '1 MPH'
+    >>> get_converted_units_string('statute', 5280, SPEED, True)
+    '1 MPH'
+    >>> get_converted_units_string('statute', 5680, SPEED, True)
+    '1 MPH'
     >>> get_converted_units_string('statute', 528000, SPEED)
-    '100.0MPH'
+    '100 MPH'
     """
 
     if units is None:
         units = STATUTE
+    
+    formatter_string = "{0:.1f}"
+    formatter_no_decimals = "{0:.0f}"
+    
+    if not decimal_places or unit_type is SPEED:
+        distance = int(distance)
+        formatter_string = formatter_no_decimals
+    
+    with_units_formatter = formatter_string + " {1}"
 
     if units != METRIC:
         if distance < IMPERIAL_NEARBY and unit_type != SPEED:
-            return "{0:.0f}".format(distance) + "'"
+            return formatter_no_decimals.format(distance) + "'"
 
         if units == NAUTICAL:
-            return "{0:.1f}{1}".format(distance / feet_to_nm, UNIT_LABELS[NAUTICAL][unit_type])
+            return with_units_formatter.format(distance / feet_to_nm, UNIT_LABELS[NAUTICAL][unit_type])
 
-        return "{0:.1f}{1}".format(distance / feet_to_sm, UNIT_LABELS[STATUTE][unit_type])
+        return with_units_formatter.format(distance / feet_to_sm, UNIT_LABELS[STATUTE][unit_type])
     else:
         conversion = distance / feet_to_km
 
         if conversion < 0.5 and units != SPEED:
-            return "{0:.1f}{1}".format(conversion,  UNIT_LABELS[METRIC][unit_type])
+            return with_units_formatter.format(conversion,  UNIT_LABELS[METRIC][unit_type])
 
-        return "{0:.1f}m".format(distance / feet_to_m)
+        return with_units_formatter.format(distance / feet_to_m, "m")
 
-    return "{0:.0f}'".format(distance)
+    return with_units_formatter.format(distance, "ft")
 
 
 if __name__ == '__main__':

@@ -9,6 +9,7 @@
         "G Load",
         "Roll Indicator",
         "Groundspeed",
+        "Aithre",
         "ADSB Reticles",
         "ADSB Target Bugs Only"
       ],
@@ -53,7 +54,8 @@
         "Altitude",
         "G Load",
         "Roll Indicator",
-        "Groundspeed"
+        "Groundspeed",
+        "Aithre"
       ],
       "name": "AHRS Only"
     }
