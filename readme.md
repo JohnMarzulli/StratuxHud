@@ -101,7 +101,7 @@ In this example, `N2849K` is almost directly behind us (far left screen). The pl
 
 This shows us _at most_ the eight closest planes.
 
-The *IDENT*ifier will be the tail number when available, otherwise the ICAO identifier or callsign may be used. The *BEAR*ing is the heading to take to fly to that target. The *DIST*ance is the distance to the target. The *ALT*itude is given in relative terms, with two digits dropped.
+The _IDENT_ifier will be the tail number when available, otherwise the ICAO identifier or callsign may be used. The _BEAR_ing is the heading to take to fly to that target. The _DIST_ance is the distance to the target. The _ALT_itude is given in relative terms, with two digits dropped.
 
 In this example, the closest target is N1213S. The plane is only 1.2 statue mile away, and 1,500 feet above us.
 
@@ -218,6 +218,26 @@ You may have the HUD ignore your own aircraft using a "OWNSHIP" functionality. T
 
 Please refer to the Stratux documentation on how to set the OWNSHIP value.
 
+### Aithre Support
+
+Support for Aithre was added in V1.5
+
+Values for the CO PPM are shown in the default `AHRS Only`, `AHRS + ADS-B`, and `System Information` views.
+
+No additional setup is required, just simply turn on your Aithre and place it within range of the StratuxHud processing unit.
+
+NOTE: Aithre support will only work on Raspberry Pi units that have a Bluetooth chip, such as the 3, and 3B+. The RPi2 and earlier will not work.
+
+NOTE: The Aithre hardware supports only a single device at a time. If you wish to use the phone app to display your CO PPM values:
+
+1. Use the HudConfig tool to disable Aithre support
+
+Alternatively:
+
+1. Open `/root/hud_config.json`
+2. Set the "aithre" line to: `"aithre": false,`
+3. Save and close.
+
 ### Kivic Based Setup
 
 1. Install the Kivic projector per the Kivic directions. Please note that there is a release clip and the unit is removable. Also note that the combiner glass can be adjusted fore and aft.
@@ -237,10 +257,27 @@ Please refer to the Stratux documentation on how to set the OWNSHIP value.
 
 ## Appendix
 
+### Updating StratuxHud Code
+
+If you would like to update from an earlier version to V1.5
+
+1. Connect to a network using the ethernet cable.
+2. Connect your Pi to a monitor using an HDMI cable. Connect a keyboard.
+3. Reboot.
+4. Press "Q" while the HUD is running to quit to a command line.
+5. cd /home/pi/StratuxHud
+6. `git fetch`
+7. If you are currently running a version earlier than 1.5 _only_: `sudo cp *.json /root/`
+8. `git stash`
+9. `git checkout master`
+10. `git pull`
+11. If you have any errors, please report them immediatley. Otherwise you are updated.
+12. `sudo shutdown -h now`
+
 ### Revision History
 
 Date       | Version | Major Changes
----------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------
+---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 2019-06-30 | 1.5     | Support for the Aithre CO detector. New roll indicator. Various performance improvements. Visual warning if GPS is not plugged in. Use the OWNSHIP config from the receiver instead of local config.
 2019-03-31 | 1.4     | Add connection reset button. Fixes issues with the Diagnostic view running of of space. Initial port to Python 3.7
 2019-01-31 | 1.3     | Improvements to the communication with the Stratux. Update directions for Kivic install.
