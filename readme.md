@@ -159,22 +159,12 @@ _NOTE:_ This _does not_ include a power source. You will need to supply ship pow
 2. Plug in a keyboard and a monitor
 3. Plug in the power to the Pi.
 4. Press ctrl+alt+f1 to quit from the GUI to the desktop
-5. `sudo raspi-config`
-6. `Boot Options` -> `Desktop / CLI` -> `Console Autologin`
-7. `Advanced Options` -> `Expand Filesystem`
-8. `Advanced Options` -> `Memory Split` -> "128"
-9. "OK"
-10. "Finish"
-11. "Yes"
-12. Wait for the reboot
-13. `sudo raspi-config`
-14. "Network options" -> "WiFi"
-15. Choose your country. Pressing "u" will take you to USA.
-16. Enter your network name and password.
-17. "Interfacing Options" -> "Enable SSH"
-18. "Localization" -> "Change Keyboard Layout" -> "Generic 104"
-19. "Other" -> "English US" -> "Default" -> "No compose" -> "Yes"
-20. "Finish"
+5. If asked, the username is `pi`
+6. If asked the password is `raspberry`
+7. Execute: `cd /home/pi`
+8. Execute: `git clone https://github.com/JohnMarzulli/StratuxHud.git`
+9. Execute: `cd StratuxHud`
+10. Execute: `bash ./install_stratux_hud_raspberry_pi.sh`
 
 #### Raspberry Pi 3B+
 
@@ -185,32 +175,6 @@ sudo apt-get update && sudo apt-get dist-upgrade -y
 ```
 
 Make sure you are using a high quality power cable if you are using a Pi 3B+
-
-### Install Software
-
-1. Enter `ping google.com`. Press ctrl+c after a while. This will confirm that you have internet access. If you do not, then use rasp-config to re-enter your wi-fi
-2. `cd ~`
-3. `git clone https://github.com/JohnMarzulli/StratuxHud.git`
-4. `cd StratuxHud`
-5. `sudo apt-get install libgtk2.0-dev` a. Choose `Y` if prompted
-6. `sudo cp ./media/hud_logo.png /usr/share/plymouth/themes/pix/splash.png`
-7. `python --version`. Verify that your version is 2.7.14
-8. `sudo python setup.py develop`
-9. `sudo raspi-config`
-10. Choose "WiFi" again, and enter `stratux` as the SSID. No password.
-11. `sudo vim /etc/wpa_supplicant/wpa_supplicant.conf`
-12. Delete the section that contains your WiFi network, leaving the section that contains the Stratux network.
-13. More info on configuring Linux WiFi: <https://www.raspberrypi.org/forums/viewtopic.php?t=160620>
-14. Save and quit.
-15. Type "crontab -e"
-16. Select "Nano" (Option 1)
-17. Enter the following text at the _bottom_ of the file:
-
-```bash
-@reboot sudo python /home/pi/StratuxHud/stratux_hud.py &
-```
-
-1. Save and quit.
 
 ### Ownship
 
