@@ -41,17 +41,20 @@ git pull
 # STEP 3 #
 ##########
 #
-# Make sure we have the latest version of the OS
+# Make sure we have all the components we need
 
 echo "STEP 3:"
-echo "Updating the Raspberry Pi's Operating System"
+echo "Updating the Raspberry Pi's Operating System and installing components"=+
 
 echo raspberry | sudo -S apt-get update --assume-yes
 echo raspberry | sudo -S sudo apt-get upgrade --fix-missing --assume-yes
 echo raspberry | sudo -S apt-get install libgtk2.0-dev  --assume-yes
 echo raspberry | sudo -S cp ./media/hud_logo.png /usr/share/plymouth/themes/pix/splash.png
-echo raspberry | sudo -S sudo pip install bluepy
-echo raspberry | sudo -S sudo python setup.py develop
+echo raspberry | sudo -S pip install pytest
+echo raspberry | sudo -S pip install pygame
+echo raspberry | sudo -S pip install ws4py
+echo raspberry | sudo -S pip install requests
+echo raspberry | sudo -S pip install bluepy
 
 ##########
 # STEP 4 #
@@ -66,7 +69,7 @@ echo raspberry | sudo -S raspi-config nonint get_config_var gpu_mem_128 /boot/co
 
 ##########
 # STEP 5 #
-##########
+##########dfdf
 #
 # Setup the Raspberry Pi to automatically boot into StratuxHud
 
@@ -74,7 +77,7 @@ echo "STEP 5:"
 echo "Setting the StratuxHud to start on boot."
 
 echo raspberry | sudo -S raspi-config nonint do_boot_behaviour B2
-echo raspberry | sudo -S printf  '@reboot sudo python /home/pi/StratuxHud/stratux_hud.py &' > sudo tee /var/spool/cron/crontabs/root
+echo raspberry | sudo -S printf  '@reboot sudo python /home/pi/StratuxHud/stratux_hud.py &' | sudo tee /var/spool/cron/crontabs/root
 
 ##########
 # STEP 6 #
@@ -94,7 +97,5 @@ echo raspberry | sudo -S -c printf 'ctrl_interface=DIR=/var/run/wpa_supplicant G
 # All done - Time to reboot
 
 echo "STEP 7:"
-echo "Waiting for new crontab to be installed"
-sleep 90
-echo "Finished, shutting down."
-sudo reboot now
+echo "Finished with automated steps, please run the commands according to the readme.md file"
+
