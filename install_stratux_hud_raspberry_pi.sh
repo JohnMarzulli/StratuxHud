@@ -50,7 +50,7 @@ echo raspberry | sudo -S apt-get update --assume-yes
 echo raspberry | sudo -S sudo apt-get upgrade --fix-missing --assume-yes
 echo raspberry | sudo -S apt-get install libgtk2.0-dev  --assume-yes
 echo raspberry | sudo -S cp ./media/hud_logo.png /usr/share/plymouth/themes/pix/splash.png
-echo raspberry | sudo -S sudo pip install bluepi
+echo raspberry | sudo -S sudo pip install bluepy
 echo raspberry | sudo -S sudo python setup.py develop
 
 ##########
@@ -74,7 +74,7 @@ echo "STEP 5:"
 echo "Setting the StratuxHud to start on boot."
 
 echo raspberry | sudo -S raspi-config nonint do_boot_behaviour B2
-echo raspberry | sudo -S printf  '@reboot sudo python /home/pi/StratuxHud/stratux_hud.py &' > sudo tee /var/spool/cron/crontabs/pi
+echo raspberry | sudo -S printf  '@reboot sudo python /home/pi/StratuxHud/stratux_hud.py &' > sudo tee /var/spool/cron/crontabs/root
 
 ##########
 # STEP 6 #
@@ -94,5 +94,7 @@ echo raspberry | sudo -S -c printf 'ctrl_interface=DIR=/var/run/wpa_supplicant G
 # All done - Time to reboot
 
 echo "STEP 7:"
+echo "Waiting for new crontab to be installed"
+sleep 90
 echo "Finished, shutting down."
 sudo reboot now
