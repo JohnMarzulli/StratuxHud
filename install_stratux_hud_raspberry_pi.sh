@@ -77,7 +77,9 @@ echo "STEP 5:"
 echo "Setting the StratuxHud to start on boot."
 
 echo raspberry | sudo -S raspi-config nonint do_boot_behaviour B2
-echo raspberry | sudo -S printf  '@reboot sudo python /home/pi/StratuxHud/stratux_hud.py &' | sudo tee /var/spool/cron/crontabs/root
+echo raspberry | sudo -S printf  '@reboot sudo python /home/pi/StratuxHud/stratux_hud.py &' | sudo tee /var/spool/cron/crontabs/pi
+echo raspberry | sudo chown pi /var/spool/cron/crontabs/pi
+
 
 ##########
 # STEP 6 #
@@ -97,5 +99,6 @@ echo raspberry | sudo -S printf 'ctrl_interface=DIR=/var/run/wpa_supplicant GROU
 # All done - Time to reboot
 
 echo "STEP 7:"
-echo "Finished with automated steps, please run the commands according to the readme.md file"
+echo "Finishing up"
 
+crontab -e
