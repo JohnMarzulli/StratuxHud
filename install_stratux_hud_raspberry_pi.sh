@@ -88,7 +88,7 @@ echo raspberry | sudo -S printf  '@reboot sudo python /home/pi/StratuxHud/stratu
 echo "STEP 6:"
 echo "Setting up the connection to the Stratux"
 
-echo raspberry | sudo -S -c printf 'ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev\nupdate_config=1\ncountry=US\nnetwork={\n\tssid="stratux"\n\tkey_mgmt=NONE\n}' | sudo tee /etc/wpa_supplicant/wpa_supplicant.conf
+echo raspberry | sudo -S printf 'ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev\nupdate_config=1\ncountry=US\nnetwork={\n\tssid="stratux"\n\tkey_mgmt=NONE\n}' | sudo tee /etc/wpa_supplicant/wpa_supplicant.conf
 
 ##########
 # STEP 7 #
