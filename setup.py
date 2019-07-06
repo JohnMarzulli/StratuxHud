@@ -1,7 +1,3 @@
-import lib.local_debug as local_debug
-import configuration
-from setuptools import setup
-
 installs = ['pytest',
             'pygame',
             'ws4py',
@@ -10,7 +6,7 @@ installs = ['pytest',
 
 
 setup(name='StratuxHud',
-      version=configuration.VERSION,
+      version=1.5,
       python_requires='>=2.7',
       description='Graphics for a Heads Up Display projector powered by a Stratux receiver.',
       url='https://github.com/JohnMarzulli/StratuxHud',
