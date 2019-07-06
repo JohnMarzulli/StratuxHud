@@ -34,7 +34,6 @@ echo "Updating the HUD code to the latest main release."
 cd ~/StratuxHud
 git fetch
 git stash
-git checkout master
 git pull
 
 
