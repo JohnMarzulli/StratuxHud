@@ -46,7 +46,7 @@ git pull
 echo "STEP 3:"
 echo "Updating the Raspberry Pi's Operating System and installing components"=+
 
-echo raspberry | sudo -S apt-get update --assume-yesgit
+echo raspberry | sudo -S apt-get update --assume-yes
 echo raspberry | sudo -S sudo apt-get upgrade --fix-missing --assume-yes
 echo raspberry | sudo -S apt-get install libgtk2.0-dev  --assume-yes
 echo raspberry | sudo -S cp ./media/hud_logo.png /usr/share/plymouth/themes/pix/splash.png
