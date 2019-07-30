@@ -5,41 +5,17 @@
 
 import * as http from "http";
 import * as debug from "debug";
-import * as WebSocket from "ws";
 
 import RestServer from "./rest_server";
 
 debug("ts-express:server");
 
 const DefaultPort: number = 3000;
-const StratuxAddress: string = "192.168.10.1";
+
 const port: number = normalizePort(process.env.PORT || DefaultPort);
 RestServer.set("port", port);
 
 const server = http.createServer(RestServer);
-const WebSocketClient = new WebSocket("ws://" + StratuxAddress + "/traffic");
-
-WebSocketClient.onopen = function() {
-  console.log("Socket open");
-};
-
-WebSocketClient.onerror = function(error) {
-  console.error("ERROR:" + error);
-};
-
-WebSocketClient.onmessage = function(message) {
-  console.log(message.data);
-
-  // try to decode json (I assume that each message
-  // from server is json)
-  try {
-    var json = JSON.parse(message.data.toString());
-  } catch (e) {
-    console.log("This doesn't look like a valid JSON: ", message.data);
-    return;
-  }
-  // handle incoming message
-};
 
 server.listen(port);
 server.on("error", onError);
