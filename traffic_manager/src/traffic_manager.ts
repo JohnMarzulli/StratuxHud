@@ -37,7 +37,7 @@ function getPortValue(originalValue: string | number): number {
 function normalizePort(val: number | string): number {
   let port: number = getPortValue(val);
 
-  return isNaN(port) || port < 0 ? DefaultPort : DefaultPort;
+  return isNaN(port) || port < 0 ? DefaultPort : port;
 }
 
 function onError(error: NodeJS.ErrnoException): void {

@@ -9,12 +9,6 @@ class RestServer {
   // ref to Express instance
   public express: express.Application;
 
-  private GetServiceInfoPath: string = "/Service/Info";
-  private GetServiceResetPath: string = "/Service/Reset";
-  private GetServiceStatusPath: string = "/Service/Status";
-  private GetTrafficOverviewPath: string = "/Traffic/All";
-  private GetTrafficDetailsPath: string = "/Traffic/:id";
-
   /**
    * Returns the information about the service.
    * Intended to be used for compatibility checks
@@ -24,12 +18,28 @@ class RestServer {
    * @returns {*}
    * @memberof RestServer
    */
-  private getServiceInfoResponseBody(): any {
+  private getServiceInfoResponseBody(req: any): any {
     return {
       server: {
         name: "StratuxHud",
         version: "1.6.0"
       }
+    };
+  }
+
+  /**
+   * Returns the status of the service and the web socket
+   *
+   * @private
+   * @returns {*}
+   * @memberof RestServer
+   */
+  private getServiceStatusResponseBody(req: any): any {
+    // $TODO - Actually get the status of the socket
+    return {
+      socketStatus: null,
+      socketTimeSinceLastTraffic: null,
+      trackedTrafficCount: null
     };
   }
 
@@ -41,31 +51,14 @@ class RestServer {
    * @returns {*}
    * @memberof RestServer
    */
-  private getServiceResetResponseBody(): any {
+  private getServiceResetResponseBody(req: any): any {
     // $TODO - Actually perform the reset
     return {
-      resetTime: new Date().toUTCString(),
-      status: this.getServiceStatusResponseBody()
+      resetTime: new Date().toUTCString()
     };
   }
 
-  /**
-   * Returns the status of the service and the web socket
-   *
-   * @private
-   * @returns {*}
-   * @memberof RestServer
-   */
-  private getServiceStatusResponseBody(): any {
-    // $TODO - Actually get the status of the socket
-    return {
-      socketStatus: null,
-      socketTimeSinceLastTraffic: null,
-      trackedTrafficCount: null
-    };
-  }
-
-  private getTrafficOverviewResponseBody(): any {
+  private getTrafficOverviewResponseBody(req: any): any {
     // $TODO - Return basic information about ALL
     //         of the known traffic.
     return {
@@ -74,10 +67,10 @@ class RestServer {
   }
 
   /**
-   * 
+   *
    * @param request The request that will containing the identifier of the traffic we want to get the details of.
    */
-  private getTrafficDetailsResponseBody(request: Request): any {
+  private getTrafficDetailsResponseBody(req: any): any {
     // $TODO - Return detailed information about a specific
     //         piece of traffic
     return {
@@ -111,37 +104,27 @@ class RestServer {
   private routes(): void {
     let router = express.Router();
 
-    // The main handler will return the basic information
-    // on the Traffic Manager server
-    router.get(this.GetServiceInfoPath, (req, res, next) => {
-      res.json(this.getServiceInfoResponseBody());
+    var mapping = {
+      "/": this.getServiceInfoResponseBody,
+      "/Service/Info": this.getServiceInfoResponseBody,
+      "/Service/Status": this.getServiceStatusResponseBody,
+      "/Service/Reset": this.getServiceResetResponseBody,
+      "/Traffic/All": this.getTrafficOverviewResponseBody,
+      "/Traffic/:id": this.getTrafficDetailsResponseBody
+    };
+
+    Object.keys(mapping).forEach(key => {
+      router.get(key, (req, res, next) => {
+        res.json(mapping[key](req));
+      });
     });
 
-    // Handler that forces a re-connect of the web-socket
-    router.get(this.GetServiceResetPath, (req, res, next) => {
-      res.json(this.getServiceResetResponseBody());
+    // NOTE:
+    // The "use root" appears to be required
+    // for the Express routing to actually work.
+    Object.keys(mapping).forEach(route => {
+      this.express.use(route, router);
     });
-
-    // Handler that gets teh current status of the service
-    router.get(this.GetServiceStatusPath, (req, res, next) => {
-      res.json(this.getServiceStatusResponseBody());
-    });
-
-    // Handler that returns basic details about ALL known traffic
-    router.get(this.GetTrafficOverviewPath, (req, res, next) => {
-      res.json(this.getTrafficOverviewResponseBody());
-    });
-
-    // Handler that returns the full details about a single piece of traffic
-    router.get(this.GetTrafficDetailsPath, (req, res, next) => {
-      res.json(this.getTrafficDetailsResponseBody());
-    });
-
-    this.express.use(this.GetServiceInfoPath, router);
-    this.express.use(this.GetServiceResetPath, router);
-    this.express.use(this.GetServiceStatusPath, router);
-    this.express.use(this.GetTrafficOverviewPath, router);
-    this.express.use(this.GetTrafficDetailsPath, router);
   }
 }
 
