@@ -8,16 +8,28 @@ import * as WebSocket from "ws";
 import { stringify } from "querystring";
 
 const StratuxAddress: string = "192.168.10.1";
-const SecondsToPurgeReport = 60 * 2;
+const SecondsToPurgeReport = 2; // 30
 
 const icaoAddressKey: string = "Icao_addr";
+const registrationNumberKey: string = "Reg";
+const tailNumberKey: string = "Tail";
+const trafficReliableKey: string = "Position_valid";
+const latitudeKey: string = "Lat";
+const longitudeKey: string = "Lng";
+const onGroundKey: string = "OnGround";
+const transponderCodeKey: string = "Squawk";
+const distanceKey: string = "Distance";
+const altitudeKey: string = "Alt";
+const bearingKey: string = "Bearing";
 
-var trafficCache: Map<number, Map<string, any>> = new Map<
-  number,
+const secondsSinceLastReportKey: string = "secondsSinceLastReport";
+const displayNameKey: string = "displayName";
+
+var trafficCache: Map<string, Map<string, any>> = new Map<
+  string,
   Map<string, any>
 >();
-
-var lastTrafficReport: Map<number, Date> = new Map<number, Date>();
+var lastWebsocketReportTime: number = 0;
 
 /**
  * Take a traffic report and then merge in the latest data
@@ -32,47 +44,53 @@ function reportTraffic(report: Map<string, any>): void {
       return;
     }
 
-    var icaoAddress: number = parseInt(report[icaoAddressKey]);
+    var icaoAddress: string = report[icaoAddressKey].toString();
 
     // Create the entry if it is not already there.
     if (trafficCache[icaoAddress] == null) {
-      trafficCache[icaoAddress] = new Map<string, any>();
-      console.log("Adding " + icaoAddress);
+      trafficCache[icaoAddress] = report;
+      // trafficCache[icaoAddress] = new Map<string, any>();
+      console.log(Date.now().toLocaleString() + ": Adding " + icaoAddress);
+    } else {
+      // Now go an perform the painful merge
+      Object.keys(report).forEach(key => {
+        trafficCache[icaoAddress][key] = report[key];
+      });
     }
 
-    // Now go an perform the painful merge
-    Object.keys(report).forEach(key => {
-      trafficCache[icaoAddress][key] = report[key];
-    });
-
-    lastTrafficReport[icaoAddress] = Date.now();
+    lastWebsocketReportTime = Date.now();
+    trafficCache[icaoAddress][
+      secondsSinceLastReportKey
+    ] = lastWebsocketReportTime;
   } catch (e) {
     console.error("Issue merging report into cache:" + e);
   }
 }
 
-function garbageCollectTraffic(): number {
-  var numReportsRemoved: number = 0;
+function garbageCollectTraffic(): void {
+  console.log("Starting GC");
 
-  var keysToRemove: number[] = [];
-
-  Object.keys(lastTrafficReport).forEach(icaoAddress => {
-    var secondsSinceLastReport: number =
-      (Date.now() - lastTrafficReport[icaoAddress]) / 1000;
+  var newTrafficReport: Map<string, Map<string, any>> = new Map<
+    string,
+    Map<string, any>
+  >();
+  Object.keys(trafficCache).forEach(iacoCode => {
+    var secondsSinceLastReport: number = getSecondsSince(
+      trafficCache[iacoCode][secondsSinceLastReportKey]
+    );
 
     if (secondsSinceLastReport > SecondsToPurgeReport) {
-      keysToRemove.push(Number(icaoAddress));
+      console.log("Purging " + iacoCode);
+    } else {
+      newTrafficReport[iacoCode] = trafficCache[iacoCode];
+      console.log("Keeping " + iacoCode + " as " + trafficCache[iacoCode]);
     }
   });
 
-  keysToRemove.forEach(trafficToRemove => {
-    console.warn("Purging " + trafficToRemove);
-    lastTrafficReport.delete(trafficToRemove);
-    trafficCache.delete(trafficToRemove);
-  });
-
-  return numReportsRemoved;
+  trafficCache = newTrafficReport;
 }
+
+setInterval(garbageCollectTraffic, 5 * 1000);
 
 const WebSocketClient = new WebSocket("ws://" + StratuxAddress + "/traffic");
 
@@ -83,6 +101,14 @@ WebSocketClient.onopen = function() {
 WebSocketClient.onerror = function(error) {
   console.error("ERROR:" + error);
 };
+
+function getSecondsSince(lastTime: number): number {
+  if (lastTime == null) {
+    return 0.0;
+  }
+
+  return (Date.now() - lastTime) / 1000;
+}
 
 WebSocketClient.onmessage = function(message) {
   try {
@@ -125,11 +151,10 @@ class RestServer {
    * @memberof RestServer
    */
   private getServiceStatusResponseBody(req: any): any {
-    // $TODO - Actually get the status of the socket
     return {
-      socketStatus: null,
-      socketTimeSinceLastTraffic: null,
-      trackedTrafficCount: null
+      socketStatus: WebSocketClient.readyState,
+      socketTimeSinceLastTraffic: getSecondsSince(lastWebsocketReportTime),
+      trackedTrafficCount: Object.keys(trafficCache).length
     };
   }
 
@@ -150,21 +175,20 @@ class RestServer {
 
   private getTrafficOverviewResponseBody(
     req: any
-  ): Map<number, Map<string, any>> {
+  ): Map<string, Map<string, any>> {
     // $TODO - Return basic information about ALL
     //         of the known traffic.
     {
-      var response: Map<number, Map<string, any>> = new Map<
-        number,
+      var response: Map<string, Map<string, any>> = new Map<
+        string,
         Map<string, any>
       >();
 
-      Object.keys(lastTrafficReport).forEach(icaoAddress => {
-        var secondsSinceLastReport: number =
-          (Date.now() - lastTrafficReport[icaoAddress]) / 1000;
-
+      Object.keys(trafficCache).forEach(icaoAddress => {
         response[icaoAddress] = {
-          secondsSinceLastReport: secondsSinceLastReport,
+          secondsSinceLastReport: getSecondsSince(
+            trafficCache[icaoAddress][secondsSinceLastReportKey]
+          ),
           tailNumber: trafficCache[icaoAddress]["Reg"]
         };
       });
@@ -174,9 +198,59 @@ class RestServer {
   }
 
   private getTrafficFullResponseBody(req: any): any {
-    garbageCollectTraffic();
-
     return trafficCache;
+  }
+
+  private getTrafficReliableRepsonseBody(
+    req: Request
+  ): Map<string, Map<string, any>> {
+    var outReliableTraffic: Map<string, Map<string, any>> = new Map<
+      string,
+      Map<string, any>
+    >();
+
+    Object.keys(trafficCache).forEach(iacoCode => {
+      if (
+        trafficCache[iacoCode] != null &&
+        trafficCache[iacoCode][secondsSinceLastReportKey] != null &&
+        trafficCache[iacoCode][icaoAddressKey] != null &&
+        trafficCache[iacoCode][trafficReliableKey] != null &&
+        trafficCache[iacoCode][trafficReliableKey] &&
+        trafficCache[iacoCode][latitudeKey] != null &&
+        trafficCache[iacoCode][longitudeKey] != null &&
+        trafficCache[iacoCode][onGroundKey] != null &&
+        trafficCache[iacoCode][distanceKey] != null &&
+        trafficCache[iacoCode][altitudeKey] != null &&
+        trafficCache[iacoCode][bearingKey] != null
+      ) {
+        var displayValue: string =
+          trafficCache[iacoCode][registrationNumberKey];
+        if (displayValue == null) {
+          displayValue = trafficCache[iacoCode][tailNumberKey];
+        }
+        if (displayValue == null) {
+          displayValue = iacoCode.toString();
+        }
+        outReliableTraffic[iacoCode] = new Map<string, Map<string, any>>();
+        outReliableTraffic[iacoCode][displayNameKey] = displayValue;
+        outReliableTraffic[iacoCode][secondsSinceLastReportKey] =
+          trafficCache[iacoCode][secondsSinceLastReportKey];
+        outReliableTraffic[iacoCode][latitudeKey] =
+          trafficCache[iacoCode][latitudeKey];
+        outReliableTraffic[iacoCode][longitudeKey] =
+          trafficCache[iacoCode][longitudeKey];
+        outReliableTraffic[iacoCode][onGroundKey] =
+          trafficCache[iacoCode][onGroundKey];
+        outReliableTraffic[iacoCode][distanceKey] =
+          trafficCache[iacoCode][distanceKey];
+        outReliableTraffic[iacoCode][altitudeKey] =
+          trafficCache[iacoCode][altitudeKey];
+        outReliableTraffic[iacoCode][bearingKey] =
+          trafficCache[iacoCode][bearingKey];
+      }
+    });
+
+    return outReliableTraffic;
   }
 
   /**
@@ -220,8 +294,9 @@ class RestServer {
       "/Service/Info": this.getServiceInfoResponseBody,
       "/Service/Status": this.getServiceStatusResponseBody,
       "/Service/Reset": this.getServiceResetResponseBody,
-      "/Traffic/All": this.getTrafficOverviewResponseBody,
+      "/Traffic/Summary": this.getTrafficOverviewResponseBody,
       "/Traffic/Full": this.getTrafficFullResponseBody,
+      "/Traffic/Reliable": this.getTrafficReliableRepsonseBody,
       "/Traffic/:id": this.getTrafficDetailsResponseBody
     };
 
