@@ -8,7 +8,10 @@ import * as WebSocket from "ws";
 import { stringify } from "querystring";
 
 const StratuxAddress: string = "192.168.10.1";
-const SecondsToPurgeReport = 2; // 30
+const SecondsToRunTrafficGarbageCollection: number = 5;
+const SecondsToPurgeReport: number = 15;
+const SecondsToCheckSocketClient: number = 1;
+const WebSocketTimeoutSeconds: number = 10;
 
 const icaoAddressKey: string = "Icao_addr";
 const registrationNumberKey: string = "Reg";
@@ -24,6 +27,8 @@ const bearingKey: string = "Bearing";
 
 const secondsSinceLastReportKey: string = "secondsSinceLastReport";
 const displayNameKey: string = "displayName";
+
+const unknownDisplayName = "UNKNOWN";
 
 var trafficCache: Map<string, Map<string, any>> = new Map<
   string,
@@ -90,17 +95,47 @@ function garbageCollectTraffic(): void {
   trafficCache = newTrafficReport;
 }
 
-setInterval(garbageCollectTraffic, 5 * 1000);
+var WebSocketClient: WebSocket = null;
 
-const WebSocketClient = new WebSocket("ws://" + StratuxAddress + "/traffic");
+function createWebSocketClient(): WebSocket {
+  if (WebSocketClient != null) {
+    WebSocketClient.close();
+  }
 
-WebSocketClient.onopen = function() {
-  console.log("Socket open");
-};
+  WebSocketClient = new WebSocket("ws://" + StratuxAddress + "/traffic");
 
-WebSocketClient.onerror = function(error) {
-  console.error("ERROR:" + error);
-};
+  WebSocketClient.onopen = function() {
+    console.log("Socket open");
+  };
+
+  WebSocketClient.onerror = function(error) {
+    console.error("ERROR:" + error);
+  };
+
+  WebSocketClient.onmessage = function(message) {
+    try {
+      var json = JSON.parse(message.data.toString());
+      reportTraffic(json);
+    } catch (e) {
+      console.log(e + "Error handling traffic report: ", message.data);
+      return;
+    }
+  };
+
+  return WebSocketClient;
+}
+
+function checkWebSocket(): void {
+  if (
+    WebSocketClient == null ||
+    getSecondsSince(lastWebsocketReportTime) > WebSocketTimeoutSeconds
+  ) {
+    createWebSocketClient();
+  }
+}
+
+setInterval(garbageCollectTraffic, SecondsToRunTrafficGarbageCollection * 1000);
+setInterval(checkWebSocket, SecondsToCheckSocketClient * 1000);
 
 function getSecondsSince(lastTime: number): number {
   if (lastTime == null) {
@@ -110,15 +145,43 @@ function getSecondsSince(lastTime: number): number {
   return (Date.now() - lastTime) / 1000;
 }
 
-WebSocketClient.onmessage = function(message) {
-  try {
-    var json = JSON.parse(message.data.toString());
-    reportTraffic(json);
-  } catch (e) {
-    console.log(e + "Error handling traffic report: ", message.data);
-    return;
+function isReliableTraffic(inReport: Map<string, any>): boolean {
+  return (
+    inReport != null &&
+    inReport[secondsSinceLastReportKey] != null &&
+    inReport[icaoAddressKey] != null &&
+    inReport[trafficReliableKey] != null &&
+    inReport[trafficReliableKey] &&
+    inReport[latitudeKey] != null &&
+    inReport[longitudeKey] != null &&
+    inReport[onGroundKey] != null &&
+    inReport[distanceKey] != null &&
+    inReport[altitudeKey] != null &&
+    inReport[bearingKey] != null
+  );
+}
+
+function getDisplayName(trafficReport: Map<string, any>): string {
+  if (trafficReport == null) {
+    return unknownDisplayName;
   }
-};
+
+  var outDisplayName: string = trafficReport[registrationNumberKey];
+
+  if (outDisplayName == null) {
+    outDisplayName = trafficReport[tailNumberKey].toString();
+  }
+
+  if (outDisplayName == null) {
+    outDisplayName = trafficReport[icaoAddressKey].toString();
+  }
+
+  if (outDisplayName == null) {
+    outDisplayName = unknownDisplayName;
+  }
+
+  return outDisplayName;
+}
 
 // Creates and configures an ExpressJS web server.
 class RestServer {
@@ -167,7 +230,7 @@ class RestServer {
    * @memberof RestServer
    */
   private getServiceResetResponseBody(req: any): any {
-    // $TODO - Actually perform the reset
+    createWebSocketClient();
     return {
       resetTime: new Date().toUTCString()
     };
@@ -176,8 +239,6 @@ class RestServer {
   private getTrafficOverviewResponseBody(
     req: any
   ): Map<string, Map<string, any>> {
-    // $TODO - Return basic information about ALL
-    //         of the known traffic.
     {
       var response: Map<string, Map<string, any>> = new Map<
         string,
@@ -189,7 +250,7 @@ class RestServer {
           secondsSinceLastReport: getSecondsSince(
             trafficCache[icaoAddress][secondsSinceLastReportKey]
           ),
-          tailNumber: trafficCache[icaoAddress]["Reg"]
+          tailNumber: getDisplayName(trafficCache[icaoAddress])
         };
       });
 
@@ -210,27 +271,9 @@ class RestServer {
     >();
 
     Object.keys(trafficCache).forEach(iacoCode => {
-      if (
-        trafficCache[iacoCode] != null &&
-        trafficCache[iacoCode][secondsSinceLastReportKey] != null &&
-        trafficCache[iacoCode][icaoAddressKey] != null &&
-        trafficCache[iacoCode][trafficReliableKey] != null &&
-        trafficCache[iacoCode][trafficReliableKey] &&
-        trafficCache[iacoCode][latitudeKey] != null &&
-        trafficCache[iacoCode][longitudeKey] != null &&
-        trafficCache[iacoCode][onGroundKey] != null &&
-        trafficCache[iacoCode][distanceKey] != null &&
-        trafficCache[iacoCode][altitudeKey] != null &&
-        trafficCache[iacoCode][bearingKey] != null
-      ) {
-        var displayValue: string =
-          trafficCache[iacoCode][registrationNumberKey];
-        if (displayValue == null) {
-          displayValue = trafficCache[iacoCode][tailNumberKey];
-        }
-        if (displayValue == null) {
-          displayValue = iacoCode.toString();
-        }
+      if (isReliableTraffic(trafficCache[iacoCode])) {
+        var displayValue: string = getDisplayName(trafficCache[iacoCode]);
+
         outReliableTraffic[iacoCode] = new Map<string, Map<string, any>>();
         outReliableTraffic[iacoCode][displayNameKey] = displayValue;
         outReliableTraffic[iacoCode][secondsSinceLastReportKey] =
