@@ -197,7 +197,7 @@ class RestServer {
    * @returns {*}
    * @memberof RestServer
    */
-  private getServiceInfoResponseBody(req: any): any {
+  private getServiceInfoResponseBody(req: Request): any {
     return {
       server: {
         name: "StratuxHud",
@@ -213,7 +213,7 @@ class RestServer {
    * @returns {*}
    * @memberof RestServer
    */
-  private getServiceStatusResponseBody(req: any): any {
+  private getServiceStatusResponseBody(req: Request): any {
     return {
       socketStatus: WebSocketClient.readyState,
       socketTimeSinceLastTraffic: getSecondsSince(lastWebsocketReportTime),
@@ -229,7 +229,7 @@ class RestServer {
    * @returns {*}
    * @memberof RestServer
    */
-  private getServiceResetResponseBody(req: any): any {
+  private getServiceResetResponseBody(req: Request): any {
     createWebSocketClient();
     return {
       resetTime: new Date().toUTCString()
@@ -237,7 +237,7 @@ class RestServer {
   }
 
   private getTrafficOverviewResponseBody(
-    req: any
+    req: Request
   ): Map<string, Map<string, any>> {
     {
       var response: Map<string, Map<string, any>> = new Map<
@@ -258,7 +258,9 @@ class RestServer {
     }
   }
 
-  private getTrafficFullResponseBody(req: any): any {
+  private getTrafficFullResponseBody(
+    req: Request
+  ): Map<string, Map<string, any>> {
     return trafficCache;
   }
 
@@ -301,17 +303,17 @@ class RestServer {
    * @param request The request that will containing the identifier of the traffic we want to get the details of.
    */
   private getTrafficDetailsResponseBody(req: any): any {
-    if (req && req.params && req.params.id) {
-      try {
-        var key: number = Number(req.params.id);
-
-        return trafficCache[key];
-      } catch {
-        return Object.keys(trafficCache);
-      }
+    if (req == null || req.params == null || req.params.id == null) {
+      return {};
     }
 
-    return null;
+    try {
+      var key: number = Number(req.params.id);
+
+      return trafficCache[key];
+    } catch {
+      return Object.keys(trafficCache);
+    }
   }
 
   //Run configuration methods on the Express instance.
