@@ -11,4 +11,6 @@ npm install @types/express  --save-dev
 npm install @types/debug --save-dev
 npm install morgan --save-dev
 npm install ts-node
+npm install @types/ws --save-dev
+npm install ws --save-dev
 ```
