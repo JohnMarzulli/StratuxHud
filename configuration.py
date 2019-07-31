@@ -79,6 +79,7 @@ class Configuration(object):
     # bad to the default config files.
     #
     DEFAULT_NETWORK_IP = "192.168.10.1"
+    DEFAULT_TRAFFIC_MANAGER_ADDRESS = "localhost:3000"
     STRATUX_ADDRESS_KEY = "stratux_address"
     DATA_SOURCE_KEY = "data_source"
     FLIP_HORIZONTAL_KEY = "flip_horizontal"
@@ -90,6 +91,7 @@ class Configuration(object):
     DEGREES_OF_PITCH_KEY = 'degrees_of_pitch'
     PITCH_DEGREES_DISPLAY_SCALER_KEY = 'pitch_degrees_scaler'
     AITHRE_KEY = 'aithre'
+    TRAFFIC_MANAGER_KEY = 'traffic_manager'
 
     DEFAULT_DEGREES_OF_PITCH = 90
     DEFAULT_PITCH_DEGREES_DISPLAY_SCALER = 2.0
@@ -108,7 +110,7 @@ class Configuration(object):
             full_views_contents = self.__load_config_from_json_file__(
                 file_name)
 
-            if full_views_content is not None and views_key in full_views_content:
+            if full_views_contents is not None and views_key in full_views_contents:
                 return full_views_contents[views_key]
         except:
             pass
@@ -174,7 +176,8 @@ class Configuration(object):
             Configuration.DECLINATION_KEY: self.get_declination(),
             Configuration.DEGREES_OF_PITCH_KEY: self.get_degrees_of_pitch(),
             Configuration.PITCH_DEGREES_DISPLAY_SCALER_KEY: self.get_pitch_degrees_display_scaler(),
-            Configuration.AITHRE_KEY: self.aithre_enabled
+            Configuration.AITHRE_KEY: self.aithre_enabled,
+            Configuration.TRAFFIC_MANAGER_KEY: self.get_traffic_manager_address()
         }
 
         return json.dumps(config_dictionary, indent=4, sort_keys=True)
@@ -254,6 +257,11 @@ class Configuration(object):
             self.__configuration__[
                 Configuration.PITCH_DEGREES_DISPLAY_SCALER_KEY] = self.pitch_degrees_display_scaler
 
+        if Configuration.TRAFFIC_MANAGER_KEY in json_config:
+            self.traffic_manager_address = json_config[Configuration.TRAFFIC_MANAGER_KEY]
+            self.__configuration__[
+                Configuration.TRAFFIC_MANAGER_KEY] = self.traffic_manager_address
+
     def __get_config_value__(self, key, default_value):
         """
         Returns a configuration value, default if not found.
@@ -293,6 +301,13 @@ class Configuration(object):
         """
 
         return self.declination
+
+    def get_traffic_manager_address(self):
+        """
+        Returns the address we should use for the traffic manager
+        """
+
+        return self.traffic_manager_address
 
     def get_units(self):
         """
@@ -343,7 +358,7 @@ class Configuration(object):
             with open(json_config_file) as json_config_file:
                 json_config_text = json_config_file.read()
                 json_config = json.loads(json_config_text)
-               
+
                 return json_config
         except:
             return {}
@@ -358,7 +373,7 @@ class Configuration(object):
 
         if user_config is not None:
             config.update(user_config)
-        
+
         return config
 
     def __update_capabilities__(self):
@@ -385,6 +400,9 @@ class Configuration(object):
         self.flip_vertical = False
         self.declination = 0.0
         self.aithre_enabled = False
+        self.traffic_manager_address = self.__get_config_value__(
+            Configuration.TRAFFIC_MANAGER_KEY, Configuration.DEFAULT_TRAFFIC_MANAGER_ADDRESS
+        )
         self.__stratux_session__ = requests.Session()
 
         self.stratux_status = StratuxStatus(
@@ -427,6 +445,12 @@ class Configuration(object):
         try:
             self.aithre_enabled = \
                 bool(self.__configuration__[Configuration.AITHRE_KEY])
+        except:
+            pass
+
+        try:
+            self.traffic_manager_address = \
+                self.__configuration__[Configuration.TRAFFIC_MANAGER_KEY]
         except:
             pass
 
