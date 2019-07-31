@@ -14,3 +14,11 @@ npm install ts-node
 npm install @types/ws --save-dev
 npm install ws --save-dev
 ```
+
+```
+tsc; node ./build/traffic_manager.js
+```
+
+```
+curl http://localhost/Traffic/Reliable
+```
