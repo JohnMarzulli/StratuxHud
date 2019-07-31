@@ -22,7 +22,6 @@ SIN_RADIANS_BY_DEGREES = {}
 COS_RADIANS_BY_DEGREES = {}
 
 imperial_nearby = 3000.0
-max_altitude_delta = 5000.0
 max_target_bugs = 25
 imperial_occlude = units.feet_to_sm * 5
 imperial_faraway = units.feet_to_sm * 2
@@ -76,6 +75,8 @@ class HudDataCache(object):
     RELIABLE_TRAFFIC = []
 
     __LOCK__ = threading.Lock()
+
+    __TRAFFIC_CLIENT__ = AdsbTrafficClient(configuration.CONFIGURATION.get_traffic_manager_address())
 
     @staticmethod
     def update_traffic_reports():

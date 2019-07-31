@@ -1,14 +1,12 @@
+from lib.task_timer import TaskTimer
+from lib.display import *
+import units
 import pygame
 
 from adsb_element import *
 from hud_elements import *
 
 testing.load_imports()
-
-import units
-
-from lib.display import *
-from lib.task_timer import TaskTimer
 
 
 class AdsbOnScreenReticles(AdsbElement):
@@ -35,7 +33,7 @@ class AdsbOnScreenReticles(AdsbElement):
             traffic {Traffic} -- The traffic to draw the reticle for.
         """
 
-        identifier = traffic.get_identifer()
+        identifier = traffic.get_display_name()
 
         # Find where to draw the reticle....
         reticle_x, reticle_y = self.__get_traffic_projection__(
