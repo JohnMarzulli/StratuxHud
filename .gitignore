@@ -56,5 +56,4 @@ stratux_hud.log.*
 *.xlsx
 
 # Stuff from TypeScript for Traffic Manager
-traffic_manager/build
 traffic_manager/node_modules
