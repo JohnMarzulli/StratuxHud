@@ -122,30 +122,6 @@ def get_aithre_battery_color(battery_percent):
     return color
 
 
-def get_websocket_uptime():
-    """
-    Returns how long the websocket has been up and connected.
-
-    Returns:
-        string -- Time string of how long the socket has been connected.
-    """
-
-    if AdsbTrafficClient.INSTANCE is not None:
-        connection_uptime = (datetime.datetime.utcnow()
-                             - AdsbTrafficClient.INSTANCE.create_time).total_seconds()
-
-        if connection_uptime < 60:
-            return ("{} seconds".format(int(connection_uptime)), YELLOW)
-        elif connection_uptime < 360:
-            return ("{0:.1f} minutes".format(connection_uptime / 60), GREEN)
-        elif connection_uptime < 216000:
-            return ("{0:.1f} hours".format(connection_uptime / 3600), GREEN)
-        else:
-            return ("{0:.1f} days".format(connection_uptime / 216000), GREEN)
-    else:
-        return ("DISCONNECTED", RED)
-
-
 class SystemInfo(AhrsElement):
     def uses_ahrs(self):
         """
@@ -226,7 +202,9 @@ class SystemInfo(AhrsElement):
             self.__update_temp_timer__ = 60
 
         info_lines = [["VERSION     : ", [configuration.VERSION, YELLOW]],
-                      ["DECLINATION : ", [str(configuration.CONFIGURATION.get_declination()), BLUE]]]
+                      ["DECLINATION : ", [
+                          str(configuration.CONFIGURATION.get_declination()), BLUE]],
+                      ["TRAFFIC     : ", [configuration.CONFIGURATION.get_traffic_manager_address(), BLUE]]]
 
         addresses = self.__ip_address__[0].split(' ')
         for addr in addresses:
@@ -240,7 +218,6 @@ class SystemInfo(AhrsElement):
         # First line in the array is at the bottom.
         # Last line in the array is towards the top.
         info_lines.append(["HUD CPU     : ", self.__cpu_temp__])
-        info_lines.append(["SOCKET      : ", get_websocket_uptime()])
         info_lines.append(
             ["OWNSHIP     : ", ["{}/{}".format(configuration.CONFIGURATION.capabilities.ownship_mode_s, configuration.CONFIGURATION.capabilities.ownship_icao), BLUE]])
         info_lines.append(["DISPLAY RES : ", ["{} x {}".format(
