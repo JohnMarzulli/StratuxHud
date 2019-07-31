@@ -17,6 +17,7 @@ import lib.utilities as utilities
 import traffic
 from aircraft import Aircraft
 from configuration import *
+from traffic import AdsbTrafficClient
 from lib.recurring_task import RecurringTask
 from lib.task_timer import TaskTimer, RollingStats
 import hud_elements
@@ -36,7 +37,6 @@ from views import (adsb_on_screen_reticles, adsb_target_bugs, adsb_target_bugs_o
 # TODO - Check for the key existence anyway... cross update the capabilities
 
 # Traffic description in https://github.com/cyoung/stratux/blob/master/notes/app-vendor-integration.md
-# WebSockets docs at https://ws4py.readthedocs.io/en/latest/
 # pip install ws4py
 # pip install requests
 
@@ -59,12 +59,12 @@ class HeadsUpDisplay(object):
         except:
             pass
 
-    def __reset_websocket__(self):
+    def __reset_traffic_manager__(self):
         """
-        Resets the websocket to essentially reset the receiver unit.
+        Resets the traffic manager to essentially reset the receiver unit.
         """
         try:
-            self.__connection_manager__.reset()
+            AdsbTrafficClient.INSTANCE.reset_traffic_manager()
         except:
             pass
 
@@ -624,7 +624,7 @@ class HeadsUpDisplay(object):
             self.__should_render_perf__ = not self.__should_render_perf__
 
         if event.key in [pygame.K_KP0, pygame.K_0, pygame.K_INSERT]:
-            self.__reset_websocket__()
+            self.__reset_traffic_manager__()
 
         return True
 
