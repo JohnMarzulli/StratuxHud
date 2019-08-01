@@ -3,11 +3,12 @@ https://jonathanmh.com/typescript-node-js-tutorial-backend-beginner/
 https://mherman.org/blog/developing-a-restful-api-with-node-and-typescript/
 
 ``` bash
-sudo apt install node-typescript
 
 cd ~
 curl -sL https://deb.nodesource.com/setup_12.x | sudo bash -
 sudo apt install nodejs --assume-yes
+
+sudo apt install node-typescript # Dev only
 
 cd StratuxHud/traffic_manager
 sudo npm install
