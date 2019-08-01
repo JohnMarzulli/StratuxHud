@@ -159,7 +159,8 @@ export class TrafficClient {
    * @memberof TrafficClient
    */
   public static garbageCollectTraffic(): void {
-    console.log("Starting GC");
+    var keptCount: number = 0;
+    var purgedCount: number = 0;
 
     var newTrafficReport: Map<string, Map<string, any>> = new Map<
       string,
@@ -171,14 +172,16 @@ export class TrafficClient {
       );
 
       if (secondsSinceLastReport > SecondsToPurgeReport) {
-        console.log("Purging " + iacoCode);
+        ++purgedCount;
       } else {
         newTrafficReport[iacoCode] = trafficCache[iacoCode];
-        console.log("Keeping " + iacoCode + " as " + trafficCache[iacoCode]);
+        ++keptCount;
       }
     });
 
     trafficCache = newTrafficReport;
+
+    console.log("GC: Kept " + keptCount + ", purged " + purgedCount);
   }
 
   /**
@@ -206,15 +209,15 @@ export class TrafficClient {
 
     WebSocketClient = new WebSocket("ws://" + StratuxAddress + "/traffic");
 
-    WebSocketClient.onopen = function() {
+    WebSocketClient.onopen = function () {
       console.log("Socket open");
     };
 
-    WebSocketClient.onerror = function(error) {
+    WebSocketClient.onerror = function (error) {
       console.error("ERROR:" + error);
     };
 
-    WebSocketClient.onmessage = function(message) {
+    WebSocketClient.onmessage = function (message) {
       try {
         var json = JSON.parse(message.data.toString());
         TrafficClient.reportTraffic(json);
