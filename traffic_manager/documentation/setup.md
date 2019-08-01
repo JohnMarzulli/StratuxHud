@@ -3,16 +3,19 @@ https://jonathanmh.com/typescript-node-js-tutorial-backend-beginner/
 https://mherman.org/blog/developing-a-restful-api-with-node-and-typescript/
 
 ``` bash
+sudo apt install node-typescript
+
+sudo su
 npm i -g typescript
 npm i --save-dev ts-node
-npm install express debug node --save-dev
-npm install @types/node --save-dev
-npm install @types/express  --save-dev
-npm install @types/debug --save-dev
-npm install morgan --save-dev
-npm install ts-node
-npm install @types/ws --save-dev
-npm install ws --save-dev
+sudo npm install express debug node --save-dev
+sudo npm install @types/node --save-dev
+sudo npm install @types/express  --save-dev
+sudo npm install @types/debug --save-dev
+sudo npm install morgan --save-dev
+sudo npm install ts-node
+sudo npm install @types/ws --save-dev
+sudo npm install ws --save-dev
 ```
 
 ```
