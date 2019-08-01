@@ -138,19 +138,21 @@ var TrafficClient = /** @class */ (function () {
      * @memberof TrafficClient
      */
     TrafficClient.garbageCollectTraffic = function () {
-        console.log("Starting GC");
+        var keptCount = 0;
+        var purgedCount = 0;
         var newTrafficReport = new Map();
         Object.keys(trafficCache).forEach(function (iacoCode) {
             var secondsSinceLastReport = getSecondsSince(trafficCache[iacoCode][secondsSinceLastReportKey]);
             if (secondsSinceLastReport > SecondsToPurgeReport) {
-                console.log("Purging " + iacoCode);
+                ++purgedCount;
             }
             else {
                 newTrafficReport[iacoCode] = trafficCache[iacoCode];
-                console.log("Keeping " + iacoCode + " as " + trafficCache[iacoCode]);
+                ++keptCount;
             }
         });
         trafficCache = newTrafficReport;
+        console.log("GC: Kept " + keptCount + ", purged " + purgedCount);
     };
     /**
      * Triggers the websocker to be torn down and then rebuilt.

@@ -8,7 +8,7 @@ var http = require("http");
 var debug = require("debug");
 var rest_server_1 = require("./rest_server");
 debug("ts-express:server");
-var DefaultPort = 3000;
+var DefaultPort = 8000;
 var port = normalizePort(process.env.PORT || DefaultPort);
 rest_server_1.default.set("port", port);
 var server = http.createServer(rest_server_1.default);

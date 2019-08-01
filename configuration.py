@@ -79,7 +79,7 @@ class Configuration(object):
     # bad to the default config files.
     #
     DEFAULT_NETWORK_IP = "192.168.10.1"
-    DEFAULT_TRAFFIC_MANAGER_ADDRESS = "localhost:3000"
+    DEFAULT_TRAFFIC_MANAGER_ADDRESS = "localhost:8000"
     STRATUX_ADDRESS_KEY = "stratux_address"
     DATA_SOURCE_KEY = "data_source"
     FLIP_HORIZONTAL_KEY = "flip_horizontal"

@@ -10,7 +10,7 @@ import RestServer from "./rest_server";
 
 debug("ts-express:server");
 
-const DefaultPort: number = 3000;
+const DefaultPort: number = 8000;
 
 const port: number = normalizePort(process.env.PORT || DefaultPort);
 RestServer.set("port", port);
