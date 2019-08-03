@@ -54,5 +54,9 @@
   "Roll Indicator": {
     "class": "roll_indicator.RollIndicator",
     "detail_font": true
+  },
+  "Norden": {
+    "detail_font": false,
+    "class": "heading_target_bugs.HeadingTargetBugs"
   }
 }
