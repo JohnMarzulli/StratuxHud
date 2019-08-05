@@ -63,6 +63,7 @@ def get_absolute_file_path(relative_path):
 DEFAULT_CONFIG_FILE = get_absolute_file_path(__config_file__)
 VIEW_ELEMENTS_FILE = get_absolute_file_path(__view_elements_file__)
 VIEWS_FILE = get_absolute_file_path(__views_file__)
+HEADING_BUGS_FILE = get_absolute_file_path(__heading_bugs_file__)
 
 
 class DataSourceNames(object):
@@ -139,7 +140,7 @@ class Configuration(object):
             return self.__load_views_from_file__(VIEWS_FILE)
         except:
             return []
-
+    
     def write_views_list(self, view_config):
         """
         Writes the view configuration to the user's version of the file.

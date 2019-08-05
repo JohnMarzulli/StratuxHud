@@ -7,20 +7,35 @@ import pygame
 
 from adsb_element import AdsbElement
 from hud_elements import HudDataCache, get_reticle_size, get_heading_bug_x
+from adsb_target_bugs import AdsbTargetBugs
 import hud_elements
 import utils
 import testing
+
 testing.load_imports()
 
 from lib.task_timer import TaskTimer
+from lib.display import BLUE
 import norden
 import units
 import targets
 
+class HeadingAsTrafficObject(object):
+    """
+    Class that allows for the creation of an arbitrary
+    piece of "traffic" that can then be used to create
+    a heading bug.
+    """
 
-class HeadingTargetBugs(AdsbElement):
+    def __init__(self, altitude, distance, bearing):
+        self.altitude = altitude
+        self.distance = distance
+        self.bearing = bearing
+
+
+class HeadingTargetBugs(AdsbTargetBugs):
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
-        AdsbElement.__init__(
+        AdsbTargetBugs.__init__(
             self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size)
 
         self.task_timer = TaskTimer('HeadingTargetBugs')
@@ -31,7 +46,7 @@ class HeadingTargetBugs(AdsbElement):
         self.__top_border__ = int(self.__height__ * 0.2)
         self.__bottom_border__ = self.__height__ - int(self.__height__ * 0.1)
 
-    def __get_additional_target_text__(self, time_until_drop=0.0, altitude_delta=0.0, distance_meters=0.0):
+    def __get_additional_target_text__(self, time_until_drop=0.0, altitude=None, distance=0.0):
         """
         Returns a tuple of text to be rendered with the target card.
         
@@ -44,15 +59,13 @@ class HeadingTargetBugs(AdsbElement):
             string[] -- Tuple of strings.
         """
 
-        if altitude_delta < 0:
-            altitude_delta = 0.0
+        distance_text = self.__get_distance_string__(distance)
+        altitude_text = "{0:.1f}AGL".format(altitude)
 
-        if time_until_drop < 0.0:
-            altitude_delta = 0
-
-        distance_text = self.__get_distance_string__(distance_meters)
-        altitude_text = "{0:.1f}AGL".format(altitude_delta)
-        time_until_drop = "{0:.1f}S".format(time_until_drop)
+        if time_until_drop < 60:
+            time_until_drop = "{0:.1f}S".format(time_until_drop)
+        else:
+            time_until_drop = "---"
 
         return [altitude_text, distance_text, time_until_drop]
 
@@ -106,6 +119,18 @@ class HeadingTargetBugs(AdsbElement):
                                       additional_info_text,
                                       heading_bug_x,
                                       False)
+            
+            as_traffic = HeadingAsTrafficObject(target_position[2], units.get_feet_from_miles(distance_miles), bearing_to_target)
+            
+            target_bug_scale = get_reticle_size(as_traffic.distance)
+
+            heading_bug_x = get_heading_bug_x(
+                heading, utils.apply_declination(as_traffic.bearing), self.__pixels_per_degree_x__)
+
+            reticle, reticle_edge_positon_y = self.get_below_reticle(heading_bug_x, target_bug_scale)
+
+            pygame.draw.polygon(framebuffer, BLUE, reticle)
+
         self.task_timer.stop()
 
 
