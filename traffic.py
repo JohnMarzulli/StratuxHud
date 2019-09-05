@@ -361,12 +361,13 @@ class TrafficManager(object):
         """
 
         actionable_traffic = []
+        ownship = configuration.CONFIGURATION.capabilities.ownship_icao
 
         self.__lock__.acquire()
         try:
             traffic_with_position = {
                 k: v for k, v in self.traffic.iteritems()
-                if v is not None and configuration.CONFIGURATION.capabilities.ownship_icao != v.icao_address
+                if v is not None and ownship != int(v.icao_address)
             }
         except:
             traffic_with_position = []
