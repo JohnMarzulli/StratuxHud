@@ -73,7 +73,8 @@ class RecurringTask(object):
         Runs the callback.
         """
 
-        self.__last_task__ = threading.Thread(target=self.__run_loop__, name=self.__task_name__)
+        self.__last_task__ = threading.Thread(
+            target=self.__run_loop__, name=self.__task_name__)
         self.__last_task__.start()
 
         RecurringTask.__SPAWNED_TASKS__.append(self)
@@ -97,7 +98,8 @@ class RecurringTask(object):
 
             self.__lock__.acquire()
             try:
-                time.sleep(int(self.__task_interval__) if self.__is_alive__ and self.__is_running__ else 0)
+                time.sleep(float(self.__task_interval__)
+                           if self.__is_alive__ and self.__is_running__ else 0)
             finally:
                 self.__lock__.release()
 

@@ -91,7 +91,7 @@ class AdsbElement(object):
 
         # TODO - Double check ALL of this math...
         compass = orientation.get_onscreen_projection_heading()
-        horizontal_degrees_to_target = traffic.bearing - compass
+        horizontal_degrees_to_target = utils.apply_declination(traffic.bearing) - compass
 
         screen_y = -vertical_degrees_to_target * self.__pixels_per_degree_y__
         screen_x = horizontal_degrees_to_target * self.__pixels_per_degree_y__

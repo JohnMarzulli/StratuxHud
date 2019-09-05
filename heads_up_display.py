@@ -17,6 +17,7 @@ import lib.utilities as utilities
 import traffic
 from aircraft import Aircraft
 from configuration import *
+from traffic import AdsbTrafficClient
 from lib.recurring_task import RecurringTask
 from lib.task_timer import TaskTimer, RollingStats
 import hud_elements
@@ -36,7 +37,6 @@ from views import (adsb_on_screen_reticles, adsb_target_bugs, adsb_target_bugs_o
 # TODO - Check for the key existence anyway... cross update the capabilities
 
 # Traffic description in https://github.com/cyoung/stratux/blob/master/notes/app-vendor-integration.md
-# WebSockets docs at https://ws4py.readthedocs.io/en/latest/
 # pip install ws4py
 # pip install requests
 
@@ -59,12 +59,12 @@ class HeadsUpDisplay(object):
         except:
             pass
 
-    def __reset_websocket__(self):
+    def __reset_traffic_manager__(self):
         """
-        Resets the websocket to essentially reset the receiver unit.
+        Resets the traffic manager to essentially reset the receiver unit.
         """
         try:
-            self.__connection_manager__.reset()
+            AdsbTrafficClient.INSTANCE.reset_traffic_manager()
         except:
             pass
 
@@ -205,10 +205,6 @@ class HeadsUpDisplay(object):
 
                 self.log('OVERALL, {}, {}'.format(now,
                                                   self.__fps__.to_string()))
-
-                self.log('TRAFFIC, {0}, MessagesReceived, {1}, {1}, {1}'.format(now,
-                                                                                traffic.Traffic.TRAFFIC_REPORTS_RECEIVED))
-                traffic.Traffic.TRAFFIC_REPORTS_RECEIVED = 0
 
                 self.log("-----------------------------------")
 
@@ -390,9 +386,9 @@ class HeadsUpDisplay(object):
                         # REALLY chews up memory.. and there is no
                         # good reason to use new instances anyway.
                         if element_hash_name not in existing_elements:
-                            new_element = self.__build_ahrs_hud_element(element_config[0], element_config[1])
+                            new_element = self.__build_ahrs_hud_element(
+                                element_config[0], element_config[1])
                             existing_elements[element_hash_name] = new_element
-                                                                                                                           
 
                         new_view_elements.append(
                             existing_elements[element_hash_name])
@@ -404,7 +400,8 @@ class HeadsUpDisplay(object):
                     self.log(
                         "While attempting to load view={}, EX:{}".format(view, ex))
 
-        self.log("While loading, {} elements were requested, with {} unique being created.".format(elements_requested, len(existing_elements.keys())))
+        self.log("While loading, {} elements were requested, with {} unique being created.".format(
+            elements_requested, len(existing_elements.keys())))
 
         return hud_views
 
@@ -474,11 +471,6 @@ class HeadsUpDisplay(object):
         self.cache_perf = TaskTimer('Cache')
 
         self.__fps__.push(0)
-
-        adsb_traffic_address = "ws://{0}/traffic".format(
-            CONFIGURATION.stratux_address())
-        self.__connection_manager__ = traffic.ConnectionManager(
-            adsb_traffic_address)
 
         self.__backpage_framebuffer__, screen_size = display.display_init()  # args.debug)
         self.__width__, self.__height__ = screen_size
@@ -632,7 +624,7 @@ class HeadsUpDisplay(object):
             self.__should_render_perf__ = not self.__should_render_perf__
 
         if event.key in [pygame.K_KP0, pygame.K_0, pygame.K_INSERT]:
-            self.__reset_websocket__()
+            self.__reset_traffic_manager__()
 
         return True
 

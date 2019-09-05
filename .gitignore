@@ -54,3 +54,6 @@ StratuxHud.egg-info
 stratux_hud.log.*
 *.csv
 *.xlsx
+
+# Stuff from TypeScript for Traffic Manager
+traffic_manager/node_modules

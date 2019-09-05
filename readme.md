@@ -24,7 +24,7 @@ Estimated cost is $270
 
 Uses 5V USB power.
 
-**NOTE:** This project initially used and reccomendedly the "HUDLY Classic" projector which is no longer available.
+**NOTE:** This project initially used and reccomended the "HUDLY Classic" projector which is no longer available.
 
 **NOTE:** To have full functionality with a Stratux based unit, please use Stratux Version 1.4R5 or higher.
 
@@ -32,7 +32,7 @@ Uses 5V USB power.
 
 A self contained system that uses a 3D printed case and teleprompter glass. This version can be built for the cost of a Raspberry Pi and the 3D print.
 
-_NOTE:_ This version does have visibility issues in daylight conditions. Using an automotic HUD projector will result in full daylight visibility.
+_NOTE:_ This version does have visibility issues in daylight conditions. Using an automotive HUD projector will result in full daylight visibility.
 
 ![Teleprompter Glass Version In Flight](media/in_flight.jpg)
 
@@ -74,12 +74,12 @@ q         | (_Full keyboard only_) Quit to the command line.
 
 ![AHRS + ADS-B](media/ahrs_plus_adsb_view.jpg)
 
-This view shows attitude information along with targetting bugs that show the relative position and distance of traffic.
+This view shows attitude information along with targeting bugs that show the relative position and distance of traffic.
 
 In this example:
 
 - There are three (3) potential targets, all at a higher altitude. Two are relatively far away, one is closer.
-- One of the targets is within our field of view and has a targetting reticle.
+- One of the targets is within our field of view and has a targeting reticle.
 - With are rolled to the left slightly, less then 15 degrees.
 - We are 309 feet MSL.
 - We are stopped, with a groundspeed of 0MPH
@@ -91,7 +91,7 @@ _NOTE:_ This is the default view on startup. If you would like to switch to the 
 
 ![Traffic View Screenshot](media/traffic_view.jpg)
 
-This view shows a heading strip, target bugs, targetting reticles, and "information cards" about our potential traffic.
+This view shows a heading strip, target bugs, targeting reticles, and "information cards" about our potential traffic.
 
 In this example, `N2849K` is almost directly behind us (far left screen). The plane is 1.5 statute miles away, with a bearing of 70 degrees, and 100 feet above us.
 
@@ -151,7 +151,16 @@ _NOTE:_ This _does not_ include a power source. You will need to supply ship pow
 - [Teleprompter Glass Sample of both thickness of the 60/40 glass](https://telepromptermirror.com/sample/)
 - [SunFounder 5" TFT LCD](https://www.amazon.com/SunFounder-Monitor-Display-800X480-Raspberry/dp/B01HXSFIH6)
 
-## Install instructions
+## Recommended Software Install
+
+Please use one of the provided images from the "Release" page on GitHub.
+
+1. Download the image for your scenario from the GitHub (Releases Page)[<https://github.com/JohnMarzulli/StratuxHud/releases>]
+2. Use (Etcher)[<https://www.balena.io/etcher/>] to flash the image onto an Micro SD card.
+3. Plug in your Projector to the Raspberry Pi
+4. It is recommended that you SSH into the HUD and use `raspi-config` to ("expand the filesystem")[<https://geek-university.com/raspberry-pi/expand-raspbian-filesystem/>].
+
+## Development/From Scratch Install instructions
 
 ### First Boot
 
@@ -178,7 +187,7 @@ _NOTE:_ This _does not_ include a power source. You will need to supply ship pow
 
 #### Raspberry Pi 3B+
 
-If you are using a 3B+, it may suffer from undervoltage alerts. These may be relieved by the following command to update your Linux install to the latest:
+If you are using a 3B+, it may suffer from under-voltage alerts. These may be relieved by the following command to update your Linux install to the latest:
 
 ```bash
 sudo apt-get update && sudo apt-get dist-upgrade -y
@@ -207,6 +216,7 @@ Make sure you are using a high quality power cable if you are using a Pi 3B+
 17. Enter the following text at the _bottom_ of the file:
 
 ```bash
+@reboot nodejs /home/pi/StratuxHud/traffic_manager/build/traffic_manager.js
 @reboot sudo python /home/pi/StratuxHud/stratux_hud.py &
 ```
 
@@ -271,18 +281,33 @@ If you would like to update from an earlier version to V1.5
 8. `git stash`
 9. `git checkout master`
 10. `git pull`
-11. If you have any errors, please report them immediatley. Otherwise you are updated.
+11. If you have any errors, please report them immediately. Otherwise you are updated.
 12. `sudo shutdown -h now`
+
+### Barrel Jack Connector (Raspberry Pi 3 only _**NOT 3B+**_)
+
+You may consider using a barrel jack connector to supply power to your Pi unit.
+
+These connectors are more durable than the Micro USB connector on the board, or are a good repair if your connector becomes damaged.
+
+- [Barrel Jack (Female) To Wire Adapter](https://www.amazon.com/gp/product/B00QJAW9F4/ref=ppx_yo_dt_b_asin_title_o00_s00?ie=UTF8&psc=1)
+- [USB A to Barrel Jack Plug (Male)](https://www.amazon.com/Onite-5-5x2-1mm-Positive-Electronic-Organorgan/dp/B01MZ0FWSK/ref=sr_1_1?keywords=Usb+2.0+a+to+5.5%2F2.1mm+Barrel+Connector+Jack+Dc+Power+Cable&qid=1567660324&s=gateway&sr=8-1)
+
+You will find the solder pads on the bottom of the Raspberry Pi 3, near the Micro USB power Jack.
+
+- Solder +5V (Red) to PP2
+- Solder GND (White) to PP3
 
 ### Revision History
 
 Date       | Version | Major Changes
 ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2019-09-04 | 1.6     | Traffic manager moved to a stand-alone service in NodeJs/TypeScript.
 2019-06-30 | 1.5     | Support for the Aithre CO detector. New roll indicator. Various performance improvements. Visual warning if GPS is not plugged in. Use the OWNSHIP config from the receiver instead of local config.
 2019-03-31 | 1.4     | Add connection reset button. Fixes issues with the Diagnostic view running of of space. Initial port to Python 3.7
 2019-01-31 | 1.3     | Improvements to the communication with the Stratux. Update directions for Kivic install.
 2018-10-13 | 1.2     | Major performance increases
-2018-09-07 | 1.1     | New system to allow views to be configurarable
+2018-09-07 | 1.1     | New system to allow views to be configurable
 2018-07-17 | 1.0     | Initial release
 
 ### Hardware Performance
@@ -290,15 +315,16 @@ Date       | Version | Major Changes
 Please note that performance characteristics are only shown for displays that are currently available for purchase. The Hudly Classic is intentionally not listed.
 
 Board                          | Screen         | Frames Per Second (AHRS View Only) | Notes
------------------------------- | -------------- | ---------------------------------- | ---------------
-Rasp Pi 2                      | Sun Founder 5" | ~25FPS to ~30FPS                   | Not reccomended
-Rasp Pi 3 (stand alone)        | Kivic          | 50FPS - 60FPS                      | Reccomended
-Rasp Pi 3 (stand alone)        | Hudly Wireless | 25FPS - 30FPS                      | Reccomended
-Rasp Pi 3 (Running on Stratux) | Kivic          | 30FPS                              | Not supported
-Rasp Pi 3B+                    | Kivic          | 55FPS - 60FPS                      | Reccomended
-Rasp Pi 3B+                    | Hudly Wireless | 30FPS - 40FPS                      | Reccomended
+------------------------------ | -------------- | ---------------------------------- | ------------------
+Rasp Pi 2                      | Sun Founder 5" | ~25FPS to ~30FPS                   | Not recommended
+Rasp Pi 3 (stand alone)        | Kivic          | 50FPS - 60FPS                      | Recommended
+Rasp Pi 3 (stand alone)        | Hudly Wireless | 30FPS - 50FPS                      | Recommended
+Rasp Pi 3 (Running on Stratux) | Kivic          | 30FPS                              | Highly Recommended
+Rasp Pi 3 (Running on Stratux) | Hudly Wireless | 25FPS                              | Highly Recommended
+Rasp Pi 3B+                    | Kivic          | 55FPS - 60FPS                      | Recommended
+Rasp Pi 3B+                    | Hudly Wireless | 40FPS - 60FPS                      | Recommended
 
-Please note that the frame rate is capped at 60FPS. Drawing any faster will not be detectable using the reccomended output systems. Reducing the framerate will reduce the powerdraw.
+Please note that the frame rate is capped at 60FPS. Drawing any faster will not be detectable using the recommended output systems. Reducing the framerate will reduce the powerdraw.
 
 ## Acknowledgements And Credits
 

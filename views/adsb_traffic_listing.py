@@ -1,3 +1,4 @@
+from lib.task_timer import TaskTimer
 import pygame
 
 from adsb_element import *
@@ -5,8 +6,6 @@ from hud_elements import *
 import utils
 import testing
 testing.load_imports()
-
-from lib.task_timer import TaskTimer
 
 
 class AdsbTrafficListing(AdsbElement):
@@ -54,44 +53,50 @@ class AdsbTrafficListing(AdsbElement):
         return (icao, traffic_report)
 
     def __get_padded_traffic_reports__(self, traffic_reports):
-        pre_padded_text, max_string_lengths = self.__get_pre_padded_text_reports__(traffic_reports)
+        pre_padded_text, max_string_lengths = self.__get_pre_padded_text_reports__(
+            traffic_reports)
 
         out_padded_reports = [self.__get_listing__(report,
                                                    max_string_lengths) for report in pre_padded_text]
 
         return out_padded_reports
-    
+
     def __get_report_text__(self, traffic):
-        identifier = str(traffic.get_identifer())
+        identifier = str(traffic.get_display_name())
         altitude_delta = int(traffic.altitude / 100.0)
         distance_text = self.__get_distance_string__(traffic.distance, True)
         delta_sign = ''
         if altitude_delta > 0:
             delta_sign = '+'
         altitude_text = "{0}{1}".format(delta_sign, altitude_delta)
-        bearing_text = "{0:.0f}".format(traffic.bearing)
+        bearing_text = "{0:.0f}".format(
+            utils.apply_declination(traffic.bearing))
 
         return [identifier, bearing_text, distance_text, altitude_text, traffic.icao_address]
 
-
     def __get_pre_padded_text_reports__(self, traffic_reports):
         # We do not want to show traffic on the ground.
-        reports_to_show = filter(lambda x: not x.is_on_ground(), traffic_reports)
+        reports_to_show = filter(
+            lambda x: not x.is_on_ground(), traffic_reports)
 
         # The __max_reports__ value is set based on the screen size
         # and how much can fit on the screen
         reports_to_show = reports_to_show[:self.__max_reports__]
 
-        pre_padded_text = [['IDENT', 'BEAR', 'DIST', 'ALT', None]] + [self.__get_report_text__(traffic) for traffic in reports_to_show]
+        pre_padded_text = [['IDENT', 'BEAR', 'DIST', 'ALT', None]] + \
+            [self.__get_report_text__(traffic) for traffic in reports_to_show]
         # An ICAO code is the worst case display length,
         # but add a little buffer so the columns do
         # not shift around.
-        max_identifier_length = 10 #len(max(pre_padded_text, key = lambda x: len(str(x[4])))[0])
+        # len(max(pre_padded_text, key = lambda x: len(str(x[4])))[0])
+        max_identifier_length = 10
         # Since the bearing length should never be any more the 3 digits
         max_bearing_length = 4
-        max_distance_length =  8 # len(max(pre_padded_text, key = lambda x: len(x[2]))[2]) + 1
+        # len(max(pre_padded_text, key = lambda x: len(x[2]))[2]) + 1
+        max_distance_length = 8
         # We really should never get anything more than 35k above, but same some room
-        max_altitude_length =  5 #len(max(pre_padded_text, key = lambda x: len(x[3]))[3])
+        # len(max(pre_padded_text, key = lambda x: len(x[3]))[3])
+        max_altitude_length = 5
 
         return pre_padded_text, (max_identifier_length, max_bearing_length, max_distance_length, max_altitude_length)
 
