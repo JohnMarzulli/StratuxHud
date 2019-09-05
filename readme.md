@@ -274,6 +274,20 @@ If you would like to update from an earlier version to V1.5
 11. If you have any errors, please report them immediatley. Otherwise you are updated.
 12. `sudo shutdown -h now`
 
+### Barrel Jack Connector (Raspberry Pi 3 only _**NOT 3B+**_)
+
+You may consider using a barrel jack connector to supply power to your Pi unit.
+
+These connectors are more durable than the Micro USB connector on the board, or are a good repair if your connector becomes damaged.
+
+- [Barrel Jack (Female) To Wire Adapter](https://www.amazon.com/gp/product/B00QJAW9F4/ref=ppx_yo_dt_b_asin_title_o00_s00?ie=UTF8&psc=1)
+- [USB A to Barrel Jack Plug (Male)](https://www.amazon.com/Onite-5-5x2-1mm-Positive-Electronic-Organorgan/dp/B01MZ0FWSK/ref=sr_1_1?keywords=Usb+2.0+a+to+5.5%2F2.1mm+Barrel+Connector+Jack+Dc+Power+Cable&qid=1567660324&s=gateway&sr=8-1)
+
+You will find the solder pads on the bottom of the Raspberry Pi 3, near the Micro USB power Jack.
+
+- Solder +5V (Red) to PP2
+- Solder GND (White) to PP3
+
 ### Revision History
 
 Date       | Version | Major Changes
