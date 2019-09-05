@@ -55,19 +55,6 @@
         "G Load",
         "Roll Indicator",
         "Groundspeed",
-        "Norden"
-      ],
-      "name": "Norden"
-    },
-    {
-      "elements": [
-        "Level Reference",
-        "Artificial Horizon",
-        "Compass",
-        "Altitude",
-        "G Load",
-        "Roll Indicator",
-        "Groundspeed",
         "Aithre"
       ],
       "name": "AHRS Only"
