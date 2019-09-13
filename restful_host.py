@@ -19,6 +19,7 @@ import lib.local_debug as local_debug
 RESTFUL_HOST_PORT = 8080
 CONFIGURATION = None
 COMMAND_PROCESSOR = None
+VIEW_NAME_KEY = 'name'
 
 # Based on https://gist.github.com/tliron/8e9757180506f25e46d9
 
@@ -74,6 +75,33 @@ def set_views(handler):
     return configuration.CONFIGURATION.get_views_list()
 
 
+def get_current_view_response():
+    """
+    Create a dictionary that can be serialized
+    into JSON that contains the name of the current view
+    that the HUD is displaying.
+    """
+    return {"view": configuration.CONFIGURATION.get_views_list()[configuration.CONFIGURATION.get_view_index()][VIEW_NAME_KEY]}
+
+
+def get_view_next(handler):
+    """
+    Handler for a REST call to move to the next view.
+    """
+    configuration.CONFIGURATION.next_view()
+
+    return get_current_view_response()
+
+
+def get_view_previous(handler):
+    """
+    Handler for a REST call to move to the previous view.
+    """
+    configuration.CONFIGURATION.previous_view()
+
+    return get_current_view_response()
+
+
 def get_json_success_response(text):
     """
     Returns a generic JSON response of success with
@@ -93,6 +121,8 @@ class RestfulHost(BaseHTTPRequestHandler):
         r'^/settings': {'GET': get_settings, 'PUT': set_settings, 'media_type': 'application/json'},
         r'^/view_elements': {'GET': get_elements_list, 'media_type': 'application/json'},
         r'^/views': {'GET': get_views_list, 'PUT': set_views, 'media_type': 'application/json'},
+        r'^/view/next': {'GET': get_view_next},
+        r'^/view/previous': {'GET': get_view_previous}
     }
 
     def do_HEAD(self):
@@ -219,7 +249,7 @@ class HudServer(object):
         print("localhost = {}:{}".format(self.__local_ip__, self.__port__))
 
         self.__httpd__.serve_forever()
-    
+
     def stop(self):
         if self.__httpd__ is not None:
             self.__httpd__.shutdown()

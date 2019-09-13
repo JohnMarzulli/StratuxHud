@@ -132,15 +132,20 @@ class Configuration(object):
             array -- Array of dictionary. Each element contains the name of the view and a list of elements it is made from.
         """
         try:
-            views = self.__load_views_from_file__(__user_views_file__)
+            if self.__hud_views__ is None:
+                self.__hud_views__ = self.__load_views_from_file__(
+                    __user_views_file__)
 
-            if views is not None and any(views):
-                return views
+            if self.__hud_views__ is None:
+                self.__hud_views__ = self.__load_views_from_file__(VIEWS_FILE)
 
-            return self.__load_views_from_file__(VIEWS_FILE)
+            if self.__hud_views__ is not None and any(self.__hud_views__):
+                return self.__hud_views__
+
+            return []
         except:
             return []
-    
+
     def write_views_list(self, view_config):
         """
         Writes the view configuration to the user's version of the file.
@@ -334,6 +339,46 @@ class Configuration(object):
 
         return self.__get_config_value__(Configuration.STRATUX_ADDRESS_KEY, Configuration.DEFAULT_NETWORK_IP)
 
+    def get_view_index(self):
+        """
+        Returns the current index of the view
+        that should be displayed.
+
+        The index is relative (index 0) to the views
+        configuration that is loaded from the views.json file.
+        """
+        return self.__view_index__
+
+    def next_view(self):
+        """
+        Changes to the next view.
+
+        Wraps around to the first view if we try to go past the last view.
+        """
+        self.__view_index__ += 1
+        self.__clamp_view__()
+
+    def previous_view(self):
+        """
+        Changes to the previous view.
+
+        Wraps around to the last view if we try to "go previous"
+        of the first view.
+        """
+        self.__view_index__ -= 1
+        self.__clamp_view__()
+
+    def __clamp_view__(self):
+        """
+        Makes sure that the view index is within bounds.
+        """
+
+        if self.__view_index__ >= (len(self.__hud_views__)):
+            self.__view_index__ = 0
+
+        if self.__view_index__ < 0:
+            self.__view_index__ = (len(self.__hud_views__) - 1)
+
     def update_configuration(self, json_config):
         """
         Updates the master configuration from a json provided dictionary.
@@ -390,6 +435,9 @@ class Configuration(object):
             self.stratux_address(), self.__stratux_session__, None)
 
     def __init__(self, default_config_file, user_config_file):
+        self.__view_index__ = 0
+        self.__hud_views__ = None
+        self.get_views_list()
         self.degrees_of_pitch = Configuration.DEFAULT_DEGREES_OF_PITCH
         self.pitch_degrees_display_scaler = Configuration.DEFAULT_PITCH_DEGREES_DISPLAY_SCALER
         self.__configuration__ = self.__load_configuration__(

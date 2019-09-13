@@ -163,7 +163,7 @@ class HeadsUpDisplay(object):
             orientation = self.__aircraft__.get_orientation()
 
             view_name, view, view_uses_ahrs = self.__hud_views__[
-                self.__view_index__]
+                CONFIGURATION.get_view_index()]
             show_unavailable = view_uses_ahrs and not self.__aircraft__.is_ahrs_available()
 
             current_fps = int(clock.get_fps())
@@ -502,8 +502,6 @@ class HeadsUpDisplay(object):
 
         self.__hud_views__ = self.__build_hud_views()
 
-        self.__view_index__ = 0
-
         logger = None
 
         if self.__logger__ is not None:
@@ -564,12 +562,10 @@ class HeadsUpDisplay(object):
         """
 
         events = pygame.event.get()
-        event_handling_repsonses = map(self.__handle_key_event__, events)
+        event_handling_responses = map(self.__handle_key_event__, events)
 
-        if False in event_handling_repsonses:
+        if False in event_handling_responses:
             return False
-
-        self.__clamp_view__()
 
         return True
 
@@ -603,10 +599,10 @@ class HeadsUpDisplay(object):
             return False
 
         if event.key in [pygame.K_KP_PLUS, pygame.K_PLUS]:
-            self.__view_index__ += 1
+            CONFIGURATION.next_view()
 
         if event.key in [pygame.K_KP_MINUS, pygame.K_MINUS]:
-            self.__view_index__ -= 1
+            CONFIGURATION.previous_view()
 
         if event.key in [pygame.K_BACKSPACE]:
             self.__level_ahrs__()
@@ -627,17 +623,6 @@ class HeadsUpDisplay(object):
             self.__reset_traffic_manager__()
 
         return True
-
-    def __clamp_view__(self):
-        """
-        Makes sure that the view index is within bounds.
-        """
-
-        if self.__view_index__ >= (len(self.__hud_views__)):
-            self.__view_index__ = 0
-
-        if self.__view_index__ < 0:
-            self.__view_index__ = (len(self.__hud_views__) - 1)
 
 
 if __name__ == '__main__':
