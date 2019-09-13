@@ -15,7 +15,7 @@ MAX_FRAMERATE = 60
 TARGET_AHRS_FRAMERATE = 60
 AHRS_TIMEOUT = 1.0
 
-VERSION = "1.6.0"
+VERSION = "1.7.0"
 
 ########################
 # Default Config Files #
