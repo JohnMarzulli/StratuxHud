@@ -2,12 +2,50 @@
 Module to handle tasks that occur on a regularly scheduled interval.
 """
 
+import datetime
 import sys
 import threading
 import time
 
 FUNCTION_A_COUNT = 0
 FUNCTION_B_COUNT = 0
+
+
+class IntermittentTask(object):
+    """
+    Object that defines a task that is performed ON THREAD
+    at some interval
+    """
+
+    def run(self):
+        now = datetime.datetime.utcnow()
+        run_task = (self.__last_run__ is None) or (
+            (now - self.__last_run__).total_seconds() > self.__task_interval__)
+
+        if run_task:
+            try:
+                self.__task_callback__()
+                self.__last_run__ = datetime.datetime.utcnow()
+            except Exception as e:
+                # + sys.exc_info()[0]
+                error_mesage = "EX({}):{}".format(self.__task_name__, e)
+
+                if self.__logger__ is not None:
+                    self.__logger__.info(error_mesage)
+                else:
+                    print(error_mesage)
+
+    def __init__(self, task_name, task_interval, task_callback, logger=None):
+        """
+        Creates a new reccurring task.
+        The call back is called at the given time schedule.
+        """
+
+        self.__task_name__ = task_name
+        self.__task_interval__ = task_interval
+        self.__task_callback__ = task_callback
+        self.__logger__ = logger
+        self.__last_run__ = None
 
 
 class RecurringTask(object):

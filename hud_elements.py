@@ -138,7 +138,7 @@ class HudDataCache(object):
         return texture_key if time_since_last_use > HudDataCache.__CACHE_INVALIDATION_TIME__ else None
 
     @staticmethod
-    def purge_old_traffic_reports():
+    def purge_old_textures():
         """
         Works through the traffic reports and removes any traffic that is
         old, or the cache has timed out on.
@@ -350,7 +350,7 @@ def run_adsb_hud_element(element_type, use_detail_font=True):
             AdsbTrafficClient.TRAFFIC_MANAGER.handle_traffic_report(
                 test_data.to_json())
 
-        HudDataCache.purge_old_traffic_reports()
+        HudDataCache.purge_old_textures()
         orientation = __aircraft__.ahrs_data
         __aircraft__.simulate()
         __backpage_framebuffer__.fill(BLACK)

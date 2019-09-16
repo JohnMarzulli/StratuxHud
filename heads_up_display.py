@@ -18,7 +18,7 @@ import traffic
 from aircraft import Aircraft
 from configuration import *
 from traffic import AdsbTrafficClient
-from lib.recurring_task import RecurringTask
+from lib.recurring_task import RecurringTask, IntermittentTask
 from lib.task_timer import TaskTimer, RollingStats
 import hud_elements
 import targets
@@ -169,6 +169,7 @@ class HeadsUpDisplay(object):
             current_fps = int(clock.get_fps())
             surface = pygame.display.get_surface()
             surface.fill(display.BLACK)
+            self.__purge_textures_task__.run()
 
             self.frame_setup.stop()
             self.render_perf.start()
@@ -416,9 +417,9 @@ class HeadsUpDisplay(object):
         view_elements = self.__load_view_elements()
         return self.__load_views(view_elements)
 
-    def __purge_old_reports__(self):
+    def __purge_old_textures__(self):
         self.cache_perf.start()
-        hud_elements.HudDataCache.purge_old_traffic_reports()
+        hud_elements.HudDataCache.purge_old_textures()
         self.cache_perf.stop()
 
     def __update_traffic_reports__(self):
@@ -508,14 +509,30 @@ class HeadsUpDisplay(object):
             logger = self.__logger__.logger
 
         self.web_server = restful_host.HudServer()
-        RecurringTask("rest_host", 0.1, self.web_server.run,
-                      start_immediate=False)
-        RecurringTask("purge_old_traffic", 10.0,
-                      self.__purge_old_reports__, start_immediate=False)
-        RecurringTask("update_traffic", 0.1,
-                      self.__update_traffic_reports__, start_immediate=True)
-        RecurringTask("update_aithre", 5.0,
-                      self.__update_aithre__, start_immediate=True)
+        self.__purge_textures_task__ = IntermittentTask(
+            "purge_old_textures",
+            10.0,
+            self.__purge_old_textures__,
+            logger)
+
+        RecurringTask(
+            "rest_host",
+            0.1,
+            self.web_server.run,
+            logger,
+            start_immediate=False)
+        RecurringTask(
+            "update_traffic",
+            0.1,
+            self.__update_traffic_reports__,
+            logger,
+            start_immediate=True)
+        RecurringTask(
+            "update_aithre",
+            5.0,
+            self.__update_aithre__,
+            logger,
+            start_immediate=True)
 
     def __show_boot_screen__(self):
         """
