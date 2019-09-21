@@ -21,7 +21,7 @@ class Altitude(AhrsElement):
         self.task_timer.start()
         altitude_text = str(int(orientation.alt)) + \
             "' MSL" if orientation.alt is not None and isinstance(
-                orientation.alt, Number) else "INOP"
+                orientation.alt, Number) else AhrsElement.GPS_UNAVAILABLE_TEXT
         color = display.WHITE if orientation.alt is not None and orientation.gps_online else display.RED
         alt_texture = self.__font__.render(
             altitude_text, True, color, display.BLACK)

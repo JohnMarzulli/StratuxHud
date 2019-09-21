@@ -29,7 +29,10 @@ class Groundspeed(AhrsElement):
             configuration.Configuration.DISTANCE_UNITS_KEY, units.STATUTE)
 
         groundspeed_text = units.get_converted_units_string(
-            speed_units, orientation.groundspeed * units.feet_to_nm, unit_type=units.SPEED, decimal_places=False) if orientation.groundspeed is not None and isinstance(orientation.groundspeed, Number) else "INOP"
+            speed_units,
+            orientation.groundspeed * units.feet_to_nm,
+            unit_type=units.SPEED,
+            decimal_places=False) if orientation.groundspeed is not None and isinstance(orientation.groundspeed, Number) else AhrsElement.GPS_UNAVAILABLE_TEXT
 
         display_color = display.WHITE if orientation is not None and orientation.groundspeed is not None and orientation.gps_online else display.RED
 
