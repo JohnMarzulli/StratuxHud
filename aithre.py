@@ -30,6 +30,9 @@ CO_WARNING = 49
 BATTERY_SAFE = 75
 BATTERY_WARNING = 25
 
+AITHRE_DEVICE_NAME = "AITHRE"
+ILLYRIAN_BEACON_SUFFIX = "696C6C70"
+
 
 def get_service_value(addr, addr_type, offset):
     """
@@ -83,9 +86,59 @@ def get_aithre(mac_adr):
     return co, bat
 
 
-def get_aithre_mac():
+def get_illyrian(mac_adr):
+    """
+    Attempts to get the blood/pulse/oxygen levels from an Illyrian device
+        :param mac_adr: 
+    """
+
+    # Example value:
+    # '41193dff0008696c6c70'
+    # '414039ff0008696c6c70'
+    # '410000010008696c6c70'
+    #  41[R VALUE * 100][HEART RATE] [SIGNAL STRENGTH][SERIAL NO]696C6C70
+    #  [00][0001][0008]
+    #  [40][39][ff]
+    illyrian = get_value_by_name(ILLYRIAN_BEACON_SUFFIX)
+    r_value = int(illyrian[2:4], 16) / 100.0
+    heartrate = int(illyrian[4:6], 16)
+    signal_strength = int(illyrian[6:8], 16)
+    sp02 = 110 - (33 * r_value)
+
+    return (sp02, heartrate, signal_strength)
+
+
+def get_value_by_name(name_to_find):
+    if not CONFIGURATION.aithre_enabled:
+        return None
+
+    try:
+        if not local_debug.IS_LINUX:
+            return None
+
+        scanner = Scanner()
+        devices = scanner.scan(2)
+        for dev in devices:
+            print("    {} {} {}".format(dev.addr, dev.addrType, dev.rssi))
+
+            for (adtype, desc, value) in dev.getScanData():
+                try:
+                    if name_to_find.lower() in value.lower():
+                        return value
+                except Exception as ex:
+                    print("DevScan loop - ex={}".format(ex))
+
+    except Exception as ex:
+        print("Outter loop ex={}".format(ex))
+
+    return None
+
+
+def get_mac_by_device_name(name_to_find):
     """
     Attempts to find an Aithre MAC using Blue Tooth low energy.
+    Arguments:
+        name_to_find {string} -- The name (or partial name) to match the BLE info with.
     Returns: {string} None if a device was not found, otherwise the MAC of the Aithre
     """
     if not CONFIGURATION.aithre_enabled:
@@ -102,7 +155,7 @@ def get_aithre_mac():
 
             for (adtype, desc, value) in dev.getScanData():
                 try:
-                    if "AITH" in value:
+                    if name_to_find.lower() in value.lower():
                         return dev.addr
                 except Exception as ex:
                     print("DevScan loop - ex={}".format(ex))
@@ -113,6 +166,14 @@ def get_aithre_mac():
     return None
 
 
+def get_aithre_mac():
+    return get_mac_by_device_name(AITHRE_DEVICE_NAME)
+
+
+def get_illyrian_mac():
+    return get_mac_by_device_name(ILLYRIAN_BEACON_SUFFIX)
+
+
 CO_SCAN_PERIOD = 15
 
 if local_debug.IS_LINUX:
@@ -121,7 +182,7 @@ if local_debug.IS_LINUX:
 OFFLINE = "OFFLINE"
 
 
-class Aithre(object):
+class BlueToothDevice(object):
     def log(self, text):
         """
         Logs the given text if a logger is available.
@@ -148,7 +209,7 @@ class Aithre(object):
         else:
             print("WARN:{}".format(text))
 
-    def __init__(self, logger = None):
+    def __init__(self, logger=None):
         self.__logger__ = logger
 
         self.warn("Initializing new Aithre object")
@@ -163,6 +224,83 @@ class Aithre(object):
 
     def update(self):
         self._update_levels()
+
+
+class Illyrian(BlueToothDevice):
+    def __init__(self, logger=None):
+        super(Illyrian, self).__init__(logger=logger)
+
+    def _update_mac_(self):
+        if not CONFIGURATION.aithre_enabled:
+            return
+
+        try:
+            self._mac_ = get_illyrian_mac()
+        except Exception as e:
+            self._mac_ = None
+            self.warn("Got EX={} during MAC update.".format(e))
+
+    def _update_levels(self):
+        """
+        Updates the levels of an Illyrian
+            :param self: 
+        An example value is '410000010008696c6c70' when searching for the MAC.
+        This is so the beacon can be used simultaneously by devices.
+        """
+
+        if not CONFIGURATION.aithre_enabled:
+            return
+
+        self._levels_ = get_illyrian(self._mac_)
+
+        # sp02, heartrate, signal_strength)
+
+    def get_spo2_level(self):
+        """
+        Returns the oxygen saturation levels.
+            :param self: 
+        """
+
+        if not CONFIGURATION.aithre_enabled:
+            return None
+
+        if self._levels_ is not None:
+            return self._levels_[0]
+
+        return OFFLINE
+
+    def get_heartrate(self):
+        """
+        Returns the wearer's pulse.
+            :param self: 
+        """
+
+        if not CONFIGURATION.aithre_enabled:
+            return None
+
+        if self._levels_ is not None:
+            return self._levels_[1]
+
+        return OFFLINE
+
+    def get_signal_strength(self):
+        """
+        Returns the read strength from the sensor.
+            :param self: 
+        """
+
+        if not CONFIGURATION.aithre_enabled:
+            return None
+
+        if self._levels_ is not None:
+            return self._levels_[2]
+
+        return OFFLINE
+
+
+class Aithre(BlueToothDevice):
+    def __init__(self, logger=None):
+        super(Aithre, self).__init__(logger=logger)
 
     def _update_mac_(self):
         if not CONFIGURATION.aithre_enabled:
@@ -181,7 +319,8 @@ class Aithre(object):
         if self._mac_ is None:
             self.log("Aithre MAC is none while attempting to update levels.")
             if not local_debug.IS_LINUX:
-                self.log("... and this is not a Linux machine, so attempting to simulate.")
+                self.log(
+                    "... and this is not a Linux machine, so attempting to simulate.")
                 aithre_co_simulator.simulate()
                 aithre_bat_simulator.simulate()
             else:
@@ -196,7 +335,8 @@ class Aithre(object):
             # attempt to find the MAC of the Aithre again.
 
             self._mac_ = None
-            self.warn("Exception while attempting to update the cached levels.update() E={}".format(ex))
+            self.warn(
+                "Exception while attempting to update the cached levels.update() E={}".format(ex))
 
     def get_battery(self):
         if not CONFIGURATION.aithre_enabled:
@@ -220,12 +360,24 @@ class Aithre(object):
 # Global singleton for all to
 # get to the Aithre
 try:
-    sensor = Aithre()
+    co_sensor = Aithre()
 except:
-    sensor = None
+    co_sensor = None
+
+try:
+    spo2_sensor = Illyrian()
+except:
+    spo2_sensor = None
 
 if __name__ == '__main__':
     while True:
-        sensor.update()
-        print("CO:{} BAT{}".format(sensor.get_co_level(), sensor.get_battery()))
+        co_sensor.update()
+        spo2_sensor.update()
+
+        print("CO:{} BAT{}".format(
+            co_sensor.get_co_level(), co_sensor.get_battery()))
+
+        print("SPO2:{}%, {}BPM, SIGNAL:{}".format(
+            spo2_sensor.get_spo2_level(), spo2_sensor.get_heartrate(), spo2_sensor.get_signal_strength()))
+
         time.sleep(CO_SCAN_PERIOD)

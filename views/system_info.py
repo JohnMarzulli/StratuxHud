@@ -82,6 +82,25 @@ def get_cpu_temp():
     return ('---', GRAY)
 
 
+def get_illyrian_spo2_color(spo2_level):
+    """
+    Gets the color for the SPO2 level
+    """
+
+    if spo2_level is None:
+        return RED
+
+    color = GREEN
+
+    if spo2_level < 94:
+        color = YELLOW
+
+    if spo2_level < 90:
+        color = RED
+
+    return color
+
+
 def get_aithre_co_color(co_ppm):
     """
     Returns the color code for the carbon monoxide levels
@@ -154,14 +173,14 @@ class SystemInfo(AhrsElement):
         Gets the text and text color for the Aithre status.
         """
 
-        if aithre.sensor is None:
+        if aithre.co_sensor is None:
             return ('DISCONNECTED', RED) if configuration.CONFIGURATION.aithre_enabled else ('DISABLED', BLUE)
 
         battery_text = 'UNK'
         battery_color = RED
 
         try:
-            battery = aithre.sensor.get_battery()
+            battery = aithre.co_sensor.get_battery()
             battery_suffix = "%"
             if isinstance(battery, basestring):
                 battery_suffix = ""
@@ -175,7 +194,7 @@ class SystemInfo(AhrsElement):
         co_color = RED
 
         try:
-            co_ppm = aithre.sensor.get_co_level()
+            co_ppm = aithre.co_sensor.get_co_level()
 
             if co_ppm is not None:
                 co_text = 'co:{}ppm'.format(co_ppm)
@@ -242,6 +261,16 @@ class SystemInfo(AhrsElement):
 
 
 class Aithre(AhrsElement):
+    def uses_ahrs(self):
+        """
+        Does this element use AHRS data to render?
+
+        Returns:
+            bool -- True if the element uses AHRS data.
+        """
+
+        return False
+
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
         self.task_timer = TaskTimer('Aithre')
         self.__font__ = font
@@ -254,8 +283,8 @@ class Aithre(AhrsElement):
     def render(self, framebuffer, orientation):
         self.task_timer.start()
 
-        if aithre.sensor is not None and configuration.CONFIGURATION.aithre_enabled:
-            co_level = aithre.sensor.get_co_level()
+        if aithre.co_sensor is not None and configuration.CONFIGURATION.aithre_enabled:
+            co_level = aithre.co_sensor.get_co_level()
 
             if co_level is None or isinstance(co_level, basestring):
                 if self.__has_been_connected__:
@@ -274,6 +303,66 @@ class Aithre(AhrsElement):
 
             framebuffer.blit(
                 co_ppm_texture, (self.__lhs__, self.__text_y_pos__))
+        self.task_timer.stop()
+
+
+class Illyrian(AhrsElement):
+    """
+    Screen element to support the Illyrian blood/pulse oxymeter from Aithre
+    """
+
+    def uses_ahrs(self):
+        """
+        Does this element use AHRS data to render?
+
+        Returns:
+            bool -- True if the element uses AHRS data.
+        """
+
+        return False
+
+    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
+        self.task_timer = TaskTimer('Illyrian')
+        self.__font__ = font
+        center_y = framebuffer_size[1] >> 2
+        text_half_height = int(font.get_height()) >> 1
+        self.__text_y_pos__ = center_y + (6 * text_half_height)
+        self.__pulse_y_pos__ = center_y + (8 * text_half_height)
+        self.__lhs__ = 0
+        self.__has_been_connected__ = False
+
+    def render(self, framebuffer, orientation):
+        self.task_timer.start()
+
+        if aithre.spo2_sensor is not None and configuration.CONFIGURATION.aithre_enabled:
+            spo2_level = aithre.spo2_sensor.get_spo2_level()
+            heartbeat = aithre.spo2_sensor.get_heartrate()
+            heartbeat_text = "{}BPM".format(heartbeat)
+
+            if spo2_level is None or isinstance(spo2_level, basestring):
+                if self.__has_been_connected__:
+                    spo2_color = RED
+                    spo2_text = "OFFLINE"
+                else:
+                    self.task_timer.stop()
+                    return
+            else:
+                spo2_color = get_illyrian_spo2_color(spo2_level)
+                spo2_text = str(int(spo2_level)) + "% SPO"
+                self.__has_been_connected__ = True
+
+            spo2_ppm_texture = self.__font__.render(
+                spo2_text, True, spo2_color, BLACK)
+
+            heartbeat_texture = self.__font__.render(
+                heartbeat_text, True, GREEN, BLACK)
+
+            framebuffer.blit(
+                spo2_ppm_texture, (self.__lhs__, self.__text_y_pos__))
+
+            framebuffer.blit(
+                heartbeat_texture, (self.__lhs__, self.__pulse_y_pos__))
+
         self.task_timer.stop()
 
 

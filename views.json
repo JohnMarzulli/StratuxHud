@@ -10,6 +10,7 @@
         "Roll Indicator",
         "Groundspeed",
         "Aithre",
+        "Illyrian",
         "ADSB Reticles",
         "ADSB Target Bugs Only"
       ],
@@ -55,7 +56,8 @@
         "G Load",
         "Roll Indicator",
         "Groundspeed",
-        "Aithre"
+        "Aithre",
+        "Illyrian"
       ],
       "name": "AHRS Only"
     }

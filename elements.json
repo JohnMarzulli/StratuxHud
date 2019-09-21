@@ -3,6 +3,10 @@
     "class": "system_info.Aithre",
     "detail_font": true
   },
+  "Illyrian": {
+    "class": "system_info.Illyrian",
+    "detail_font": true
+  },
   "Compass": {
     "class": "compass_and_heading_bottom_element.CompassAndHeadingBottomElement",
     "detail_font": true
