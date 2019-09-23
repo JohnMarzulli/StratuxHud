@@ -217,8 +217,8 @@ Make sure you are using a high quality power cable if you are using a Pi 3B+
 
 ```bash
 @reboot nodejs /home/pi/StratuxHud/traffic_manager/build/traffic_manager.js
-@reboot sudo python /home/pi/StratuxHud/stratux_hud.py &
 @reboot sudo python /home/pi/StratuxHud/aithre_manager/aithre_manager.py &
+@reboot sudo python /home/pi/StratuxHud/stratux_hud.py &
 ```
 
 1. Save and quit.
@@ -303,7 +303,7 @@ You will find the solder pads on the bottom of the Raspberry Pi 3, near the Micr
 
 Date       | Version | Major Changes
 ---------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-2019-09-?? | 1.7     | Now able to cycle through views using the HudConfig page. Support for Illyrian by Aithre. Improve warning on some elements when GPS lock is lost.
+2019-09-?? | 1.7     | Now able to cycle through views using the HudConfig page. Support for Illyrian by Aithre. Split Aithre data collection into a micro-service. Improve warning on some elements when GPS lock is lost.
 2019-09-04 | 1.6     | Traffic manager moved to a stand-alone service in NodeJs/TypeScript.
 2019-06-30 | 1.5     | Support for the Aithre CO detector. New roll indicator. Various performance improvements. Visual warning if GPS is not plugged in. Use the OWNSHIP config from the receiver instead of local config.
 2019-03-31 | 1.4     | Add connection reset button. Fixes issues with the Diagnostic view running of of space. Initial port to Python 3.7
