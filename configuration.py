@@ -81,6 +81,7 @@ class Configuration(object):
     #
     DEFAULT_NETWORK_IP = "192.168.10.1"
     DEFAULT_TRAFFIC_MANAGER_ADDRESS = "localhost:8000"
+    DEFAULT_AITHRE_MANAGER_ADDRESS = "localhost:8081"
     STRATUX_ADDRESS_KEY = "stratux_address"
     DATA_SOURCE_KEY = "data_source"
     FLIP_HORIZONTAL_KEY = "flip_horizontal"
@@ -93,6 +94,7 @@ class Configuration(object):
     PITCH_DEGREES_DISPLAY_SCALER_KEY = 'pitch_degrees_scaler'
     AITHRE_KEY = 'aithre'
     TRAFFIC_MANAGER_KEY = 'traffic_manager'
+    AITHRE_MANAGER_KEY = 'aithre_manager'
 
     DEFAULT_DEGREES_OF_PITCH = 90
     DEFAULT_PITCH_DEGREES_DISPLAY_SCALER = 2.0
@@ -314,6 +316,13 @@ class Configuration(object):
         """
 
         return self.traffic_manager_address
+    
+    def get_aithre_manager_address(self):
+        """
+        Returns the address of the REST service that is providing
+        Aithre connectivity.
+        """
+        return self.aithre_manager_address
 
     def get_units(self):
         """
@@ -451,6 +460,9 @@ class Configuration(object):
         self.aithre_enabled = False
         self.traffic_manager_address = self.__get_config_value__(
             Configuration.TRAFFIC_MANAGER_KEY, Configuration.DEFAULT_TRAFFIC_MANAGER_ADDRESS
+        )
+        self.aithre_manager_address = self.__get_config_value__(
+            Configuration.AITHRE_MANAGER_KEY, Configuration.DEFAULT_AITHRE_MANAGER_ADDRESS
         )
         self.__stratux_session__ = requests.Session()
 

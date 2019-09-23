@@ -218,6 +218,7 @@ Make sure you are using a high quality power cable if you are using a Pi 3B+
 ```bash
 @reboot nodejs /home/pi/StratuxHud/traffic_manager/build/traffic_manager.js
 @reboot sudo python /home/pi/StratuxHud/stratux_hud.py &
+@reboot sudo python /home/pi/StratuxHud/aithre_manager/aithre_manager.py &
 ```
 
 1. Save and quit.

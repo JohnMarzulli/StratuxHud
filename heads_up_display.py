@@ -425,56 +425,17 @@ class HeadsUpDisplay(object):
     def __update_traffic_reports__(self):
         hud_elements.HudDataCache.update_traffic_reports()
 
-    def __update_aithre_co__(self):
-        if aithre.co_sensor is not None:
-            try:
-                aithre.co_sensor.update()
-                self.log("Aithre updated")
-                if aithre.co_sensor.is_connected():
-                    co_level = aithre.co_sensor.get_co_level()
-                    bat_level = aithre.co_sensor.get_battery()
-
-                    self.log("CO:{}ppm, BAT:{}%".format(co_level, bat_level))
-                else:
-                    self.log("Aithre is enabled, but not connected.")
-            except:
-                self.warn("Error attempting to update Aithre sensor values")
-        elif CONFIGURATION.aithre_enabled:
-            try:
-                aithre.co_sensor = aithre.Aithre(self.__logger__)
-                self.log("Aithre created")
-            except:
-                self.warn("Error attempting to connect to Aithre")
-
-    def __update_aithre_spo2__(self):
-        if aithre.spo2_sensor is not None:
-            try:
-                aithre.spo2_sensor.update()
-                self.log("Illyrian updated")
-                if aithre.spo2_sensor.is_connected():
-                    spo2_level = aithre.spo2_sensor.get_spo2_level()
-                    heartrate = aithre.spo2_sensor.get_heartrate()
-                    signal_strength = aithre.spo2_sensor.get_signal_strength()
-
-                    self.log("SPO2:{}%, PULSE:{}BPM, SIGNAL:{}".format(
-                        spo2_level, heartrate, signal_strength))
-                else:
-                    self.log("Illyrian is enabled, but not connected.")
-            except:
-                self.warn("Error attempting to update Illyrian sensor values")
-        elif CONFIGURATION.aithre_enabled:
-            try:
-                aithre.spo2_sensor = aithre.Illyrian(self.__logger__)
-                self.log("Illyrian created")
-            except:
-                self.warn("Error attempting to connect to Illyrian")
-
     def __update_aithre__(self):
         if not CONFIGURATION.aithre_enabled:
             return
 
-        self.__update_aithre_co__()
-        self.__update_aithre_spo2__()
+        if aithre.AithreClient.INSTANCE is not None:
+            try:
+                aithre.AithreClient.INSTANCE.update_aithre()
+                self.log("Aithre updated")
+
+            except:
+                self.warn("Error attempting to update Aithre sensor values")
 
     def __init__(self, logger):
         """

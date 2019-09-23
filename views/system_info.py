@@ -1,7 +1,6 @@
 import commands
 from traffic import AdsbTrafficClient
 from ahrs_element import AhrsElement
-import aithre
 import configuration
 import units
 import lib.local_debug as local_debug
@@ -12,6 +11,7 @@ import pygame
 import socket
 import datetime
 import math
+from aithre import AithreClient
 
 import struct
 
@@ -21,6 +21,12 @@ testing.load_imports()
 
 NORMAL_TEMP = 50
 REDLINE_TEMP = 80
+
+CO_SAFE = 10
+CO_WARNING = 49
+
+BATTERY_SAFE = 75
+BATTERY_WARNING = 25
 
 
 def get_ip_address():
@@ -113,9 +119,9 @@ def get_aithre_co_color(co_ppm):
     """
     color = BLUE
 
-    if co_ppm > aithre.CO_WARNING:
+    if co_ppm > CO_WARNING:
         color = RED
-    elif co_ppm > aithre.CO_SAFE:
+    elif co_ppm > CO_SAFE:
         color = YELLOW
 
     return color
@@ -133,9 +139,9 @@ def get_aithre_battery_color(battery_percent):
     """
     color = RED
 
-    if battery_percent >= aithre.BATTERY_SAFE:
+    if battery_percent >= BATTERY_SAFE:
         color = GREEN
-    elif battery_percent >= aithre.BATTERY_WARNING:
+    elif battery_percent >= BATTERY_WARNING:
         color = YELLOW
 
     return color
@@ -173,14 +179,16 @@ class SystemInfo(AhrsElement):
         Gets the text and text color for the Aithre status.
         """
 
-        if aithre.co_sensor is None:
+        if AithreClient.INSTANCE is None:
             return ('DISCONNECTED', RED) if configuration.CONFIGURATION.aithre_enabled else ('DISABLED', BLUE)
+
+        co_report = AithreClient.INSTANCE.get_co_report()
 
         battery_text = 'UNK'
         battery_color = RED
 
         try:
-            battery = aithre.co_sensor.get_battery()
+            battery = co_report.battery
             battery_suffix = "%"
             if isinstance(battery, basestring):
                 battery_suffix = ""
@@ -194,7 +202,7 @@ class SystemInfo(AhrsElement):
         co_color = RED
 
         try:
-            co_ppm = aithre.co_sensor.get_co_level()
+            co_ppm = co_report.co
 
             if co_ppm is not None:
                 co_text = 'co:{}ppm'.format(co_ppm)
@@ -283,10 +291,10 @@ class Aithre(AhrsElement):
     def render(self, framebuffer, orientation):
         self.task_timer.start()
 
-        if aithre.co_sensor is not None and configuration.CONFIGURATION.aithre_enabled:
-            co_level = aithre.co_sensor.get_co_level()
+        if AithreClient.INSTANCE is not None and configuration.CONFIGURATION.aithre_enabled:
+            co_level = AithreClient.INSTANCE.get_co_report()
 
-            if co_level is None or isinstance(co_level, basestring):
+            if co_level.co is None or isinstance(co_level, basestring):
                 if self.__has_been_connected__:
                     co_color = RED
                     co_ppm_text = "OFFLINE"
@@ -294,8 +302,8 @@ class Aithre(AhrsElement):
                     self.task_timer.stop()
                     return
             else:
-                co_color = get_aithre_co_color(co_level)
-                co_ppm_text = str(int(co_level)) + " PPM"
+                co_color = get_aithre_co_color(co_level.co)
+                co_ppm_text = "{}PPM".format(co_level.co)
                 self.__has_been_connected__ = True
 
             co_ppm_texture = self.__font__.render(
@@ -334,9 +342,10 @@ class Illyrian(AhrsElement):
     def render(self, framebuffer, orientation):
         self.task_timer.start()
 
-        if aithre.spo2_sensor is not None and configuration.CONFIGURATION.aithre_enabled:
-            spo2_level = aithre.spo2_sensor.get_spo2_level()
-            heartbeat = aithre.spo2_sensor.get_heartrate()
+        if AithreClient.INSTANCE is not None and configuration.CONFIGURATION.aithre_enabled:
+            report = AithreClient.INSTANCE.get_spo2_report()
+            spo2_level = report.spo2
+            heartbeat = report.heartrate
             heartbeat_text = "{}BPM".format(heartbeat)
 
             if spo2_level is None or isinstance(spo2_level, basestring):
