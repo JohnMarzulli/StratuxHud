@@ -12,8 +12,8 @@ EARTH_RADIUS_STATUTE_MILES = 3956
 EARTH_RADIUS_KILOMETERS_MILES = 6371
 MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT = 2
 MAX_FRAMERATE = 60
-TARGET_AHRS_FRAMERATE = 60
-AHRS_TIMEOUT = 1.0
+TARGET_AHRS_FRAMERATE = 30
+AHRS_TIMEOUT = ((1.0 / TARGET_AHRS_FRAMERATE) * 4.0)
 
 VERSION = "1.7.0"
 
@@ -462,7 +462,8 @@ class Configuration(object):
             Configuration.TRAFFIC_MANAGER_KEY, Configuration.DEFAULT_TRAFFIC_MANAGER_ADDRESS
         )
         self.aithre_manager_address = self.__get_config_value__(
-            Configuration.AITHRE_MANAGER_KEY, Configuration.DEFAULT_AITHRE_MANAGER_ADDRESS
+            Configuration.AITHRE_MANAGER_KEY,
+            Configuration.DEFAULT_AITHRE_MANAGER_ADDRESS
         )
         self.__stratux_session__ = requests.Session()
 

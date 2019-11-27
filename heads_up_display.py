@@ -18,7 +18,7 @@ import traffic
 from aircraft import Aircraft
 from configuration import *
 from traffic import AdsbTrafficClient
-from lib.recurring_task import RecurringTask, IntermittentTask
+from lib.recurring_task import RecurringTask
 from lib.task_timer import TaskTimer, RollingStats
 import hud_elements
 import targets
@@ -169,7 +169,6 @@ class HeadsUpDisplay(object):
             current_fps = int(clock.get_fps())
             surface = pygame.display.get_surface()
             surface.fill(display.BLACK)
-            self.__purge_textures_task__.run()
 
             self.frame_setup.stop()
             self.render_perf.start()
@@ -497,7 +496,8 @@ class HeadsUpDisplay(object):
             logger = self.__logger__.logger
 
         self.web_server = restful_host.HudServer()
-        self.__purge_textures_task__ = IntermittentTask(
+
+        RecurringTask(
             "purge_old_textures",
             10.0,
             self.__purge_old_textures__,
@@ -509,12 +509,14 @@ class HeadsUpDisplay(object):
             self.web_server.run,
             logger,
             start_immediate=False)
+
         RecurringTask(
             "update_traffic",
             0.1,
             self.__update_traffic_reports__,
             logger,
             start_immediate=True)
+
         RecurringTask(
             "update_aithre",
             5.0,
@@ -618,7 +620,9 @@ class HeadsUpDisplay(object):
         if event.key in [pygame.K_RETURN, pygame.K_KP_ENTER]:
             orientation = self.__aircraft__.get_orientation()
             targets.TARGET_MANAGER.add_target(
-                orientation.position[0], orientation.position[1], orientation.alt)
+                orientation.position[0],
+                orientation.position[1],
+                orientation.alt)
             targets.TARGET_MANAGER.save()
 
         if event.key in [pygame.K_EQUALS, pygame.K_KP_EQUALS]:
