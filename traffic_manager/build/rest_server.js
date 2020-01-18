@@ -61,7 +61,7 @@ var RestServer = /** @class */ (function () {
         this.express.use(bodyParser.urlencoded({ extended: false }));
     };
     /**
-     * Create all of the routing from API endpoint to deletegates
+     * Create all of the routing from API endpoint to delegates
      *
      * @private
      * @memberof RestServer
@@ -76,7 +76,7 @@ var RestServer = /** @class */ (function () {
             "/Service/Reset": this.getServiceResetResponseBody,
             "/Traffic/Summary": traffic_client_1.TrafficClient.getTrafficOverviewResponseBody,
             "/Traffic/Full": traffic_client_1.TrafficClient.getTrafficFullResponseBody,
-            "/Traffic/Reliable": traffic_client_1.TrafficClient.getTrafficReliableRepsonseBody,
+            "/Traffic/Reliable": traffic_client_1.TrafficClient.getTrafficReliableResponseBody,
             "/Traffic/:id": traffic_client_1.TrafficClient.getTrafficDetailsResponseBody
         };
         Object.keys(mapping).forEach(function (key) {
@@ -94,3 +94,4 @@ var RestServer = /** @class */ (function () {
     return RestServer;
 }());
 exports.default = new RestServer().express;
+//# sourceMappingURL=rest_server.js.map

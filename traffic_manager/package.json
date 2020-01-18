@@ -23,6 +23,7 @@
     "ws": "^7.1.1"
   },
   "dependencies": {
+    "@types/morgan": "^1.7.37",
     "gulp": "^4.0.2"
   }
 }
