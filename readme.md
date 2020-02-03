@@ -24,7 +24,7 @@ Estimated cost is $270
 
 Uses 5V USB power.
 
-**NOTE:** This project initially used and reccomended the "HUDLY Classic" projector which is no longer available.
+**NOTE:** This project initially used and recommended the "HUDLY Classic" projector which is no longer available.
 
 **NOTE:** To have full functionality with a Stratux based unit, please use Stratux Version 1.4R5 or higher.
 
@@ -222,6 +222,26 @@ Make sure you are using a high quality power cable if you are using a Pi 3B+
 ```
 
 1. Save and quit.
+
+#### Developer Note
+
+To ensure proper operation, if you are a developer the order services are brought online is important.
+
+The following order is suggested:
+
+1. Stratux
+2. AithreManager
+3. TrafficManager
+4. StratuxHud
+5. HudConfig
+
+The AithreManager has no external dependencies.
+
+The TrafficManager uses the Stratux ADS-B services and received.
+
+The StratuxHud depends on the AithreManager and the TrafficManager
+
+The HudConfig depends on the StratuxHud
 
 ### Ownship
 

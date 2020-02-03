@@ -245,8 +245,6 @@ class SystemInfo(AhrsElement):
         # First line in the array is at the bottom.
         # Last line in the array is towards the top.
         info_lines.append(["HUD CPU     : ", self.__cpu_temp__])
-        info_lines.append(
-            ["OWNSHIP     : ", ["{}/{}".format(configuration.CONFIGURATION.capabilities.ownship_mode_s, configuration.CONFIGURATION.capabilities.ownship_icao), BLUE]])
         info_lines.append(["DISPLAY RES : ", ["{} x {}".format(
             self.__framebuffer_size__[0], self.__framebuffer_size__[1]), BLUE]])
 

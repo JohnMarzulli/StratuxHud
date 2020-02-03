@@ -68,7 +68,7 @@ class RestServer {
   }
 
   /**
-   * Create all of the routing from API endpoint to deletegates
+   * Create all of the routing from API endpoint to delegates
    *
    * @private
    * @memberof RestServer
@@ -83,7 +83,7 @@ class RestServer {
       "/Service/Reset": this.getServiceResetResponseBody,
       "/Traffic/Summary": TrafficClient.getTrafficOverviewResponseBody,
       "/Traffic/Full": TrafficClient.getTrafficFullResponseBody,
-      "/Traffic/Reliable": TrafficClient.getTrafficReliableRepsonseBody,
+      "/Traffic/Reliable": TrafficClient.getTrafficReliableResponseBody,
       "/Traffic/:id": TrafficClient.getTrafficDetailsResponseBody
     };
 

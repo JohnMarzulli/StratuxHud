@@ -252,7 +252,6 @@ def run_ahrs_hud_element(element_type, use_detail_font=True):
         use_detail_font {bool} -- Should the detail font be used. (default: {True})
     """
 
-    from heads_up_display import HeadsUpDisplay
     from aircraft import AhrsSimulation
     from datetime import datetime
 
@@ -306,7 +305,6 @@ def run_adsb_hud_element(element_type, use_detail_font=True):
         use_detail_font {bool} -- Should the detail font be used. (default: {True})
     """
 
-    from heads_up_display import HeadsUpDisplay
     from hud_elements import HudDataCache
     from aircraft import AhrsSimulation
     from traffic import SimulatedTraffic

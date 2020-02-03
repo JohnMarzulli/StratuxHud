@@ -17,10 +17,14 @@ class AhrsData(object):
     Class to hold the AHRS data
     """
 
-    def __is_compass_heading_valid__(self):
+    def __is_compass_heading_valid__(
+        self
+    ):
         return self.compass_heading is not None and self.compass_heading <= 360
 
-    def get_onscreen_projection_heading(self):
+    def get_onscreen_projection_heading(
+        self
+    ):
         if self.__is_compass_heading_valid__():
             return int(self.compass_heading)
 
@@ -29,7 +33,9 @@ class AhrsData(object):
 
         return HEADING_NOT_AVAILABLE
 
-    def get_onscreen_projection_display_heading(self):
+    def get_onscreen_projection_display_heading(
+        self
+    ):
         try:
             if self.__is_compass_heading_valid__():
                 return int(self.compass_heading)
@@ -38,13 +44,17 @@ class AhrsData(object):
 
         return HEADING_NOT_AVAILABLE
 
-    def get_onscreen_gps_heading(self):
+    def get_onscreen_gps_heading(
+        self
+    ):
         """
             Returns a safe display version of the GPS heading
         """
         return self.gps_heading if self.gps_online else HEADING_NOT_AVAILABLE
 
-    def get_heading(self):
+    def get_heading(
+        self
+    ):
         try:
             if (self.compass_heading is None
                     or self.compass_heading > 360
@@ -59,7 +69,9 @@ class AhrsData(object):
 
         return HEADING_NOT_AVAILABLE
 
-    def __init__(self):
+    def __init__(
+        self
+    ):
         self.roll = 0.0
         self.pitch = 0.0
         self.compass_heading = 0.0
@@ -79,7 +91,9 @@ class AhrsSimulation(object):
     Class to simulate the AHRS data.
     """
 
-    def simulate(self):
+    def simulate(
+        self
+    ):
         """
         Ticks the simulated data.
         """
@@ -88,9 +102,12 @@ class AhrsSimulation(object):
         self.ahrs_data.compass_heading = self.yaw_simulator.simulate()
         self.ahrs_data.gps_heading = self.ahrs_data.compass_heading
         self.ahrs_data.airspeed = self.speed_simulator.simulate()
+        self.ahrs_data.groundspeed = self.ahrs_data.airspeed
         self.ahrs_data.alt = self.alt_simulator.simulate()
 
-    def update(self):
+    def update(
+        self
+    ):
         """
         Updates the simulation and serves as the interface for the
         the AHRS/Simulation/Other sourcing
@@ -98,14 +115,16 @@ class AhrsSimulation(object):
 
         self.simulate()
 
-    def __init__(self):
+    def __init__(
+        self
+    ):
         self.ahrs_data = AhrsData()
         self.data_source_available = True
 
         self.pitch_simulator = SimulatedValue(1, 30, -1)
         self.roll_simulator = SimulatedValue(5, 60, 1)
         self.yaw_simulator = SimulatedValue(5, 60, 1, 30, 180)
-        self.speed_simulator = SimulatedValue(5, 10, 1, 85)
+        self.speed_simulator = SimulatedValue(5, 10, 1, 0, 85)
         self.alt_simulator = SimulatedValue(10, 100, -1, 0, 200)
 
 
@@ -114,7 +133,12 @@ class AhrsStratux(LoggingObject):
     Class to pull actual AHRS data from a Stratux (or Stratus)
     """
 
-    def __get_value__(self, ahrs_json, key, default):
+    def __get_value__(
+        self,
+        ahrs_json,
+        key,
+        default
+    ):
         """
         Safely return the value from the AHRS blob
 
@@ -140,7 +164,12 @@ class AhrsStratux(LoggingObject):
 
         return default
 
-    def __get_value_with_fallback__(self, ahrs_json, keys, default):
+    def __get_value_with_fallback__(
+        self,
+        ahrs_json,
+        keys,
+        default
+    ):
         if keys is None:
             return default
 
@@ -149,7 +178,9 @@ class AhrsStratux(LoggingObject):
 
         return values[0] if values is not None and len(values) > 0 else default
 
-    def update(self):
+    def update(
+        self
+    ):
         """
         Grabs the AHRS (if available)
         """
@@ -253,7 +284,10 @@ class AhrsStratux(LoggingObject):
         #     "AHRSStatus": 7
         # }
 
-    def __set_ahrs_data__(self, new_ahrs_data):
+    def __set_ahrs_data__(
+        self,
+        new_ahrs_data
+    ):
         """
         Atomically sets the AHRS data.
         """
@@ -261,7 +295,10 @@ class AhrsStratux(LoggingObject):
         self.ahrs_data = new_ahrs_data
         self.__lock__.release()
 
-    def __init__(self, logger):
+    def __init__(
+        self,
+        logger
+    ):
         super(AhrsStratux, self).__init__(logger)
 
         # If an update to the AHRS takes longer than this,
@@ -279,7 +316,9 @@ class AhrsStratux(LoggingObject):
 
 
 class Aircraft(LoggingObject):
-    def update_orientation_in_background(self):
+    def update_orientation_in_background(
+        self
+    ):
         print("starting")
         while True:
             try:
@@ -289,7 +328,11 @@ class Aircraft(LoggingObject):
             except Exception as ex:
                 self.warn("update_orientation_in_background ex={}".format(ex))
 
-    def __init__(self, logger=None, force_simulation=False):
+    def __init__(
+        self,
+        logger=None,
+        force_simulation=False
+    ):
         super(Aircraft, self).__init__(logger)
 
         self.ahrs_source = None
@@ -303,17 +346,23 @@ class Aircraft(LoggingObject):
                                      1.0 / configuration.TARGET_AHRS_FRAMERATE,
                                      self.__update_orientation__)
 
-    def is_ahrs_available(self):
+    def is_ahrs_available(
+        self
+    ):
         """
         Returns True if the AHRS data is available
         """
 
         return self.ahrs_source is not None and self.ahrs_source.data_source_available
 
-    def get_orientation(self):
+    def get_orientation(
+        self
+    ):
         return self.ahrs_source.ahrs_data
 
-    def __update_orientation__(self):
+    def __update_orientation__(
+        self
+    ):
         if self.ahrs_source is not None:
             self.ahrs_source.update()
 

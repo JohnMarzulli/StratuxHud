@@ -81,7 +81,7 @@ def get_current_view_response():
     into JSON that contains the name of the current view
     that the HUD is displaying.
     """
-    return {"view": configuration.CONFIGURATION.get_views_list()[configuration.CONFIGURATION.get_view_index()][VIEW_NAME_KEY]}
+    return {"view": "updated"}
 
 
 def get_view_next(handler):

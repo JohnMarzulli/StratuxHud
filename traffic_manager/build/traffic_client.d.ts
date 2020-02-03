@@ -1,3 +1,7 @@
+declare class JsonPackage extends Map<string, any> {
+}
+declare class TrafficResponsePackage extends Map<string, JsonPackage> {
+}
 /**
  * Static class to package up the traffic client, websocket
  * helpers, and all of the other fun stuff to get the code
@@ -8,20 +12,6 @@
  */
 export declare class TrafficClient {
     /**
-     * Take a traffic report and then merge in the latest data
-     * that came from the WebSocket.
-     *
-     * Handles incremental updates to the traffic, merging new portions
-     * of the report into the existing data.
-     *
-     * @private
-     * @static
-     * @param {Map<string, any>} report The incoming traffic report.
-     * @returns {void}
-     * @memberof TrafficClient
-     */
-    private static reportTraffic;
-    /**
      * Looks at all of the existing traffic reports and then
      * prunes out anything that is old and should not be shown.
      *
@@ -30,7 +20,7 @@ export declare class TrafficClient {
      */
     static garbageCollectTraffic(): void;
     /**
-     * Triggers the websocker to be torn down and then rebuilt.
+     * Triggers the websocket to be torn down and then rebuilt.
      *
      * @static
      * @memberof TrafficClient
@@ -50,7 +40,7 @@ export declare class TrafficClient {
      * down and rebuilt.
      *
      * Making sure the socket is always active is the highest
-     * priortity of this module.
+     * priority of this module.
      *
      * @static
      * @memberof TrafficClient
@@ -67,15 +57,15 @@ export declare class TrafficClient {
     /**
      * Get a dictionary to be turned into JSON
      * that gives an overview of the traffic.
-     * This is a greatly reduced pacakge to save
+     * This is a greatly reduced package to save
      * on transfer time.
      *
      * @static
      * @param {Request} req
-     * @returns {Map<string, Map<string, any>>}
+     * @returns {Map<string, JsonPackage>}
      * @memberof TrafficClient
      */
-    static getTrafficOverviewResponseBody(req: Request): Map<string, Map<string, any>>;
+    static getTrafficOverviewResponseBody(req: Request): TrafficResponsePackage;
     /**
      * Get a dictionary to be turned into JSON
      * that is the complete, RAW data known about
@@ -85,13 +75,13 @@ export declare class TrafficClient {
      *
      * @static
      * @param {Request} req
-     * @returns {Map<string, Map<string, any>>}
+     * @returns {TrafficResponsePackage}
      * @memberof TrafficClient
      */
-    static getTrafficFullResponseBody(req: Request): Map<string, Map<string, any>>;
+    static getTrafficFullResponseBody(req: Request): TrafficResponsePackage;
     /**
      * Get a dictionary to be turned into JSON
-     * of the traffice that is considered reliable
+     * of the traffic that is considered reliable
      * and CAN be shown in the HUD.
      *
      * Uses a slightly different format so as to normalize
@@ -99,15 +89,15 @@ export declare class TrafficClient {
      *
      * @static
      * @param {Request} req
-     * @returns {Map<string, Map<string, any>>}
+     * @returns {TrafficResponsePackage}
      * @memberof TrafficClient
      */
-    static getTrafficReliableRepsonseBody(req: Request): Map<string, Map<string, any>>;
+    static getTrafficReliableResponseBody(req: Request): TrafficResponsePackage;
     /**
      * Get a dictionary to be turned into JSON that is just the RAW
      * data about the given traffic.
      *
-     * Takes an IACO integer as the parameter.
+     * Takes an ICAO integer as the parameter.
      *
      * If a bad code is given, an empty set is returned.
      *
@@ -118,3 +108,4 @@ export declare class TrafficClient {
      */
     static getTrafficDetailsResponseBody(req: any): any;
 }
+export {};

@@ -27,7 +27,9 @@ server.on("listening", onListening);
  * @param {(string | number)} originalValue The value from the environment or number from config.
  * @returns {number} The extracted value of the port number
  */
-function getPortValue(originalValue: string | number): number {
+function getPortValue(
+  originalValue: string | number
+): number {
   return typeof originalValue === "string"
     ? parseInt(originalValue, 10)
     : originalValue;
@@ -39,18 +41,22 @@ function getPortValue(originalValue: string | number): number {
  * @param {(number | string)} val The port from the config or environment
  * @returns {number} The port to open the server on.
  */
-function normalizePort(val: number | string): number {
+function normalizePort(
+  val: number | string
+): number {
   let port: number = getPortValue(val);
 
   return isNaN(port) || port < 0 ? DefaultPort : port;
 }
 
-function onError(error: NodeJS.ErrnoException): void {
+function onError(
+  error: NodeJS.ErrnoException
+): void {
   if (error.syscall !== "listen") {
     throw error;
   }
 
-  let bind = "Port " + port;
+  let bind: string = `Port ${port}`;
 
   switch (error.code) {
     case "EACCES":
@@ -70,6 +76,6 @@ function onError(error: NodeJS.ErrnoException): void {
 
 function onListening(): void {
   let addr = server.address();
-  let bind = typeof addr === "string" ? `pipe ${addr}` : `port ${addr.port}`;
+  let bind = typeof addr === "string" ? `pipe ${addr}` : `port ${addr?.port ?? "Unknown"}`;
   debug(`Listening on ${bind}`);
 }
