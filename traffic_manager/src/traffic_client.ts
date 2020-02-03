@@ -52,7 +52,7 @@ function hasGpsKeys(
 ): boolean {
   return inReport != null
     && inReport[latitudeKey] != null
-    && inReport[longitudeKey] != null
+    && inReport[longitudeKey] != null;
 }
 
 function isReliableReport(
@@ -60,7 +60,7 @@ function isReliableReport(
 ): boolean {
   return inReport != null
     && inReport[trafficReliableKey] != null
-    && inReport[trafficReliableKey]
+    && inReport[trafficReliableKey];
 }
 
 function containsKeyAndValueIsNonNull(
