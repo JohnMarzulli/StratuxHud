@@ -88,9 +88,9 @@ function containsRequiredKeysToBeReliable(inReport) {
         bearingKey
     ];
     var requiredKeysAreNonNull = true;
-    for (var requiredKeyName in requiredKeys) {
+    requiredKeys.forEach(function (requiredKeyName) {
         requiredKeysAreNonNull = requiredKeysAreNonNull && containsKeyAndValueIsNonNull(inReport, requiredKeyName);
-    }
+    });
     return requiredKeysAreNonNull;
 }
 /**
@@ -327,20 +327,13 @@ var TrafficClient = /** @class */ (function () {
                 var displayValue = getDisplayName(trafficCache[icaoCode]);
                 outReliableTraffic[icaoCode] = new Map();
                 outReliableTraffic[icaoCode][displayNameKey] = displayValue;
-                outReliableTraffic[icaoCode][secondsSinceLastReportKey] =
-                    trafficCache[icaoCode][secondsSinceLastReportKey];
-                outReliableTraffic[icaoCode][latitudeKey] =
-                    trafficCache[icaoCode][latitudeKey];
-                outReliableTraffic[icaoCode][longitudeKey] =
-                    trafficCache[icaoCode][longitudeKey];
-                outReliableTraffic[icaoCode][onGroundKey] =
-                    trafficCache[icaoCode][onGroundKey];
-                outReliableTraffic[icaoCode][distanceKey] =
-                    trafficCache[icaoCode][distanceKey];
-                outReliableTraffic[icaoCode][altitudeKey] =
-                    trafficCache[icaoCode][altitudeKey];
-                outReliableTraffic[icaoCode][bearingKey] =
-                    trafficCache[icaoCode][bearingKey];
+                outReliableTraffic[icaoCode][secondsSinceLastReportKey] = trafficCache[icaoCode][secondsSinceLastReportKey];
+                outReliableTraffic[icaoCode][latitudeKey] = trafficCache[icaoCode][latitudeKey];
+                outReliableTraffic[icaoCode][longitudeKey] = trafficCache[icaoCode][longitudeKey];
+                outReliableTraffic[icaoCode][onGroundKey] = trafficCache[icaoCode][onGroundKey];
+                outReliableTraffic[icaoCode][distanceKey] = trafficCache[icaoCode][distanceKey];
+                outReliableTraffic[icaoCode][altitudeKey] = trafficCache[icaoCode][altitudeKey];
+                outReliableTraffic[icaoCode][bearingKey] = trafficCache[icaoCode][bearingKey];
             }
         });
         return outReliableTraffic;
@@ -366,6 +359,12 @@ var TrafficClient = /** @class */ (function () {
     return TrafficClient;
 }());
 exports.TrafficClient = TrafficClient;
+/**
+ * Given a request, attempt to retrieve it from the cache.
+ *
+ * @param {{ params: { id: string; }; }} req The request that needs the cached item
+ * @returns Any item found in the cache, otherwise a list of items in the cache.
+ */
 function getCachedItemFromValidRequest(req) {
     var _a, _b;
     var cachedItem = null;
