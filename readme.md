@@ -204,10 +204,7 @@ Make sure you are using a high quality power cable if you are using a Pi 3B+
 5. `sudo apt-get install libgtk2.0-dev` a. Choose `Y` if prompted
 6. `sudo cp ./media/hud_logo.png /usr/share/plymouth/themes/pix/splash.png`
 7. `python --version`. Verify that your version is 2.7.14
-8. `sudo python setup.py develop`
-
-  - For Linux systems where you wish to develop or debug: `sudo setcap 'cap_net_raw,cap_net_admin+eip' ~/.local/lib/python2.7/site-packages/bluepy/bluepy-helper`
-
+8. `sudo python setup.py develop` For Linux systems where you wish to develop or debug: `sudo setcap 'cap_net_raw,cap_net_admin+eip' ~/.local/lib/python2.7/site-packages/bluepy/bluepy-helper`
 9. `sudo raspi-config`
 10. Choose "WiFi" again, and enter `stratux` as the SSID. No password.
 11. `sudo vim /etc/wpa_supplicant/wpa_supplicant.conf`
@@ -272,6 +269,20 @@ Alternatively:
 2. Set the "aithre" line to: `"aithre": false,`
 3. Save and close.
 
+#### BlueTooth for AIO Setups
+
+For All In One (Stratux + HUD on same machine) setups, additional steps need to be taken.
+
+Due to the needs of the GPS, the normal BlueTooth functions are disabled. Edit the /boot/config.txt to include the following line **beneath** the line that sets the overlay to value of `dtoverlay` to "miniuart".
+
+```
+enable_uart=1
+```
+
+Edit the line towards the bottom to have `core_freq=250`
+
+More details on Pi3 Bluetooth can be found here: <https://www.cnet.com/how-to/how-to-setup-bluetooth-on-a-raspberry-pi-3/>
+
 ### Kivic Based Setup
 
 1. Install the Kivic projector per the Kivic directions. Please note that there is a release clip and the unit is removable. Also note that the combiner glass can be adjusted fore and aft.
@@ -325,7 +336,7 @@ You will find the solder pads on the bottom of the Raspberry Pi 3, near the Micr
 ### Revision History
 
 Date       | Version | Major Changes
----------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 2020-03-?? | 1.7     | Now able to cycle through views using the HudConfig page. Support for Illyrian by Aithre. Split Aithre data collection into a micro-service. Improve warning on some elements when GPS lock is lost. Fix user configuration files not always being used or saved. Support new V3 radio and Stratux 1.6
 2019-09-04 | 1.6     | Traffic manager moved to a stand-alone service in NodeJs/TypeScript.
 2019-06-30 | 1.5     | Support for the Aithre CO detector. New roll indicator. Various performance improvements. Visual warning if GPS is not plugged in. Use the OWNSHIP config from the receiver instead of local config.
