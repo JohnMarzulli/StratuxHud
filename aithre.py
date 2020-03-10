@@ -29,10 +29,15 @@ class Spo2Report(object):
     that came from the connecting service
     """
 
-    def __init__(self, report):
+    def __init__(
+        self,
+        report,
+        has_been_connected
+    ):
         self.spo2 = OFFLINE
         self.heartrate = OFFLINE
         self.signal = OFFLINE
+        self.has_been_connected = has_been_connected
 
         if report is not None:
             if SPO2_LEVEL_KEY in report:
@@ -51,13 +56,20 @@ class CoReport(object):
     that came from the connecting service
     """
 
-    def __init__(self, report):
+    def __init__(
+        self,
+        report,
+        has_been_connected
+    ):
         self.co = OFFLINE
         self.battery = OFFLINE
+        self.has_been_connected = has_been_connected
+        self.is_connected = False
 
         if report is not None:
             if CO_LEVEL_KEY in report:
                 self.co = report[CO_LEVEL_KEY]
+                self.is_connected = True
 
             if BATTERY_LEVEL_KEY in report:
                 self.battery = report[BATTERY_LEVEL_KEY]
@@ -78,6 +90,8 @@ class AithreClient(object):
         self.__last_spo2_report_time__ = None
         self.__co_report__ = None
         self.__spo2_report__ = None
+        self.__co_has_been_connected__ = False
+        self.__spo2_has_been_connected__ = False
 
         AithreClient.INSTANCE = self
 
@@ -87,9 +101,11 @@ class AithreClient(object):
             available = delta_time.total_seconds() < MAX_SECONDS_BETWEEN_SPO2_REPORT
 
             if available:
-                return Spo2Report(self.__spo2_report__)
+                self.__spo2_has_been_connected__ = True
 
-        return Spo2Report(None)
+                return Spo2Report(self.__spo2_report__, self.__spo2_has_been_connected__)
+
+        return Spo2Report(None, self.__spo2_has_been_connected__)
 
     def get_co_report(self):
         if self.__last_co_report_time__ is not None and self.__co_report__ is not None:
@@ -97,9 +113,10 @@ class AithreClient(object):
             available = delta_time.total_seconds() < MAX_SECONDS_BETWEEN_CO_REPORT
 
             if available:
-                return CoReport(self.__co_report__)
+                self.__co_has_been_connected__ = True
+                return CoReport(self.__co_report__, self.__co_has_been_connected__)
 
-        return CoReport(None)
+        return CoReport(None, self.__co_has_been_connected__)
 
     def __handle_co_report__(self, json_package):
         try:
