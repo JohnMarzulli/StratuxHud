@@ -16,7 +16,7 @@ AITHRE_ADDR_TYPE = "public"
 
 # Service UUID for the carbon monoxide reading.
 # Will be a single character whose ASCII
-# value is the parts per milloion 0 - 255 inclusive
+# value is the parts per million 0 - 255 inclusive
 CO_OFFSET = "BCD466FE07034D85A021AE8B771E4922"
 
 # A single character wholes ASCII value is
@@ -26,9 +26,6 @@ BAT_OFFSET = "24509DDEFCD711E88EB2F2801F1B9FD1"
 
 AITHRE_DEVICE_NAME = "AITHRE"
 ILLYRIAN_BEACON_SUFFIX = "696C6C70"
-
-CO_SENSOR = None
-SPO2_SENSOR = None
 
 
 def get_service_value(addr, addr_type, offset):
@@ -323,6 +320,30 @@ class Aithre(BlueToothDevice):
         return OFFLINE
 
 
+def update_aithre_sensor():
+    try:
+        if AithreManager.CO_SENSOR is None:
+            AithreManager.CO_SENSOR = Aithre()
+    except Exception as e:
+        print("Attempted to init CO sensor, got e={}".format(e))
+        AithreManager.CO_SENSOR = None
+
+    if AithreManager.CO_SENSOR is not None:
+        AithreManager.CO_SENSOR.update()
+
+
+def update_illyrian_sensor():
+    try:
+        if AithreManager.SPO2_SENSOR is None:
+            AithreManager.SPO2_SENSOR = Illyrian()
+    except Exception as e:
+        print("Attempted to init SPO2 sensor, got e={}".format(e))
+        AithreManager.SPO2_SENSOR = None
+
+    if AithreManager.SPO2_SENSOR is not None:
+        AithreManager.SPO2_SENSOR.update()
+
+
 class AithreManager(object):
     CO_SENSOR = None
     SPO2_SENSOR = None
@@ -333,23 +354,8 @@ class AithreManager(object):
 
         # Global singleton for all to
         # get to the Aithre
-        try:
-            if AithreManager.CO_SENSOR is None:
-                AithreManager.CO_SENSOR = Aithre()
-        except:
-            AithreManager.CO_SENSOR = None
-
-        try:
-            if AithreManager.SPO2_SENSOR is None:
-                AithreManager.SPO2_SENSOR = Illyrian()
-        except:
-            AithreManager.SPO2_SENSOR = None
-
-        if AithreManager.CO_SENSOR is not None:
-            AithreManager.CO_SENSOR.update()
-
-        if AithreManager.SPO2_SENSOR is not None:
-            AithreManager.SPO2_SENSOR.update()
+        update_aithre_sensor()
+        update_illyrian_sensor()
 
 
 update_task = recurring_task.RecurringTask(
