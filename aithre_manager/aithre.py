@@ -28,7 +28,11 @@ AITHRE_DEVICE_NAME = "AITHRE"
 ILLYRIAN_BEACON_SUFFIX = "696C6C70"
 
 
-def get_service_value(addr, addr_type, offset):
+def get_service_value(
+    addr,
+    addr_type,
+    offset
+):
     """
     Gets the value from a Blue Tooth Low Energy device.
     Arguments:
@@ -62,7 +66,9 @@ def get_service_value(addr, addr_type, offset):
     return None
 
 
-def get_aithre(mac_adr):
+def get_aithre(
+    mac_adr
+):
     """
     Gets the current Aithre readings given a MAC for the Aithre
     Arguments:
@@ -76,7 +82,9 @@ def get_aithre(mac_adr):
     return co, bat
 
 
-def get_illyrian(mac_adr):
+def get_illyrian(
+    mac_adr
+):
     """
     Attempts to get the blood/pulse/oxygen levels from an Illyrian device
         :param mac_adr: 
@@ -102,7 +110,9 @@ def get_illyrian(mac_adr):
     return (sp02, heartrate, signal_strength)
 
 
-def get_value_by_name(name_to_find):
+def get_value_by_name(
+    name_to_find
+):
     try:
         if not local_debug.IS_LINUX:
             return None
@@ -125,7 +135,9 @@ def get_value_by_name(name_to_find):
     return None
 
 
-def get_mac_by_device_name(name_to_find):
+def get_mac_by_device_name(
+    name_to_find
+):
     """
     Attempts to find an Aithre MAC using Blue Tooth low energy.
     Arguments:
@@ -155,10 +167,18 @@ def get_mac_by_device_name(name_to_find):
 
 
 def get_aithre_mac():
+    """
+    Attempts to find the BlueTooth MAC for the
+    Aithre Carbon Monoxide detector.
+    """
     return get_mac_by_device_name(AITHRE_DEVICE_NAME)
 
 
 def get_illyrian_mac():
+    """
+    Attempts to find the BlueTooth MAC for the
+    Aithre Illyrian blood oxygen detector.
+    """
     return get_mac_by_device_name(ILLYRIAN_BEACON_SUFFIX)
 
 
@@ -171,7 +191,15 @@ OFFLINE = "OFFLINE"
 
 
 class BlueToothDevice(object):
-    def log(self, text):
+    """
+    Base interface class to help define common controls
+    and features of the Aithre range of products.
+    """
+
+    def log(
+        self,
+        text
+    ):
         """
         Logs the given text if a logger is available.
 
@@ -184,7 +212,10 @@ class BlueToothDevice(object):
         else:
             print("INFO:{}".format(text))
 
-    def warn(self, text):
+    def warn(
+        self,
+        text
+    ):
         """
         Logs the given text if a logger is available AS A WARNING.
 
@@ -197,7 +228,10 @@ class BlueToothDevice(object):
         else:
             print("WARN:{}".format(text))
 
-    def __init__(self, logger=None):
+    def __init__(
+        self,
+        logger=None
+    ):
         self.__logger__ = logger
 
         self.warn("Initializing new Aithre object")
@@ -207,25 +241,46 @@ class BlueToothDevice(object):
 
         self._update_mac_()
 
-    def is_connected(self):
+    def is_connected(
+        self
+    ):
+        """
+        Is the BlueTooth device currently connected and usable?
+        """
+
         return (self._mac_ is not None and self._levels_ is not None) or not local_debug.IS_LINUX
 
-    def update(self):
+    def update(
+        self
+    ):
+        """
+        Attempts to update the values collected from the device.
+        """
         self._update_levels()
 
 
 class Illyrian(BlueToothDevice):
-    def __init__(self, logger=None):
+    def __init__(
+        self,
+        logger=None
+    ):
         super(Illyrian, self).__init__(logger=logger)
 
-    def _update_mac_(self):
+    def _update_mac_(
+        self
+    ):
+        """
+        Updates the BlueTooth MAC that the Blood Oxygen sensor is on.
+        """
         try:
             self._mac_ = get_illyrian_mac()
         except Exception as e:
             self._mac_ = None
             self.warn("Got EX={} during MAC update.".format(e))
 
-    def _update_levels(self):
+    def _update_levels(
+        self
+    ):
         """
         Updates the levels of an Illyrian
             :param self: 
@@ -238,7 +293,9 @@ class Illyrian(BlueToothDevice):
         except:
             self.warn("Unable to get Illyrian levels")
 
-    def get_spo2_level(self):
+    def get_spo2_level(
+        self
+    ):
         """
         Returns the oxygen saturation levels.
             :param self: 
@@ -249,7 +306,9 @@ class Illyrian(BlueToothDevice):
 
         return OFFLINE
 
-    def get_heartrate(self):
+    def get_heartrate(
+        self
+    ):
         """
         Returns the wearer's pulse.
             :param self: 
@@ -260,7 +319,9 @@ class Illyrian(BlueToothDevice):
 
         return OFFLINE
 
-    def get_signal_strength(self):
+    def get_signal_strength(
+        self
+    ):
         """
         Returns the read strength from the sensor.
             :param self: 
@@ -273,17 +334,31 @@ class Illyrian(BlueToothDevice):
 
 
 class Aithre(BlueToothDevice):
-    def __init__(self, logger=None):
+    def __init__(
+        self,
+        logger=None
+    ):
         super(Aithre, self).__init__(logger=logger)
 
-    def _update_mac_(self):
+    def _update_mac_(
+        self
+    ):
+        """
+        Updates the MAC that the Aithre carbon monoxide detector is found at.
+        """
         try:
             self._mac_ = get_aithre_mac()
         except Exception as e:
             self._mac_ = None
             self.warn("Got EX={} during MAC update.".format(e))
 
-    def _update_levels(self):
+    def _update_levels(
+        self
+    ):
+        """
+        Updates the battery level and carbon monoxide levels that the Aithre CO
+        detector has found.
+        """
         if self._mac_ is None:
             self.log("Aithre MAC is none while attempting to update levels.")
             if not local_debug.IS_LINUX:
@@ -307,13 +382,23 @@ class Aithre(BlueToothDevice):
             self.warn(
                 "Exception while attempting to update the cached levels.update() E={}".format(ex))
 
-    def get_battery(self):
+    def get_battery(
+        self
+    ):
+        """
+        Gets the battery level of the CO monitor device.
+        """
         if self._levels_ is not None:
             return self._levels_[1]
 
         return OFFLINE
 
-    def get_co_level(self):
+    def get_co_level(
+        self
+    ):
+        """
+        Gets the current carbon monoxide levels.
+        """
         if self._levels_ is not None:
             return self._levels_[0]
 
@@ -321,6 +406,12 @@ class Aithre(BlueToothDevice):
 
 
 def update_aithre_sensor():
+    """
+    Attempts to update the Aithre carbon monoxide
+    sensor. If the sensor can not be found or is
+    not turned on, then the controlling object is
+    set to None.
+    """
     try:
         if AithreManager.CO_SENSOR is None:
             AithreManager.CO_SENSOR = Aithre()
@@ -333,6 +424,12 @@ def update_aithre_sensor():
 
 
 def update_illyrian_sensor():
+    """
+    Attempts to update the Aithre Illyrian blood oxygen
+    sensor. If the sensor can not be found or is
+    not turned on, then the controlling object is
+    set to None.
+    """
     try:
         if AithreManager.SPO2_SENSOR is None:
             AithreManager.SPO2_SENSOR = Illyrian()
@@ -345,11 +442,18 @@ def update_illyrian_sensor():
 
 
 class AithreManager(object):
+    """
+    Singleton manager class to make sure that the sensor data
+    has a common store point.
+    """
     CO_SENSOR = None
     SPO2_SENSOR = None
 
     @staticmethod
     def update_sensors():
+        """
+        Updates the sensors for all available BlueTooth devices.
+        """
         print("Updating Aithre sensors")
 
         # Global singleton for all to
@@ -359,7 +463,11 @@ class AithreManager(object):
 
 
 update_task = recurring_task.RecurringTask(
-    "UpdateAithre", CO_SCAN_PERIOD, AithreManager.update_sensors, None, True)
+    "UpdateAithre",
+    CO_SCAN_PERIOD,
+    AithreManager.update_sensors,
+    None,
+    True)
 
 if __name__ == '__main__':
     while True:
