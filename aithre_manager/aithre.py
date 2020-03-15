@@ -105,7 +105,7 @@ def get_illyrian(
     r_value = int(illyrian[2:4], 16) / 100.0
     heartrate = int(illyrian[4:6], 16)
     signal_strength = int(illyrian[6:8], 16)
-    sp02 = 110 - (33 * r_value)
+    sp02 = 109 - (31 * r_value)
 
     return (sp02, heartrate, signal_strength)
 
