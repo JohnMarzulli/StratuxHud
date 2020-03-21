@@ -62,7 +62,7 @@ class AhrsData(object):
                     or self.compass_heading is '') and self.gps_online:
                 return int(self.gps_heading)
 
-            if __is_compass_heading_valid__():
+            if self.__is_compass_heading_valid__():
                 return int(self.compass_heading)
         except:
             return HEADING_NOT_AVAILABLE
