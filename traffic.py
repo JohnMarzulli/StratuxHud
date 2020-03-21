@@ -440,14 +440,19 @@ class AdsbTrafficClient:
     TRAFFIC_MANAGER = TrafficManager()
     INSTANCE = None
 
-    def __init__(self, rest_address):
+    def __init__(
+        self,
+        rest_address
+    ):
         self.__traffic_session__ = requests.Session()
         self.rest_address = rest_address
         self.__update_traffic_task__ = recurring_task.RecurringTask(
             'UpdateTraffic', 0.1, self.update_reliable_traffic)
         AdsbTrafficClient.INSTANCE = self
 
-    def reset_traffic_manager(self):
+    def reset_traffic_manager(
+        self
+    ):
         """
         Sends a reset signal (if able) to the traffic manager.
         """
@@ -458,7 +463,9 @@ class AdsbTrafficClient:
         except:
             pass
 
-    def update_reliable_traffic(self):
+    def update_reliable_traffic(
+        self
+    ):
         """
         Calls the traffic manager and gets a list of traffic that is trustable
         for position data.
@@ -482,7 +489,11 @@ class AdsbTrafficClient:
             # way below the max target framerate.
             print('TRAFFIC.update() ex={}'.format(ex))
 
-    def received_message(self, iaco_identifier, adsb_traffic):
+    def received_message(
+        self,
+        icao_identifier,
+        adsb_traffic
+    ):
         """
         Handler for receiving a message.
 
@@ -492,12 +503,14 @@ class AdsbTrafficClient:
 
         try:
             AdsbTrafficClient.TRAFFIC_MANAGER.handle_traffic_report(
-                iaco_identifier,
+                icao_identifier,
                 adsb_traffic)
         except:
             print("Issue decoding JSON")
 
-    def __dump_traffic_diag__(self):
+    def __dump_traffic_diag__(
+        self
+    ):
         """
         Prints our current traffic understanding.
         """

@@ -9,7 +9,9 @@ testing.load_imports()
 
 
 class AdsbTrafficListing(AdsbElement):
-    def uses_ahrs(self):
+    def uses_ahrs(
+        self
+    ):
         """
         Does this element use AHRS data to render?
 
@@ -19,7 +21,13 @@ class AdsbTrafficListing(AdsbElement):
 
         return False
 
-    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
+    def __init__(
+        self,
+        degrees_of_pitch,
+        pixels_per_degree_y,
+        font,
+        framebuffer_size
+    ):
         AdsbElement.__init__(
             self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size)
 
@@ -33,7 +41,11 @@ class AdsbTrafficListing(AdsbElement):
         self.__top_border__ = int(self.__height__ * 0.2)
         self.__bottom_border__ = self.__height__ - int(self.__height__ * 0.1)
 
-    def __get_listing__(self, report, max_string_lengths):
+    def __get_listing__(
+        self,
+        report,
+        max_string_lengths
+    ):
         identifier = report[0]
         try:
             bearing = str(utils.apply_declination(float(report[1])))
@@ -52,7 +64,10 @@ class AdsbTrafficListing(AdsbElement):
 
         return (icao, traffic_report)
 
-    def __get_padded_traffic_reports__(self, traffic_reports):
+    def __get_padded_traffic_reports__(
+        self,
+        traffic_reports
+    ):
         pre_padded_text, max_string_lengths = self.__get_pre_padded_text_reports__(
             traffic_reports)
 
@@ -61,7 +76,10 @@ class AdsbTrafficListing(AdsbElement):
 
         return out_padded_reports
 
-    def __get_report_text__(self, traffic):
+    def __get_report_text__(
+        self,
+        traffic
+    ):
         identifier = str(traffic.get_display_name())
         altitude_delta = int(traffic.altitude / 100.0)
         distance_text = self.__get_distance_string__(traffic.distance, True)
@@ -74,7 +92,10 @@ class AdsbTrafficListing(AdsbElement):
 
         return [identifier, bearing_text, distance_text, altitude_text, traffic.icao_address]
 
-    def __get_pre_padded_text_reports__(self, traffic_reports):
+    def __get_pre_padded_text_reports__(
+        self,
+        traffic_reports
+    ):
         # We do not want to show traffic on the ground.
         reports_to_show = filter(
             lambda x: not x.is_on_ground(), traffic_reports)
@@ -100,7 +121,11 @@ class AdsbTrafficListing(AdsbElement):
 
         return pre_padded_text, (max_identifier_length, max_bearing_length, max_distance_length, max_altitude_length)
 
-    def render(self, framebuffer, orientation):
+    def render(
+        self,
+        framebuffer,
+        orientation
+    ):
         # Render a heading strip along the top
 
         self.task_timer.start()

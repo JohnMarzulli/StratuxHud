@@ -23,9 +23,9 @@ COS_RADIANS_BY_DEGREES = {}
 
 imperial_nearby = 3000.0
 max_target_bugs = 25
-imperial_occlude = units.feet_to_sm * 5
-imperial_faraway = units.feet_to_sm * 2
-imperial_superclose = units.feet_to_sm / 4.0
+imperial_occlude = units.yards_to_sm * 5
+imperial_faraway = units.yards_to_sm * 2
+imperial_superclose = units.yards_to_sm / 4.0
 
 # Fill the quick trig look up tables.
 for degrees in range(-360, 361):
@@ -358,7 +358,7 @@ def run_adsb_hud_element(element_type, use_detail_font=True):
 
 
 if __name__ == '__main__':
-    for distance in range(0, int(2.5 * units.feet_to_sm), int(units.feet_to_sm / 10.0)):
+    for distance in range(0, int(2.5 * units.yards_to_sm), int(units.yards_to_sm / 10.0)):
         print("{0}' -> {1}".format(distance, get_reticle_size(distance)))
 
     heading = 327

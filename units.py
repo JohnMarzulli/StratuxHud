@@ -15,14 +15,17 @@ UNIT_LABELS = {
     METRIC: {SPEED: "KPH", DISTANCE: "KM"}
 }
 
-
+yards_to_nm = 2025.37
+yards_to_sm = 1760.0
+yards_to_km = 1093.61
+yards_to_m = 1.09361
 feet_to_nm = 6076.12
 feet_to_sm = 5280.0
 feet_to_km = 3280.84
 feet_to_m = 3.28084
 mph_to_ms = 0.44704
 
-IMPERIAL_NEARBY = feet_to_sm / 4.0  # Quarter mile
+IMPERIAL_NEARBY = yards_to_sm / 4.0  # Quarter mile
 
 
 def get_feet_from_miles(miles):
@@ -46,7 +49,7 @@ def get_feet_from_miles(miles):
     if miles <= 0.0:
         return 0.0
 
-    return miles * feet_to_sm
+    return miles * yards_to_sm
 
 
 def get_meters_from_feet(feet):
@@ -74,7 +77,7 @@ def get_meters_from_feet(feet):
     if feet <= 0:
         return 0.0
 
-    return feet / feet_to_m
+    return feet / yards_to_m
 
 
 def get_feet_from_meters(meters):
@@ -99,7 +102,7 @@ def get_feet_from_meters(meters):
     100.0
     """
 
-    return meters * feet_to_m
+    return meters * yards_to_m
 
 
 def get_meters_per_second_from_mph(speed):
@@ -120,14 +123,14 @@ def get_converted_units_string(units, distance, unit_type=DISTANCE, decimal_plac
     """
     Given a base measurement (RAW from the ADS-B), a type of unit,
     and if it is speed or distance, returns a nice string for display.
-    
+
     Arguments:
         units {string} -- 'statute', 'knots', or 'metric'
         distance {float} -- The raw measurement from the ADS-B receiver (feet).
-    
+
     Keyword Arguments:
         unit_type {string} -- 'speed' or 'distance' (default: {DISTANCE})
-    
+
     Returns:
         string -- A string for display in the given units and type.
 
@@ -155,14 +158,14 @@ def get_converted_units_string(units, distance, unit_type=DISTANCE, decimal_plac
 
     if units is None:
         units = STATUTE
-    
+
     formatter_string = "{0:.1f}"
     formatter_no_decimals = "{0:.0f}"
-    
+
     if not decimal_places or unit_type is SPEED:
         distance = int(distance)
         formatter_string = formatter_no_decimals
-    
+
     with_units_formatter = formatter_string + " {1}"
 
     if units != METRIC:
@@ -170,16 +173,16 @@ def get_converted_units_string(units, distance, unit_type=DISTANCE, decimal_plac
             return formatter_no_decimals.format(distance) + "'"
 
         if units == NAUTICAL:
-            return with_units_formatter.format(distance / feet_to_nm, UNIT_LABELS[NAUTICAL][unit_type])
+            return with_units_formatter.format(distance / yards_to_nm, UNIT_LABELS[NAUTICAL][unit_type])
 
-        return with_units_formatter.format(distance / feet_to_sm, UNIT_LABELS[STATUTE][unit_type])
+        return with_units_formatter.format(distance / yards_to_sm, UNIT_LABELS[STATUTE][unit_type])
     else:
-        conversion = distance / feet_to_km
+        conversion = distance / yards_to_km
 
         if conversion < 0.5 and units != SPEED:
             return with_units_formatter.format(conversion,  UNIT_LABELS[METRIC][unit_type])
 
-        return with_units_formatter.format(distance / feet_to_m, "m")
+        return with_units_formatter.format(distance / yards_to_m, "m")
 
     return with_units_formatter.format(distance, "ft")
 
