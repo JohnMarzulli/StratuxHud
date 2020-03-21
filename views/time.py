@@ -10,7 +10,13 @@ from ahrs_element import AhrsElement
 
 
 class Time(AhrsElement):
-    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
+    def __init__(
+        self,
+        degrees_of_pitch,
+        pixels_per_degree_y,
+        font,
+        framebuffer_size
+    ):
         self.task_timer = TaskTimer('Time')
         self.__font__ = font
         font_height = font.get_height()
@@ -21,7 +27,11 @@ class Time(AhrsElement):
         self.__left_x__ = int(framebuffer_size[0] * 0.01)
         self.__center_x__ = framebuffer_size[0] >> 1
 
-    def render(self, framebuffer, orientation):
+    def render(
+        self,
+        framebuffer,
+        orientation
+    ):
         self.task_timer.start()
 
         time_text = str(orientation.utc_time).split('.')[0] + "UTC"
