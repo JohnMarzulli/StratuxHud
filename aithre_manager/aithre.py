@@ -1,10 +1,12 @@
 import sys
 import time
 import datetime
-import lib.local_debug as local_debug
+from sys import platform as os_platform
 import lib.recurring_task as recurring_task
 
-if local_debug.IS_LINUX:
+IS_LINUX = 'linux' in os_platform
+
+if IS_LINUX:
     from bluepy.btle import UUID, Peripheral, Scanner, DefaultDelegate
 else:
     from lib.simulated_values import SimulatedValue
@@ -44,7 +46,7 @@ def get_service_value(
 
     # Generate fake values for debugging
     # and for the development of the visuals.
-    if not local_debug.IS_LINUX:
+    if not IS_LINUX:
         if offset in CO_OFFSET:
             return int(aithre_co_simulator.get_value())
         else:
@@ -114,7 +116,7 @@ def get_value_by_name(
     name_to_find
 ):
     try:
-        if not local_debug.IS_LINUX:
+        if not IS_LINUX:
             return None
 
         scanner = Scanner()
@@ -145,7 +147,7 @@ def get_mac_by_device_name(
     Returns: {string} None if a device was not found, otherwise the MAC of the Aithre
     """
     try:
-        if not local_debug.IS_LINUX:
+        if not IS_LINUX:
             return None
 
         scanner = Scanner()
@@ -184,7 +186,7 @@ def get_illyrian_mac():
 
 CO_SCAN_PERIOD = 15
 
-if local_debug.IS_LINUX:
+if IS_LINUX:
     CO_SCAN_PERIOD = 1.0
 
 OFFLINE = "OFFLINE"
@@ -248,7 +250,7 @@ class BlueToothDevice(object):
         Is the BlueTooth device currently connected and usable?
         """
 
-        return (self._mac_ is not None and self._levels_ is not None) or not local_debug.IS_LINUX
+        return (self._mac_ is not None and self._levels_ is not None) or not IS_LINUX
 
     def update(
         self
@@ -361,7 +363,7 @@ class Aithre(BlueToothDevice):
         """
         if self._mac_ is None:
             self.log("Aithre MAC is none while attempting to update levels.")
-            if not local_debug.IS_LINUX:
+            if not IS_LINUX:
                 self.log(
                     "... and this is not a Linux machine, so attempting to simulate.")
                 aithre_co_simulator.simulate()
