@@ -120,7 +120,7 @@ function getDisplayName(trafficReport) {
     if (trafficReport == null) {
         return unknownDisplayName;
     }
-    return (_c = (_b = (_a = trafficReport[registrationNumberKey]) !== null && _a !== void 0 ? _a : trafficReport[tailNumberKey].toString()) !== null && _b !== void 0 ? _b : trafficReport[icaoAddressKey].toString()) !== null && _c !== void 0 ? _c : unknownDisplayName;
+    return (_c = (_b = (_a = trafficReport[tailNumberKey]) !== null && _a !== void 0 ? _a : trafficReport[registrationNumberKey].toString()) !== null && _b !== void 0 ? _b : trafficReport[icaoAddressKey].toString()) !== null && _c !== void 0 ? _c : unknownDisplayName;
 }
 function isRequestInvalid(req) {
     return (req == null || req.params == null || req.params.id == null);

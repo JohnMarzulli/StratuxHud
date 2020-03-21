@@ -125,8 +125,8 @@ function getDisplayName(
     return unknownDisplayName;
   }
 
-  return trafficReport[registrationNumberKey]
-    ?? trafficReport[tailNumberKey].toString()
+  return trafficReport[tailNumberKey]
+    ?? trafficReport[registrationNumberKey].toString()
     ?? trafficReport[icaoAddressKey].toString()
     ?? unknownDisplayName;
 }
