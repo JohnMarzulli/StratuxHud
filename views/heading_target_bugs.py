@@ -3,6 +3,11 @@ View to render heading targets.
 """
 
 
+import targets
+import units
+import norden
+from lib.display import BLUE
+from lib.task_timer import TaskTimer
 import pygame
 
 from adsb_element import AdsbElement
@@ -14,11 +19,6 @@ import testing
 
 testing.load_imports()
 
-from lib.task_timer import TaskTimer
-from lib.display import BLUE
-import norden
-import units
-import targets
 
 class HeadingAsTrafficObject(object):
     """
@@ -49,12 +49,12 @@ class HeadingTargetBugs(AdsbTargetBugs):
     def __get_additional_target_text__(self, time_until_drop=0.0, altitude=None, distance=0.0):
         """
         Returns a tuple of text to be rendered with the target card.
-        
+
         Keyword Arguments:
             time_until_drop {float} -- The number of seconds until the flour bomb should be dropped. (default: {0.0})
             altitude_delta {float} -- The number of feet above the target. (default: {0.0})
             distance_meters {float} -- The distance (in meters) to the target. (default: {0.0})
-        
+
         Returns:
             string[] -- Tuple of strings.
         """
@@ -85,8 +85,8 @@ class HeadingTargetBugs(AdsbTargetBugs):
             distance_miles = norden.get_distance(
                 orientation.position,
                 target_position)
-            distance_meters = units.get_meters_from_feet(
-                units.get_feet_from_miles(distance_miles))
+            distance_meters = units.get_meters_from_statute_miles(
+                distance_miles)
             time_to_target = norden.get_time_to_distance(
                 distance_meters, ground_speed_ms)
             # NOTE:
@@ -112,22 +112,27 @@ class HeadingTargetBugs(AdsbTargetBugs):
                 heading, bearing_to_target, self.__pixels_per_degree_x__)
 
             additional_info_text = self.__get_additional_target_text__(
-                time_until_drop, delta_altitude, units.get_feet_from_miles(distance_miles))
+                time_until_drop, delta_altitude, units.get_yards_from_miles(distance_miles))
 
             self.__render_info_card__(framebuffer,
-                                      "{0:.1f}".format(utils.apply_declination(bearing_to_target)),
+                                      "{0:.1f}".format(
+                                          utils.apply_declination(bearing_to_target)),
                                       additional_info_text,
                                       heading_bug_x,
                                       False)
-            
-            as_traffic = HeadingAsTrafficObject(target_position[2], units.get_feet_from_miles(distance_miles), bearing_to_target)
-            
+
+            as_traffic = HeadingAsTrafficObject(target_position[2],
+                                                units.get_yards_from_miles(
+                                                    distance_miles),
+                                                bearing_to_target)
+
             target_bug_scale = get_reticle_size(as_traffic.distance)
 
             heading_bug_x = get_heading_bug_x(
                 heading, utils.apply_declination(as_traffic.bearing), self.__pixels_per_degree_x__)
 
-            reticle, reticle_edge_positon_y = self.get_below_reticle(heading_bug_x, target_bug_scale)
+            reticle, reticle_edge_positon_y = self.get_below_reticle(
+                heading_bug_x, target_bug_scale)
 
             pygame.draw.polygon(framebuffer, BLUE, reticle)
 

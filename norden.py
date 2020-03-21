@@ -177,8 +177,8 @@ if __name__ == '__main__':
 
     for test_altitude in (0, 25, 100, 200, 250, 400):
         time_to_impact = get_time_to_impact(
-            units.get_meters_from_feet(test_altitude))
-        free_fall_time = get_free_fall_time(units.get_meters_from_feet(
+            units.get_meters_from_yards(test_altitude))
+        free_fall_time = get_free_fall_time(units.get_meters_from_yards(
             test_altitude), flour_sack_weight, flour_sack_k)
 
         print('-----------')
@@ -196,11 +196,11 @@ if __name__ == '__main__':
     runway_number_position = (48.155973, -122.157582)
     distance_miles = get_distance(
         target_center_position, runway_number_position)
-    distance_meters = units.get_meters_from_feet(
-        units.get_feet_from_miles(distance_miles))
+    distance_meters = units.get_meters_from_yards(
+        units.get_yards_from_miles(distance_miles))
     time_to_target = get_time_to_distance(distance_meters, ground_speed_ms)
     time_to_impact = get_time_to_impact(
-        units.get_meters_from_feet(altitude_feet))
+        units.get_meters_from_yards(altitude_feet))
     time_until_drop = time_to_target - time_to_impact
     bearing_to_target = get_bearing(
         runway_number_position, target_center_position)
