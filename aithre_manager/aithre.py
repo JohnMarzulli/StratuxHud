@@ -2,7 +2,7 @@ import sys
 import time
 import datetime
 from sys import platform as os_platform
-import lib.recurring_task as recurring_task
+from aithre_task import AithreTask
 
 IS_LINUX = 'linux' in os_platform
 
@@ -464,7 +464,7 @@ class AithreManager(object):
         update_illyrian_sensor()
 
 
-update_task = recurring_task.RecurringTask(
+update_task = AithreTask(
     "UpdateAithre",
     CO_SCAN_PERIOD,
     AithreManager.update_sensors,
