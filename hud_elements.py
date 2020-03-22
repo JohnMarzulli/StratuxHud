@@ -21,11 +21,10 @@ from traffic import AdsbTrafficClient, Traffic
 SIN_RADIANS_BY_DEGREES = {}
 COS_RADIANS_BY_DEGREES = {}
 
-imperial_nearby = 3000.0
 max_target_bugs = 25
-imperial_occlude = units.yards_to_sm * 5
-imperial_faraway = units.yards_to_sm * 2
-imperial_superclose = units.yards_to_sm / 4.0
+imperial_occlude = units.yards_to_sm * 10
+imperial_faraway = units.yards_to_sm * 5
+imperial_superclose = units.yards_to_sm / 8.0
 
 # Fill the quick trig look up tables.
 for degrees in range(-360, 361):
@@ -34,7 +33,11 @@ for degrees in range(-360, 361):
     COS_RADIANS_BY_DEGREES[degrees] = math.cos(radians)
 
 
-def get_reticle_size(distance, min_reticle_size=0.05, max_reticle_size=0.20):
+def get_reticle_size(
+    distance,
+    min_reticle_size=0.05,
+    max_reticle_size=0.20
+):
     """
     The the size of the reticle based on the distance of the target.
 
@@ -76,7 +79,8 @@ class HudDataCache(object):
 
     __LOCK__ = threading.Lock()
 
-    __TRAFFIC_CLIENT__ = AdsbTrafficClient(configuration.CONFIGURATION.get_traffic_manager_address())
+    __TRAFFIC_CLIENT__ = AdsbTrafficClient(
+        configuration.CONFIGURATION.get_traffic_manager_address())
 
     @staticmethod
     def update_traffic_reports():
@@ -105,7 +109,9 @@ class HudDataCache(object):
         return traffic_clone
 
     @staticmethod
-    def __purge_texture__(texture_to_purge):
+    def __purge_texture__(
+        texture_to_purge
+    ):
         """
         Attempts to remove a texture from the cache.
 
@@ -120,7 +126,10 @@ class HudDataCache(object):
             return True
 
     @staticmethod
-    def __get_purge_key__(now, texture_key):
+    def __get_purge_key__(
+        now,
+        texture_key
+    ):
         """
         Returns the key of the traffic to purge if it should be, otherwise returns None.
 
@@ -159,7 +168,14 @@ class HudDataCache(object):
             HudDataCache.__LOCK__.release()
 
     @staticmethod
-    def get_cached_text_texture(text, font, text_color=BLACK, background_color=YELLOW, use_alpha=False, force_regen=False):
+    def get_cached_text_texture(
+        text,
+        font,
+        text_color=BLACK,
+        background_color=YELLOW,
+        use_alpha=False,
+        force_regen=False
+    ):
         """
         Retrieves a cached texture.
         If the texture with the given text does not already exists, creates it.
@@ -194,10 +210,15 @@ class HudDataCache(object):
             result = HudDataCache.TEXT_TEXTURE_CACHE[text]
         finally:
             HudDataCache.__LOCK__.release()
-        
+
         return result
 
-def get_heading_bug_x(heading, bearing, degrees_per_pixel):
+
+def get_heading_bug_x(
+    heading,
+    bearing,
+    degrees_per_pixel
+):
     """
     Gets the X position of a heading bug. 0 is the LHS.
 
@@ -220,7 +241,15 @@ def get_heading_bug_x(heading, bearing, degrees_per_pixel):
     return int(delta * degrees_per_pixel)
 
 
-def get_onscreen_traffic_projection__(heading, pitch, roll, bearing, distance, altitude_delta, pixels_per_degree):
+def get_onscreen_traffic_projection__(
+    heading,
+    pitch,
+    roll,
+    bearing,
+    distance,
+    altitude_delta,
+    pixels_per_degree
+):
     """
     Attempts to figure out where the traffic reticle should be rendered.
     Returns value RELATIVE to the screen center.
@@ -241,7 +270,10 @@ def get_onscreen_traffic_projection__(heading, pitch, roll, bearing, distance, a
     return screen_x, screen_y
 
 
-def run_ahrs_hud_element(element_type, use_detail_font=True):
+def run_ahrs_hud_element(
+    element_type,
+    use_detail_font=True
+):
     """
     Runs an AHRS based HUD element alone for testing purposes
 
@@ -294,7 +326,10 @@ def run_ahrs_hud_element(element_type, use_detail_font=True):
         clock.tick(60)
 
 
-def run_adsb_hud_element(element_type, use_detail_font=True):
+def run_adsb_hud_element(
+    element_type,
+    use_detail_font=True
+):
     """
     Runs a ADSB based HUD element alone for testing purposes
 
@@ -346,6 +381,7 @@ def run_adsb_hud_element(element_type, use_detail_font=True):
         for test_data in simulated_traffic:
             test_data.simulate()
             AdsbTrafficClient.TRAFFIC_MANAGER.handle_traffic_report(
+                test_data.icao_address,
                 test_data.to_json())
 
         HudDataCache.purge_old_textures()
