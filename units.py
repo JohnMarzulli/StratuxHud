@@ -40,12 +40,20 @@ def get_yards_from_miles(
 
     Returns:
         float -- The number of yards.
+
+    >>> get_yards_from_miles(0)
+    0.0
+    >>> get_yards_from_miles(1)
+    1760.0
+    >>> get_yards_from_miles(2)
+    3520.0
     """
 
     if miles <= 0.0:
         return 0.0
 
     return miles * yards_to_sm
+
 
 def get_meters_from_statute_miles(
     miles
@@ -54,6 +62,7 @@ def get_meters_from_statute_miles(
     Returns the number of meters given a number of miles.
     """
     return miles * meters_to_sm
+
 
 def get_meters_from_feet(
     feet
@@ -82,7 +91,7 @@ def get_meters_from_feet(
     if feet <= 0:
         return 0.0
 
-    return feet / yards_to_m
+    return feet / feet_to_m
 
 
 def get_meters_from_yards(
@@ -115,6 +124,17 @@ def get_yards_from_meters(
 
     Returns:
         float -- The meters converted to feet.
+
+    >>> get_yards_from_meters(0)
+    0.0
+    >>> get_yards_from_meters(1)
+    1.09361
+    >>> get_yards_from_meters(2)
+    2.18722
+    >>> get_yards_from_meters(0.9144)
+    0.9999969839999999
+    >>> get_yards_from_meters(30.5)
+    33.355105
     """
 
     return meters * yards_to_m
@@ -156,26 +176,32 @@ def get_converted_units_string(
     Returns:
         string -- A string for display in the given units and type.
 
+    >>> get_converted_units_string('statute', 165000, SPEED)
+    '94 MPH'
     >>> get_converted_units_string('statute', 0, DISTANCE)
-    "0'"
+    '0 yards'
     >>> get_converted_units_string('statute', 0.0, DISTANCE, True)
-    "0'"
+    '0 yards'
     >>> get_converted_units_string('statute', 0, SPEED, False)
     '0 MPH'
     >>> get_converted_units_string('statute', 0, SPEED, True)
     '0 MPH'
     >>> get_converted_units_string('statute', 10, DISTANCE)
-    "10'"
+    '10 yards'
+    >>> get_converted_units_string('statute', 165000, DISTANCE)
+    '93.8 SM'
+    >>> get_converted_units_string('statute', 165000, DISTANCE, True)
+    '93.8 SM'
+    >>> get_converted_units_string('statute', 165000, DISTANCE, False)
+    '94 SM'
     >>> get_converted_units_string('statute', 5280, SPEED)
-    '1 MPH'
+    '3 MPH'
     >>> get_converted_units_string('statute', 5280, SPEED, False)
-    '1 MPH'
+    '3 MPH'
     >>> get_converted_units_string('statute', 5280, SPEED, True)
-    '1 MPH'
+    '3 MPH'
     >>> get_converted_units_string('statute', 5680, SPEED, True)
-    '1 MPH'
-    >>> get_converted_units_string('statute', 528000, SPEED)
-    '100 MPH'
+    '3 MPH'
     """
 
     if units is None:

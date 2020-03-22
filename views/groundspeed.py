@@ -30,7 +30,7 @@ class Groundspeed(AhrsElement):
 
         groundspeed_text = units.get_converted_units_string(
             speed_units,
-            orientation.groundspeed * units.feet_to_nm,
+            (orientation.groundspeed * units.yards_to_nm),
             unit_type=units.SPEED,
             decimal_places=False) if orientation.groundspeed is not None and isinstance(orientation.groundspeed, Number) else AhrsElement.GPS_UNAVAILABLE_TEXT
 
