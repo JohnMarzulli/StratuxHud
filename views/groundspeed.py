@@ -11,7 +11,13 @@ testing.load_imports()
 
 
 class Groundspeed(AhrsElement):
-    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
+    def __init__(
+        self,
+        degrees_of_pitch,
+        pixels_per_degree_y,
+        font,
+        framebuffer_size
+    ):
         self.task_timer = TaskTimer('Groundspeed')
         self.__font__ = font
         center_y = framebuffer_size[1] >> 2
@@ -22,11 +28,16 @@ class Groundspeed(AhrsElement):
 
         self.__left_x__ = 0  # WAS int(framebuffer_size[0] * 0.01)
 
-    def render(self, framebuffer, orientation):
+    def render(
+        self,
+        framebuffer,
+        orientation
+    ):
         self.task_timer.start()
 
         speed_units = configuration.CONFIGURATION.__get_config_value__(
-            configuration.Configuration.DISTANCE_UNITS_KEY, units.STATUTE)
+            configuration.Configuration.DISTANCE_UNITS_KEY,
+            units.STATUTE)
 
         groundspeed_text = units.get_converted_units_string(
             speed_units,
