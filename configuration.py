@@ -82,9 +82,12 @@ class Configuration(object):
     # bad to the default config files.
     #
     DEFAULT_NETWORK_IP = "192.168.10.1"
+    DEFAULT_AVIONICS_ADDRESS = "localhost:8180"
+
     DEFAULT_TRAFFIC_MANAGER_ADDRESS = "localhost:8000"
     DEFAULT_AITHRE_MANAGER_ADDRESS = "localhost:8081"
     STRATUX_ADDRESS_KEY = "stratux_address"
+    AVIONICS_ADDRESS_KEY = "avionics_address"
     DATA_SOURCE_KEY = "data_source"
     FLIP_HORIZONTAL_KEY = "flip_horizontal"
     FLIP_VERTICAL_KEY = "flip_vertical"
@@ -383,6 +386,14 @@ class Configuration(object):
         """
 
         return self.__get_config_value__(Configuration.DATA_SOURCE_KEY, DataSourceNames.STRATUX)
+
+    def avionics_address(
+        self
+    ):
+        """
+        Returns the address for the avionics adapter.
+        """
+        return self.__get_config_value__(Configuration.AVIONICS_ADDRESS_KEY, Configuration.DEFAULT_AVIONICS_ADDRESS)
 
     def stratux_address(
         self
