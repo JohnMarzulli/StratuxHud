@@ -120,7 +120,7 @@ function getDisplayName(trafficReport) {
     if (trafficReport == null) {
         return unknownDisplayName;
     }
-    return (_c = (_b = (_a = trafficReport[tailNumberKey]) !== null && _a !== void 0 ? _a : trafficReport[registrationNumberKey].toString()) !== null && _b !== void 0 ? _b : trafficReport[icaoAddressKey].toString()) !== null && _c !== void 0 ? _c : unknownDisplayName;
+    return _c = (_b = (_a = trafficReport[tailNumberKey], (_a !== null && _a !== void 0 ? _a : trafficReport[registrationNumberKey].toString())), (_b !== null && _b !== void 0 ? _b : trafficReport[icaoAddressKey].toString())), (_c !== null && _c !== void 0 ? _c : unknownDisplayName);
 }
 function isRequestInvalid(req) {
     return (req == null || req.params == null || req.params.id == null);
@@ -366,13 +366,13 @@ exports.TrafficClient = TrafficClient;
  * @returns Any item found in the cache, otherwise a list of items in the cache.
  */
 function getCachedItemFromValidRequest(req) {
-    var _a;
+    var _a, _b;
     var cachedItem = null;
     try {
-        var key = Number((_a = req === null || req === void 0 ? void 0 : req.params) === null || _a === void 0 ? void 0 : _a.id);
+        var key = Number((_b = (_a = req) === null || _a === void 0 ? void 0 : _a.params) === null || _b === void 0 ? void 0 : _b.id);
         cachedItem = trafficCache[key];
     }
-    catch (_b) {
+    catch (_c) {
         cachedItem = Object.keys(trafficCache);
     }
     return cachedItem;

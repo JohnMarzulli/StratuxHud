@@ -55,9 +55,9 @@ function onError(error) {
     }
 }
 function onListening() {
-    var _a;
+    var _a, _b;
     var addr = server.address();
-    var bind = typeof addr === "string" ? "pipe " + addr : "port " + ((_a = addr === null || addr === void 0 ? void 0 : addr.port) !== null && _a !== void 0 ? _a : "Unknown");
+    var bind = typeof addr === "string" ? "pipe " + addr : "port " + (_b = (_a = addr) === null || _a === void 0 ? void 0 : _a.port, (_b !== null && _b !== void 0 ? _b : "Unknown"));
     debug("Listening on " + bind);
 }
 //# sourceMappingURL=traffic_manager.js.map
