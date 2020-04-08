@@ -46,10 +46,10 @@ def __send_stratux_post__(
 ):
     """
     Sends a post call to the given ending portion of the URL
-    
+
     Arguments:
         ending_url {str} -- The ending portion of the url. "cageAHRS" will result in "/cageAHRS"
-    
+
     Returns:
         bool -- True if the call occurred.
     """
