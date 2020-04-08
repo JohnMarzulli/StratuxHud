@@ -41,6 +41,34 @@ from views import (adsb_on_screen_reticles, adsb_target_bugs, adsb_target_bugs_o
 # pip install requests
 
 
+def __send_stratux_post__(
+    ending_url
+):
+    """
+    Sends a post call to the given ending portion of the URL
+    
+    Arguments:
+        ending_url {str} -- The ending portion of the url. "cageAHRS" will result in "/cageAHRS"
+    
+    Returns:
+        bool -- True if the call occurred.
+    """
+    if ending_url is None:
+        return False
+
+    url = "http://{0}/{1}".format(
+        CONFIGURATION.stratux_address(),
+        ending_url)
+
+    try:
+        requests.Session().post(url, timeout=2)
+
+        return True
+    except:
+
+        return False
+
+
 class HeadsUpDisplay(object):
     """
     Class to handle the HUD work...
@@ -51,13 +79,7 @@ class HeadsUpDisplay(object):
         Sends the command to the Stratux to level the AHRS.
         """
 
-        url = "http://{0}/cageAHRS".format(
-            CONFIGURATION.stratux_address())
-
-        try:
-            requests.Session().post(url, timeout=2)
-        except:
-            pass
+        __send_stratux_post__("cageAHRS")
 
     def __reset_traffic_manager__(self):
         """
@@ -73,13 +95,7 @@ class HeadsUpDisplay(object):
         Sends the command to the Stratux to shutdown.
         """
 
-        url = "http://{0}/shutdown".format(
-            CONFIGURATION.stratux_address())
-
-        try:
-            requests.Session().post(url, timeout=2)
-        except:
-            pass
+        __send_stratux_post__("shutdown")
 
     def run(self):
         """
