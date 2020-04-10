@@ -75,6 +75,7 @@ class HudDataCache(object):
     __CACHE_INVALIDATION_TIME__ = 60 * 5
 
     RELIABLE_TRAFFIC = []
+    IS_TRAFFIC_AVAILABLE = False
 
     __LOCK__ = threading.Lock()
 
@@ -87,6 +88,7 @@ class HudDataCache(object):
 
         try:
             HudDataCache.RELIABLE_TRAFFIC = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
+            HudDataCache.IS_TRAFFIC_AVAILABLE = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.is_traffic_available()
         finally:
             HudDataCache.__LOCK__.release()
 
