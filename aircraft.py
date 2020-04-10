@@ -220,8 +220,6 @@ class AhrsStratux(LoggingObject):
         except SystemExit:
             raise
         except Exception as ex:
-            self.warn('AHRS.update() ex={}'.format(ex))
-
             return None
 
         return ahrs_json
