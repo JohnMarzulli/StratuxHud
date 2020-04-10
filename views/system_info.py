@@ -282,7 +282,7 @@ class Aithre(AhrsElement):
         self.__font__ = font
         center_y = framebuffer_size[1] >> 2
         text_half_height = int(font.get_height()) >> 1
-        self.__text_y_pos__ = center_y - text_half_height
+        self.__text_y_pos__ = center_y + (10 * text_half_height)
         self.__lhs__ = 0
 
     def render(self, framebuffer, orientation):
@@ -291,7 +291,7 @@ class Aithre(AhrsElement):
         if AithreClient.INSTANCE is not None and configuration.CONFIGURATION.aithre_enabled:
             co_level = AithreClient.INSTANCE.get_co_report()
 
-            if co_level.co is None or isinstance(co_level, basestring):
+            if (co_level.co is None and co_level.has_been_connected) or isinstance(co_level, basestring):
                 co_color = RED
                 co_ppm_text = "OFFLINE"
             elif not co_level.has_been_connected:

@@ -25,13 +25,22 @@ import targets
 import traffic
 import restful_host
 import aithre
-from views import (adsb_on_screen_reticles, adsb_target_bugs, adsb_target_bugs_only,
-                   adsb_traffic_listing, ahrs_not_available, altitude,
-                   artificial_horizon, compass_and_heading_bottom_element,
+from views import (adsb_on_screen_reticles,
+                   adsb_target_bugs,
+                   adsb_target_bugs_only,
+                   adsb_traffic_listing,
+                   ahrs_not_available,
+                   altitude,
+                   artificial_horizon,
+                   compass_and_heading_bottom_element,
                    groundspeed, heading_target_bugs,
-                   level_reference, roll_indicator, skid_and_gs,
+                   level_reference,
+                   roll_indicator,
+                   skid_and_gs,
                    system_info,
-                   target_count, time)
+                   target_count,
+                   time,
+                   traffic_not_available)
 
 # TODO - Disable functionality based on the enabled StratuxCapabilities
 # TODO - Check for the key existence anyway... cross update the capabilities
@@ -39,6 +48,34 @@ from views import (adsb_on_screen_reticles, adsb_target_bugs, adsb_target_bugs_o
 # Traffic description in https://github.com/cyoung/stratux/blob/master/notes/app-vendor-integration.md
 # pip install ws4py
 # pip install requests
+
+
+def __send_stratux_post__(
+    ending_url
+):
+    """
+    Sends a post call to the given ending portion of the URL
+
+    Arguments:
+        ending_url {str} -- The ending portion of the url. "cageAHRS" will result in "/cageAHRS"
+
+    Returns:
+        bool -- True if the call occurred.
+    """
+    if ending_url is None:
+        return False
+
+    url = "http://{0}/{1}".format(
+        CONFIGURATION.stratux_address(),
+        ending_url)
+
+    try:
+        requests.Session().post(url, timeout=2)
+
+        return True
+    except:
+
+        return False
 
 
 class HeadsUpDisplay(object):
@@ -51,13 +88,7 @@ class HeadsUpDisplay(object):
         Sends the command to the Stratux to level the AHRS.
         """
 
-        url = "http://{0}/cageAHRS".format(
-            CONFIGURATION.stratux_address())
-
-        try:
-            requests.Session().post(url, timeout=2)
-        except:
-            pass
+        __send_stratux_post__("cageAHRS")
 
     def __reset_traffic_manager__(self):
         """
@@ -73,13 +104,7 @@ class HeadsUpDisplay(object):
         Sends the command to the Stratux to shutdown.
         """
 
-        url = "http://{0}/shutdown".format(
-            CONFIGURATION.stratux_address())
-
-        try:
-            requests.Session().post(url, timeout=2)
-        except:
-            pass
+        __send_stratux_post__("shutdown")
 
     def run(self):
         """

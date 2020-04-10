@@ -22,7 +22,7 @@ class Altitude(AhrsElement):
         altitude_text = str(int(orientation.alt)) + \
             "' MSL" if orientation.alt is not None and isinstance(
                 orientation.alt, Number) else AhrsElement.GPS_UNAVAILABLE_TEXT
-        color = display.WHITE if orientation.alt is not None and orientation.gps_online else display.RED
+        color = display.WHITE if orientation.alt is not None and orientation.gps_online or orientation.is_avionics_source else display.RED
         alt_texture = self.__font__.render(
             altitude_text, True, color, display.BLACK)
         text_width, text_height = alt_texture.get_size()

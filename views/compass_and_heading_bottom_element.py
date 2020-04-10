@@ -12,7 +12,13 @@ testing.load_imports()
 
 
 class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
-    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
+    def __init__(
+        self,
+        degrees_of_pitch,
+        pixels_per_degree_y,
+        font,
+        framebuffer_size
+    ):
         CompassAndHeadingTopElement.__init__(
             self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size)
         self.task_timer = TaskTimer('CompassAndHeadingBottomElement')
@@ -41,8 +47,12 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
              self._heading_box_y_ + border_vertical_size + vertical_alignment_offset]]
 
     def __render_heading_mark__(self, framebuffer, x_pos, heading):
-        pygame.draw.line(framebuffer, GREEN,
-                         [x_pos, self.__line_top__], [x_pos, self.__line_bottom__], self.__border_width__)
+        pygame.draw.line(
+            framebuffer,
+            GREEN,
+            [x_pos, self.__line_top__],
+            [x_pos, self.__line_bottom__],
+            self.__border_width__)
 
         self.__render_heading_text__(
             framebuffer,
@@ -72,9 +82,10 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
             [self.__render_heading_mark__(framebuffer, heading_mark_to_render[0], heading_mark_to_render[1])
              for heading_mark_to_render in self.__heading_strip__[heading]]
 
-        self._render_hallow_heading_box_(orientation,
-                                         framebuffer,
-                                         self._heading_box_y_)
+        self._render_hallow_heading_box_(
+            orientation,
+            framebuffer,
+            self._heading_box_y_)
         self.task_timer.stop()
 
 

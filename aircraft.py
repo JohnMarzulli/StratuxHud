@@ -4,6 +4,7 @@ import threading
 
 import requests
 
+from aircraft_data_cache import AircraftDataCache
 import configuration
 import lib.recurring_task as recurring_task
 from lib.simulated_values import SimulatedValue
@@ -80,10 +81,12 @@ class AhrsData(object):
         self.alt = 0.0
         self.position = (0, 0)  # lat, lon
         self.groundspeed = 0
+        self.airspeed = 0
         self.vertical_speed = 0
         self.g_load = 1.0
         self.utc_time = datetime.datetime.utcnow()
         self.gps_online = True
+        self.is_avionics_source = False
 
 
 class AhrsSimulation(object):
@@ -115,11 +118,21 @@ class AhrsSimulation(object):
 
         self.simulate()
 
+    def get_ahrs(
+        self
+    ):
+        """
+        Returns the current simulated values for the AHRS data.
+
+        Returns:
+            AhrsData -- The current simulated values.
+        """
+        return self.ahrs_data
+
     def __init__(
         self
     ):
         self.ahrs_data = AhrsData()
-        self.data_source_available = True
 
         self.pitch_simulator = SimulatedValue(1, 30, -1)
         self.roll_simulator = SimulatedValue(5, 60, 1)
@@ -178,67 +191,109 @@ class AhrsStratux(LoggingObject):
 
         return values[0] if values is not None and len(values) > 0 else default
 
-    def update(
-        self
+    def __get_situation__(
+        self,
+        service_address
     ):
         """
-        Grabs the AHRS (if available)
+        Grabs the AHRS (if available).
+
+        Arguments:
+            service_address {str} -- The address that contains the getSituation service. May be avionics or Stratux
+
+        Returns:
+            dict -- The resulting AHRS data if contact could be made, otherwise None
         """
 
-        new_ahrs_data = AhrsData()
+        if service_address is None or len(service_address) < 1:
+            return None
 
         url = "http://{0}/getSituation".format(
-            configuration.CONFIGURATION.stratux_address())
+            service_address)
 
         try:
-            ahrs_json = self.__stratux_session__.get(url,
-                                                     timeout=self.__timeout__).json()
-
-            if ahrs_json is not None:
-                self.__last_update__ = datetime.datetime.utcnow()
+            ahrs_json = self.__stratux_session__.get(
+                url,
+                timeout=configuration.AHRS_TIMEOUT).json()
 
         except KeyboardInterrupt:
             raise
         except SystemExit:
             raise
         except Exception as ex:
-            # If we are spamming the REST too quickly, then we may loose a single update.
-            # Do no consider the service unavailable unless we are
-            # way below the max target framerate.
-            delta_time = datetime.datetime.utcnow() - self.__last_update__
-            self.data_source_available = delta_time.total_seconds() < self.__min_update_seconds__
+            return None
 
-            self.warn('AHRS.update() ex={}'.format(ex))
+        return ahrs_json
 
-            return
+    def __decode_situation__(
+        self,
+        ahrs_json
+    ):
+        """
+        Decodes AHRS results from getSituation into a package that is
+        usable by the HUD.
+
+        The package may be from a single source, or from combined sources.
+
+        Arguments:
+            ahrs_json {dict} -- The AHRS package to decode
+
+        Returns:
+            AhrsData -- The decoded value (if it could be decoded), or otherwise a safe package.
+        """
+        new_ahrs_data = AhrsData()
 
         system_utc_time = str(datetime.datetime.utcnow())
 
-        new_ahrs_data.roll = self.__get_value__(ahrs_json, 'AHRSRoll', 0.0)
-        new_ahrs_data.pitch = self.__get_value__(ahrs_json, 'AHRSPitch', 0.0)
-        new_ahrs_data.compass_heading = self.__get_value__(
-            ahrs_json, 'AHRSGyroHeading', 1080)  # anything above 360 indicates "not available"
+        new_ahrs_data.is_avionics_source = "Service" in ahrs_json\
+            and "ToHud" in ahrs_json["Service"]
+
         new_ahrs_data.gps_online = self.__get_value__(
-            ahrs_json, 'GPSFixQuality', 0) > 0
+            ahrs_json,
+            'GPSFixQuality',
+            0) > 0
+
+        is_reliable = new_ahrs_data.gps_online or new_ahrs_data.is_avionics_source
+
+        new_ahrs_data.roll = self.__get_value__(
+            ahrs_json,
+            'AHRSRoll',
+            0.0)
+        new_ahrs_data.pitch = self.__get_value__(
+            ahrs_json,
+            'AHRSPitch',
+            0.0)
+        new_ahrs_data.compass_heading = self.__get_value__(
+            ahrs_json,
+            'AHRSGyroHeading',
+            1080)  # anything above 360 indicates "not available"
         new_ahrs_data.gps_heading = self.__get_value__(
-            ahrs_json, 'GPSTrueCourse', 0.0) if new_ahrs_data.gps_online else HEADING_NOT_AVAILABLE
+            ahrs_json,
+            'GPSTrueCourse',
+            0.0) if new_ahrs_data.gps_online else HEADING_NOT_AVAILABLE
         new_ahrs_data.alt = self.__get_value_with_fallback__(
-            ahrs_json, ['GPSAltitudeMSL', 'BaroPressureAltitude'], None) if new_ahrs_data.gps_online else HEADING_NOT_AVAILABLE
+            ahrs_json,
+            ['BaroPressureAltitude', 'GPSAltitudeMSL'],
+            None) if is_reliable else HEADING_NOT_AVAILABLE
         new_ahrs_data.position = (self.__get_value__(ahrs_json, 'GPSLatitude', None),
-                                  self.__get_value__(ahrs_json, 'GPSLongitude', None))
-        new_ahrs_data.vertical_speed = self.__get_value__(
-            ahrs_json, 'GPSVerticalSpeed', 0.0) if new_ahrs_data.gps_online else HEADING_NOT_AVAILABLE
-        new_ahrs_data.groundspeed = self.__get_value__(
-            ahrs_json, 'GPSGroundSpeed', 0.0) if new_ahrs_data.gps_online else HEADING_NOT_AVAILABLE
-        new_ahrs_data.g_load = self.__get_value__(ahrs_json, 'AHRSGLoad', 1.0)
+                                  self.__get_value__(ahrs_json, 'GPSLongitude', None)) if new_ahrs_data.gps_online else (None, None)
+        new_ahrs_data.vertical_speed = self.__get_value_with_fallback__(
+            ahrs_json,
+            ["BaroVerticalSpeed",
+             'GPSVerticalSpeed'],
+            0.0) if is_reliable else HEADING_NOT_AVAILABLE
+        new_ahrs_data.airspeed = self.__get_value__(ahrs_json, 'AHRSAirspeed', 0.0) if new_ahrs_data.is_avionics_source else HEADING_NOT_AVAILABLE
+        new_ahrs_data.groundspeed = self.__get_value__(ahrs_json, 'GPSGroundSpeed', 0.0) if new_ahrs_data.gps_online else HEADING_NOT_AVAILABLE
+        new_ahrs_data.g_load = self.__get_value__(
+            ahrs_json,
+            'AHRSGLoad',
+            1.0)
         new_ahrs_data.utc_time = self.__get_value_with_fallback__(
-            ahrs_json, 'GPSTime', system_utc_time) if new_ahrs_data.gps_online else system_utc_time
+            ahrs_json,
+            'GPSTime',
+            system_utc_time) if new_ahrs_data.gps_online else system_utc_time
 
-        self.data_source_available = True
-        # except:
-        #    self.data_source_available = False
-
-        self.__set_ahrs_data__(new_ahrs_data)
+        return new_ahrs_data
 
         # SAMPLE FULL JSON
         #
@@ -284,16 +339,66 @@ class AhrsStratux(LoggingObject):
         #     "AHRSStatus": 7
         # }
 
-    def __set_ahrs_data__(
-        self,
-        new_ahrs_data
+    def update(
+        self
     ):
         """
-        Atomically sets the AHRS data.
+        Attempts to get the AHRS data from the Stratux source.
         """
-        self.__lock__.acquire()
-        self.ahrs_data = new_ahrs_data
-        self.__lock__.release()
+        new_ahrs_data = self.__get_situation__(
+            configuration.CONFIGURATION.stratux_address())
+
+        if new_ahrs_data is not None:
+            self.__stratux_ahrs_cache__.update(new_ahrs_data)
+
+    def update_avionics(
+        self
+    ):
+        """
+        Attempts to get the AHRS data from the avionics source.
+        """
+        new_ahrs_data = self.__get_situation__(
+            configuration.CONFIGURATION.avionics_address())
+
+        if new_ahrs_data is not None:
+            self.__avionics_cache__.update(new_ahrs_data)
+
+    def is_data_source_available(
+        self
+    ):
+        """
+        Checks if any AHRS source is available and recent.
+
+        Returns:
+            bool -- True if data is available and recent.
+        """
+        is_stratux_available = self.__stratux_ahrs_cache__ is not None and self.__stratux_ahrs_cache__.is_available()
+        is_avionics_available = self.__avionics_cache__ is not None and self.__avionics_cache__.is_available()
+
+        return is_stratux_available or is_avionics_available
+
+    def get_ahrs(
+        self
+    ):
+        """
+        Returns a decoded AHRS object back. Attempts to combine ALL available
+        AHRS data source.
+        Avionics sourced data is prioritized over Stratux AHRS sourced data.
+
+        Returns:
+            AhrsData -- Any available AHRS data.
+        """
+        package = {}
+        stratux_ahrs = self.__stratux_ahrs_cache__.get()
+        avionics_ahrs = self.__avionics_cache__.get()
+
+        if stratux_ahrs is not None:
+            package.update(stratux_ahrs)
+
+        if avionics_ahrs is not None:
+            package.update(avionics_ahrs)
+
+        return self.__decode_situation__(package)
 
     def __init__(
         self,
@@ -301,18 +406,10 @@ class AhrsStratux(LoggingObject):
     ):
         super(AhrsStratux, self).__init__(logger)
 
-        # If an update to the AHRS takes longer than this,
-        # then the AHRS should be considered not available.
-        self.__min_update_seconds__ = 0.3
-        # Make the timeout a reasonable time.
-        self.__timeout__ = configuration.AHRS_TIMEOUT
         self.__stratux_session__ = requests.Session()
 
-        self.ahrs_data = AhrsData()
-        self.data_source_available = False
-
-        self.__lock__ = threading.Lock()
-        self.__last_update__ = datetime.datetime.utcnow()
+        self.__stratux_ahrs_cache__ = AircraftDataCache(0.3)
+        self.__avionics_cache__ = AircraftDataCache(0.3)
 
 
 class Aircraft(LoggingObject):
@@ -335,16 +432,17 @@ class Aircraft(LoggingObject):
     ):
         super(Aircraft, self).__init__(logger)
 
-        self.ahrs_source = None
+        self.ahrs_source = AhrsStratux(logger)
 
-        if force_simulation or configuration.CONFIGURATION.data_source() == configuration.DataSourceNames.SIMULATION:
-            self.ahrs_source = AhrsSimulation()
-        elif configuration.CONFIGURATION.data_source() == configuration.DataSourceNames.STRATUX:
-            self.ahrs_source = AhrsStratux(logger)
+        recurring_task.RecurringTask(
+            'UpdateStratuxAhrs',
+            1.0 / configuration.TARGET_AHRS_FRAMERATE,
+            self.__update_orientation__)
 
-        recurring_task.RecurringTask('UpdateAhrs',
-                                     1.0 / configuration.TARGET_AHRS_FRAMERATE,
-                                     self.__update_orientation__)
+        recurring_task.RecurringTask(
+            'UpdateAvionics',
+            1.0 / configuration.TARGET_AHRS_FRAMERATE,
+            self.__update_avionics_orientation__)
 
     def is_ahrs_available(
         self
@@ -353,18 +451,24 @@ class Aircraft(LoggingObject):
         Returns True if the AHRS data is available
         """
 
-        return self.ahrs_source is not None and self.ahrs_source.data_source_available
+        return self.ahrs_source is not None and self.ahrs_source.is_data_source_available()
 
     def get_orientation(
         self
     ):
-        return self.ahrs_source.ahrs_data
+        return self.ahrs_source.get_ahrs()
 
     def __update_orientation__(
         self
     ):
         if self.ahrs_source is not None:
             self.ahrs_source.update()
+
+    def __update_avionics_orientation__(
+        self
+    ):
+        if self.ahrs_source is not None:
+            self.ahrs_source.update_avionics()
 
 
 if __name__ == '__main__':

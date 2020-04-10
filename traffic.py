@@ -75,7 +75,9 @@ class Traffic(object):
     }
     """
 
-    def is_on_ground(self):
+    def is_on_ground(
+        self
+    ):
         """
         Is this aircraft on the ground?
 
@@ -91,14 +93,18 @@ class Traffic(object):
 
         return False
 
-    def get_age(self):
+    def get_age(
+        self
+    ):
         """
         Returns the age of this report in total seconds.
         """
         delta = datetime.datetime.utcnow() - self.time_decoded
         return delta.total_seconds()
 
-    def get_display_name(self):
+    def get_display_name(
+        self
+    ):
         """
         Returns the identifier to use of the traffic
         """
@@ -108,7 +114,11 @@ class Traffic(object):
 
         return self.icao_address
 
-    def get_bearing(self, starting_lat, starting_lon):
+    def get_bearing(
+        self,
+        starting_lat,
+        starting_lon
+    ):
         """
         Returns the bearing to the traffic from the
         given point.
@@ -124,7 +134,11 @@ class Traffic(object):
 
         return bearing
 
-    def get_distance(self, starting_lat, starting_lon):
+    def get_distance(
+        self,
+        starting_lat,
+        starting_lon
+    ):
         """
         Returns the distance to the traffic from the
         given point.
@@ -151,7 +165,10 @@ class Traffic(object):
         r = configuration.EARTH_RADIUS_STATUTE_MILES
         return c * r
 
-    def update(self, json_report):
+    def update(
+        self,
+        json_report
+    ):
         """
         Applies the new data to the existing traffic.
         """
@@ -162,7 +179,11 @@ class Traffic(object):
         except:
             print("Issue in update()")
 
-    def __init__(self, icao_address, json_from_stratux):
+    def __init__(
+        self,
+        icao_address,
+        json_from_stratux
+    ):
         """
         Initializes the traffic from the JSON response.
         """
@@ -180,7 +201,9 @@ class Traffic(object):
         self.__json__ = json_from_stratux
         self.__update_from_json__()
 
-    def __update_from_json__(self):
+    def __update_from_json__(
+        self
+    ):
         """
         Updates the report from the most recently received report.
         (Deserialized from the JSON)
@@ -260,7 +283,9 @@ class SimulatedTraffic(object):
     Class to simulated ADSB received traffic.
     """
 
-    def __init__(self):
+    def __init__(
+        self
+    ):
         """
         Creates a new traffic simulation object.
         """
@@ -283,7 +308,9 @@ class SimulatedTraffic(object):
         self.altitude = SimulatedValue(10, 100, -1, 0, 500)
         self.speed = SimulatedValue(5, 10, 1, 85)
 
-    def simulate(self):
+    def simulate(
+        self
+    ):
         """
         Simulates the traffic for a 'tick'.
         """
@@ -296,7 +323,9 @@ class SimulatedTraffic(object):
         self.altitude.simulate()
         self.speed.simulate()
 
-    def to_json(self):
+    def to_json(
+        self
+    ):
         """
         Returns this object back as a dictionary (deserialized json)
 
@@ -347,14 +376,40 @@ class TrafficManager(object):
     Manager class that handles all of the position reports.
     """
 
-    def clear(self):
+    def heartbeat(
+        self
+    ):
+        """
+        Record a heartbeat / response from the traffic manager.
+        """
+        self.__last_report_time__ = datetime.datetime.utcnow()
+
+    def is_traffic_available(
+        self
+    ):
+        """
+        Do we believe the traffic manager is available and responding?
+
+        Returns:
+            bool -- True if the traffic manager is online.
+        """
+        if self.__last_report_time__ is None:
+            return False
+
+        return (datetime.datetime.utcnow() - self.__last_report_time__).total_seconds() < 10
+
+    def clear(
+        self
+    ):
         """
         Resets the traffic reports.
         """
 
         self.traffic = {}
 
-    def get_traffic_with_position(self):
+    def get_traffic_with_position(
+        self
+    ):
         """
         Returns the subset of traffic with actionable
         traffic data.
@@ -382,7 +437,11 @@ class TrafficManager(object):
 
         return sorted_traffic
 
-    def handle_traffic_report(self, icao_address, json_report):
+    def handle_traffic_report(
+        self,
+        icao_address,
+        json_report
+    ):
         """
         Updates or sets a traffic report.
         """
@@ -402,7 +461,9 @@ class TrafficManager(object):
 
         return None
 
-    def prune_traffic_reports(self):
+    def prune_traffic_reports(
+        self
+    ):
         """
         Removes traffic reports that are too old.
         """
@@ -423,12 +484,17 @@ class TrafficManager(object):
         finally:
             self.__lock__.release()
 
-    def __init__(self):
+    def __init__(
+        self
+    ):
         # Traffic held by tail number
         self.traffic = {}
+        self.__last_report_time__ = None
         self.__lock__ = threading.Lock()
         self.__prune_task__ = recurring_task.RecurringTask(
-            'PruneTraffic', 10, self.prune_traffic_reports)
+            'PruneTraffic',
+            10,
+            self.prune_traffic_reports)
 
 
 class AdsbTrafficClient:
@@ -439,6 +505,7 @@ class AdsbTrafficClient:
 
     TRAFFIC_MANAGER = TrafficManager()
     INSTANCE = None
+    TIME_SINCE_LAST_REPORT_KEY = "socketTimeSinceLastTraffic"
 
     def __init__(
         self,
@@ -447,8 +514,31 @@ class AdsbTrafficClient:
         self.__traffic_session__ = requests.Session()
         self.rest_address = rest_address
         self.__update_traffic_task__ = recurring_task.RecurringTask(
-            'UpdateTraffic', 0.1, self.update_reliable_traffic)
+            'UpdateTraffic',
+            0.1,
+            self.update_reliable_traffic)
+        self.__update_service_health_task__ = recurring_task.RecurringTask(
+            'UpdateTrafficManagerHealth',
+            0.5,
+            self.get_traffic_manager_service_status)
         AdsbTrafficClient.INSTANCE = self
+
+    def get_traffic_manager_service_status(
+        self
+    ):
+        try:
+            status_json = self.__traffic_session__.get(
+                "http://{}/Service/Status".format(self.rest_address),
+                timeout=configuration.AHRS_TIMEOUT).json()
+
+            if status_json is not None and AdsbTrafficClient.TIME_SINCE_LAST_REPORT_KEY in status_json:
+                time_since_last_report = float(
+                    status_json[AdsbTrafficClient.TIME_SINCE_LAST_REPORT_KEY])
+
+                if time_since_last_report < 60.0:
+                    AdsbTrafficClient.TRAFFIC_MANAGER.heartbeat()
+        except:
+            pass
 
     def reset_traffic_manager(
         self
@@ -458,8 +548,9 @@ class AdsbTrafficClient:
         """
 
         try:
-            self.__traffic_session__.get("http://{}/Service/Reset".format(self.rest_address),
-                                         timeout=configuration.AHRS_TIMEOUT).json()
+            self.__traffic_session__.get(
+                "http://{}/Service/Reset".format(self.rest_address),
+                timeout=configuration.AHRS_TIMEOUT).json()
         except:
             pass
 
@@ -471,13 +562,16 @@ class AdsbTrafficClient:
         for position data.
         """
         try:
-            traffic_json = self.__traffic_session__.get("http://{}/Traffic/Reliable".format(self.rest_address),
-                                                        timeout=configuration.AHRS_TIMEOUT).json()
+            traffic_json = self.__traffic_session__.get(
+                "http://{}/Traffic/Reliable".format(self.rest_address),
+                timeout=configuration.AHRS_TIMEOUT).json()
 
             # Report each traffic based on the keys
-            for iaco_identifier in traffic_json.keys():
+            for icao_identifier in traffic_json.keys():
                 self.received_message(
-                    iaco_identifier, traffic_json[iaco_identifier])
+                    icao_identifier, traffic_json[icao_identifier])
+
+            return True
 
         except KeyboardInterrupt:
             raise
@@ -487,7 +581,7 @@ class AdsbTrafficClient:
             # If we are spamming the REST too quickly, then we may loose a single update.
             # Do no consider the service unavailable unless we are
             # way below the max target framerate.
-            print('TRAFFIC.update() ex={}'.format(ex))
+            return False
 
     def received_message(
         self,

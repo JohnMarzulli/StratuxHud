@@ -38,10 +38,12 @@ class Spo2Report(object):
         self.heartrate = OFFLINE
         self.signal = OFFLINE
         self.has_been_connected = has_been_connected
+        self.is_connected = False
 
         if report is not None:
             if SPO2_LEVEL_KEY in report:
                 self.spo2 = report[SPO2_LEVEL_KEY]
+                self.is_connected = self.spo2 is not None
 
             if PULSE_KEY in report:
                 self.heartrate = report[PULSE_KEY]
@@ -69,7 +71,7 @@ class CoReport(object):
         if report is not None:
             if CO_LEVEL_KEY in report:
                 self.co = report[CO_LEVEL_KEY]
-                self.is_connected = True
+                self.is_connected = self.co is not None
 
             if BATTERY_LEVEL_KEY in report:
                 self.battery = report[BATTERY_LEVEL_KEY]
@@ -101,7 +103,7 @@ class AithreClient(object):
             available = delta_time.total_seconds() < MAX_SECONDS_BETWEEN_SPO2_REPORT
 
             if available:
-                self.__spo2_has_been_connected__ = True
+                self.__spo2_has_been_connected__ |= (SPO2_LEVEL_KEY in self.__spo2_report__ and self.__spo2_report__[SPO2_LEVEL_KEY] is not None)
 
                 return Spo2Report(self.__spo2_report__, self.__spo2_has_been_connected__)
 
@@ -113,7 +115,7 @@ class AithreClient(object):
             available = delta_time.total_seconds() < MAX_SECONDS_BETWEEN_CO_REPORT
 
             if available:
-                self.__co_has_been_connected__ = True
+                self.__co_has_been_connected__ |= (CO_LEVEL_KEY in self.__co_report__ and self.__co_report__[CO_LEVEL_KEY] is not None)
                 return CoReport(self.__co_report__, self.__co_has_been_connected__)
 
         return CoReport(None, self.__co_has_been_connected__)
