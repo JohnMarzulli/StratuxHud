@@ -23,8 +23,7 @@ class Groundspeed(AhrsElement):
         self.__font_height__ = font.get_height()
         center_y = framebuffer_size[1] >> 2
         text_half_height = int(self.__font_height__) >> 1
-        self.__text_y_pos__ = (text_half_height << 2) + \
-            center_y - text_half_height
+        self.__text_y_pos__ = center_y - text_half_height
         self.__rhs__ = int(0.9 * framebuffer_size[0])
 
         self.__left_x__ = 0  # WAS int(framebuffer_size[0] * 0.01)
