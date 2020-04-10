@@ -1,51 +1,10 @@
-# STRATUX HUD 
+# STRATUX HUD
 
-## Table Of Contents
+## 1 Table of Contents
 
-<!-- vscode-markdown-toc -->
-* 1. [Introduction](#Introduction)
-	* 1.1. [Recommended](#Recommended)
-	* 1.2. [Alternative, Less Expensive Version](#AlternativeLessExpensiveVersion)
-* 2. [In Flight Controls](#InFlightControls)
-* 3. [Included (Default) Views](#IncludedDefaultViews)
-	* 3.1. [AHRS + ADS-B View](#AHRSADS-BView)
-	* 3.2. [Traffic View](#TrafficView)
-	* 3.3. [Traffic Listing View](#TrafficListingView)
-	* 3.4. [Diagnostics View](#DiagnosticsView)
-	* 3.5. [Universal Time](#UniversalTime)
-	* 3.6. [Blank](#Blank)
-	* 3.7. [AHRS View](#AHRSView)
-* 4. [Parts List](#PartsList)
-	* 4.1. [All Builds](#AllBuilds)
-	* 4.2. [Recommended Kivic Build](#RecommendedKivicBuild)
-	* 4.3. [3D Print Build](#DPrintBuild)
-* 5. [Recommended Software Install](#RecommendedSoftwareInstall)
-* 6. [Development/From Scratch Install instructions](#DevelopmentFromScratchInstallinstructions)
-	* 6.1. [First Boot](#FirstBoot)
-		* 6.1.1. [Raspberry Pi 3B+](#RaspberryPi3B)
-	* 6.2. [Install Software](#InstallSoftware)
-		* 6.2.1. [Developer Note](#DeveloperNote)
-	* 6.3. [Ownship](#Ownship)
-	* 6.4. [Aithre Support](#AithreSupport)
-		* 6.4.1. [BlueTooth for AIO Setups](#BlueToothforAIOSetups)
-	* 6.5. [Kivic Based Setup](#KivicBasedSetup)
-	* 6.6. [Teleprompter Glass Based Setup](#TeleprompterGlassBasedSetup)
-* 7. [Appendix](#Appendix)
-	* 7.1. [Updating StratuxHud Code](#UpdatingStratuxHudCode)
-	* 7.2. [Barrel Jack Connector (Raspberry Pi 3 only _**NOT 3B+**_)](#BarrelJackConnectorRaspberryPi3only_NOT3B_)
-	* 7.3. [Revision History](#RevisionHistory)
-	* 7.4. [Hardware Performance](#HardwarePerformance)
-* 8. [Acknowledgements And Credits](#AcknowledgementsAndCredits)
-* 9. [License](#License)
+[[TOC]]
 
-<!-- vscode-markdown-toc-config
-	numbering=true
-	autoSave=true
-	/vscode-markdown-toc-config -->
-<!-- /vscode-markdown-toc -->
-
-
-##  1. <a name='Introduction'></a>Introduction
+## 2 Introduction
 
 This project aims to bring an affordable heads up display system into ANY cockpit.
 
@@ -55,7 +14,7 @@ The focus is to improve traffic awareness and to reduce the amount of time pilot
 
 There are two versions that can be built:
 
-###  1.1. <a name='Recommended'></a>Recommended
+### 2.1 Recommended
 
 Using the "Kivic HUD 2nd Gen" projector and a Raspberry Pi 3.
 
@@ -73,7 +32,7 @@ Uses 5V USB power.
 
 **NOTE:** To have full functionality with a Stratux based unit, please use Stratux Version 1.4R5 or higher.
 
-###  1.2. <a name='AlternativeLessExpensiveVersion'></a>Alternative, Less Expensive Version
+### 2.2 Alternative, Less Expensive Version
 
 A self contained system that uses a 3D printed case and teleprompter glass. This version can be built for the cost of a Raspberry Pi and the 3D print.
 
@@ -91,7 +50,7 @@ Estimated Cost is $140
 
 Can be powered by a USB powerbank or USB power.
 
-##  2. <a name='InFlightControls'></a>In Flight Controls
+## 3 In Flight Controls
 
 You may use a number pad as input device. I used velcro to secure the number pad to my dashboard.
 
@@ -105,7 +64,7 @@ Esc       | Send shutdown commands to both the HUD controller **and** the Stratu
 q         | (_Full keyboard only_) Quit to the command line.
 0/Ins     | Force a connection reset between the HUD and the Stratux
 
-##  3. <a name='IncludedDefaultViews'></a>Included (Default) Views
+## 4 Included (Default) Views
 
 - AHRS + ADS-B
 - Traffic
@@ -115,7 +74,7 @@ q         | (_Full keyboard only_) Quit to the command line.
 - (Blank)
 - AHRS Only
 
-###  3.1. <a name='AHRSADS-BView'></a>AHRS + ADS-B View
+### 4.1 AHRS + ADS-B View
 
 ![AHRS + ADS-B](media/ahrs_plus_adsb_view.jpg)
 
@@ -132,7 +91,7 @@ In this example:
 
 _NOTE:_ This is the default view on startup. If you would like to switch to the `AHRS Only` You may press `-` on the keypad.
 
-###  3.2. <a name='TrafficView'></a>Traffic View
+### 4.2 Traffic View
 
 ![Traffic View Screenshot](media/traffic_view.jpg)
 
@@ -140,7 +99,7 @@ This view shows a heading strip, target bugs, targeting reticles, and "informati
 
 In this example, `N2849K` is almost directly behind us (far left screen). The plane is 1.5 statute miles away, with a bearing of 70 degrees, and 100 feet above us.
 
-###  3.3. <a name='TrafficListingView'></a>Traffic Listing View
+### 4.3 Traffic Listing View
 
 ![Traffic Listing View Screenshot](media/traffic_listing_view.jpg)
 
@@ -150,33 +109,33 @@ The _IDENT_ifier will be the tail number when available, otherwise the ICAO iden
 
 In this example, the closest target is N1213S. The plane is only 1.2 statue mile away, and 1,500 feet above us.
 
-###  3.4. <a name='DiagnosticsView'></a>Diagnostics View
+### 4.4 Diagnostics View
 
 ![Diagnostics View Screenshot](media/diagnostics_view.jpg)
 
 The diagnostics view is designed to help give some troubleshooting ability. If a value is set for "OWNSHIP" (See the configuration file section), then any report from that tailnumber is ignored. The IP address is provided so you may use the configuration webpage if you set it up.
 
-###  3.5. <a name='UniversalTime'></a>Universal Time
+### 4.5 Universal Time
 
 ![Diagnostics View Screenshot](media/time_view.jpg)
 
 Shows the current time in UTC at the bottom of the screen.
 
-###  3.6. <a name='Blank'></a>Blank
+### 4.6 Blank
 
 A blank screen so no information is displayed.
 
-###  3.7. <a name='AHRSView'></a>AHRS View
+### 4.7 AHRS View
 
 ![Traffic View Screenshot](media/ahrs_view.jpg)
 
 This is a similar view to `AHRS + ADS-B`, but removes any AHRS information.
 
-##  4. <a name='PartsList'></a>Parts List
+## 5 Parts List
 
-###  4.1. <a name='AllBuilds'></a>All Builds
+### 5.1 All Builds
 
-_NOTE:_ This _does not_ include a power source. You will need to supply ship power from a 5V USB port or from a battery.
+_NOTE:_ This _does not_ include a power source. You will need to supply ship power from a 5V USB port or from a battery. _NOTE:_ This is for a build that uses a separate Raspberry Pi to drive the display. If you wish to have an "All-In-One" solution where the HUD software runs on the Stratux, you will not need an additional Pi.
 
 - [Raspberry Pi 3](https://www.amazon.com/Raspberry-Pi-RASPBERRYPI3-MODB-1GB-Model-Motherboard/dp/B01CD5VC92/ref=sr_1_3?s=electronics&ie=UTF8&qid=1529215701&sr=1-3&keywords=raspberry+pi+3)
 - [Case For Raspberry Pi](https://www.amazon.com/iPhoenix-Raspberry-White-Compatible-Model/dp/B06XQSXZ97/ref=sr_1_3?s=electronics&dd=iYEspjjyeRXfqDW9BHwJFw%2C%2C&ddc_refnmnt=pfod&ie=UTF8&qid=1529215794&sr=1-3&keywords=white+raspberry+pi+3+case&refinements=p_97%3A11292772011)
@@ -185,18 +144,18 @@ _NOTE:_ This _does not_ include a power source. You will need to supply ship pow
 - [Micro SD Card](https://www.amazon.com/SanDisk-Ultra-Micro-Adapter-SDSQUNC-016G-GN6MA/dp/B010Q57SEE/ref=sr_1_10?s=pc&ie=UTF8&qid=1529215944&sr=1-10&keywords=micro+sd+card)
 - [Rottay Mechanical Keypad](https://www.amazon.com/Number-Rottay-Mechanical-Numeric-backlit/dp/B076FTSY6J/ref=sr_1_3?ie=UTF8&qid=1529215627&sr=8-3&keywords=mechanical+keypad)
 
-###  4.2. <a name='RecommendedKivicBuild'></a>Recommended Kivic Build
+### 5.2 Recommended Kivic Build
 
 - [Kiviv HUD 2nd Gen](https://www.amazon.com/gp/product/B078GHFMG5/ref=ppx_yo_dt_b_asin_title_o01__o00_s00?ie=UTF8&psc=1)
 - [6' 3.5mm Analog Cable](https://www.amazon.com/gp/product/B074TDHRCC/ref=ppx_yo_dt_b_asin_title_o00_s01?ie=UTF8&psc=1)
 - [_OPTIONAL_ 3/4" Wire Braiding](https://www.amazon.com/gp/product/B073YL3HMC/ref=ppx_yo_dt_b_asin_title_o00_s01?ie=UTF8&psc=1)
 
-###  4.3. <a name='DPrintBuild'></a>3D Print Build
+### 5.3 D Print Build
 
 - [Teleprompter Glass Sample of both thickness of the 60/40 glass](https://telepromptermirror.com/sample/)
 - [SunFounder 5" TFT LCD](https://www.amazon.com/SunFounder-Monitor-Display-800X480-Raspberry/dp/B01HXSFIH6)
 
-##  5. <a name='RecommendedSoftwareInstall'></a>Recommended Software Install
+## 6 Recommended Software Install
 
 Please use one of the provided images from the "Release" page on GitHub.
 
@@ -205,9 +164,9 @@ Please use one of the provided images from the "Release" page on GitHub.
 3. Plug in your Projector to the Raspberry Pi
 4. It is recommended that you SSH into the HUD and use `raspi-config` to ("expand the filesystem")[<https://geek-university.com/raspberry-pi/expand-raspbian-filesystem/>].
 
-##  6. <a name='DevelopmentFromScratchInstallinstructions'></a>Development/From Scratch Install instructions
+## 7 Development/From Scratch Install instructions
 
-###  6.1. <a name='FirstBoot'></a>First Boot
+### 7.1 First Boot
 
 1. Flash the latest [Raspbian](https://www.raspberrypi.org/downloads/raspbian/) to an SD card
 2. Plug in a keyboard and a monitor
@@ -230,7 +189,7 @@ Please use one of the provided images from the "Release" page on GitHub.
 19. "Other" -> "English US" -> "Default" -> "No compose" -> "Yes"
 20. "Finish"
 
-####  6.1.1. <a name='RaspberryPi3B'></a>Raspberry Pi 3B+
+#### 7.1.1 Raspberry Pi 3B+
 
 If you are using a 3B+, it may suffer from under-voltage alerts. These may be relieved by the following command to update your Linux install to the latest:
 
@@ -240,7 +199,7 @@ sudo apt-get update && sudo apt-get dist-upgrade -y
 
 Make sure you are using a high quality power cable if you are using a Pi 3B+
 
-###  6.2. <a name='InstallSoftware'></a>Install Software
+### 7.2 Install Software
 
 1. Enter `ping google.com`. Press ctrl+c after a while. This will confirm that you have internet access. If you do not, then use rasp-config to re-enter your wi-fi
 2. `cd ~`
@@ -268,7 +227,7 @@ Make sure you are using a high quality power cable if you are using a Pi 3B+
 
 1. Save and quit.
 
-####  6.2.1. <a name='DeveloperNote'></a>Developer Note
+#### 7.2.1 Developer Note
 
 To ensure proper operation, if you are a developer the order services are brought online is important.
 
@@ -288,13 +247,13 @@ The StratuxHud depends on the AithreManager and the TrafficManager
 
 The HudConfig depends on the StratuxHud
 
-###  6.3. <a name='Ownship'></a>Ownship
+### 7.3 Ownship
 
 You may have the HUD ignore your own aircraft using a "OWNSHIP" functionality. The OWNSHIP value is set using the Stratux. The HUD retrieves the Mode S code set as the OWNSHIP and then filters out all reports so they are ignored.
 
 Please refer to the Stratux documentation on how to set the OWNSHIP value.
 
-###  6.4. <a name='AithreSupport'></a>Aithre Support
+### 7.4 Aithre Support
 
 Support for Aithre was added in V1.5
 
@@ -314,7 +273,7 @@ Alternatively:
 2. Set the "aithre" line to: `"aithre": false,`
 3. Save and close.
 
-####  6.4.1. <a name='BlueToothforAIOSetups'></a>BlueTooth for AIO Setups
+#### 7.4.1 BlueTooth for AIO Setups
 
 **EXPERIMENTAL**
 
@@ -334,7 +293,7 @@ _**Warning**_
 
 It has been found that enabling BlueTooth and the GPS simultaneously can cause hardware instability. This needs to be considered an experimental feature and only used if you are willing to potentially lose the Stratux during flight.
 
-###  6.5. <a name='KivicBasedSetup'></a>Kivic Based Setup
+### 7.5 Kivic Based Setup
 
 1. Install the Kivic projector per the Kivic directions. Please note that there is a release clip and the unit is removable. Also note that the combiner glass can be adjusted fore and aft.
 2. Plug in the 3.5mm TRS cable between the Raspberry Pi and the Kivic. This is the same hole as the audio adapter for the Pi.
@@ -342,7 +301,7 @@ It has been found that enabling BlueTooth and the GPS simultaneously can cause h
 4. You will need to run two Micro USB (5v) power cables. One to the HUD and one to the Raspberry Pi processing unit. These may be run from a battery bank, or from the ship's power **if** you have 5V USB outlets.
 5. You may use the _optional_ sleeving to help keep the install tidy.
 
-###  6.6. <a name='TeleprompterGlassBasedSetup'></a>Teleprompter Glass Based Setup
+### 7.6 Teleprompter Glass Based Setup
 
 1. Print the case.
 2. Attach the LCD screen to the "GPIO Board" of the Raspberry Pi
@@ -351,9 +310,9 @@ It has been found that enabling BlueTooth and the GPS simultaneously can cause h
 5. Edit the StratuxHud config.json file so "flip_vertical" is True.
 6. Plug the number pad into the Raspberry Pi
 
-##  7. <a name='Appendix'></a>Appendix
+## 8 Appendix
 
-###  7.1. <a name='UpdatingStratuxHudCode'></a>Updating StratuxHud Code
+### 8.1 Updating StratuxHud Code
 
 If you would like to update from an earlier version to V1.5
 
@@ -370,7 +329,7 @@ If you would like to update from an earlier version to V1.5
 11. If you have any errors, please report them immediately. Otherwise you are updated.
 12. `sudo shutdown -h now`
 
-###  7.2. <a name='BarrelJackConnectorRaspberryPi3only_NOT3B_'></a>Barrel Jack Connector (Raspberry Pi 3 only _**NOT 3B+**_)
+### 8.2 Barrel Jack Connector (Raspberry Pi 3 only _**NOT 3B+**_)
 
 You may consider using a barrel jack connector to supply power to your Pi unit.
 
@@ -384,11 +343,11 @@ You will find the solder pads on the bottom of the Raspberry Pi 3, near the Micr
 - Solder +5V (Red) to PP2
 - Solder GND (White) to PP3
 
-###  7.3. <a name='RevisionHistory'></a>Revision History
+### 8.3 Revision History
 
 Date       | Version | Major Changes
----------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-2020-03-?? | 1.7     | Now able to cycle through views using the HudConfig page. Support for Illyrian by Aithre. Split Aithre data collection into a micro-service. Improve warning on some elements when GPS lock is lost. Fix user configuration files not always being used or saved. Support new V3 radio and Stratux 1.6\. Experimental support for Aithre in Stratux + HUD AIO configurations. Updates to distance conversion. Use the same naming strategy for aircraft as popular EFBs.
+---------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+2020-04-?? | 1.7     | Now able to cycle through views using the HudConfig page. Support for Illyrian by Aithre. Split Aithre data collection into a micro-service. Improve warning on some elements when GPS lock is lost. Fix user configuration files not always being used or saved. Support new V3 radio and Stratux 1.6\. Experimental support for Aithre in Stratux + HUD AIO configurations. Updates to distance conversion. Use the same naming strategy for aircraft as popular EFBs. Support data collected from Dynon serial output using the DynonToHud project. Indicate which speeds are IAS and groundspeed when GPS and Avionics data are both available. Update element positions. Added new indication when the Traffic service is not available.
 2019-09-04 | 1.6     | Traffic manager moved to a stand-alone service in NodeJs/TypeScript.
 2019-06-30 | 1.5     | Support for the Aithre CO detector. New roll indicator. Various performance improvements. Visual warning if GPS is not plugged in. Use the OWNSHIP config from the receiver instead of local config.
 2019-03-31 | 1.4     | Add connection reset button. Fixes issues with the Diagnostic view running of of space. Initial port to Python 3.7
@@ -397,7 +356,7 @@ Date       | Version | Major Changes
 2018-09-07 | 1.1     | New system to allow views to be configurable
 2018-07-17 | 1.0     | Initial release
 
-###  7.4. <a name='HardwarePerformance'></a>Hardware Performance
+### 8.4 Hardware Performance
 
 Please note that performance characteristics are only shown for displays that are currently available for purchase. The Hudly Classic is intentionally not listed.
 
@@ -413,7 +372,7 @@ Rasp Pi 3B+                    | Hudly Wireless | 40FPS - 60FPS                 
 
 Please note that the frame rate is capped at 60FPS. Drawing any faster will not be detectable using the recommended output systems. Reducing the framerate will reduce the powerdraw.
 
-##  8. <a name='AcknowledgementsAndCredits'></a>Acknowledgements And Credits
+## 9 Acknowledgements And Credits
 
 This project uses the Liberation family of fonts. They can be found at <https://pagure.io/liberation-fonts/>
 
@@ -429,11 +388,8 @@ The following components are used:
 
 ... and of course Stratux
 
-##  9. <a name='License'></a>License
+## 10 License
 
 This project is covered by the GPL v3 license.
 
-Please see
-
-<license>
-</license>
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
