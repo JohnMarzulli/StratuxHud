@@ -81,6 +81,7 @@ class AhrsData(object):
         self.alt = 0.0
         self.position = (0, 0)  # lat, lon
         self.groundspeed = 0
+        self.airspeed = 0
         self.vertical_speed = 0
         self.g_load = 1.0
         self.utc_time = datetime.datetime.utcnow()
@@ -281,10 +282,8 @@ class AhrsStratux(LoggingObject):
             ["BaroVerticalSpeed",
              'GPSVerticalSpeed'],
             0.0) if is_reliable else HEADING_NOT_AVAILABLE
-        new_ahrs_data.groundspeed = self.__get_value_with_fallback__(
-            ahrs_json,
-            ['AHRSAirspeed', 'GPSGroundSpeed'],
-            0.0) if is_reliable else HEADING_NOT_AVAILABLE
+        new_ahrs_data.airspeed = self.__get_value__(ahrs_json, 'AHRSAirspeed', 0.0) if new_ahrs_data.is_avionics_source else HEADING_NOT_AVAILABLE
+        new_ahrs_data.groundspeed = self.__get_value__(ahrs_json, 'GPSGroundSpeed', 0.0) if new_ahrs_data.gps_online else HEADING_NOT_AVAILABLE
         new_ahrs_data.g_load = self.__get_value__(
             ahrs_json,
             'AHRSGLoad',
