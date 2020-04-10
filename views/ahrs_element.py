@@ -3,6 +3,8 @@ Base class for AHRS view elements.
 """
 
 class AhrsElement(object):
+    GPS_UNAVAILABLE_TEXT = "NO GPS"
+    
     def uses_ahrs(self):
         """
         Does this element use AHRS data to render?

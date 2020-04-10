@@ -55,7 +55,9 @@ function onError(error) {
     }
 }
 function onListening() {
+    var _a;
     var addr = server.address();
-    var bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
+    var bind = typeof addr === "string" ? "pipe " + addr : "port " + ((_a = addr === null || addr === void 0 ? void 0 : addr.port) !== null && _a !== void 0 ? _a : "Unknown");
     debug("Listening on " + bind);
 }
+//# sourceMappingURL=traffic_manager.js.map

@@ -12,10 +12,10 @@ EARTH_RADIUS_STATUTE_MILES = 3956
 EARTH_RADIUS_KILOMETERS_MILES = 6371
 MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT = 2
 MAX_FRAMERATE = 60
-TARGET_AHRS_FRAMERATE = 60
-AHRS_TIMEOUT = 1.0
+TARGET_AHRS_FRAMERATE = 30
+AHRS_TIMEOUT = ((1.0 / TARGET_AHRS_FRAMERATE) * 4.0)
 
-VERSION = "1.6.0"
+VERSION = "1.7.0"
 
 ########################
 # Default Config Files #
@@ -45,7 +45,9 @@ __heading_bugs_file__ = '{}/hud_heading_bugs.json'.format(expanduser('~'))
 __working_dir__ = os.path.dirname(os.path.abspath(__file__))
 
 
-def get_absolute_file_path(relative_path):
+def get_absolute_file_path(
+    relative_path
+):
     """
     Returns the absolute file path no matter the OS.
 
@@ -80,8 +82,12 @@ class Configuration(object):
     # bad to the default config files.
     #
     DEFAULT_NETWORK_IP = "192.168.10.1"
+    DEFAULT_AVIONICS_ADDRESS = "localhost:8180"
+
     DEFAULT_TRAFFIC_MANAGER_ADDRESS = "localhost:8000"
+    DEFAULT_AITHRE_MANAGER_ADDRESS = "localhost:8081"
     STRATUX_ADDRESS_KEY = "stratux_address"
+    AVIONICS_ADDRESS_KEY = "avionics_address"
     DATA_SOURCE_KEY = "data_source"
     FLIP_HORIZONTAL_KEY = "flip_horizontal"
     FLIP_VERTICAL_KEY = "flip_vertical"
@@ -93,32 +99,43 @@ class Configuration(object):
     PITCH_DEGREES_DISPLAY_SCALER_KEY = 'pitch_degrees_scaler'
     AITHRE_KEY = 'aithre'
     TRAFFIC_MANAGER_KEY = 'traffic_manager'
+    AITHRE_MANAGER_KEY = 'aithre_manager'
 
     DEFAULT_DEGREES_OF_PITCH = 90
     DEFAULT_PITCH_DEGREES_DISPLAY_SCALER = 2.0
 
-    def get_elements_list(self):
+    def get_elements_list(
+        self
+    ):
         """
         Returns the list of elements available for the views.
         """
 
         return self.__load_config_from_json_file__(VIEW_ELEMENTS_FILE)
 
-    def __load_views_from_file__(self, file_name):
+    def __load_views_from_file__(
+        self,
+        file_name
+    ):
         views_key = 'views'
 
         try:
             full_views_contents = self.__load_config_from_json_file__(
                 file_name)
 
-            if full_views_contents is not None and views_key in full_views_contents:
-                return full_views_contents[views_key]
+            if full_views_contents is not None and len(full_views_contents) > 0:
+                if views_key in full_views_contents:
+                    return full_views_contents[views_key]
+                else:
+                    return full_views_contents
         except:
             pass
 
         return None
 
-    def get_views_list(self):
+    def get_views_list(
+        self
+    ):
         """
         Loads the view configuration file.
         First looks for a user configuration file.
@@ -132,16 +149,24 @@ class Configuration(object):
             array -- Array of dictionary. Each element contains the name of the view and a list of elements it is made from.
         """
         try:
-            views = self.__load_views_from_file__(__user_views_file__)
+            if self.__hud_views__ is None:
+                self.__hud_views__ = self.__load_views_from_file__(
+                    __user_views_file__)
 
-            if views is not None and any(views):
-                return views
+            if self.__hud_views__ is None:
+                self.__hud_views__ = self.__load_views_from_file__(VIEWS_FILE)
 
-            return self.__load_views_from_file__(VIEWS_FILE)
+            if self.__hud_views__ is not None and any(self.__hud_views__):
+                return self.__hud_views__
+
+            return []
         except:
             return []
-    
-    def write_views_list(self, view_config):
+
+    def write_views_list(
+        self,
+        view_config
+    ):
         """
         Writes the view configuration to the user's version of the file.
         """
@@ -152,14 +177,19 @@ class Configuration(object):
         except:
             print("ERROR trying to write user views file.")
 
-    def get_json_from_text(self, text):
+    def get_json_from_text(
+        self,
+        text
+    ):
         """
         Takes raw text and imports it into JSON.
         """
 
         return json.loads(text)
 
-    def get_json_from_config(self):
+    def get_json_from_config(
+        self
+    ):
         """
         Returns the current config as JSON text.
 
@@ -183,7 +213,9 @@ class Configuration(object):
 
         return json.dumps(config_dictionary, indent=4, sort_keys=True)
 
-    def write_config(self):
+    def write_config(
+        self
+    ):
         """
         Writes the config file to the user's file.
 
@@ -197,7 +229,10 @@ class Configuration(object):
         except:
             print("ERROR trying to write user config file.")
 
-    def set_from_json(self, json_config):
+    def set_from_json(
+        self,
+        json_config
+    ):
         """
         Takes a JSON package and sets the config using the JSON
         """
@@ -263,7 +298,11 @@ class Configuration(object):
             self.__configuration__[
                 Configuration.TRAFFIC_MANAGER_KEY] = self.traffic_manager_address
 
-    def __get_config_value__(self, key, default_value):
+    def __get_config_value__(
+        self,
+        key,
+        default_value
+    ):
         """
         Returns a configuration value, default if not found.
         """
@@ -273,7 +312,9 @@ class Configuration(object):
 
         return default_value
 
-    def get_degrees_of_pitch(self):
+    def get_degrees_of_pitch(
+        self
+    ):
         """
         Returns the number of degrees of pitch for the AH ladder.
 
@@ -283,7 +324,9 @@ class Configuration(object):
 
         return self.degrees_of_pitch
 
-    def get_pitch_degrees_display_scaler(self):
+    def get_pitch_degrees_display_scaler(
+        self
+    ):
         """
         Returns the amount of adjustment to the pitch ladder
 
@@ -293,7 +336,9 @@ class Configuration(object):
 
         return self.pitch_degrees_display_scaler
 
-    def get_declination(self):
+    def get_declination(
+        self
+    ):
         """
         Returns the magnetic variance (true to magnetic)
 
@@ -303,14 +348,27 @@ class Configuration(object):
 
         return self.declination
 
-    def get_traffic_manager_address(self):
+    def get_traffic_manager_address(
+        self
+    ):
         """
         Returns the address we should use for the traffic manager
         """
 
         return self.traffic_manager_address
 
-    def get_units(self):
+    def get_aithre_manager_address(
+        self
+    ):
+        """
+        Returns the address of the REST service that is providing
+        Aithre connectivity.
+        """
+        return self.aithre_manager_address
+
+    def get_units(
+        self
+    ):
         """
         Returns the units that the display should use.
 
@@ -320,21 +378,84 @@ class Configuration(object):
 
         return self.__get_config_value__(self.DISTANCE_UNITS_KEY, units.STATUTE)
 
-    def data_source(self):
+    def data_source(
+        self
+    ):
         """
         Returns the data source to use.
         """
 
         return self.__get_config_value__(Configuration.DATA_SOURCE_KEY, DataSourceNames.STRATUX)
 
-    def stratux_address(self):
+    def avionics_address(
+        self
+    ):
+        """
+        Returns the address for the avionics adapter.
+        """
+        return self.__get_config_value__(Configuration.AVIONICS_ADDRESS_KEY, Configuration.DEFAULT_AVIONICS_ADDRESS)
+
+    def stratux_address(
+        self
+    ):
         """
         Returns the stratux address.
         """
 
         return self.__get_config_value__(Configuration.STRATUX_ADDRESS_KEY, Configuration.DEFAULT_NETWORK_IP)
 
-    def update_configuration(self, json_config):
+    def get_view_index(
+        self
+    ):
+        """
+        Returns the current index of the view
+        that should be displayed.
+
+        The index is relative (index 0) to the views
+        configuration that is loaded from the views.json file.
+        """
+        return self.__view_index__
+
+    def next_view(
+        self
+    ):
+        """
+        Changes to the next view.
+
+        Wraps around to the first view if we try to go past the last view.
+        """
+        self.__view_index__ += 1
+        self.__clamp_view__()
+
+    def previous_view(
+        self
+    ):
+        """
+        Changes to the previous view.
+
+        Wraps around to the last view if we try to "go previous"
+        of the first view.
+        """
+        self.__view_index__ -= 1
+        self.__clamp_view__()
+
+    def __clamp_view__(
+        self
+    ):
+        """
+        Makes sure that the view index is within bounds.
+        """
+
+        if self.__view_index__ >= (len(self.__hud_views__)):
+            self.__view_index__ = 0
+
+        if self.__view_index__ < 0:
+            self.__view_index__ = (len(self.__hud_views__) - 1)
+
+    def update_configuration(
+        self,
+        json_config
+    ):
         """
         Updates the master configuration from a json provided dictionary.
 
@@ -349,22 +470,57 @@ class Configuration(object):
         self.set_from_json(self.__configuration__)
         self.write_config()
 
-    def __load_config_from_json_file__(self, json_config_file):
+    def unescape_json_config_contents(
+        self,
+        unescaped_contents
+    ):
         """
-            Loads the complete configuration into the system.
-            Uses the default values as a base, then puts the
-            user's configuration overtop.
+        Takes a piece of JSON loaded from file and then makes sure that the file
+        is unescaped to remove any prefix/suffix quotation marks and fix any line
+        ending issues before it is decoded into an object.
+        """
+
+        if unescaped_contents is None:
+            return ''
+
+        quotation_mark = '"'
+
+        escaped_contents = unescaped_contents.decode('string_escape')
+
+        escaped_contents = escaped_contents[escaped_contents.startswith(
+            quotation_mark) and len(quotation_mark):]
+
+        if escaped_contents.endswith(quotation_mark):
+            escaped_contents = escaped_contents[:-len(quotation_mark)]
+
+        escaped_contents = escaped_contents.strip()
+
+        return escaped_contents
+
+    def __load_config_from_json_file__(
+        self,
+        json_config_file
+    ):
+        """
+        Loads the complete configuration into the system.
+        Uses the default values as a base, then puts the
+        user's configuration overtop.
         """
         try:
             with open(json_config_file) as json_config_file:
                 json_config_text = json_config_file.read()
-                json_config = json.loads(json_config_text)
+                json_config = json.loads(
+                    self.unescape_json_config_contents(json_config_text))
 
                 return json_config
         except:
             return {}
 
-    def __load_configuration__(self, default_config_file, user_config_file):
+    def __load_configuration__(
+        self,
+        default_config_file,
+        user_config_file
+    ):
         """
         Loads the configuration.
         """
@@ -377,7 +533,9 @@ class Configuration(object):
 
         return config
 
-    def __update_capabilities__(self):
+    def __update_capabilities__(
+        self
+    ):
         """
         Check occasionally to see if the settings
         for the Stratux have been changed that would
@@ -389,7 +547,14 @@ class Configuration(object):
         self.stratux_status = StratuxStatus(
             self.stratux_address(), self.__stratux_session__, None)
 
-    def __init__(self, default_config_file, user_config_file):
+    def __init__(
+        self,
+        default_config_file,
+        user_config_file
+    ):
+        self.__view_index__ = 0
+        self.__hud_views__ = None
+        self.get_views_list()
         self.degrees_of_pitch = Configuration.DEFAULT_DEGREES_OF_PITCH
         self.pitch_degrees_display_scaler = Configuration.DEFAULT_PITCH_DEGREES_DISPLAY_SCALER
         self.__configuration__ = self.__load_configuration__(
@@ -403,6 +568,10 @@ class Configuration(object):
         self.aithre_enabled = False
         self.traffic_manager_address = self.__get_config_value__(
             Configuration.TRAFFIC_MANAGER_KEY, Configuration.DEFAULT_TRAFFIC_MANAGER_ADDRESS
+        )
+        self.aithre_manager_address = self.__get_config_value__(
+            Configuration.AITHRE_MANAGER_KEY,
+            Configuration.DEFAULT_AITHRE_MANAGER_ADDRESS
         )
         self.__stratux_session__ = requests.Session()
 

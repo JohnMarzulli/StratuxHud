@@ -1,6 +1,6 @@
 {
   "name": "traffic_manager",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -10,19 +10,20 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/debug": "^4.1.4",
-    "@types/express": "^4.17.0",
-    "@types/node": "^12.6.8",
-    "@types/ws": "^6.0.1",
+    "@types/debug": "^4.1.5",
+    "@types/express": "^4.17.3",
+    "@types/node": "^12.12.29",
+    "@types/ws": "^6.0.4",
     "debug": "^4.1.1",
     "express": "^4.17.1",
     "morgan": "^1.9.1",
-    "node": "^12.7.0",
-    "ts-node": "^8.3.0",
-    "typescript": "^3.5.3",
-    "ws": "^7.1.1"
+    "node": "^12.16.1",
+    "ts-node": "^8.6.2",
+    "typescript": "^3.8.3",
+    "ws": "^7.2.3"
   },
   "dependencies": {
+    "@types/morgan": "^1.9.0",
     "gulp": "^4.0.2"
   }
 }
