@@ -43,6 +43,10 @@
     "class": "adsb_traffic_listing.AdsbTrafficListing",
     "detail_font": true
   },
+  "Traffic Not Available": {
+    "class": "traffic_not_available.TrafficNotAvailable",
+    "detail_font": false
+  },
   "Level Reference": {
     "class": "level_reference.LevelReference",
     "detail_font": true

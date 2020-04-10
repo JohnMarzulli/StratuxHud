@@ -25,13 +25,22 @@ import targets
 import traffic
 import restful_host
 import aithre
-from views import (adsb_on_screen_reticles, adsb_target_bugs, adsb_target_bugs_only,
-                   adsb_traffic_listing, ahrs_not_available, altitude,
-                   artificial_horizon, compass_and_heading_bottom_element,
+from views import (adsb_on_screen_reticles,
+                   adsb_target_bugs,
+                   adsb_target_bugs_only,
+                   adsb_traffic_listing,
+                   ahrs_not_available,
+                   altitude,
+                   artificial_horizon,
+                   compass_and_heading_bottom_element,
                    groundspeed, heading_target_bugs,
-                   level_reference, roll_indicator, skid_and_gs,
+                   level_reference,
+                   roll_indicator,
+                   skid_and_gs,
                    system_info,
-                   target_count, time)
+                   target_count,
+                   time,
+                   traffic_not_available)
 
 # TODO - Disable functionality based on the enabled StratuxCapabilities
 # TODO - Check for the key existence anyway... cross update the capabilities

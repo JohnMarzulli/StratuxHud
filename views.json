@@ -12,7 +12,8 @@
         "Aithre",
         "Illyrian",
         "ADSB Reticles",
-        "ADSB Target Bugs Only"
+        "ADSB Target Bugs Only",
+        "Traffic Not Available"
       ],
       "name": "AHRS + ADS-B"
     },
@@ -21,13 +22,15 @@
         "Compass",
         "ADSB Target Bugs Only",
         "ADSB Target Bugs",
-        "ADSB Reticles"
+        "ADSB Reticles",
+        "Traffic Not Available"
       ],
       "name": "Traffic"
     },
     {
       "elements": [
-        "Traffic List"
+        "Traffic List",
+        "Traffic Not Available"
       ],
       "name": "Traffic List"
     },
