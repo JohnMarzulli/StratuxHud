@@ -59,6 +59,22 @@ class AircraftDataCache(object):
             return data_age < self.__max_age_seconds__
         finally:
             self.__lock_object__.release()
+    
+    def get_item_count(
+        self
+    ):
+        """
+        Get how many items (key count) are in the package, regardless of age.
+        
+        Returns:
+            int -- The number of keys in the package.
+        """
+        try:
+            self.__lock_object__.acquire()
+
+            return len(self.__json_package__)
+        finally:
+            self.__lock_object__.release()
 
     def get(
         self
