@@ -24,6 +24,39 @@ class AircraftDataCache(object):
         self.__lock_object__ = threading.Lock()
         self.__last_updated__ = None
         self.__json_package__ = {}
+    
+    def __get_data_age__(
+        self
+    ):
+        """
+        Returns the age of the data in seconds.
+        INTENDED TO BE CALLED FROM INSIDE A LOCK.
+        DOES NOT PERFORM ITS OWN LOCK.
+        
+        Returns:
+            float -- The age of the data in seconds.
+        """
+        return (self.__max_age_seconds__ * 1000.0) if self.__json_package__ is None or self.__last_updated__ is None \
+                else (datetime.datetime.utcnow() - self.__last_updated__).total_seconds()
+            
+    
+    def garbage_collect(
+        self
+    ):
+        """
+        Go through the old data and make sure that it is removed if it is too old.
+        This prevents a scenario where contact is lost with a service, and then
+        an incomplete package keeps old data dangerously present.
+        """
+        self.__lock_object__.acquire()
+
+        try:
+            data_age = self.__get_data_age__()
+
+            if data_age > self.__max_age_seconds__:
+                self.__json_package__ = {}
+        finally:
+            self.__lock_object__.release()
 
     def update(
         self,
@@ -54,8 +87,7 @@ class AircraftDataCache(object):
         try:
             self.__lock_object__.acquire()
 
-            data_age = (self.__max_age_seconds__ * 1000.0) if self.__json_package__ is None or self.__last_updated__ is None \
-                else (datetime.datetime.utcnow() - self.__last_updated__).total_seconds()
+            data_age = self.__get_data_age__()
             return data_age < self.__max_age_seconds__
         finally:
             self.__lock_object__.release()
