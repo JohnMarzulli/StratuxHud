@@ -40,15 +40,14 @@ class Groundspeed(AhrsElement):
             units.STATUTE)
         
         airspeed_text = None
-        is_valid_airspeed = isinstance(orientation.airspeed, Number)
+        is_valid_airspeed = orientation.is_avionics_source and isinstance(orientation.airspeed, Number)
         is_valid_groundspeed = orientation.groundspeed is not None and isinstance(orientation.groundspeed, Number)
         
-        if orientation.is_avionics_source:
-            airspeed_text = units.get_converted_units_string(
-                speed_units,
-                orientation.airspeed * units.feet_to_nm,
-                unit_type=units.SPEED,
-                decimal_places=False) if is_valid_airspeed else orientation.airspeed
+        airspeed_text = units.get_converted_units_string(
+            speed_units,
+            orientation.airspeed * units.feet_to_nm,
+            unit_type=units.SPEED,
+            decimal_places=False) if is_valid_airspeed else None
 
         groundspeed_text = units.get_converted_units_string(
             speed_units,
