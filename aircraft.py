@@ -10,7 +10,7 @@ import lib.recurring_task as recurring_task
 from lib.simulated_values import SimulatedValue
 from logging_object import LoggingObject
 
-HEADING_NOT_AVAILABLE = '---'
+NOT_AVAILABLE = '---'
 
 
 class AhrsData(object):
@@ -32,7 +32,7 @@ class AhrsData(object):
         if self.gps_online:
             return int(self.gps_heading)
 
-        return HEADING_NOT_AVAILABLE
+        return NOT_AVAILABLE
 
     def get_onscreen_projection_display_heading(
         self
@@ -43,7 +43,7 @@ class AhrsData(object):
         except:
             pass
 
-        return HEADING_NOT_AVAILABLE
+        return NOT_AVAILABLE
 
     def get_onscreen_gps_heading(
         self
@@ -51,7 +51,7 @@ class AhrsData(object):
         """
             Returns a safe display version of the GPS heading
         """
-        return self.gps_heading if self.gps_online else HEADING_NOT_AVAILABLE
+        return self.gps_heading if self.gps_online else NOT_AVAILABLE
 
     def get_heading(
         self
@@ -66,9 +66,9 @@ class AhrsData(object):
             if self.__is_compass_heading_valid__():
                 return int(self.compass_heading)
         except:
-            return HEADING_NOT_AVAILABLE
+            return NOT_AVAILABLE
 
-        return HEADING_NOT_AVAILABLE
+        return NOT_AVAILABLE
 
     def __init__(
         self
@@ -253,8 +253,6 @@ class AhrsStratux(LoggingObject):
             'GPSFixQuality',
             0) > 0
 
-        is_reliable = new_ahrs_data.gps_online or new_ahrs_data.is_avionics_source
-
         new_ahrs_data.roll = self.__get_value__(
             ahrs_json,
             'AHRSRoll',
@@ -270,24 +268,30 @@ class AhrsStratux(LoggingObject):
         new_ahrs_data.gps_heading = self.__get_value__(
             ahrs_json,
             'GPSTrueCourse',
-            0.0) if new_ahrs_data.gps_online else HEADING_NOT_AVAILABLE
+            NOT_AVAILABLE)
         new_ahrs_data.alt = self.__get_value_with_fallback__(
             ahrs_json,
             ['BaroPressureAltitude', 'GPSAltitudeMSL'],
-            None) if is_reliable else HEADING_NOT_AVAILABLE
+            NOT_AVAILABLE)
         new_ahrs_data.position = (self.__get_value__(ahrs_json, 'GPSLatitude', None),
                                   self.__get_value__(ahrs_json, 'GPSLongitude', None)) if new_ahrs_data.gps_online else (None, None)
         new_ahrs_data.vertical_speed = self.__get_value_with_fallback__(
             ahrs_json,
             ["BaroVerticalSpeed",
              'GPSVerticalSpeed'],
-            0.0) if is_reliable else HEADING_NOT_AVAILABLE
-        new_ahrs_data.airspeed = self.__get_value__(ahrs_json, 'AHRSAirspeed', 0.0) if new_ahrs_data.is_avionics_source else HEADING_NOT_AVAILABLE
-        new_ahrs_data.groundspeed = self.__get_value__(ahrs_json, 'GPSGroundSpeed', 0.0) if new_ahrs_data.gps_online else HEADING_NOT_AVAILABLE
+            NOT_AVAILABLE)
+        new_ahrs_data.airspeed = self.__get_value__(
+            ahrs_json,
+            'AHRSAirspeed',
+            NOT_AVAILABLE)
+        new_ahrs_data.groundspeed = self.__get_value__(
+            ahrs_json,
+            'GPSGroundSpeed',
+            NOT_AVAILABLE) if new_ahrs_data.gps_online else NOT_AVAILABLE
         new_ahrs_data.g_load = self.__get_value__(
             ahrs_json,
             'AHRSGLoad',
-            1.0)
+            NOT_AVAILABLE)
         new_ahrs_data.utc_time = self.__get_value_with_fallback__(
             ahrs_json,
             'GPSTime',
@@ -373,7 +377,9 @@ class AhrsStratux(LoggingObject):
             bool -- True if data is available and recent.
         """
         is_stratux_available = self.__stratux_ahrs_cache__ is not None and self.__stratux_ahrs_cache__.is_available()
-        is_avionics_available = self.__avionics_cache__ is not None and self.__avionics_cache__.is_available()
+        is_avionics_available = self.__avionics_cache__ is not None \
+            and self.__avionics_cache__.is_available() \
+            and self.__avionics_cache__.get_item_count() > 1
 
         return is_stratux_available or is_avionics_available
 
