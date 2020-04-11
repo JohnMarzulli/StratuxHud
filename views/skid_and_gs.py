@@ -1,3 +1,5 @@
+from numbers import Number
+
 import pygame
 
 import testing
@@ -20,13 +22,17 @@ class SkidAndGs(AhrsElement):
 
     def render(self, framebuffer, orientation):
         self.task_timer.start()
-        g_load_text = "{0:.1f} Gs".format(orientation.g_load)
+        is_valid = isinstance(orientation.g_load, Number)
+        g_load_text = "{0:.1f} Gs".format(orientation.g_load) if is_valid else orientation.g_load
         texture = self.__font__.render(
-            g_load_text, True, display.WHITE, display.BLACK)
+            g_load_text, True,
+            display.WHITE if is_valid else display.RED,
+            display.BLACK)
         text_width, text_height = texture.get_size()
 
         framebuffer.blit(
-            texture, (self.__rhs__ - text_width, self.__text_y_pos__))
+            texture,
+            (self.__rhs__ - text_width, self.__text_y_pos__))
         self.task_timer.stop()
 
 
