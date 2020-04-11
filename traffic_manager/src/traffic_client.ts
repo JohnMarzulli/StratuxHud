@@ -302,7 +302,7 @@ export class TrafficClient {
     req: Request
   ): any {
     return {
-      socketStatus: WebSocketClient.readyState,
+      socketStatus: WebSocketClient != null ? WebSocketClient.readyState : 0,
       socketTimeSinceLastTraffic: getSecondsSince(lastWebsocketReportTime),
       trackedTrafficCount: Object.keys(trafficCache).length
     };

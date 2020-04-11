@@ -267,7 +267,7 @@ var TrafficClient = /** @class */ (function () {
      */
     TrafficClient.getServiceStatusResponseBody = function (req) {
         return {
-            socketStatus: WebSocketClient.readyState,
+            socketStatus: WebSocketClient != null ? WebSocketClient.readyState : 0,
             socketTimeSinceLastTraffic: getSecondsSince(lastWebsocketReportTime),
             trackedTrafficCount: Object.keys(trafficCache).length
         };
