@@ -41,6 +41,7 @@ class Groundspeed(AhrsElement):
         
         airspeed_text = None
         is_valid_airspeed = isinstance(orientation.airspeed, Number)
+        is_valid_groundspeed = orientation.groundspeed is not None and isinstance(orientation.groundspeed, Number)
         
         if orientation.is_avionics_source:
             airspeed_text = units.get_converted_units_string(
@@ -53,18 +54,19 @@ class Groundspeed(AhrsElement):
             speed_units,
             (orientation.groundspeed * units.yards_to_nm),
             unit_type=units.SPEED,
-            decimal_places=False) if orientation.groundspeed is not None and isinstance(orientation.groundspeed, Number) else AhrsElement.GPS_UNAVAILABLE_TEXT
+            decimal_places=False) if is_valid_groundspeed else orientation.groundspeed
+        
+        groundspeed_text += " GND"
         
         if airspeed_text is not None:
             airspeed_text += " IAS"
-            groundspeed_text += " GND"
             ias_len = len(airspeed_text)
             gnd_len = len(groundspeed_text)
             max_len = gnd_len if ias_len < gnd_len else ias_len
             airspeed_text = airspeed_text.rjust(max_len)
             groundspeed_text = groundspeed_text.rjust(max_len)
 
-        gs_display_color = display.WHITE if orientation is not None and orientation.groundspeed is not None and orientation.gps_online else display.RED
+        gs_display_color = display.WHITE if is_valid_groundspeed and orientation.gps_online else display.RED
         airspeed_color = display.WHITE if is_valid_airspeed else display.RED
 
         ias_texture = self.__font__.render(
