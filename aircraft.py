@@ -395,6 +395,10 @@ class AhrsStratux(LoggingObject):
             AhrsData -- Any available AHRS data.
         """
         package = {}
+        
+        self.__stratux_ahrs_cache__.garbage_collect()
+        self.__avionics_cache__.garbage_collect()
+
         stratux_ahrs = self.__stratux_ahrs_cache__.get()
         avionics_ahrs = self.__avionics_cache__.get()
 
