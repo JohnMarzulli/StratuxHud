@@ -19,12 +19,15 @@ class Altitude(AhrsElement):
 
     def render(self, framebuffer, orientation):
         self.task_timer.start()
+        is_altitude_valid = orientation.alt is not None and isinstance(orientation.alt, Number)
         altitude_text = str(int(orientation.alt)) + \
-            "' MSL" if orientation.alt is not None and isinstance(
-                orientation.alt, Number) else AhrsElement.GPS_UNAVAILABLE_TEXT
-        color = display.WHITE if orientation.alt is not None and orientation.gps_online or orientation.is_avionics_source else display.RED
+            "' MSL" if is_altitude_valid else AhrsElement.INOPERATIVE_TEXT
+        color = display.WHITE if is_altitude_valid else display.RED
         alt_texture = self.__font__.render(
-            altitude_text, True, color, display.BLACK)
+            altitude_text,
+            True,
+            color,
+            display.BLACK)
         text_width, text_height = alt_texture.get_size()
 
         framebuffer.blit(
