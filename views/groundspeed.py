@@ -39,11 +39,15 @@ class Groundspeed(AhrsElement):
             configuration.Configuration.DISTANCE_UNITS_KEY,
             units.STATUTE)
         
-        airspeed_text = units.get_converted_units_string(
-            speed_units,
-            orientation.airspeed * units.feet_to_nm,
-            unit_type=units.SPEED,
-            decimal_places=False) if orientation.is_avionics_source and isinstance(orientation.airspeed, Number) else None
+        airspeed_text = None
+        is_valid_airspeed = isinstance(orientation.airspeed, Number)
+        
+        if orientation.is_avionics_source:
+            airspeed_text = units.get_converted_units_string(
+                speed_units,
+                orientation.airspeed * units.feet_to_nm,
+                unit_type=units.SPEED,
+                decimal_places=False) if is_valid_airspeed else orientation.airspeed
 
         groundspeed_text = units.get_converted_units_string(
             speed_units,
@@ -61,11 +65,12 @@ class Groundspeed(AhrsElement):
             groundspeed_text = groundspeed_text.rjust(max_len)
 
         gs_display_color = display.WHITE if orientation is not None and orientation.groundspeed is not None and orientation.gps_online else display.RED
+        airspeed_color = display.WHITE if is_valid_airspeed else display.RED
 
         ias_texture = self.__font__.render(
             airspeed_text,
             True,
-            display.WHITE,
+            airspeed_color,
             display.BLACK) if airspeed_text is not None else None
 
         gs_texture = self.__font__.render(
