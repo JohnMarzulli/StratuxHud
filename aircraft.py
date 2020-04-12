@@ -271,7 +271,7 @@ class AhrsStratux(LoggingObject):
             NOT_AVAILABLE)
         new_ahrs_data.alt = self.__get_value_with_fallback__(
             ahrs_json,
-            ['BaroPressureAltitude', 'GPSAltitudeMSL'],
+            ['Altitude', 'GPSAltitudeMSL', 'BaroPressureAltitude'],
             NOT_AVAILABLE)
         new_ahrs_data.position = (self.__get_value__(ahrs_json, 'GPSLatitude', None),
                                   self.__get_value__(ahrs_json, 'GPSLongitude', None)) if new_ahrs_data.gps_online else (None, None)
@@ -395,7 +395,7 @@ class AhrsStratux(LoggingObject):
             AhrsData -- Any available AHRS data.
         """
         package = {}
-        
+
         self.__stratux_ahrs_cache__.garbage_collect()
         self.__avionics_cache__.garbage_collect()
 
