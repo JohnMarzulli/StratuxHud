@@ -18,7 +18,7 @@ There are two versions that can be built:
 
 There are two main ways to configure the StratuxHud.
 
-The first is as a stand alone unit. For the standalone configuration the HUD code runs on its own Raspberry Pi.
+The first is as a stand-alone unit. For the standalone configuration, the HUD code runs on its own Raspberry Pi.
 
 The second is in an "All-In-One" (AIO) configuration. With an AIO setup, the HUD code runs on the Stratux.
 
@@ -76,9 +76,9 @@ For more information on the setup, and installation of the DynonToHud service, p
 
 (DynonToHud)[<https://github.com/JohnMarzulli/DynonToHud>]
 
-## 3 In Flight Controls
+## 3 In-Flight Controls
 
-You may use a number pad as input device. I used velcro to secure the number pad to my dashboard.
+You may use a number pad as an input device. I used velcro to secure the number pad to my dashboard.
 
 Key       | Action
 --------- | ----------------------------------------------------------------------------
@@ -108,14 +108,14 @@ This view shows attitude information along with targeting bugs that show the rel
 
 In this example:
 
-- There is one (1) potential target. The traffic is at a higher altitude, and some what distant.
+- There is one (1) potential target. The traffic is at a higher altitude, and somewhat distant.
 - The traffic is within our field of view and has a targeting reticle.
-- With are rolled to the left slightly, less then 10 degrees.
+- With are rolled to the left slightly, less than 10 degrees.
 - We are at 649 feet MSL.
-- We are have an indicated AIRSPEED of 75MPG, but are hovering with a groundspeed of 0MPH
+- We have an indicated AIRSPEED of 75MPG, but are hovering with a groundspeed of 0MPH
 - We have a heading of 76, but our GPS track is 303\. If the AHRS or GPS is unable to obtain a reliable heading then `---` is shown for that portion of the heading.
 
-_NOTE:_ This example was using EFIS/AHRS data obtained from a Dynon D-180 FlightDek. As a result **I**ndicated **A**ir **S**peed (IAS) is displayed. The heading of 76, G-Force of 1.0, and altitude of 649' are also sourced from the Dynon.
+_NOTE:_ This example was using EFIS/AHRS data obtained from a Dynon D-180 FlightDek. As a result, **I**ndicated **A**ir **S**peed (IAS) is displayed. The heading of 76, G-Force of 1.0, and altitude of 649' are also sourced from the Dynon.
 
 _NOTE:_ This is the default view on startup. If you would like to switch to the `AHRS Only` You may press `-` on the keypad.
 
@@ -133,9 +133,9 @@ Note that the bearing is calculated using the direction we are pointing (left si
 
 ![Traffic Listing View Screenshot](media/traffic_listing_view.png)
 
-This shows us _at most_ the eight closest planes.
+This shows us _at most_, the eight closest planes.
 
-The _IDENT_ifier will be the tail number when available, otherwise the ICAO identifier or callsign may be used. The _BEAR_ing is the heading to take to fly to that target. The _DIST_ance is the distance to the target. The _ALT_itude is given in relative terms, with two digits dropped.
+The _IDENT_ifier will be the tail number when available, otherwise, the ICAO identifier or callsign may be used. The _BEAR_ing is the heading to take to fly to that target. The _DIST_ance is the distance to the target. The _ALT_itude is given in relative terms, with two digits dropped.
 
 In this example, the closest target is N4768B. The plane is only 4.4 statue mile away, and 1,500 feet above us.
 
@@ -175,7 +175,7 @@ This view element appears when the HUD software is unable to communicate with th
 
 This sub-service handles the communication of traffic data with the Stratux receiver.
 
-If you see this warning, the the service has stopped, was not installed correctly, or the HUD is looking for it in the wrong place.
+If you see this warning, the service has stopped, was not installed correctly, or the HUD is looking for it in the wrong place.
 
 If this warning appears sometime during the flight, and is not always on, then a HUD restart may resolve the issue.
 
@@ -191,7 +191,7 @@ When you do this, traffic and GPS based data will not be available.
 
 Here you can see the Ground Speed (GND) read "---" and is colored red to indicate the data is not available. The ground track also reads "---"
 
-_NOTE:_ If you are using the DynonToHud service AND the Stratux is unable to gain or keep GPS lock, then this is what will appear. The ground speed and ground track will re-appear when GPS lock is re-obtained. _NOTE:_ Positioning of your GPS antenna, or flight manuevers that cause the antenna to no longer have a view to the sky may cause GPS lock to be lost.
+_NOTE:_ If you are using the DynonToHud service AND the Stratux is unable to gain or keep GPS lock, then this is what will appear. The ground speed and ground track will re-appear when GPS lock is re-obtained. _NOTE:_ Positioning of your GPS antenna, or flight maneuvers that cause the antenna to no longer have a view to the sky may cause GPS lock to be lost.
 
 ## 5 Parts List
 
@@ -199,7 +199,7 @@ _NOTE:_ If you are using the DynonToHud service AND the Stratux is unable to gai
 
 _NOTE:_ This _does not_ include a power source. You will need to supply ship power from a 5V USB port or from a battery. _NOTE:_ This is for a build that uses a separate Raspberry Pi to drive the display. If you wish to have an "All-In-One" solution where the HUD software runs on the Stratux, you will not need an additional Pi.
 
-- [Kiviv HUD 2nd Gen](https://www.amazon.com/gp/product/B078GHFMG5/ref=ppx_yo_dt_b_asin_title_o01__o00_s00?ie=UTF8&psc=1)
+- [Kivic HUD 2nd Gen](https://www.amazon.com/gp/product/B078GHFMG5/ref=ppx_yo_dt_b_asin_title_o01__o00_s00?ie=UTF8&psc=1)
 - [6' 3.5mm Analog Cable](https://www.amazon.com/gp/product/B074TDHRCC/ref=ppx_yo_dt_b_asin_title_o00_s01?ie=UTF8&psc=1)
 - [_OPTIONAL_ 3/4" Wire Braiding](https://www.amazon.com/gp/product/B073YL3HMC/ref=ppx_yo_dt_b_asin_title_o00_s01?ie=UTF8&psc=1)
 
@@ -217,7 +217,7 @@ _NOTE:_ This _does not_ include a power source. You will need to supply ship pow
 Please use one of the provided images from the "Release" page on GitHub.
 
 1. Download the image for your scenario from the GitHub (Releases Page)[<https://github.com/JohnMarzulli/StratuxHud/releases>]
-2. Use (Etcher)[<https://www.balena.io/etcher/>] to flash the image onto an Micro SD card.
+2. Use (Etcher)[<https://www.balena.io/etcher/>] to flash the image onto a Micro SD card.
 3. Plug in your Projector to the Raspberry Pi
 4. It is recommended that you SSH into the HUD and use `raspi-config` to ("expand the filesystem")[<https://geek-university.com/raspberry-pi/expand-raspbian-filesystem/>].
 
@@ -254,9 +254,9 @@ If you are using a 3B+, and are experiencing under-voltage warnings, these may b
 sudo apt-get update && sudo apt-get dist-upgrade -y
 ```
 
-Other causes of under voltage warnings are low quality USB cables, lose power port on the Pi, or a low quality power supply.
+Other causes of under-voltage warnings are low-quality USB cables, lose power port on the Pi, or a low quality power supply.
 
-Make sure you are using a high quality power cable if you are using a Pi 3B+
+Make sure you are using a high-quality power cable if you are using a Pi 3B+
 
 ### 7.2 Install Software
 
@@ -336,7 +336,7 @@ Alternatively:
 
 **EXPERIMENTAL**
 
-For All In One (Stratux + HUD on same machine) setups, additional steps need to be taken.
+For All In One (Stratux + HUD on the same machine) setups, additional steps need to be taken.
 
 Due to the needs of the GPS, the normal BlueTooth functions are disabled. Edit the /boot/config.txt to include the following line **beneath** the line that sets the overlay to value of `dtoverlay` to "miniuart".
 
@@ -399,8 +399,8 @@ Date       | Version | Major Changes
 ---------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 2020-04-?? | 1.7     | Now able to cycle through views using the HudConfig page. Support for Illyrian by Aithre. Split Aithre data collection into a micro-service. Improve warning on some elements when GPS lock is lost. Fix user configuration files not always being used or saved. Support new V3 radio and Stratux 1.6\. Experimental support for Aithre in Stratux + HUD AIO configurations. Updates to distance conversion. Use the same naming strategy for aircraft as popular EFBs. Support data collected from Dynon serial output using the DynonToHud project. Indicate which speeds are IAS and groundspeed when GPS and Avionics data are both available. Update element positions. Added new indication when the Traffic service is not available.
 2019-09-04 | 1.6     | Traffic manager moved to a stand-alone service in NodeJs/TypeScript.
-2019-06-30 | 1.5     | Support for the Aithre CO detector. New roll indicator. Various performance improvements. Visual warning if GPS is not plugged in. Use the OWNSHIP config from the receiver instead of local config.
-2019-03-31 | 1.4     | Add connection reset button. Fixes issues with the Diagnostic view running of of space. Initial port to Python 3.7
+2019-06-30 | 1.5     | Support for the Aithre CO detector. New roll indicator. Various performance improvements. Visual warning if GPS is not plugged in. Use the OWNSHIP config from the receiver instead of the local config.
+2019-03-31 | 1.4     | Add connection reset button. Fixes issues with the Diagnostic view running out of space. Initial port to Python 3.7
 2019-01-31 | 1.3     | Improvements to the communication with the Stratux. Update directions for Kivic install.
 2018-10-13 | 1.2     | Major performance increases
 2018-09-07 | 1.1     | New system to allow views to be configurable
@@ -413,8 +413,8 @@ Please note that performance characteristics are only shown for displays that ar
 Board                          | Screen         | Frames Per Second (AHRS View Only) | Notes
 ------------------------------ | -------------- | ---------------------------------- | ------------------
 Rasp Pi 2                      | Sun Founder 5" | ~25FPS to ~30FPS                   | Not recommended
-Rasp Pi 3 (stand alone)        | Kivic          | 50FPS - 60FPS                      | Recommended
-Rasp Pi 3 (stand alone)        | Hudly Wireless | 30FPS - 50FPS                      | Recommended
+Rasp Pi 3 (stand-alone)        | Kivic          | 50FPS - 60FPS                      | Recommended
+Rasp Pi 3 (stand-alone)        | Hudly Wireless | 30FPS - 50FPS                      | Recommended
 Rasp Pi 3 (Running on Stratux) | Kivic          | 30FPS                              | Highly Recommended
 Rasp Pi 3 (Running on Stratux) | Hudly Wireless | 25FPS                              | Highly Recommended
 Rasp Pi 3B+                    | Kivic          | 55FPS - 60FPS                      | Recommended
