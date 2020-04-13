@@ -14,15 +14,31 @@ The focus is to improve traffic awareness and to reduce the amount of time pilot
 
 There are two versions that can be built:
 
-### 2.1 Recommended
+### 2.1 Configurations
+
+There are two main ways to configure the StratuxHud.
+
+The first is as a stand alone unit. For the standalone configuration the HUD code runs on its own Raspberry Pi.
+
+The second is in an "All-In-One" (AIO) configuration. With an AIO setup, the HUD code runs on the Stratux.
+
+Feature                    | Stand Alone | AIO
+-------------------------- | ----------- | ------------
+Keypad Control             | Yes         | No
+Dynon D180 Support         | Yes         | No
+Aithre CO Monitor          | Yes         | Experimental
+Illyrian SPO/Pulse Monitor | Yes         | Experimental
+Raspberry Pi 3b+           | Yes         | No
+
+### 2.2 Recommended Projector
 
 Using the "Kivic HUD 2nd Gen" projector and a Raspberry Pi 3.
 
 ![Kivic Version](media/kivic_in_flight.jpg)
 
-Estimated cost is $270
+Estimated cost is $240
 
-- $40 for RaspberryPi 3
+- $45 for RaspberryPi 3b+
 - $195 for Kivic 2nd Gen projector
 - Fans, case, cables
 
@@ -30,25 +46,35 @@ Uses 5V USB power.
 
 **NOTE:** This project initially used and recommended the "HUDLY Classic" projector which is no longer available.
 
-**NOTE:** To have full functionality with a Stratux based unit, please use Stratux Version 1.4R5 or higher.
+### 2.3 Recommended Stratux Configuration
 
-### 2.2 Alternative, Less Expensive Version
+To get the most out of the StratuxHud, the following configuration for the Stratux is suggested:
 
-A self contained system that uses a 3D printed case and teleprompter glass. This version can be built for the cost of a Raspberry Pi and the 3D print.
+- V3 receiver for 978 (UAT)
+- V2 receiver for 1090
+- Vk-162 "External" remote mount GPS.
 
-_NOTE:_ This version does have visibility issues in daylight conditions. Using an automotive HUD projector will result in full daylight visibility.
+The Vk-162, while less tidy due to the cable, has FAR superior GPS reception.
 
-![Teleprompter Glass Version In Flight](media/in_flight.jpg)
+For the StratuxHud to work correctly, you MUST have the AHRS chip and a GPS solution installed on the Stratux
 
-Estimated Cost is $140
+**NOTE:** To have full functionality with a Stratux based unit, please use Stratux Version 1.6r1 or higher.
 
-- $40 for a RaspberryPi 3
-- $45 for the LCD screen
-- $20 for Teleprompter Glass and shipping.
-- Cost of 3D printing the special case.
-- Cables
+### 2.4 Dynon Integration
 
-Can be powered by a USB powerbank or USB power.
+New with v1.7 is integration with Dynon D10/D100 Series Products.
+
+This is achieved using the serial output.
+
+At this time, integration with a Dynon D180 has only been tested.
+
+The DynonToHud service is included with the Stand Alone image of the StratuxHud.
+
+While the DynonToHud service does decode and make available both the EFIS and EMS data, at this time only the EFIS/AHRS data is presented by any of the HUD views.
+
+For more information on the setup, and installation of the DynonToHud service, please visit the project page.
+
+(DynonToHud)[<https://github.com/JohnMarzulli/DynonToHud>]
 
 ## 3 In Flight Controls
 
@@ -76,48 +102,54 @@ q         | (_Full keyboard only_) Quit to the command line.
 
 ### 4.1 AHRS + ADS-B View
 
-![AHRS + ADS-B](media/ahrs_plus_adsb_view.jpg)
+![AHRS + ADS-B](media/ahrs_plus_adsb_view.png)
 
 This view shows attitude information along with targeting bugs that show the relative position and distance of traffic.
 
 In this example:
 
-- There are three (3) potential targets, all at a higher altitude. Two are relatively far away, one is closer.
-- One of the targets is within our field of view and has a targeting reticle.
-- With are rolled to the left slightly, less then 15 degrees.
-- We are 309 feet MSL.
-- We are stopped, with a groundspeed of 0MPH
-- We have a GPS heading of 236, but do not have enough forward speed to obtain a heading from the AHRS chip. If the AHRS chip is unable to produce a reliable heading, `---` is shown for that portion of the heading.
+- There is one (1) potential target. The traffic is at a higher altitude, and some what distant.
+- The traffic is within our field of view and has a targeting reticle.
+- With are rolled to the left slightly, less then 10 degrees.
+- We are at 649 feet MSL.
+- We are have an indicated AIRSPEED of 75MPG, but are hovering with a groundspeed of 0MPH
+- We have a heading of 76, but our GPS track is 303\. If the AHRS or GPS is unable to obtain a reliable heading then `---` is shown for that portion of the heading.
+
+_NOTE:_ This example was using EFIS/AHRS data obtained from a Dynon D-180 FlightDek. As a result **I**ndicated **A**ir **S**peed (IAS) is displayed. The heading of 76, G-Force of 1.0, and altitude of 649' are also sourced from the Dynon.
 
 _NOTE:_ This is the default view on startup. If you would like to switch to the `AHRS Only` You may press `-` on the keypad.
 
 ### 4.2 Traffic View
 
-![Traffic View Screenshot](media/traffic_view.jpg)
+![Traffic View Screenshot](media/traffic_view.png)
 
 This view shows a heading strip, target bugs, targeting reticles, and "information cards" about our potential traffic.
 
-In this example, `N2849K` is almost directly behind us (far left screen). The plane is 1.5 statute miles away, with a bearing of 70 degrees, and 100 feet above us.
+In this example, `N4768B` is almost directly in front of us. The plane is 11.3 statute miles away, with a bearing of 105 degrees, and 1,100 feet above us.
+
+Note that the bearing is calculated using the direction we are pointing (left side heading), **NOT** the ground track heading which is the right portion.
 
 ### 4.3 Traffic Listing View
 
-![Traffic Listing View Screenshot](media/traffic_listing_view.jpg)
+![Traffic Listing View Screenshot](media/traffic_listing_view.png)
 
 This shows us _at most_ the eight closest planes.
 
 The _IDENT_ifier will be the tail number when available, otherwise the ICAO identifier or callsign may be used. The _BEAR_ing is the heading to take to fly to that target. The _DIST_ance is the distance to the target. The _ALT_itude is given in relative terms, with two digits dropped.
 
-In this example, the closest target is N1213S. The plane is only 1.2 statue mile away, and 1,500 feet above us.
+In this example, the closest target is N4768B. The plane is only 4.4 statue mile away, and 1,500 feet above us.
 
 ### 4.4 Diagnostics View
 
-![Diagnostics View Screenshot](media/diagnostics_view.jpg)
+![Diagnostics View Screenshot](media/diagnostics_view.png)
 
 The diagnostics view is designed to help give some troubleshooting ability. If a value is set for "OWNSHIP" (See the configuration file section), then any report from that tailnumber is ignored. The IP address is provided so you may use the configuration webpage if you set it up.
 
+This view also tells you how hot the HUD processor is with the `HUD CPU` row (temperature is in Celsius). The Aithre row tells you information about any Aithre or Illyrian sensors attached. The Traffic row tells you the address that the HUD is using to contact the TrafficManager service. If you see a "TRAFFIC UNAVAILABLE" warning, this address is critical to resolving your issue.
+
 ### 4.5 Universal Time
 
-![Diagnostics View Screenshot](media/time_view.jpg)
+![Diagnostics View Screenshot](media/time_view.png)
 
 Shows the current time in UTC at the bottom of the screen.
 
@@ -127,9 +159,39 @@ A blank screen so no information is displayed.
 
 ### 4.7 AHRS View
 
-![Traffic View Screenshot](media/ahrs_view.jpg)
+![Traffic View Screenshot](media/ahrs_view.png)
 
 This is a similar view to `AHRS + ADS-B`, but removes any AHRS information.
+
+Here you can see that only the Stratux is being used for flight data. As a result only the Ground Speed is available.
+
+The unit was not moving at the time, so the heading was not available, but the ground track was 343.
+
+### 4.8 Traffic Unavailable Warning
+
+![Traffic View Screenshot](media/no_traffic_warning.png)
+
+This view element appears when the HUD software is unable to communicate with the "TrafficManager" service.
+
+This sub-service handles the communication of traffic data with the Stratux receiver.
+
+If you see this warning, the the service has stopped, was not installed correctly, or the HUD is looking for it in the wrong place.
+
+If this warning appears sometime during the flight, and is not always on, then a HUD restart may resolve the issue.
+
+Please note that the warning DOES not appear on the "AHRS Only" view.
+
+### 4.9 AHRS Only With Only Dynon
+
+![Traffic View Screenshot](media/dynon_only_ahrs_view.png)
+
+If you are using the DynonToHud service, then it is possible to run the StratuxHud without a Stratux.
+
+When you do this, traffic and GPS based data will not be available.
+
+Here you can see the Ground Speed (GND) read "---" and is colored red to indicate the data is not available. The ground track also reads "---"
+
+_NOTE:_ If you are using the DynonToHud service AND the Stratux is unable to gain or keep GPS lock, then this is what will appear. The ground speed and ground track will re-appear when GPS lock is re-obtained. _NOTE:_ Positioning of your GPS antenna, or flight manuevers that cause the antenna to no longer have a view to the sky may cause GPS lock to be lost.
 
 ## 5 Parts List
 
@@ -137,23 +199,18 @@ This is a similar view to `AHRS + ADS-B`, but removes any AHRS information.
 
 _NOTE:_ This _does not_ include a power source. You will need to supply ship power from a 5V USB port or from a battery. _NOTE:_ This is for a build that uses a separate Raspberry Pi to drive the display. If you wish to have an "All-In-One" solution where the HUD software runs on the Stratux, you will not need an additional Pi.
 
-- [Raspberry Pi 3](https://www.amazon.com/Raspberry-Pi-RASPBERRYPI3-MODB-1GB-Model-Motherboard/dp/B01CD5VC92/ref=sr_1_3?s=electronics&ie=UTF8&qid=1529215701&sr=1-3&keywords=raspberry+pi+3)
+- [Kiviv HUD 2nd Gen](https://www.amazon.com/gp/product/B078GHFMG5/ref=ppx_yo_dt_b_asin_title_o01__o00_s00?ie=UTF8&psc=1)
+- [6' 3.5mm Analog Cable](https://www.amazon.com/gp/product/B074TDHRCC/ref=ppx_yo_dt_b_asin_title_o00_s01?ie=UTF8&psc=1)
+- [_OPTIONAL_ 3/4" Wire Braiding](https://www.amazon.com/gp/product/B073YL3HMC/ref=ppx_yo_dt_b_asin_title_o00_s01?ie=UTF8&psc=1)
+
+### 5.2 Recommended Stand Alone Build
+
+- [Raspberry Pi 3B+](https://www.amazon.com/ELEMENT-Element14-Raspberry-Pi-Motherboard/dp/B07P4LSDYV/ref=sr_1_6?dchild=1&keywords=raspberry+pi+3B%2B&qid=1586751198&sr=8-6)
 - [Case For Raspberry Pi](https://www.amazon.com/iPhoenix-Raspberry-White-Compatible-Model/dp/B06XQSXZ97/ref=sr_1_3?s=electronics&dd=iYEspjjyeRXfqDW9BHwJFw%2C%2C&ddc_refnmnt=pfod&ie=UTF8&qid=1529215794&sr=1-3&keywords=white+raspberry+pi+3+case&refinements=p_97%3A11292772011)
 - [Cooling Fan for Raspberry Pi](https://www.amazon.com/gp/product/B075R4S9GH/ref=od_aui_detailpages00?ie=UTF8&psc=1)
 - [Micro USB Cable](https://www.amazon.com/AmazonBasics-Male-Micro-Cable-Black/dp/B0711PVX6Z/ref=sr_1_6?s=electronics&ie=UTF8&qid=1529215888&sr=1-6&keywords=micro+usb+cable)
 - [Micro SD Card](https://www.amazon.com/SanDisk-Ultra-Micro-Adapter-SDSQUNC-016G-GN6MA/dp/B010Q57SEE/ref=sr_1_10?s=pc&ie=UTF8&qid=1529215944&sr=1-10&keywords=micro+sd+card)
 - [Rottay Mechanical Keypad](https://www.amazon.com/Number-Rottay-Mechanical-Numeric-backlit/dp/B076FTSY6J/ref=sr_1_3?ie=UTF8&qid=1529215627&sr=8-3&keywords=mechanical+keypad)
-
-### 5.2 Recommended Kivic Build
-
-- [Kiviv HUD 2nd Gen](https://www.amazon.com/gp/product/B078GHFMG5/ref=ppx_yo_dt_b_asin_title_o01__o00_s00?ie=UTF8&psc=1)
-- [6' 3.5mm Analog Cable](https://www.amazon.com/gp/product/B074TDHRCC/ref=ppx_yo_dt_b_asin_title_o00_s01?ie=UTF8&psc=1)
-- [_OPTIONAL_ 3/4" Wire Braiding](https://www.amazon.com/gp/product/B073YL3HMC/ref=ppx_yo_dt_b_asin_title_o00_s01?ie=UTF8&psc=1)
-
-### 5.3 D Print Build
-
-- [Teleprompter Glass Sample of both thickness of the 60/40 glass](https://telepromptermirror.com/sample/)
-- [SunFounder 5" TFT LCD](https://www.amazon.com/SunFounder-Monitor-Display-800X480-Raspberry/dp/B01HXSFIH6)
 
 ## 6 Recommended Software Install
 
@@ -191,11 +248,13 @@ Please use one of the provided images from the "Release" page on GitHub.
 
 #### 7.1.1 Raspberry Pi 3B+
 
-If you are using a 3B+, it may suffer from under-voltage alerts. These may be relieved by the following command to update your Linux install to the latest:
+If you are using a 3B+, and are experiencing under-voltage warnings, these may be relieved by the following command to update your Linux install to the latest:
 
 ```bash
 sudo apt-get update && sudo apt-get dist-upgrade -y
 ```
+
+Other causes of under voltage warnings are low quality USB cables, lose power port on the Pi, or a low quality power supply.
 
 Make sure you are using a high quality power cable if you are using a Pi 3B+
 
@@ -300,15 +359,6 @@ It has been found that enabling BlueTooth and the GPS simultaneously can cause h
 3. Plug the number pad into the Raspberry Pi.
 4. You will need to run two Micro USB (5v) power cables. One to the HUD and one to the Raspberry Pi processing unit. These may be run from a battery bank, or from the ship's power **if** you have 5V USB outlets.
 5. You may use the _optional_ sleeving to help keep the install tidy.
-
-### 7.6 Teleprompter Glass Based Setup
-
-1. Print the case.
-2. Attach the LCD screen to the "GPIO Board" of the Raspberry Pi
-3. Download the LCD drivers. <https://s3.amazonaws.com/sunfounder/Raspberry/images/LCD-show.tar.gz>
-4. Install the LCD driver per SunFounder's instructions. <http://wiki.sunfounder.cc/index.php?title=5_Inch_LCD_Touch_Screen_Monitor_for_Raspberry_Pi>
-5. Edit the StratuxHud config.json file so "flip_vertical" is True.
-6. Plug the number pad into the Raspberry Pi
 
 ## 8 Appendix
 
