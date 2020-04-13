@@ -28,6 +28,10 @@ CO_WARNING = 49
 BATTERY_SAFE = 75
 BATTERY_WARNING = 25
 
+OFFLINE_TEXT= "Offline"
+DISCONNECTED_TEXT = "DISCONNECTED"
+DISABLED_TEXT = "DISABLED"
+
 
 def get_ip_address():
     """
@@ -180,7 +184,7 @@ class SystemInfo(AhrsElement):
         """
 
         if AithreClient.INSTANCE is None:
-            return ('DISCONNECTED', RED) if configuration.CONFIGURATION.aithre_enabled else ('DISABLED', BLUE)
+            return (DISCONNECTED_TEXT, RED) if configuration.CONFIGURATION.aithre_enabled else (DISABLED_TEXT, BLUE)
 
         co_report = AithreClient.INSTANCE.get_co_report()
 
@@ -204,7 +208,7 @@ class SystemInfo(AhrsElement):
         try:
             co_ppm = co_report.co
 
-            if co_ppm is not None:
+            if co_ppm is not None and OFFLINE_TEXT not in co_ppm:
                 co_text = 'co:{}ppm'.format(co_ppm)
                 co_color = get_aithre_co_color(co_ppm)
         except Exception as ex:
