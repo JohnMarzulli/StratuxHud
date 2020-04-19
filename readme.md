@@ -52,9 +52,16 @@ To get the most out of the StratuxHud, the following configuration for the Strat
 
 - V3 receiver for 978 (UAT)
 - V2 receiver for 1090
-- Vk-162 "External" remote mount GPS.
+- Stratux GPYes u-blox 7
+
+Picking the correct GPS solution for your HUD can be difficult.
 
 The Vk-162, while less tidy due to the cable, has FAR superior GPS reception.
+The problem with the Vk-162 is in the All-In-One solution, the Stratux portion of the receiver can become VERY slow.
+
+This behavior has not been observed with a GPYes unit.
+
+If you are running the HUD as a standalone unit AND using the optional Dynon interface, then this is not a problem.
 
 For the StratuxHud to work correctly, you MUST have the AHRS chip and a GPS solution installed on the Stratux
 
