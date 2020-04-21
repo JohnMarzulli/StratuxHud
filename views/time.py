@@ -34,7 +34,7 @@ class Time(AhrsElement):
     ):
         self.task_timer.start()
 
-        time_text = str(orientation.utc_time).split('.')[0] + "UTC"
+        time_text = str(orientation.utc_time).split('.')[0] + "UTC" if orientation.utc_time is not None else AhrsElement.GPS_UNAVAILABLE_TEXT
         texture = self.__font__.render(time_text, True, YELLOW, BLACK)
         width = texture.get_size()[0]
 

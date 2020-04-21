@@ -84,7 +84,7 @@ class AhrsData(object):
         self.airspeed = 0
         self.vertical_speed = 0
         self.g_load = 1.0
-        self.utc_time = datetime.datetime.utcnow()
+        self.utc_time = None
         self.gps_online = True
         self.is_avionics_source = False
 
@@ -292,10 +292,10 @@ class AhrsStratux(LoggingObject):
             ahrs_json,
             'AHRSGLoad',
             NOT_AVAILABLE)
-        new_ahrs_data.utc_time = self.__get_value_with_fallback__(
+        new_ahrs_data.utc_time = self.__get_value__(
             ahrs_json,
             'GPSTime',
-            system_utc_time) if new_ahrs_data.gps_online else system_utc_time
+            system_utc_time)
 
         return new_ahrs_data
 
