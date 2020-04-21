@@ -57,7 +57,9 @@ To get the most out of the StratuxHud, the following configuration for the Strat
 Picking the correct GPS solution for your HUD can be difficult.
 
 The Vk-162, while less tidy due to the cable, has FAR superior GPS reception.
-The problem with the Vk-162 is in the All-In-One solution, the Stratux portion of the receiver can become VERY slow.
+GPS reception with the GP-Yes unit can be a problem.
+
+I have two two Vk-162 units fail. With each failure the AHRS reports from the Stratux have been VERY slow.
 
 This behavior has not been observed with a GPYes unit.
 
