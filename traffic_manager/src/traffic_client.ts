@@ -23,13 +23,13 @@ const displayNameKey: string = "displayName";
 
 const unknownDisplayName = "UNKNOWN";
 
-var trafficCache: Map<string, Map<string, any>> = new Map<
-  string,
-  Map<string, any>
->();
+class JsonPackage extends Map<string, any>{ }
+class TrafficResponsePackage extends Map<string, JsonPackage>{ }
+
+var trafficCache: TrafficResponsePackage = new Map<string, JsonPackage>();
 var lastWebsocketReportTime: number = 0;
 
-var WebSocketClient: WebSocket = null;
+var WebSocketClient: WebSocket;
 
 /**
  * Get the number of seconds since the given time.
@@ -37,7 +37,9 @@ var WebSocketClient: WebSocket = null;
  * @param {number} lastTime The time we want to get the time since.
  * @returns {number} The number of seconds between NOW and the given time.
  */
-function getSecondsSince(lastTime: number): number {
+function getSecondsSince(
+  lastTime: number
+): number {
   if (lastTime == null) {
     return 0.0;
   }
@@ -45,27 +47,65 @@ function getSecondsSince(lastTime: number): number {
   return (Date.now() - lastTime) / 1000;
 }
 
+function hasGpsKeys(
+  inReport: JsonPackage
+): boolean {
+  return inReport != null
+    && inReport[latitudeKey] != null
+    && inReport[longitudeKey] != null;
+}
+
+function isReliableReport(
+  inReport: JsonPackage
+): boolean {
+  return inReport != null
+    && inReport[trafficReliableKey] != null
+    && inReport[trafficReliableKey];
+}
+
+function containsKeyAndValueIsNonNull(
+  inReport: JsonPackage,
+  requiredKeyName: string
+): boolean {
+  return (requiredKeyName in inReport) && (inReport[requiredKeyName] != null);
+}
+
+function containsRequiredKeysToBeReliable(
+  inReport: JsonPackage
+): boolean {
+  var requiredKeys = [
+    latitudeKey,
+    longitudeKey,
+    trafficReliableKey,
+    secondsSinceLastReportKey,
+    icaoAddressKey,
+    onGroundKey,
+    distanceKey,
+    altitudeKey,
+    bearingKey
+  ];
+
+  var requiredKeysAreNonNull = true;
+  requiredKeys.forEach(requiredKeyName => {
+    requiredKeysAreNonNull = requiredKeysAreNonNull && containsKeyAndValueIsNonNull(inReport, requiredKeyName);
+  });
+
+  return requiredKeysAreNonNull;
+}
+
 /**
  * Is the report "reliable" and this should be returned to be
  * shown in the HUD?
  *
- * @param {Map<string, any>} inReport The report that we want to test.
+ * @param {JsonPackage} inReport The report that we want to test.
  * @returns {boolean} True if the traffic has a valid position.
  */
-function isReliableTraffic(inReport: Map<string, any>): boolean {
-  return (
-    inReport != null &&
-    inReport[secondsSinceLastReportKey] != null &&
-    inReport[icaoAddressKey] != null &&
-    inReport[trafficReliableKey] != null &&
-    inReport[trafficReliableKey] &&
-    inReport[latitudeKey] != null &&
-    inReport[longitudeKey] != null &&
-    inReport[onGroundKey] != null &&
-    inReport[distanceKey] != null &&
-    inReport[altitudeKey] != null &&
-    inReport[bearingKey] != null
-  );
+function isReliableTraffic(
+  inReport: JsonPackage
+): boolean {
+  return containsRequiredKeysToBeReliable(inReport)
+    && hasGpsKeys(inReport)
+    && isReliableReport(inReport);
 }
 
 /**
@@ -73,31 +113,80 @@ function isReliableTraffic(inReport: Map<string, any>): boolean {
  * for this traffic.
  *
  * Uses the registration mark if available, then the
- * the callsign/tailnumber, then finally the IACO code.
+ * the call sign/tail number, then finally the ICAO code.
  *
- * @param {Map<string, any>} trafficReport The traffic we want to get a display name for.
+ * @param {JsonPackage} trafficReport The traffic we want to get a display name for.
  * @returns {string} The display name for the traffic.
  */
-function getDisplayName(trafficReport: Map<string, any>): string {
+function getDisplayName(
+  trafficReport: JsonPackage
+): string {
   if (trafficReport == null) {
     return unknownDisplayName;
   }
 
-  var outDisplayName: string = trafficReport[registrationNumberKey];
+  return trafficReport[tailNumberKey]
+    ?? trafficReport[registrationNumberKey].toString()
+    ?? trafficReport[icaoAddressKey].toString()
+    ?? unknownDisplayName;
+}
 
-  if (outDisplayName == null) {
-    outDisplayName = trafficReport[tailNumberKey].toString();
+function isRequestInvalid(
+  req: any
+): boolean {
+  return (req == null || req.params == null || req.params.id == null);
+}
+
+function getTrafficResponseSubPackage(
+  icaoAddress: string
+): any {
+  return {
+    secondsSinceLastReport: getSecondsSince(
+      trafficCache[icaoAddress][secondsSinceLastReportKey]
+    ),
+    tailNumber: getDisplayName(trafficCache[icaoAddress])
+  };
+}
+
+/**
+ * Take a traffic report and then merge in the latest data
+ * that came from the WebSocket.
+ *
+ * Handles incremental updates to the traffic, merging new portions
+ * of the report into the existing data.
+ *
+ * @private
+ * @static
+ * @param {JsonPackage} report The incoming traffic report.
+ * @returns {void}
+ * @memberof TrafficClient
+ */
+function reportTraffic(
+  report: JsonPackage
+): void {
+  try {
+    if (report == null) {
+      return;
+    }
+
+    var icaoAddress: string = report[icaoAddressKey].toString();
+
+    // Create the entry if it is not already there.
+    if (trafficCache[icaoAddress] == null) {
+      trafficCache[icaoAddress] = report;
+      console.log(`${Date.now().toLocaleString()}: Adding ${icaoAddress}`);
+    } else {
+      // Now go an perform the painful merge
+      Object.keys(report).forEach(key => {
+        trafficCache[icaoAddress][key] = report[key];
+      });
+    }
+
+    lastWebsocketReportTime = Date.now();
+    trafficCache[icaoAddress][secondsSinceLastReportKey] = lastWebsocketReportTime;
+  } catch (e) {
+    console.error(`Issue merging report into cache:${e}`);
   }
-
-  if (outDisplayName == null) {
-    outDisplayName = trafficReport[icaoAddressKey].toString();
-  }
-
-  if (outDisplayName == null) {
-    outDisplayName = unknownDisplayName;
-  }
-
-  return outDisplayName;
 }
 
 /**
@@ -110,48 +199,6 @@ function getDisplayName(trafficReport: Map<string, any>): string {
  */
 export class TrafficClient {
   /**
-   * Take a traffic report and then merge in the latest data
-   * that came from the WebSocket.
-   *
-   * Handles incremental updates to the traffic, merging new portions
-   * of the report into the existing data.
-   *
-   * @private
-   * @static
-   * @param {Map<string, any>} report The incoming traffic report.
-   * @returns {void}
-   * @memberof TrafficClient
-   */
-  private static reportTraffic(report: Map<string, any>): void {
-    try {
-      if (report == null) {
-        return;
-      }
-
-      var icaoAddress: string = report[icaoAddressKey].toString();
-
-      // Create the entry if it is not already there.
-      if (trafficCache[icaoAddress] == null) {
-        trafficCache[icaoAddress] = report;
-        // trafficCache[icaoAddress] = new Map<string, any>();
-        console.log(Date.now().toLocaleString() + ": Adding " + icaoAddress);
-      } else {
-        // Now go an perform the painful merge
-        Object.keys(report).forEach(key => {
-          trafficCache[icaoAddress][key] = report[key];
-        });
-      }
-
-      lastWebsocketReportTime = Date.now();
-      trafficCache[icaoAddress][
-        secondsSinceLastReportKey
-      ] = lastWebsocketReportTime;
-    } catch (e) {
-      console.error("Issue merging report into cache:" + e);
-    }
-  }
-
-  /**
    * Looks at all of the existing traffic reports and then
    * prunes out anything that is old and should not be shown.
    *
@@ -162,30 +209,27 @@ export class TrafficClient {
     var keptCount: number = 0;
     var purgedCount: number = 0;
 
-    var newTrafficReport: Map<string, Map<string, any>> = new Map<
-      string,
-      Map<string, any>
-    >();
-    Object.keys(trafficCache).forEach(iacoCode => {
+    var newTrafficReport: TrafficResponsePackage = new Map<string, JsonPackage>();
+    Object.keys(trafficCache).forEach(icaoCode => {
       var secondsSinceLastReport: number = getSecondsSince(
-        trafficCache[iacoCode][secondsSinceLastReportKey]
+        trafficCache[icaoCode][secondsSinceLastReportKey]
       );
 
       if (secondsSinceLastReport > SecondsToPurgeReport) {
         ++purgedCount;
       } else {
-        newTrafficReport[iacoCode] = trafficCache[iacoCode];
+        newTrafficReport[icaoCode] = trafficCache[icaoCode];
         ++keptCount;
       }
     });
 
     trafficCache = newTrafficReport;
 
-    console.log("GC: Kept " + keptCount + ", purged " + purgedCount);
+    console.log(`GC: Kept ${keptCount}, purged ${purgedCount}`);
   }
 
   /**
-   * Triggers the websocker to be torn down and then rebuilt.
+   * Triggers the websocket to be torn down and then rebuilt.
    *
    * @static
    * @memberof TrafficClient
@@ -207,22 +251,23 @@ export class TrafficClient {
       WebSocketClient.close();
     }
 
-    WebSocketClient = new WebSocket("ws://" + StratuxAddress + "/traffic");
+    WebSocketClient = new WebSocket(`ws://${StratuxAddress}/traffic`);
 
     WebSocketClient.onopen = function () {
       console.log("Socket open");
+      lastWebsocketReportTime = Date.now();
     };
 
     WebSocketClient.onerror = function (error) {
-      console.error("ERROR:" + error);
+      console.error(`ERROR:${error.message}`);
     };
 
     WebSocketClient.onmessage = function (message) {
       try {
         var json = JSON.parse(message.data.toString());
-        TrafficClient.reportTraffic(json);
+        reportTraffic(json);
       } catch (e) {
-        console.log(e + "Error handling traffic report: ", message.data);
+        console.log(`${e}: Error handling traffic report:`, message.data);
       }
     };
   }
@@ -232,7 +277,7 @@ export class TrafficClient {
    * down and rebuilt.
    *
    * Making sure the socket is always active is the highest
-   * priortity of this module.
+   * priority of this module.
    *
    * @static
    * @memberof TrafficClient
@@ -253,9 +298,11 @@ export class TrafficClient {
    * @returns {*}
    * @memberof RestServer
    */
-  public static getServiceStatusResponseBody(req: Request): any {
+  public static getServiceStatusResponseBody(
+    req: Request
+  ): any {
     return {
-      socketStatus: WebSocketClient.readyState,
+      socketStatus: WebSocketClient != null ? WebSocketClient.readyState : 0,
       socketTimeSinceLastTraffic: getSecondsSince(lastWebsocketReportTime),
       trackedTrafficCount: Object.keys(trafficCache).length
     };
@@ -264,31 +311,23 @@ export class TrafficClient {
   /**
    * Get a dictionary to be turned into JSON
    * that gives an overview of the traffic.
-   * This is a greatly reduced pacakge to save
+   * This is a greatly reduced package to save
    * on transfer time.
    *
    * @static
    * @param {Request} req
-   * @returns {Map<string, Map<string, any>>}
+   * @returns {Map<string, JsonPackage>}
    * @memberof TrafficClient
    */
   public static getTrafficOverviewResponseBody(
     req: Request
-  ): Map<string, Map<string, any>> {
+  ): TrafficResponsePackage {
     {
-      var response: Map<string, Map<string, any>> = new Map<
-        string,
-        Map<string, any>
-      >();
+      var response: TrafficResponsePackage = new Map<string, JsonPackage>();
 
-      Object.keys(trafficCache).forEach(icaoAddress => {
-        response[icaoAddress] = {
-          secondsSinceLastReport: getSecondsSince(
-            trafficCache[icaoAddress][secondsSinceLastReportKey]
-          ),
-          tailNumber: getDisplayName(trafficCache[icaoAddress])
-        };
-      });
+      for (const icaoAddress in Object.keys(trafficCache)) {
+        response[icaoAddress] = getTrafficResponseSubPackage(icaoAddress);
+      }
 
       return response;
     }
@@ -303,18 +342,18 @@ export class TrafficClient {
    *
    * @static
    * @param {Request} req
-   * @returns {Map<string, Map<string, any>>}
+   * @returns {TrafficResponsePackage}
    * @memberof TrafficClient
    */
   public static getTrafficFullResponseBody(
     req: Request
-  ): Map<string, Map<string, any>> {
+  ): TrafficResponsePackage {
     return trafficCache;
   }
 
   /**
    * Get a dictionary to be turned into JSON
-   * of the traffice that is considered reliable
+   * of the traffic that is considered reliable
    * and CAN be shown in the HUD.
    *
    * Uses a slightly different format so as to normalize
@@ -322,37 +361,27 @@ export class TrafficClient {
    *
    * @static
    * @param {Request} req
-   * @returns {Map<string, Map<string, any>>}
+   * @returns {TrafficResponsePackage}
    * @memberof TrafficClient
    */
-  public static getTrafficReliableRepsonseBody(
+  public static getTrafficReliableResponseBody(
     req: Request
-  ): Map<string, Map<string, any>> {
-    var outReliableTraffic: Map<string, Map<string, any>> = new Map<
-      string,
-      Map<string, any>
-    >();
+  ): TrafficResponsePackage {
+    var outReliableTraffic: TrafficResponsePackage = new Map<string, JsonPackage>();
 
-    Object.keys(trafficCache).forEach(iacoCode => {
-      if (isReliableTraffic(trafficCache[iacoCode])) {
-        var displayValue: string = getDisplayName(trafficCache[iacoCode]);
+    Object.keys(trafficCache).forEach(icaoCode => {
+      if (isReliableTraffic(trafficCache[icaoCode])) {
+        var displayValue: string = getDisplayName(trafficCache[icaoCode]);
 
-        outReliableTraffic[iacoCode] = new Map<string, Map<string, any>>();
-        outReliableTraffic[iacoCode][displayNameKey] = displayValue;
-        outReliableTraffic[iacoCode][secondsSinceLastReportKey] =
-          trafficCache[iacoCode][secondsSinceLastReportKey];
-        outReliableTraffic[iacoCode][latitudeKey] =
-          trafficCache[iacoCode][latitudeKey];
-        outReliableTraffic[iacoCode][longitudeKey] =
-          trafficCache[iacoCode][longitudeKey];
-        outReliableTraffic[iacoCode][onGroundKey] =
-          trafficCache[iacoCode][onGroundKey];
-        outReliableTraffic[iacoCode][distanceKey] =
-          trafficCache[iacoCode][distanceKey];
-        outReliableTraffic[iacoCode][altitudeKey] =
-          trafficCache[iacoCode][altitudeKey];
-        outReliableTraffic[iacoCode][bearingKey] =
-          trafficCache[iacoCode][bearingKey];
+        outReliableTraffic[icaoCode] = new Map<string, JsonPackage>();
+        outReliableTraffic[icaoCode][displayNameKey] = displayValue;
+        outReliableTraffic[icaoCode][secondsSinceLastReportKey] = trafficCache[icaoCode][secondsSinceLastReportKey];
+        outReliableTraffic[icaoCode][latitudeKey] = trafficCache[icaoCode][latitudeKey];
+        outReliableTraffic[icaoCode][longitudeKey] = trafficCache[icaoCode][longitudeKey];
+        outReliableTraffic[icaoCode][onGroundKey] = trafficCache[icaoCode][onGroundKey];
+        outReliableTraffic[icaoCode][distanceKey] = trafficCache[icaoCode][distanceKey];
+        outReliableTraffic[icaoCode][altitudeKey] = trafficCache[icaoCode][altitudeKey];
+        outReliableTraffic[icaoCode][bearingKey] = trafficCache[icaoCode][bearingKey];
       }
     });
 
@@ -363,7 +392,7 @@ export class TrafficClient {
    * Get a dictionary to be turned into JSON that is just the RAW
    * data about the given traffic.
    *
-   * Takes an IACO integer as the parameter.
+   * Takes an ICAO integer as the parameter.
    *
    * If a bad code is given, an empty set is returned.
    *
@@ -372,19 +401,34 @@ export class TrafficClient {
    * @returns {*}
    * @memberof TrafficClient
    */
-  public static getTrafficDetailsResponseBody(req: any): any {
-    if (req == null || req.params == null || req.params.id == null) {
-      return {};
-    }
-
-    try {
-      var key: number = Number(req.params.id);
-
-      return trafficCache[key];
-    } catch {
-      return Object.keys(trafficCache);
-    }
+  public static getTrafficDetailsResponseBody(
+    req: any
+  ): any {
+    return isRequestInvalid(req)
+      ? {}
+      : getCachedItemFromValidRequest(req);
   }
+}
+
+/**
+ * Given a request, attempt to retrieve it from the cache.
+ *
+ * @param {{ params: { id: string; }; }} req The request that needs the cached item
+ * @returns Any item found in the cache, otherwise a list of items in the cache.
+ */
+function getCachedItemFromValidRequest(
+  req: { params: { id: string; }; }
+) {
+  var cachedItem = null;
+  try {
+    var key: number = Number(req?.params?.id);
+
+    cachedItem = trafficCache[key];
+  } catch {
+    cachedItem = Object.keys(trafficCache);
+  }
+
+  return cachedItem;
 }
 
 setInterval(

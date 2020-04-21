@@ -21,11 +21,10 @@ from traffic import AdsbTrafficClient, Traffic
 SIN_RADIANS_BY_DEGREES = {}
 COS_RADIANS_BY_DEGREES = {}
 
-imperial_nearby = 3000.0
 max_target_bugs = 25
-imperial_occlude = units.feet_to_sm * 5
-imperial_faraway = units.feet_to_sm * 2
-imperial_superclose = units.feet_to_sm / 4.0
+imperial_occlude = units.yards_to_sm * 10
+imperial_faraway = units.yards_to_sm * 5
+imperial_superclose = units.yards_to_sm / 8.0
 
 # Fill the quick trig look up tables.
 for degrees in range(-360, 361):
@@ -34,7 +33,11 @@ for degrees in range(-360, 361):
     COS_RADIANS_BY_DEGREES[degrees] = math.cos(radians)
 
 
-def get_reticle_size(distance, min_reticle_size=0.05, max_reticle_size=0.20):
+def get_reticle_size(
+    distance,
+    min_reticle_size=0.05,
+    max_reticle_size=0.20
+):
     """
     The the size of the reticle based on the distance of the target.
 
@@ -48,8 +51,6 @@ def get_reticle_size(distance, min_reticle_size=0.05, max_reticle_size=0.20):
     Returns:
         float -- The size of the reticle (in proportion to the screen size.)
     """
-
-    on_screen_reticle_scale = min_reticle_size  # 0.05
 
     if distance <= imperial_superclose:
         on_screen_reticle_scale = max_reticle_size
@@ -73,10 +74,12 @@ class HudDataCache(object):
     __CACHE_INVALIDATION_TIME__ = 60 * 5
 
     RELIABLE_TRAFFIC = []
+    IS_TRAFFIC_AVAILABLE = False
 
     __LOCK__ = threading.Lock()
 
-    __TRAFFIC_CLIENT__ = AdsbTrafficClient(configuration.CONFIGURATION.get_traffic_manager_address())
+    __TRAFFIC_CLIENT__ = AdsbTrafficClient(
+        configuration.CONFIGURATION.get_traffic_manager_address())
 
     @staticmethod
     def update_traffic_reports():
@@ -84,6 +87,7 @@ class HudDataCache(object):
 
         try:
             HudDataCache.RELIABLE_TRAFFIC = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
+            HudDataCache.IS_TRAFFIC_AVAILABLE = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.is_traffic_available()
         finally:
             HudDataCache.__LOCK__.release()
 
@@ -105,7 +109,9 @@ class HudDataCache(object):
         return traffic_clone
 
     @staticmethod
-    def __purge_texture__(texture_to_purge):
+    def __purge_texture__(
+        texture_to_purge
+    ):
         """
         Attempts to remove a texture from the cache.
 
@@ -120,7 +126,10 @@ class HudDataCache(object):
             return True
 
     @staticmethod
-    def __get_purge_key__(now, texture_key):
+    def __get_purge_key__(
+        now,
+        texture_key
+    ):
         """
         Returns the key of the traffic to purge if it should be, otherwise returns None.
 
@@ -133,12 +142,13 @@ class HudDataCache(object):
         """
 
         lsu = HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_key]
-        time_since_last_use = (datetime.datetime.utcnow() - lsu).total_seconds()
+        time_since_last_use = (
+            datetime.datetime.utcnow() - lsu).total_seconds()
 
         return texture_key if time_since_last_use > HudDataCache.__CACHE_INVALIDATION_TIME__ else None
 
     @staticmethod
-    def purge_old_traffic_reports():
+    def purge_old_textures():
         """
         Works through the traffic reports and removes any traffic that is
         old, or the cache has timed out on.
@@ -159,7 +169,14 @@ class HudDataCache(object):
             HudDataCache.__LOCK__.release()
 
     @staticmethod
-    def get_cached_text_texture(text, font, text_color=BLACK, background_color=YELLOW, use_alpha=False, force_regen=False):
+    def get_cached_text_texture(
+        text,
+        font,
+        text_color=BLACK,
+        background_color=YELLOW,
+        use_alpha=False,
+        force_regen=False
+    ):
         """
         Retrieves a cached texture.
         If the texture with the given text does not already exists, creates it.
@@ -190,14 +207,20 @@ class HudDataCache(object):
 
                 HudDataCache.TEXT_TEXTURE_CACHE[text] = texture, size
 
-            HudDataCache.__CACHE_ENTRY_LAST_USED__[text] = datetime.datetime.utcnow()
+            HudDataCache.__CACHE_ENTRY_LAST_USED__[
+                text] = datetime.datetime.utcnow()
             result = HudDataCache.TEXT_TEXTURE_CACHE[text]
         finally:
             HudDataCache.__LOCK__.release()
-        
+
         return result
 
-def get_heading_bug_x(heading, bearing, degrees_per_pixel):
+
+def get_heading_bug_x(
+    heading,
+    bearing,
+    degrees_per_pixel
+):
     """
     Gets the X position of a heading bug. 0 is the LHS.
 
@@ -220,7 +243,15 @@ def get_heading_bug_x(heading, bearing, degrees_per_pixel):
     return int(delta * degrees_per_pixel)
 
 
-def get_onscreen_traffic_projection__(heading, pitch, roll, bearing, distance, altitude_delta, pixels_per_degree):
+def get_onscreen_traffic_projection__(
+    heading,
+    pitch,
+    roll,
+    bearing,
+    distance,
+    altitude_delta,
+    pixels_per_degree
+):
     """
     Attempts to figure out where the traffic reticle should be rendered.
     Returns value RELATIVE to the screen center.
@@ -241,7 +272,10 @@ def get_onscreen_traffic_projection__(heading, pitch, roll, bearing, distance, a
     return screen_x, screen_y
 
 
-def run_ahrs_hud_element(element_type, use_detail_font=True):
+def run_ahrs_hud_element(
+    element_type,
+    use_detail_font=True
+):
     """
     Runs an AHRS based HUD element alone for testing purposes
 
@@ -252,7 +286,6 @@ def run_ahrs_hud_element(element_type, use_detail_font=True):
         use_detail_font {bool} -- Should the detail font be used. (default: {True})
     """
 
-    from heads_up_display import HeadsUpDisplay
     from aircraft import AhrsSimulation
     from datetime import datetime
 
@@ -286,7 +319,7 @@ def run_ahrs_hud_element(element_type, use_detail_font=True):
                                __pixels_per_degree_y__, font, (__width__, __height__))
 
     while True:
-        orientation = __aircraft__.ahrs_data
+        orientation = __aircraft__.get_ahrs()
         orientation.utc_time = str(datetime.utcnow())
         __aircraft__.simulate()
         __backpage_framebuffer__.fill(BLACK)
@@ -295,7 +328,10 @@ def run_ahrs_hud_element(element_type, use_detail_font=True):
         clock.tick(60)
 
 
-def run_adsb_hud_element(element_type, use_detail_font=True):
+def run_adsb_hud_element(
+    element_type,
+    use_detail_font=True
+):
     """
     Runs a ADSB based HUD element alone for testing purposes
 
@@ -306,7 +342,6 @@ def run_adsb_hud_element(element_type, use_detail_font=True):
         use_detail_font {bool} -- Should the detail font be used. (default: {True})
     """
 
-    from heads_up_display import HeadsUpDisplay
     from hud_elements import HudDataCache
     from aircraft import AhrsSimulation
     from traffic import SimulatedTraffic
@@ -340,18 +375,21 @@ def run_adsb_hud_element(element_type, use_detail_font=True):
     __pixels_per_degree_y__ = (__height__ / configuration.CONFIGURATION.get_degrees_of_pitch()) * \
         configuration.CONFIGURATION.get_pitch_degrees_display_scaler()
 
-    hud_element = element_type(configuration.CONFIGURATION.get_degrees_of_pitch(),
-                               __pixels_per_degree_y__, font,
-                               (__width__, __height__))
+    hud_element = element_type(
+        configuration.CONFIGURATION.get_degrees_of_pitch(),
+        __pixels_per_degree_y__,
+        font,
+        (__width__, __height__))
 
     while True:
         for test_data in simulated_traffic:
             test_data.simulate()
             AdsbTrafficClient.TRAFFIC_MANAGER.handle_traffic_report(
+                test_data.icao_address,
                 test_data.to_json())
 
-        HudDataCache.purge_old_traffic_reports()
-        orientation = __aircraft__.ahrs_data
+        HudDataCache.purge_old_textures()
+        orientation = __aircraft__.get_ahrs()
         __aircraft__.simulate()
         __backpage_framebuffer__.fill(BLACK)
         hud_element.render(__backpage_framebuffer__, orientation)
@@ -360,7 +398,7 @@ def run_adsb_hud_element(element_type, use_detail_font=True):
 
 
 if __name__ == '__main__':
-    for distance in range(0, int(2.5 * units.feet_to_sm), int(units.feet_to_sm / 10.0)):
+    for distance in range(0, int(2.5 * units.yards_to_sm), int(units.yards_to_sm / 10.0)):
         print("{0}' -> {1}".format(distance, get_reticle_size(distance)))
 
     heading = 327

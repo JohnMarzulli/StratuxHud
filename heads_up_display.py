@@ -25,13 +25,22 @@ import targets
 import traffic
 import restful_host
 import aithre
-from views import (adsb_on_screen_reticles, adsb_target_bugs, adsb_target_bugs_only,
-                   adsb_traffic_listing, ahrs_not_available, altitude,
-                   artificial_horizon, compass_and_heading_bottom_element,
+from views import (adsb_on_screen_reticles,
+                   adsb_target_bugs,
+                   adsb_target_bugs_only,
+                   adsb_traffic_listing,
+                   ahrs_not_available,
+                   altitude,
+                   artificial_horizon,
+                   compass_and_heading_bottom_element,
                    groundspeed, heading_target_bugs,
-                   level_reference, roll_indicator, skid_and_gs,
+                   level_reference,
+                   roll_indicator,
+                   skid_and_gs,
                    system_info,
-                   target_count, time)
+                   target_count,
+                   time,
+                   traffic_not_available)
 
 # TODO - Disable functionality based on the enabled StratuxCapabilities
 # TODO - Check for the key existence anyway... cross update the capabilities
@@ -39,6 +48,34 @@ from views import (adsb_on_screen_reticles, adsb_target_bugs, adsb_target_bugs_o
 # Traffic description in https://github.com/cyoung/stratux/blob/master/notes/app-vendor-integration.md
 # pip install ws4py
 # pip install requests
+
+
+def __send_stratux_post__(
+    ending_url
+):
+    """
+    Sends a post call to the given ending portion of the URL
+
+    Arguments:
+        ending_url {str} -- The ending portion of the url. "cageAHRS" will result in "/cageAHRS"
+
+    Returns:
+        bool -- True if the call occurred.
+    """
+    if ending_url is None:
+        return False
+
+    url = "http://{0}/{1}".format(
+        CONFIGURATION.stratux_address(),
+        ending_url)
+
+    try:
+        requests.Session().post(url, timeout=2)
+
+        return True
+    except:
+
+        return False
 
 
 class HeadsUpDisplay(object):
@@ -51,13 +88,7 @@ class HeadsUpDisplay(object):
         Sends the command to the Stratux to level the AHRS.
         """
 
-        url = "http://{0}/cageAHRS".format(
-            CONFIGURATION.stratux_address())
-
-        try:
-            requests.Session().post(url, timeout=2)
-        except:
-            pass
+        __send_stratux_post__("cageAHRS")
 
     def __reset_traffic_manager__(self):
         """
@@ -73,13 +104,7 @@ class HeadsUpDisplay(object):
         Sends the command to the Stratux to shutdown.
         """
 
-        url = "http://{0}/shutdown".format(
-            CONFIGURATION.stratux_address())
-
-        try:
-            requests.Session().post(url, timeout=2)
-        except:
-            pass
+        __send_stratux_post__("shutdown")
 
     def run(self):
         """
@@ -163,7 +188,7 @@ class HeadsUpDisplay(object):
             orientation = self.__aircraft__.get_orientation()
 
             view_name, view, view_uses_ahrs = self.__hud_views__[
-                self.__view_index__]
+                CONFIGURATION.get_view_index()]
             show_unavailable = view_uses_ahrs and not self.__aircraft__.is_ahrs_available()
 
             current_fps = int(clock.get_fps())
@@ -416,9 +441,9 @@ class HeadsUpDisplay(object):
         view_elements = self.__load_view_elements()
         return self.__load_views(view_elements)
 
-    def __purge_old_reports__(self):
+    def __purge_old_textures__(self):
         self.cache_perf.start()
-        hud_elements.HudDataCache.purge_old_traffic_reports()
+        hud_elements.HudDataCache.purge_old_textures()
         self.cache_perf.stop()
 
     def __update_traffic_reports__(self):
@@ -428,25 +453,13 @@ class HeadsUpDisplay(object):
         if not CONFIGURATION.aithre_enabled:
             return
 
-        if aithre.sensor is not None:
+        if aithre.AithreClient.INSTANCE is not None:
             try:
-                aithre.sensor.update()
+                aithre.AithreClient.INSTANCE.update_aithre()
                 self.log("Aithre updated")
-                if aithre.sensor.is_connected():
-                    co_level = aithre.sensor.get_co_level()
-                    bat_level = aithre.sensor.get_battery()
 
-                    self.log("CO:{}ppm, BAT:{}%".format(co_level, bat_level))
-                else:
-                    self.log("Aithre is enabled, but not connected.")
             except:
                 self.warn("Error attempting to update Aithre sensor values")
-        elif CONFIGURATION.aithre_enabled:
-            try:
-                aithre.sensor = aithre.Aithre(self.__logger__)
-                self.log("Aithre created")
-            except:
-                self.warn("Error attempting to connect to Aithre")
 
     def __init__(self, logger):
         """
@@ -502,22 +515,39 @@ class HeadsUpDisplay(object):
 
         self.__hud_views__ = self.__build_hud_views()
 
-        self.__view_index__ = 0
-
         logger = None
 
         if self.__logger__ is not None:
             logger = self.__logger__.logger
 
         self.web_server = restful_host.HudServer()
-        RecurringTask("rest_host", 0.1, self.web_server.run,
-                      start_immediate=False)
-        RecurringTask("purge_old_traffic", 10.0,
-                      self.__purge_old_reports__, start_immediate=False)
-        RecurringTask("update_traffic", 0.1,
-                      self.__update_traffic_reports__, start_immediate=True)
-        RecurringTask("update_aithre", 5.0,
-                      self.__update_aithre__, start_immediate=True)
+
+        RecurringTask(
+            "purge_old_textures",
+            10.0,
+            self.__purge_old_textures__,
+            logger)
+
+        RecurringTask(
+            "rest_host",
+            0.1,
+            self.web_server.run,
+            logger,
+            start_immediate=False)
+
+        RecurringTask(
+            "update_traffic",
+            0.1,
+            self.__update_traffic_reports__,
+            logger,
+            start_immediate=True)
+
+        RecurringTask(
+            "update_aithre",
+            5.0,
+            self.__update_aithre__,
+            logger,
+            start_immediate=True)
 
     def __show_boot_screen__(self):
         """
@@ -564,12 +594,10 @@ class HeadsUpDisplay(object):
         """
 
         events = pygame.event.get()
-        event_handling_repsonses = map(self.__handle_key_event__, events)
+        event_handling_responses = map(self.__handle_key_event__, events)
 
-        if False in event_handling_repsonses:
+        if False in event_handling_responses:
             return False
-
-        self.__clamp_view__()
 
         return True
 
@@ -603,10 +631,10 @@ class HeadsUpDisplay(object):
             return False
 
         if event.key in [pygame.K_KP_PLUS, pygame.K_PLUS]:
-            self.__view_index__ += 1
+            CONFIGURATION.next_view()
 
         if event.key in [pygame.K_KP_MINUS, pygame.K_MINUS]:
-            self.__view_index__ -= 1
+            CONFIGURATION.previous_view()
 
         if event.key in [pygame.K_BACKSPACE]:
             self.__level_ahrs__()
@@ -617,7 +645,9 @@ class HeadsUpDisplay(object):
         if event.key in [pygame.K_RETURN, pygame.K_KP_ENTER]:
             orientation = self.__aircraft__.get_orientation()
             targets.TARGET_MANAGER.add_target(
-                orientation.position[0], orientation.position[1], orientation.alt)
+                orientation.position[0],
+                orientation.position[1],
+                orientation.alt)
             targets.TARGET_MANAGER.save()
 
         if event.key in [pygame.K_EQUALS, pygame.K_KP_EQUALS]:
@@ -627,17 +657,6 @@ class HeadsUpDisplay(object):
             self.__reset_traffic_manager__()
 
         return True
-
-    def __clamp_view__(self):
-        """
-        Makes sure that the view index is within bounds.
-        """
-
-        if self.__view_index__ >= (len(self.__hud_views__)):
-            self.__view_index__ = 0
-
-        if self.__view_index__ < 0:
-            self.__view_index__ = (len(self.__hud_views__) - 1)
 
 
 if __name__ == '__main__':

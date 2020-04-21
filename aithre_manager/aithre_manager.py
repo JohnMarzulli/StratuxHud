@@ -12,117 +12,68 @@ import urllib
 import os
 import re
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-import lib.utilities as utilities
-import configuration
-import lib.local_debug as local_debug
 
-RESTFUL_HOST_PORT = 8080
-CONFIGURATION = None
-COMMAND_PROCESSOR = None
-VIEW_NAME_KEY = 'name'
+import aithre
 
-# Based on https://gist.github.com/tliron/8e9757180506f25e46d9
+RESTFUL_HOST_PORT = 8081
 
 # EXAMPLES
-# Invoke-WebRequest -Uri "http://localhost:8080/settings" -Method GET -ContentType "application/json"
-# Invoke-WebRequest -Uri "http://localhost:8080/settings" -Method PUT -ContentType "application/json" -Body '{"flip_horizontal": true}'
-# curl -X PUT -d '{"declination": 17}' http://localhost:8080/settings
+# Invoke-WebRequest -Uri "http://localhost:8081/aithre" -Method GET -ContentType "application/json"
+# Invoke-WebRequest -Uri "http://localhost:8081/illyrian" -Method GET -ContentType "application/json"
+#
+# curl -X GET http://localhost:8081/aithre
 
-ERROR_JSON = '{success: false}'
+ERROR_JSON_KEY = 'error'
+
+CO_LEVEL_KEY = "co"
+BATTERY_LEVEL_KEY = "battery"
+
+SPO2_LEVEL_KEY = "spo2"
+PULSE_KEY = "heartrate"
+SIGNAL_STRENGTH_KEY = "signal"
 
 
-def get_views_list(handler):
-    return json.dumps(configuration.CONFIGURATION.get_views_list(), indent=4, sort_keys=False)
-
-
-def get_elements_list(handler):
-    return json.dumps(configuration.CONFIGURATION.get_elements_list(), indent=4, sort_keys=False)
-
-
-def get_settings(handler):
+def get_aithre(handler):
     """
-    Handles a get-the-settings request.
+    Creates a response package that gives the current carbon monoxide
+    results from an Aithre.
     """
-    if configuration.CONFIGURATION is not None:
-        print("settings/GET")
-        return configuration.CONFIGURATION.get_json_from_config()
-    else:
-        return ERROR_JSON
+    co_response = {ERROR_JSON_KEY: 'Aithre CO sensor not detected'}
+
+    if aithre.AithreManager.CO_SENSOR is not None:
+        co_response = {CO_LEVEL_KEY: aithre.AithreManager.CO_SENSOR.get_co_level(),
+                       BATTERY_LEVEL_KEY: aithre.AithreManager.CO_SENSOR.get_battery()}
+    return json.dumps(co_response,
+                      indent=4,
+                      sort_keys=False)
 
 
-def set_settings(handler):
+def get_illyrian(handler):
     """
-    Handles a set-the-settings request.
+    Creates a response package that gives the current blood oxygen levels
+    and heartrate from an Illyrian sensor.
     """
+    spo2_response = {ERROR_JSON_KEY: 'Illyrian SPO2 sensor not detected'}
 
-    if configuration.CONFIGURATION is not None:
-        payload = handler.get_payload()
-        print("settings/PUT:")
-        print(payload)
-        configuration.CONFIGURATION.update_configuration(payload)
-        return configuration.CONFIGURATION.get_json_from_config()
-    else:
-        return ERROR_JSON
+    if aithre.AithreManager.SPO2_SENSOR is not None:
+        spo2_response = {SPO2_LEVEL_KEY: aithre.AithreManager.SPO2_SENSOR.get_spo2_level(),
+                         PULSE_KEY: aithre.AithreManager.SPO2_SENSOR.get_heartrate(),
+                         SIGNAL_STRENGTH_KEY: aithre.AithreManager.SPO2_SENSOR.get_signal_strength()}
 
-
-def set_views(handler):
-    payload = handler.get_payload()
-    view_config_text = json.dumps(payload, indent=4, sort_keys=True)
-    print("views/PUT:\n{}".format(view_config_text))
-
-    configuration.CONFIGURATION.write_views_list(view_config_text)
-
-    return configuration.CONFIGURATION.get_views_list()
+    return json.dumps(spo2_response,
+                      indent=4,
+                      sort_keys=False)
 
 
-def get_current_view_response():
-    """
-    Create a dictionary that can be serialized
-    into JSON that contains the name of the current view
-    that the HUD is displaying.
-    """
-    return {"view": "updated"}
-
-
-def get_view_next(handler):
-    """
-    Handler for a REST call to move to the next view.
-    """
-    configuration.CONFIGURATION.next_view()
-
-    return get_current_view_response()
-
-
-def get_view_previous(handler):
-    """
-    Handler for a REST call to move to the previous view.
-    """
-    configuration.CONFIGURATION.previous_view()
-
-    return get_current_view_response()
-
-
-def get_json_success_response(text):
-    """
-    Returns a generic JSON response of success with
-    text included in the payload.
-    """
-
-    return '{success: true, response:"' + text + '"}'
-
-
-class RestfulHost(BaseHTTPRequestHandler):
+class AithreHost(BaseHTTPRequestHandler):
     """
     Handles the HTTP response for status.
     """
 
     HERE = os.path.dirname(os.path.realpath(__file__))
     ROUTES = {
-        r'^/settings': {'GET': get_settings, 'PUT': set_settings, 'media_type': 'application/json'},
-        r'^/view_elements': {'GET': get_elements_list, 'media_type': 'application/json'},
-        r'^/views': {'GET': get_views_list, 'PUT': set_views, 'media_type': 'application/json'},
-        r'^/view/next': {'GET': get_view_next},
-        r'^/view/previous': {'GET': get_view_previous}
+        r'^/aithre': {'GET': get_aithre},
+        r'^/illyrian': {'GET': get_illyrian}
     }
 
     def do_HEAD(self):
@@ -130,15 +81,6 @@ class RestfulHost(BaseHTTPRequestHandler):
 
     def do_GET(self):
         self.handle_method('GET')
-
-    def do_POST(self):
-        self.handle_method('POST')
-
-    def do_PUT(self):
-        self.handle_method('PUT')
-
-    def do_DELETE(self):
-        self.handle_method('DELETE')
 
     def get_payload(self):
         try:
@@ -220,13 +162,13 @@ class RestfulHost(BaseHTTPRequestHandler):
             self.__handle_request__(route, method)
 
     def get_route(self):
-        for path, route in RestfulHost.ROUTES.iteritems():
+        for path, route in AithreHost.ROUTES.iteritems():
             if re.match(path, self.path):
                 return route
         return None
 
 
-class HudServer(object):
+class AithreServer(object):
     """
     Class to handle running a REST endpoint to handle configuration.
     """
@@ -259,9 +201,9 @@ class HudServer(object):
         self.__port__ = RESTFUL_HOST_PORT
         self.__local_ip__ = self.get_server_ip()
         server_address = (self.__local_ip__, self.__port__)
-        self.__httpd__ = HTTPServer(server_address, RestfulHost)
+        self.__httpd__ = HTTPServer(server_address, AithreHost)
 
 
 if __name__ == '__main__':
-    host = HudServer()
+    host = AithreServer()
     host.run()

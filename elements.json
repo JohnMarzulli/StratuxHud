@@ -3,6 +3,10 @@
     "class": "system_info.Aithre",
     "detail_font": true
   },
+  "Illyrian": {
+    "class": "system_info.Illyrian",
+    "detail_font": true
+  },
   "Compass": {
     "class": "compass_and_heading_bottom_element.CompassAndHeadingBottomElement",
     "detail_font": true
@@ -38,6 +42,10 @@
   "Traffic List": {
     "class": "adsb_traffic_listing.AdsbTrafficListing",
     "detail_font": true
+  },
+  "Traffic Not Available": {
+    "class": "traffic_not_available.TrafficNotAvailable",
+    "detail_font": false
   },
   "Level Reference": {
     "class": "level_reference.LevelReference",

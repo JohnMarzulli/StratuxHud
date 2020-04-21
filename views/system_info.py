@@ -1,7 +1,6 @@
 import commands
 from traffic import AdsbTrafficClient
 from ahrs_element import AhrsElement
-import aithre
 import configuration
 import units
 import lib.local_debug as local_debug
@@ -12,6 +11,7 @@ import pygame
 import socket
 import datetime
 import math
+from aithre import AithreClient
 
 import struct
 
@@ -21,6 +21,16 @@ testing.load_imports()
 
 NORMAL_TEMP = 50
 REDLINE_TEMP = 80
+
+CO_SAFE = 10
+CO_WARNING = 49
+
+BATTERY_SAFE = 75
+BATTERY_WARNING = 25
+
+OFFLINE_TEXT= "Offline"
+DISCONNECTED_TEXT = "DISCONNECTED"
+DISABLED_TEXT = "DISABLED"
 
 
 def get_ip_address():
@@ -82,6 +92,25 @@ def get_cpu_temp():
     return ('---', GRAY)
 
 
+def get_illyrian_spo2_color(spo2_level):
+    """
+    Gets the color for the SPO2 level
+    """
+
+    if spo2_level is None:
+        return RED
+
+    color = GREEN
+
+    if spo2_level < 94:
+        color = YELLOW
+
+    if spo2_level < 90:
+        color = RED
+
+    return color
+
+
 def get_aithre_co_color(co_ppm):
     """
     Returns the color code for the carbon monoxide levels
@@ -94,9 +123,9 @@ def get_aithre_co_color(co_ppm):
     """
     color = BLUE
 
-    if co_ppm > aithre.CO_WARNING:
+    if co_ppm > CO_WARNING:
         color = RED
-    elif co_ppm > aithre.CO_SAFE:
+    elif co_ppm > CO_SAFE:
         color = YELLOW
 
     return color
@@ -114,9 +143,9 @@ def get_aithre_battery_color(battery_percent):
     """
     color = RED
 
-    if battery_percent >= aithre.BATTERY_SAFE:
+    if battery_percent >= BATTERY_SAFE:
         color = GREEN
-    elif battery_percent >= aithre.BATTERY_WARNING:
+    elif battery_percent >= BATTERY_WARNING:
         color = YELLOW
 
     return color
@@ -154,14 +183,16 @@ class SystemInfo(AhrsElement):
         Gets the text and text color for the Aithre status.
         """
 
-        if aithre.sensor is None:
-            return ('DISCONNECTED', RED) if configuration.CONFIGURATION.aithre_enabled else ('DISABLED', BLUE)
+        if AithreClient.INSTANCE is None:
+            return (DISCONNECTED_TEXT, RED) if configuration.CONFIGURATION.aithre_enabled else (DISABLED_TEXT, BLUE)
+
+        co_report = AithreClient.INSTANCE.get_co_report()
 
         battery_text = 'UNK'
         battery_color = RED
 
         try:
-            battery = aithre.sensor.get_battery()
+            battery = co_report.battery
             battery_suffix = "%"
             if isinstance(battery, basestring):
                 battery_suffix = ""
@@ -175,9 +206,9 @@ class SystemInfo(AhrsElement):
         co_color = RED
 
         try:
-            co_ppm = aithre.sensor.get_co_level()
+            co_ppm = co_report.co
 
-            if co_ppm is not None:
+            if co_ppm is not None and OFFLINE_TEXT not in co_ppm:
                 co_text = 'co:{}ppm'.format(co_ppm)
                 co_color = get_aithre_co_color(co_ppm)
         except Exception as ex:
@@ -218,8 +249,6 @@ class SystemInfo(AhrsElement):
         # First line in the array is at the bottom.
         # Last line in the array is towards the top.
         info_lines.append(["HUD CPU     : ", self.__cpu_temp__])
-        info_lines.append(
-            ["OWNSHIP     : ", ["{}/{}".format(configuration.CONFIGURATION.capabilities.ownship_mode_s, configuration.CONFIGURATION.capabilities.ownship_icao), BLUE]])
         info_lines.append(["DISPLAY RES : ", ["{} x {}".format(
             self.__framebuffer_size__[0], self.__framebuffer_size__[1]), BLUE]])
 
@@ -242,38 +271,107 @@ class SystemInfo(AhrsElement):
 
 
 class Aithre(AhrsElement):
+    def uses_ahrs(self):
+        """
+        Does this element use AHRS data to render?
+
+        Returns:
+            bool -- True if the element uses AHRS data.
+        """
+
+        return False
+
     def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
         self.task_timer = TaskTimer('Aithre')
         self.__font__ = font
         center_y = framebuffer_size[1] >> 2
         text_half_height = int(font.get_height()) >> 1
-        self.__text_y_pos__ = center_y - text_half_height
+        self.__text_y_pos__ = center_y + (10 * text_half_height)
         self.__lhs__ = 0
-        self.__has_been_connected__ = False
 
     def render(self, framebuffer, orientation):
         self.task_timer.start()
 
-        if aithre.sensor is not None and configuration.CONFIGURATION.aithre_enabled:
-            co_level = aithre.sensor.get_co_level()
+        if AithreClient.INSTANCE is not None and configuration.CONFIGURATION.aithre_enabled:
+            co_level = AithreClient.INSTANCE.get_co_report()
 
-            if co_level is None or isinstance(co_level, basestring):
-                if self.__has_been_connected__:
-                    co_color = RED
-                    co_ppm_text = "OFFLINE"
-                else:
-                    self.task_timer.stop()
-                    return
+            if (co_level.co is None and co_level.has_been_connected) or isinstance(co_level, basestring):
+                co_color = RED
+                co_ppm_text = "OFFLINE"
+            elif not co_level.has_been_connected:
+                self.task_timer.stop()
+                return
             else:
-                co_color = get_aithre_co_color(co_level)
-                co_ppm_text = str(int(co_level)) + " PPM"
-                self.__has_been_connected__ = True
+                co_color = get_aithre_co_color(co_level.co)
+                units_text = "PPM" if co_level.is_connected else ""
+                co_ppm_text = "{}{}".format(co_level.co, units_text)
 
             co_ppm_texture = self.__font__.render(
                 co_ppm_text, True, co_color, BLACK)
 
             framebuffer.blit(
                 co_ppm_texture, (self.__lhs__, self.__text_y_pos__))
+        self.task_timer.stop()
+
+
+class Illyrian(AhrsElement):
+    """
+    Screen element to support the Illyrian blood/pulse oxymeter from Aithre
+    """
+
+    def uses_ahrs(self):
+        """
+        Does this element use AHRS data to render?
+
+        Returns:
+            bool -- True if the element uses AHRS data.
+        """
+
+        return False
+
+    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
+        self.task_timer = TaskTimer('Illyrian')
+        self.__font__ = font
+        center_y = framebuffer_size[1] >> 2
+        text_half_height = int(font.get_height()) >> 1
+        self.__text_y_pos__ = center_y + (6 * text_half_height)
+        self.__pulse_y_pos__ = center_y + (8 * text_half_height)
+        self.__lhs__ = 0
+        self.__has_been_connected__ = False
+
+    def render(self, framebuffer, orientation):
+        self.task_timer.start()
+
+        if AithreClient.INSTANCE is not None and configuration.CONFIGURATION.aithre_enabled:
+            report = AithreClient.INSTANCE.get_spo2_report()
+            spo2_level = report.spo2
+            heartbeat = report.heartrate
+            heartbeat_text = "{}BPM".format(heartbeat)
+
+            if spo2_level is None or isinstance(spo2_level, basestring):
+                if self.__has_been_connected__:
+                    spo2_color = RED
+                    spo2_text = "OFFLINE"
+                else:
+                    self.task_timer.stop()
+                    return
+            else:
+                spo2_color = get_illyrian_spo2_color(spo2_level)
+                spo2_text = str(int(spo2_level)) + "% SPO"
+                self.__has_been_connected__ = True
+
+            spo2_ppm_texture = self.__font__.render(
+                spo2_text, True, spo2_color, BLACK)
+
+            heartbeat_texture = self.__font__.render(
+                heartbeat_text, True, GREEN, BLACK)
+
+            framebuffer.blit(
+                spo2_ppm_texture, (self.__lhs__, self.__text_y_pos__))
+
+            framebuffer.blit(
+                heartbeat_texture, (self.__lhs__, self.__pulse_y_pos__))
+
         self.task_timer.stop()
 
 

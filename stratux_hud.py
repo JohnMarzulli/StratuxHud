@@ -58,7 +58,8 @@ python_logger.addHandler(HANDLER)
 
 if __name__ == '__main__':
     LOGGER.log_info_message("Starting HUD")
-    LOGGER.log_info_message("System, DateTime, Component, Instantaneous, Rolling Mean, Max")
+    LOGGER.log_info_message(
+        "System, DateTime, Component, Instantaneous, Rolling Mean, Max")
 
     hud = heads_up_display.HeadsUpDisplay(LOGGER)
     hud.run()
