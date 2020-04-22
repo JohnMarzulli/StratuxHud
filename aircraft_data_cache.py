@@ -24,7 +24,7 @@ class AircraftDataCache(object):
         self.__lock_object__ = threading.Lock()
         self.__last_updated__ = None
         self.__json_package__ = {}
-    
+
     def __get_data_age__(
         self
     ):
@@ -32,14 +32,16 @@ class AircraftDataCache(object):
         Returns the age of the data in seconds.
         INTENDED TO BE CALLED FROM INSIDE A LOCK.
         DOES NOT PERFORM ITS OWN LOCK.
-        
+
         Returns:
             float -- The age of the data in seconds.
         """
-        return (self.__max_age_seconds__ * 1000.0) if self.__json_package__ is None or self.__last_updated__ is None \
-                else (datetime.datetime.utcnow() - self.__last_updated__).total_seconds()
-            
-    
+
+        if self.__json_package__ is not None and self.__last_updated__ is not None:
+            return (datetime.datetime.utcnow() - self.__last_updated__).total_seconds()
+
+        return self.__max_age_seconds__ * 1000.0
+
     def garbage_collect(
         self
     ):
@@ -91,13 +93,13 @@ class AircraftDataCache(object):
             return data_age < self.__max_age_seconds__
         finally:
             self.__lock_object__.release()
-    
+
     def get_item_count(
         self
     ):
         """
         Get how many items (key count) are in the package, regardless of age.
-        
+
         Returns:
             int -- The number of keys in the package.
         """
