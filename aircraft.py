@@ -11,6 +11,8 @@ from lib.simulated_values import SimulatedValue
 from logging_object import LoggingObject
 
 NOT_AVAILABLE = '---'
+MAX_AVIONICS_AGE = 0.3
+MAX_STRATUX_AHRS_AGE = configuration.AHRS_TIMEOUT * 1.5
 
 
 class AhrsData(object):
@@ -418,8 +420,8 @@ class AhrsStratux(LoggingObject):
 
         self.__stratux_session__ = requests.Session()
 
-        self.__stratux_ahrs_cache__ = AircraftDataCache(0.3)
-        self.__avionics_cache__ = AircraftDataCache(0.3)
+        self.__stratux_ahrs_cache__ = AircraftDataCache(MAX_STRATUX_AHRS_AGE)
+        self.__avionics_cache__ = AircraftDataCache(MAX_AVIONICS_AGE)
 
 
 class Aircraft(LoggingObject):
