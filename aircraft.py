@@ -12,7 +12,7 @@ from logging_object import LoggingObject
 
 NOT_AVAILABLE = '---'
 MAX_AVIONICS_AGE = 0.3
-MAX_STRATUX_AHRS_AGE = configuration.AHRS_TIMEOUT * 1.5
+MAX_STRATUX_AHRS_AGE = configuration.AHRS_TIMEOUT * 2.0
 
 
 class AhrsData(object):
@@ -420,8 +420,8 @@ class AhrsStratux(LoggingObject):
 
         self.__stratux_session__ = requests.Session()
 
-        self.__stratux_ahrs_cache__ = AircraftDataCache(MAX_STRATUX_AHRS_AGE)
-        self.__avionics_cache__ = AircraftDataCache(MAX_AVIONICS_AGE)
+        self.__stratux_ahrs_cache__ = AircraftDataCache(MAX_STRATUX_AHRS_AGE, "StratuxAhrs")
+        self.__avionics_cache__ = AircraftDataCache(MAX_AVIONICS_AGE, "AvionicsAhrs")
 
 
 class Aircraft(LoggingObject):
