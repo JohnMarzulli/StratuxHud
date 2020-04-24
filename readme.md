@@ -427,8 +427,8 @@ Rasp Pi 3 (stand-alone)        | Kivic          | 50FPS - 60FPS                 
 Rasp Pi 3 (stand-alone)        | Hudly Wireless | 30FPS - 50FPS                      | Recommended
 Rasp Pi 3 (Running on Stratux) | Kivic          | 30FPS                              | Highly Recommended
 Rasp Pi 3 (Running on Stratux) | Hudly Wireless | 25FPS                              | Highly Recommended
-Rasp Pi 3B+                    | Kivic          | 55FPS - 60FPS                      | Recommended
-Rasp Pi 3B+                    | Hudly Wireless | 40FPS - 60FPS                      | Recommended
+Rasp Pi 3B+                    | Kivic          | 55FPS - 60FPS                      | Highly Recommended
+Rasp Pi 3B+                    | Hudly Wireless | 40FPS - 60FPS                      | Highly Recommended
 
 Please note that the frame rate is capped at 60FPS. Drawing any faster will not be detectable using the recommended output systems. Reducing the framerate will reduce the powerdraw.
 
