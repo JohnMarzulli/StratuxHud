@@ -12,7 +12,8 @@ class AircraftDataCache(object):
     def __init__(
         self,
         max_age_seconds,
-        cache_name
+        cache_name,
+        logger
     ):
         """
         Creates a new cache for a dictionary.
@@ -26,6 +27,10 @@ class AircraftDataCache(object):
         self.__last_updated__ = None
         self.__cache_name__ = cache_name
         self.__json_package__ = {}
+        self.__logger__ = logger
+
+        self.__logger__.log_info_message(
+            "AircraftDataCache:Initialized data cache for '{}'".format(cache_name))
 
     def __get_data_age__(
         self
@@ -61,10 +66,12 @@ class AircraftDataCache(object):
                     and self.__json_package__ is not None \
                     and len(self.__json_package__) > 0:
                 self.__json_package__ = {}
-                print("GCed {} with age={}, max={}".format(
-                    self.__cache_name__,
-                    data_age,
-                    self.__max_age_seconds__))
+
+                self.__logger__.log_warning_message(
+                    "AircraftDataCache:GCed {} with age={}, max={}".format(
+                        self.__cache_name__,
+                        data_age,
+                        self.__max_age_seconds__))
         finally:
             self.__lock_object__.release()
 
@@ -102,10 +109,11 @@ class AircraftDataCache(object):
             is_recent = data_age < self.__max_age_seconds__
 
             if not is_recent and self.__json_package__ is not None and len(self.__json_package__) > 0:
-                print("{} is too old at age={}, max={}".format(
-                    self.__cache_name__,
-                    data_age,
-                    self.__max_age_seconds__))
+                self.__logger__.log_warning_message(
+                    "AircraftDataCache:{} is too old at age={}, max={}".format(
+                        self.__cache_name__,
+                        data_age,
+                        self.__max_age_seconds__))
 
             return is_recent
         except Exception as ex:
