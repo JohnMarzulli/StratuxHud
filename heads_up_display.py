@@ -12,24 +12,24 @@ import pygame
 import requests
 
 import aithre
-import hud_elements
 from common_utils import local_debug, system_tools
 from common_utils.task_timer import RollingStats, TaskTimer
 from common_utils.tasks import RecurringTask
 from configuration import configuration, configuration_server
 from configuration.configuration import CONFIGURATION
 from data_sources import targets, traffic
+from data_sources.ahrs_data import AhrsData
 from data_sources.aircraft import Aircraft
-from data_sources.traffic import AdsbTrafficClient
 from data_sources.data_cache import HudDataCache
+from data_sources.traffic import AdsbTrafficClient
 from rendering import colors, display
 from views import (adsb_on_screen_reticles, adsb_target_bugs,
                    adsb_target_bugs_only, adsb_traffic_listing,
                    ahrs_not_available, altitude, artificial_horizon,
                    compass_and_heading_bottom_element, groundspeed,
-                   heading_target_bugs, level_reference, roll_indicator,
-                   skid_and_gs, system_info, target_count, time,
-                   traffic_not_available)
+                   heading_target_bugs, hud_elements, level_reference,
+                   roll_indicator, skid_and_gs, system_info, target_count,
+                   time, traffic_not_available)
 
 # TODO - Disable functionality based on the enabled StratuxCapabilities
 # TODO - Check for the key existence anyway... cross update the capabilities
@@ -37,6 +37,10 @@ from views import (adsb_on_screen_reticles, adsb_target_bugs,
 # Traffic description in https://github.com/cyoung/stratux/blob/master/notes/app-vendor-integration.md
 # pip install ws4py
 # pip install requests
+
+
+STANDARD_FONT = "../assets/fonts/LiberationMono-Bold.ttf"
+LOADING_FONT = "../assets/fonts/LiberationMono-Regular.ttf"
 
 
 def __send_stratux_post__(
@@ -72,14 +76,18 @@ class HeadsUpDisplay(object):
     Class to handle the HUD work...
     """
 
-    def __level_ahrs__(self):
+    def __level_ahrs__(
+        self
+    ):
         """
         Sends the command to the Stratux to level the AHRS.
         """
 
         __send_stratux_post__("cageAHRS")
 
-    def __reset_traffic_manager__(self):
+    def __reset_traffic_manager__(
+        self
+    ):
         """
         Resets the traffic manager to essentially reset the receiver unit.
         """
@@ -88,14 +96,18 @@ class HeadsUpDisplay(object):
         except:
             pass
 
-    def __shutdown_stratux__(self):
+    def __shutdown_stratux__(
+        self
+    ):
         """
         Sends the command to the Stratux to shutdown.
         """
 
         __send_stratux_post__("shutdown")
 
-    def run(self):
+    def run(
+        self
+    ):
         """
         Runs the update/render logic loop.
         """
@@ -116,7 +128,11 @@ class HeadsUpDisplay(object):
 
         return 0
 
-    def __render_view_title__(self, text, surface):
+    def __render_view_title__(
+        self,
+        text: str,
+        surface
+    ):
         try:
             texture, size = HudDataCache.get_cached_text_texture(
                 text,
@@ -133,7 +149,10 @@ class HeadsUpDisplay(object):
         except:
             pass
 
-    def __is_ahrs_view__(self, view):
+    def __is_ahrs_view__(
+        self,
+        view
+    ):
         """
         Does any element in this view use AHRS?
 
@@ -153,8 +172,22 @@ class HeadsUpDisplay(object):
             is_ahrs_view = is_ahrs_view or hud_element.uses_ahrs()
 
         return is_ahrs_view
+    
+    def get_hud_views(
+        self
+    ) -> list:
+        """
+        Get the set of current HUD views.
 
-    def tick(self, clock):
+        Returns:
+            list -- The list of views currently loaded.
+        """
+        return self.__hud_views__
+
+    def tick(
+        self,
+        clock
+    ):
         """
         Run for a single frame.
 
@@ -214,11 +247,14 @@ class HeadsUpDisplay(object):
                 [self.log('RENDER, {}, {}'.format(now, element_times))
                     for element_times in render_times]
 
-                [self.log('FRAME, {}, {}'.format(now, self.__frame_timers__[aspect].to_string()))
+                [self.log('FRAME, {}, {}'.format(
+                    now,
+                    self.__frame_timers__[aspect].to_string()))
                     for aspect in self.__frame_timers__.keys()]
 
-                self.log('OVERALL, {}, {}'.format(now,
-                                                  self.__fps__.to_string()))
+                self.log('OVERALL, {}, {}'.format(
+                    now,
+                    self.__fps__.to_string()))
 
                 self.log("-----------------------------------")
 
@@ -238,7 +274,9 @@ class HeadsUpDisplay(object):
             # Change the frame buffer
             if CONFIGURATION.flip_horizontal or CONFIGURATION.flip_vertical:
                 flipped = pygame.transform.flip(
-                    surface, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)
+                    surface,
+                    CONFIGURATION.flip_horizontal,
+                    CONFIGURATION.flip_vertical)
                 surface.blit(flipped, [0, 0])
             pygame.display.update()
             self.__fps__.push(current_fps)
@@ -247,7 +285,11 @@ class HeadsUpDisplay(object):
 
         return True
 
-    def __render_view_element__(self, hud_element, orientation):
+    def __render_view_element__(
+        self,
+        hud_element,
+        orientation: AhrsData
+    ):
         element_name = str(hud_element)
 
         try:
@@ -271,7 +313,14 @@ class HeadsUpDisplay(object):
 
             return 'Element View Timer Error:{}'.format(ex)
 
-    def __render_text__(self, text, color, position_x, position_y, background_color=None):
+    def __render_text__(
+        self,
+        text: str,
+        color: list,
+        position_x: int,
+        position_y: int,
+        background_color: list = None
+    ) -> list:
         """
         Renders the text with the results centered on the given
         position.
@@ -288,7 +337,10 @@ class HeadsUpDisplay(object):
 
         return text_width, text_height
 
-    def log(self, text):
+    def log(
+        self,
+        text: str
+    ):
         """
         Logs the given text if a logger is available.
 
@@ -301,7 +353,10 @@ class HeadsUpDisplay(object):
         else:
             print(text)
 
-    def warn(self, text):
+    def warn(
+        self,
+        text: str
+    ):
         """
         Logs the given text if a logger is available AS A WARNING.
 
@@ -314,7 +369,11 @@ class HeadsUpDisplay(object):
         else:
             print(text)
 
-    def __build_ahrs_hud_element(self, hud_element_class, use_detail_font=False):
+    def __build_ahrs_hud_element__(
+        self,
+        hud_element_class,
+        use_detail_font: bool = False
+    ):
         """
         Builds a generic AHRS HUD element.
 
@@ -347,7 +406,9 @@ class HeadsUpDisplay(object):
                 hud_element_class, e))
             return None
 
-    def __load_view_elements(self):
+    def __load_view_elements__(
+        self
+    ) -> str:
         """
         Loads the list of available view elements from the configuration
         file. Returns it as a map of the element name (Human/kind) to
@@ -372,7 +433,10 @@ class HeadsUpDisplay(object):
 
         return view_elements
 
-    def __load_views(self, view_elements):
+    def __load_views__(
+        self,
+        view_elements: list
+    ) -> list:
         """
         Returns a list of views that can be used by the HUD
 
@@ -407,7 +471,7 @@ class HeadsUpDisplay(object):
                         # REALLY chews up memory.. and there is no
                         # good reason to use new instances anyway.
                         if element_hash_name not in existing_elements:
-                            new_element = self.__build_ahrs_hud_element(
+                            new_element = self.__build_ahrs_hud_element__(
                                 element_config[0], element_config[1])
                             existing_elements[element_hash_name] = new_element
 
@@ -426,7 +490,9 @@ class HeadsUpDisplay(object):
 
         return hud_views
 
-    def __build_hud_views(self):
+    def __build_hud_views__(
+        self
+    ) -> list:
         """
         Returns the built object of the views.
 
@@ -434,18 +500,24 @@ class HeadsUpDisplay(object):
             array -- Array of tuples. Each element is a tuple of the name of the view and an array of the elements that make the view. 
         """
 
-        view_elements = self.__load_view_elements()
-        return self.__load_views(view_elements)
+        view_elements = self.__load_view_elements__()
+        return self.__load_views__(view_elements)
 
-    def __purge_old_textures__(self):
+    def __purge_old_textures__(
+        self
+    ):
         self.cache_perf.start()
         HudDataCache.purge_old_textures()
         self.cache_perf.stop()
 
-    def __update_traffic_reports__(self):
+    def __update_traffic_reports__(
+        self
+    ):
         HudDataCache.update_traffic_reports()
 
-    def __update_aithre__(self):
+    def __update_aithre__(
+        self
+    ):
         if not CONFIGURATION.aithre_enabled:
             return
 
@@ -457,7 +529,10 @@ class HeadsUpDisplay(object):
             except:
                 self.warn("Error attempting to update Aithre sensor values")
 
-    def __init__(self, logger):
+    def __init__(
+        self,
+        logger
+    ):
         """
         Initialize and create a new HUD.
         """
@@ -496,11 +571,14 @@ class HeadsUpDisplay(object):
         font_size_loading = int(self.__height__ / 4.0)
 
         self.__font__ = pygame.font.Font(
-            configuration.get_absolute_file_path("../assets/fonts/LiberationMono-Bold.ttf"), font_size_std)
+            configuration.get_absolute_file_path(STANDARD_FONT),
+            font_size_std)
         self.__detail_font__ = pygame.font.Font(
-            configuration.get_absolute_file_path("../assets/fonts/LiberationMono-Bold.ttf"), font_size_detail)
+            configuration.get_absolute_file_path(STANDARD_FONT),
+            font_size_detail)
         self.__loading_font__ = pygame.font.Font(
-            configuration.get_absolute_file_path("../assets/fonts/LiberationMono-Regular.ttf"), font_size_loading)
+            configuration.get_absolute_file_path(LOADING_FONT),
+            font_size_loading)
         self.__show_boot_screen__()
 
         self.__aircraft__ = Aircraft(self.__logger__)
@@ -508,10 +586,10 @@ class HeadsUpDisplay(object):
         self.__pixels_per_degree_y__ = int(
             (self.__height__ / CONFIGURATION.get_degrees_of_pitch()) * CONFIGURATION.get_pitch_degrees_display_scaler())
 
-        self.__ahrs_not_available_element__ = self.__build_ahrs_hud_element(
+        self.__ahrs_not_available_element__ = self.__build_ahrs_hud_element__(
             ahrs_not_available.AhrsNotAvailable)
 
-        self.__hud_views__ = self.__build_hud_views()
+        self.__hud_views__ = self.__build_hud_views__()
 
         self.web_server = configuration_server.HudServer()
 
@@ -542,7 +620,9 @@ class HeadsUpDisplay(object):
             logger.get_logger(),
             start_immediate=True)
 
-    def __show_boot_screen__(self):
+    def __show_boot_screen__(
+        self
+    ):
         """
         Renders a BOOTING screen.
         """
@@ -584,7 +664,9 @@ class HeadsUpDisplay(object):
         surface.blit(flipped, [0, 0])
         pygame.display.flip()
 
-    def __handle_input__(self):
+    def __handle_input__(
+        self
+    ) -> bool:
         """
         Top level handler for keyboard input.
 
@@ -600,7 +682,10 @@ class HeadsUpDisplay(object):
 
         return True
 
-    def __handle_key_event__(self, event):
+    def __handle_key_event__(
+        self,
+        event
+    ) -> bool:
         """
         Handles a keyboard/keypad press event.
 
@@ -630,10 +715,10 @@ class HeadsUpDisplay(object):
             return False
 
         if event.key in [pygame.K_KP_PLUS, pygame.K_PLUS]:
-            CONFIGURATION.next_view()
+            CONFIGURATION.next_view(self.__hud_views__)
 
         if event.key in [pygame.K_KP_MINUS, pygame.K_MINUS]:
-            CONFIGURATION.previous_view()
+            CONFIGURATION.previous_view(self.__hud_views__)
 
         if event.key in [pygame.K_BACKSPACE]:
             self.__level_ahrs__()

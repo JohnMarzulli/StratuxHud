@@ -6,9 +6,9 @@ from common_utils.task_timer import TaskTimer
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
-from hud_elements import *
 from views import utils
 from views.ahrs_element import AhrsElement
+from views.hud_elements import *
 
 
 class CompassAndHeadingTopElement(AhrsElement):
@@ -206,5 +206,4 @@ class CompassAndHeadingTopElement(AhrsElement):
 
 
 if __name__ == '__main__':
-    import hud_elements
-    hud_elements.run_ahrs_hud_element(CompassAndHeadingTopElement)
+    run_ahrs_hud_element(CompassAndHeadingTopElement)

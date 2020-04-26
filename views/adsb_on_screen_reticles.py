@@ -4,10 +4,10 @@ import rendering.display
 from common_utils import units
 from common_utils.task_timer import TaskTimer
 from data_sources.ahrs_data import AhrsData
-from data_sources.traffic import Traffic
 from data_sources.data_cache import HudDataCache
-from hud_elements import *
+from data_sources.traffic import Traffic
 from views.adsb_element import *
+from views.hud_elements import *
 
 
 class AdsbOnScreenReticles(AdsbElement):
@@ -174,5 +174,4 @@ class AdsbOnScreenReticles(AdsbElement):
 
 
 if __name__ == '__main__':
-    import hud_elements
-    hud_elements.run_adsb_hud_element(AdsbOnScreenReticles)
+    run_adsb_hud_element(AdsbOnScreenReticles)

@@ -2,10 +2,11 @@ from numbers import Number
 
 import pygame
 
-from data_sources.ahrs_data import AhrsData
 from common_utils.task_timer import TaskTimer
-from rendering import display, colors
+from data_sources.ahrs_data import AhrsData
+from rendering import colors, display
 from views.ahrs_element import AhrsElement
+from views.hud_elements import run_ahrs_hud_element
 
 
 class Altitude(AhrsElement):
@@ -49,5 +50,4 @@ class Altitude(AhrsElement):
 
 
 if __name__ == '__main__':
-    import hud_elements
-    hud_elements.run_ahrs_hud_element(Altitude)
+    run_ahrs_hud_element(Altitude)

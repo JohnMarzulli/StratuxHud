@@ -13,6 +13,7 @@ from data_sources.aithre import AithreClient
 from data_sources.traffic import AdsbTrafficClient
 from rendering import colors
 from views.ahrs_element import AhrsElement
+from views.hud_elements import run_ahrs_hud_element
 
 NORMAL_TEMP = 50
 REDLINE_TEMP = 80
@@ -419,14 +420,11 @@ class Illyrian(AhrsElement):
 
 
 if __name__ == '__main__':
-    import hud_elements
-    hud_elements.run_ahrs_hud_element(Aithre)
+    run_ahrs_hud_element(Aithre)
 
 if __name__ == '__main__':
-    import hud_elements
-
     # for temp in range(45, 95, 5):
     #     color = get_cpu_temp_text_color(temp)
     #     print("{3} => {0},{1},{2}".format(color[0], color[1], color[2], temp))
 
-    hud_elements.run_ahrs_hud_element(SystemInfo, True)
+    run_ahrs_hud_element(SystemInfo, True)

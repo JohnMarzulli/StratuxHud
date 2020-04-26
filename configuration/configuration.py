@@ -26,9 +26,9 @@ VERSION = "1.7.0"
 # default that everything falls back to
 # The other is the user saved and modified
 # file that is merged in
-__config_file__ = './config.json'
-__view_elements_file__ = './elements.json'
-__views_file__ = './views.json'
+__config_file__ = '../config.json'
+__view_elements_file__ = '../elements.json'
+__views_file__ = '../views.json'
 
 
 #####################
@@ -417,7 +417,8 @@ class Configuration(object):
         return self.__view_index__
 
     def next_view(
-        self
+        self,
+        hud_views: list
     ):
         """
         Changes to the next view.
@@ -425,10 +426,11 @@ class Configuration(object):
         Wraps around to the first view if we try to go past the last view.
         """
         self.__view_index__ += 1
-        self.__clamp_view__()
+        self.__clamp_view__(hud_views)
 
     def previous_view(
-        self
+        self,
+        hud_views: list
     ):
         """
         Changes to the previous view.
@@ -437,20 +439,21 @@ class Configuration(object):
         of the first view.
         """
         self.__view_index__ -= 1
-        self.__clamp_view__()
+        self.__clamp_view__(hud_views)
 
     def __clamp_view__(
-        self
+        self,
+        hud_views: list
     ):
         """
         Makes sure that the view index is within bounds.
         """
 
-        if self.__view_index__ >= (len(self.__hud_views__)):
+        if self.__view_index__ >= (len(hud_views)):
             self.__view_index__ = 0
 
         if self.__view_index__ < 0:
-            self.__view_index__ = (len(self.__hud_views__) - 1)
+            self.__view_index__ = (len(hud_views) - 1)
 
     def update_configuration(
         self,

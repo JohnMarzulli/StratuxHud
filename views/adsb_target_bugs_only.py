@@ -6,8 +6,9 @@ from common_utils.task_timer import TaskTimer
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
-from hud_elements import get_heading_bug_x, get_reticle_size, max_target_bugs
 from views.adsb_element import *
+from views.hud_elements import (get_heading_bug_x, get_reticle_size,
+                                max_target_bugs, run_adsb_hud_element)
 
 
 class AdsbTargetBugsOnly(AdsbElement):
@@ -90,5 +91,4 @@ class AdsbTargetBugsOnly(AdsbElement):
 
 
 if __name__ == '__main__':
-    import hud_elements
-    hud_elements.run_adsb_hud_element(AdsbTargetBugsOnly)
+    run_adsb_hud_element(AdsbTargetBugsOnly)

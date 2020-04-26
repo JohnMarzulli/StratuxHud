@@ -3,6 +3,7 @@ import pygame
 from common_utils.task_timer import TaskTimer
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
+from views import hud_elements
 from views.ahrs_element import AhrsElement
 
 
@@ -48,5 +49,4 @@ class Time(AhrsElement):
 
 
 if __name__ == '__main__':
-    import hud_elements
     hud_elements.run_ahrs_hud_element(Time, True)

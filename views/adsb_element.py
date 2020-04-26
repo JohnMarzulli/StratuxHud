@@ -2,14 +2,13 @@ import math
 
 import pygame
 
-import hud_elements
 from common_utils import units
 from common_utils.task_timer import TaskTimer
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 from data_sources.traffic import Traffic
 from rendering import colors, display
-from views import utils
+from views import hud_elements, utils
 
 
 class AdsbElement(object):

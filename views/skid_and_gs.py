@@ -6,6 +6,7 @@ from common_utils.task_timer import TaskTimer
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
 from views.ahrs_element import AhrsElement
+from views.hud_elements import run_ahrs_hud_element
 
 
 class SkidAndGs(AhrsElement):
@@ -47,5 +48,4 @@ class SkidAndGs(AhrsElement):
 
 
 if __name__ == '__main__':
-    import hud_elements
-    hud_elements.run_ahrs_hud_element(SkidAndGs)
+    run_ahrs_hud_element(SkidAndGs)

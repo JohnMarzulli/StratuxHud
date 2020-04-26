@@ -6,8 +6,9 @@ from common_utils import units
 from common_utils.task_timer import TaskTimer
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
-from rendering import display, colors
+from rendering import colors, display
 from views.ahrs_element import AhrsElement
+from views.hud_elements import run_ahrs_hud_element
 
 
 class Groundspeed(AhrsElement):
@@ -99,5 +100,4 @@ class Groundspeed(AhrsElement):
 
 
 if __name__ == '__main__':
-    import hud_elements
-    hud_elements.run_ahrs_hud_element(Groundspeed, True)
+    run_ahrs_hud_element(Groundspeed, True)

@@ -12,11 +12,12 @@ from configuration import configuration
 from data_sources import norden, targets
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
-from hud_elements import get_heading_bug_x, get_reticle_size
 from rendering import colors, display
 from views import utils
 from views.adsb_target_bugs import AdsbTargetBugs
 from views.ahrs_element import AhrsElement
+from views.hud_elements import (get_heading_bug_x, get_reticle_size,
+                                run_adsb_hud_element)
 
 
 class HeadingAsTrafficObject(object):
@@ -175,5 +176,4 @@ class HeadingTargetBugs(AdsbTargetBugs):
 
 
 if __name__ == '__main__':
-    import hud_elements
-    hud_elements.run_adsb_hud_element(HeadingTargetBugs)
+    run_adsb_hud_element(HeadingTargetBugs)

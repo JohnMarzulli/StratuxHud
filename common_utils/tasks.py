@@ -117,7 +117,8 @@ class RecurringTask(object):
         self.__task_callback__ = task_callback
         self.__logger__ = logger
         self.__thread__ = threading.Thread(
-            target=self.__run_loop__
+            target=self.__run_loop__,
+            name=task_name
         )
 
         if start_immediate:

@@ -13,7 +13,7 @@ import sys
 import urllib
 from http.server import BaseHTTPRequestHandler
 
-import configuration
+from configuration import configuration
 
 CONFIGURATION = None
 COMMAND_PROCESSOR = None
@@ -31,16 +31,36 @@ MEDIA_TYPE_VALUE = 'application/json'
 ERROR_JSON = '{success: false}'
 
 
+class HudViewConfiguration(object):
+    VIEW_ELEMENTS = json.dumps(
+        configuration.CONFIGURATION.get_elements_list(),
+        indent=4,
+        sort_keys=False)
+
+    VIEWS = json.dumps(
+        configuration.CONFIGURATION.get_views_list(),
+        indent=4,
+        sort_keys=False)
+
+    @staticmethod
+    def get_view_elements() -> list:
+        return HudViewConfiguration.VIEW_ELEMENTS
+
+    @staticmethod
+    def get_views() -> list:
+        return HudViewConfiguration.VIEWS
+
+
 def get_views_list(
     handler
 ):
-    return json.dumps(configuration.CONFIGURATION.get_views_list(), indent=4, sort_keys=False)
+    return HudViewConfiguration.get_views()
 
 
 def get_elements_list(
     handler
 ):
-    return json.dumps(configuration.CONFIGURATION.get_elements_list(), indent=4, sort_keys=False)
+    return HudViewConfiguration.get_view_elements()
 
 
 def get_settings(
@@ -100,7 +120,7 @@ def get_view_next(
     """
     Handler for a REST call to move to the next view.
     """
-    configuration.CONFIGURATION.next_view()
+    configuration.CONFIGURATION.next_view(HudViewConfiguration.get_views())
 
     return get_current_view_response()
 
@@ -111,7 +131,7 @@ def get_view_previous(
     """
     Handler for a REST call to move to the previous view.
     """
-    configuration.CONFIGURATION.previous_view()
+    configuration.CONFIGURATION.previous_view(HudViewConfiguration.get_views())
 
     return get_current_view_response()
 

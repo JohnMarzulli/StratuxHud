@@ -5,6 +5,7 @@ from common_utils.task_timer import TaskTimer
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from rendering import colors
+from views import hud_elements
 from views.ahrs_element import AhrsElement
 
 
@@ -48,5 +49,4 @@ class TrafficNotAvailable(AhrsElement):
 
 
 if __name__ == '__main__':
-    import hud_elements
     hud_elements.run_ahrs_hud_element(TrafficNotAvailable, True)

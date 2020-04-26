@@ -1,10 +1,10 @@
 import pygame
 
-import hud_elements
 from common_utils.task_timer import TaskTimer
 from data_sources import targets
 from data_sources.ahrs_data import AhrsData
 from rendering import colors, display
+from views import hud_elements
 from views.ahrs_element import AhrsElement
 
 
@@ -63,5 +63,4 @@ class TargetCount(AhrsElement):
 
 
 if __name__ == '__main__':
-    import hud_elements
     hud_elements.run_ahrs_hud_element(TargetCount, True)
