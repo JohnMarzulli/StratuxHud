@@ -1,17 +1,23 @@
-from lib.task_timer import TaskTimer
-import math
-import pygame
 
-from adsb_element import AdsbElement
-from hud_elements import get_reticle_size, get_heading_bug_x, HudDataCache, imperial_occlude, max_target_bugs
-
-import utils
-import testing
-testing.load_imports()
+import rendering.display
+from common_utils import units
+from common_utils.task_timer import TaskTimer
+from data_sources.ahrs_data import AhrsData
+from data_sources.data_cache import HudDataCache
+from data_sources.traffic import Traffic
+from hud_elements import (get_heading_bug_x, get_reticle_size,
+                          imperial_occlude, max_target_bugs)
+from views.adsb_element import *
 
 
 class AdsbTargetBugs(AdsbElement):
-    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
+    def __init__(
+        self,
+        degrees_of_pitch: float,
+        pixels_per_degree_y: float,
+        font,
+        framebuffer_size
+    ):
         AdsbElement.__init__(
             self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size)
 
@@ -41,16 +47,20 @@ class AdsbTargetBugs(AdsbElement):
             traffic_report, orientation)
 
         try:
-            self.__render_info_card__(framebuffer,
-                                      str(traffic_report.get_display_name()),
-                                      additional_info_text,
-                                      heading_bug_x,
-                                      traffic_report.get_age())
+            self.__render_info_card__(
+                framebuffer,
+                str(traffic_report.get_display_name()),
+                additional_info_text,
+                heading_bug_x,
+                traffic_report.get_age())
         except Exception as ex:
             print("EX:{}".format(ex))
-            pass
 
-    def render(self, framebuffer, orientation):
+    def render(
+        self,
+        framebuffer,
+        orientation: AhrsData
+    ):
         # Render a heading strip along the top
 
         self.task_timer.start()
@@ -70,7 +80,10 @@ class AdsbTargetBugs(AdsbElement):
         traffic_reports.reverse()
 
         [self.__render_traffic_heading_bug__(
-            traffic_report, heading, orientation, framebuffer) for traffic_report in traffic_reports]
+            traffic_report,
+            heading,
+            orientation,
+            framebuffer) for traffic_report in traffic_reports]
 
         self.task_timer.stop()
 

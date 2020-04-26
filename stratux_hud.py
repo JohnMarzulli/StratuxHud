@@ -44,7 +44,7 @@ import logging
 import logging.handlers
 
 import heads_up_display
-from lib.logger import Logger
+from common_utils.logger import Logger
 
 python_logger = logging.getLogger("stratux_hud")
 python_logger.setLevel(logging.DEBUG)

@@ -1,15 +1,21 @@
-from ahrs_element import AhrsElement
-from lib.task_timer import TaskTimer
 from numbers import Number
-import lib.display as display
+
 import pygame
 
-import testing
-testing.load_imports()
+from data_sources.ahrs_data import AhrsData
+from common_utils.task_timer import TaskTimer
+from rendering import display, colors
+from views.ahrs_element import AhrsElement
 
 
 class Altitude(AhrsElement):
-    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
+    def __init__(
+        self,
+        degrees_of_pitch: float,
+        pixels_per_degree_y: float,
+        font,
+        framebuffer_size
+    ):
         self.task_timer = TaskTimer('Altitude')
         self.__font__ = font
         center_y = framebuffer_size[1] >> 2
@@ -17,21 +23,28 @@ class Altitude(AhrsElement):
         self.__text_y_pos__ = center_y - text_half_height
         self.__rhs__ = int(framebuffer_size[0])  # was 0.9
 
-    def render(self, framebuffer, orientation):
+    def render(
+        self,
+        framebuffer,
+        orientation: AhrsData
+    ):
         self.task_timer.start()
-        is_altitude_valid = orientation.alt is not None and isinstance(orientation.alt, Number)
+        is_altitude_valid = orientation.alt is not None and isinstance(
+            orientation.alt,
+            Number)
         altitude_text = str(int(orientation.alt)) + \
             "' MSL" if is_altitude_valid else AhrsElement.INOPERATIVE_TEXT
-        color = display.WHITE if is_altitude_valid else display.RED
+        color = colors.WHITE if is_altitude_valid else colors.RED
         alt_texture = self.__font__.render(
             altitude_text,
             True,
             color,
-            display.BLACK)
+            colors.BLACK)
         text_width, text_height = alt_texture.get_size()
 
         framebuffer.blit(
-            alt_texture, (self.__rhs__ - text_width, self.__text_y_pos__))
+            alt_texture,
+            (self.__rhs__ - text_width, self.__text_y_pos__))
         self.task_timer.stop()
 
 

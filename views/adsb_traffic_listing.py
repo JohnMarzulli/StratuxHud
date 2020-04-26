@@ -1,17 +1,18 @@
-from lib.task_timer import TaskTimer
 import pygame
 
-from adsb_element import *
+from common_utils.task_timer import TaskTimer
+from data_sources.ahrs_data import AhrsData
+from data_sources.data_cache import HudDataCache
+from data_sources.traffic import Traffic
 from hud_elements import *
-import utils
-import testing
-testing.load_imports()
+from views import utils
+from views.adsb_element import AdsbElement
 
 
 class AdsbTrafficListing(AdsbElement):
     def uses_ahrs(
         self
-    ):
+    ) -> bool:
         """
         Does this element use AHRS data to render?
 
@@ -23,13 +24,17 @@ class AdsbTrafficListing(AdsbElement):
 
     def __init__(
         self,
-        degrees_of_pitch,
-        pixels_per_degree_y,
+        degrees_of_pitch: float,
+        pixels_per_degree_y: float,
         font,
         framebuffer_size
     ):
         AdsbElement.__init__(
-            self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size)
+            self,
+            degrees_of_pitch,
+            pixels_per_degree_y,
+            font,
+            framebuffer_size)
 
         self.task_timer = TaskTimer('AdsbTargetBugs')
         self.__listing_text_start_y__ = int(self.__font__.get_height())
@@ -43,8 +48,8 @@ class AdsbTrafficListing(AdsbElement):
 
     def __get_listing__(
         self,
-        report,
-        max_string_lengths
+        report: list,
+        max_string_lengths: list
     ):
         identifier = report[0]
         try:
@@ -66,19 +71,20 @@ class AdsbTrafficListing(AdsbElement):
 
     def __get_padded_traffic_reports__(
         self,
-        traffic_reports
+        traffic_reports: list
     ):
         pre_padded_text, max_string_lengths = self.__get_pre_padded_text_reports__(
             traffic_reports)
 
-        out_padded_reports = [self.__get_listing__(report,
-                                                   max_string_lengths) for report in pre_padded_text]
+        out_padded_reports = [self.__get_listing__(
+            report,
+            max_string_lengths) for report in pre_padded_text]
 
         return out_padded_reports
 
     def __get_report_text__(
         self,
-        traffic
+        traffic: Traffic
     ):
         identifier = str(traffic.get_display_name())
         altitude_delta = int(traffic.altitude / 100.0)
@@ -94,11 +100,11 @@ class AdsbTrafficListing(AdsbElement):
 
     def __get_pre_padded_text_reports__(
         self,
-        traffic_reports
+        traffic_reports: list
     ):
         # We do not want to show traffic on the ground.
-        reports_to_show = filter(
-            lambda x: not x.is_on_ground(), traffic_reports)
+        reports_to_show = list(filter(
+            lambda x: not x.is_on_ground(), traffic_reports))
 
         # The __max_reports__ value is set based on the screen size
         # and how much can fit on the screen
@@ -124,7 +130,7 @@ class AdsbTrafficListing(AdsbElement):
     def render(
         self,
         framebuffer,
-        orientation
+        orientation: AhrsData
     ):
         # Render a heading strip along the top
 
@@ -147,12 +153,16 @@ class AdsbTrafficListing(AdsbElement):
             traffic_reports)
 
         if len(padded_traffic_reports) == 0:
-            framebuffer.blit(HudDataCache.get_cached_text_texture("NO TRAFFIC", self.__font__)[0],
-                             (x_pos, y_pos))
+            framebuffer.blit(
+                HudDataCache.get_cached_text_texture(
+                    "NO TRAFFIC",
+                    self.__font__)[0],
+                (x_pos, y_pos))
 
         for identifier, traffic_report in padded_traffic_reports:
-            traffic_text_texture = HudDataCache.get_cached_text_texture(traffic_report,
-                                                                        self.__font__)[0]
+            traffic_text_texture = HudDataCache.get_cached_text_texture(
+                traffic_report,
+                self.__font__)[0]
 
             framebuffer.blit(traffic_text_texture, (x_pos, y_pos))
 

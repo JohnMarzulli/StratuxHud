@@ -1,22 +1,21 @@
 import math
 
 import pygame
-import utils
-import testing
 
-testing.load_imports()
-
-import units
-from configuration import Configuration
 import hud_elements
-from lib.display import *
-from lib.task_timer import TaskTimer
-import lib.colors as colors
-import configuration
+from common_utils import units
+from common_utils.task_timer import TaskTimer
+from configuration import configuration
+from data_sources.ahrs_data import AhrsData
+from data_sources.traffic import Traffic
+from rendering import colors, display
+from views import utils
 
 
 class AdsbElement(object):
-    def uses_ahrs(self):
+    def uses_ahrs(
+        self
+    ) -> bool:
         """
         Does this element use AHRS data to render?
 
@@ -26,7 +25,13 @@ class AdsbElement(object):
 
         return True
 
-    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
+    def __init__(
+        self,
+        degrees_of_pitch: float,
+        pixels_per_degree_y: float,
+        font,
+        framebuffer_size
+    ):
         self.__roll_elements__ = {}
         self.__framebuffer_size__ = framebuffer_size
         self.__center__ = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
@@ -42,7 +47,10 @@ class AdsbElement(object):
         self.start_fade_threshold = (
             configuration.CONFIGURATION.max_minutes_before_removal * 60) / 2
 
-    def __get_speed_string__(self, speed):
+    def __get_speed_string__(
+        self,
+        speed
+    ) -> str:
         """
         Gets the string to display for the speed. Uses the units configured by the user.
 
@@ -54,11 +62,19 @@ class AdsbElement(object):
         """
 
         speed_units = configuration.CONFIGURATION.__get_config_value__(
-            Configuration.DISTANCE_UNITS_KEY, units.STATUTE)
+            configuration.Configuration.DISTANCE_UNITS_KEY,
+            units.STATUTE)
 
-        return units.get_converted_units_string(speed_units, speed, units.SPEED)
+        return units.get_converted_units_string(
+            speed_units,
+            speed,
+            units.SPEED)
 
-    def __get_distance_string__(self, distance, decimal_places=True):
+    def __get_distance_string__(
+        self,
+        distance,
+        decimal_places: bool = True
+    ) -> str:
         """
         Gets the distance string for display using the units
         from the configuration.
@@ -71,11 +87,19 @@ class AdsbElement(object):
         """
 
         display_units = configuration.CONFIGURATION.__get_config_value__(
-            Configuration.DISTANCE_UNITS_KEY, units.STATUTE)
+            configuration.Configuration.DISTANCE_UNITS_KEY,
+            units.STATUTE)
 
-        return units.get_converted_units_string(display_units, distance, decimal_places=decimal_places)
+        return units.get_converted_units_string(
+            display_units,
+            distance,
+            decimal_places=decimal_places)
 
-    def __get_traffic_projection__(self, orientation, traffic):
+    def __get_traffic_projection__(
+        self,
+        orientation: AhrsData,
+        traffic: Traffic
+    ):
         """
         Attempts to figure out where the traffic reticle should be rendered.
         Returns value within screen space
@@ -91,14 +115,19 @@ class AdsbElement(object):
 
         # TODO - Double check ALL of this math...
         compass = orientation.get_onscreen_projection_heading()
-        horizontal_degrees_to_target = utils.apply_declination(traffic.bearing) - compass
+        horizontal_degrees_to_target = utils.apply_declination(
+            traffic.bearing) - compass
 
         screen_y = -vertical_degrees_to_target * self.__pixels_per_degree_y__
         screen_x = horizontal_degrees_to_target * self.__pixels_per_degree_y__
 
         return self.__center__[0] + screen_x, self.__center__[1] + screen_y
 
-    def get_above_reticle(self, center_x, scale):
+    def get_above_reticle(
+        self,
+        center_x: int,
+        scale: float
+    ):
         """Generates the coordinates for a reticle indicating
         traffic is above use.
 
@@ -118,7 +147,11 @@ class AdsbElement(object):
 
         return above_reticle, self.__top_border__ + size
 
-    def get_below_reticle(self, center_x, scale):
+    def get_below_reticle(
+        self,
+        center_x: int,
+        scale: float
+    ):
         """Generates the coordinates for a reticle indicating
         traffic is above use.
 
@@ -142,7 +175,12 @@ class AdsbElement(object):
         # self.__height__ - size - bug_vertical_offset
         return below_reticle, below_reticle[2][1]
 
-    def get_onscreen_reticle(self, center_x, center_y, scale):
+    def get_onscreen_reticle(
+        self,
+        center_x: int,
+        center_y: int,
+        scale: float
+    ):
         size = int(self.__height__ * scale)
 
         on_screen_reticle = [
@@ -154,7 +192,11 @@ class AdsbElement(object):
 
         return on_screen_reticle, size
 
-    def __get_additional_target_text__(self, traffic_report, orientation):
+    def __get_additional_target_text__(
+        self,
+        traffic_report: Traffic,
+        orientation: AhrsData
+    ):
         """
         Gets the additional text for a traffic report
 
@@ -178,12 +220,14 @@ class AdsbElement(object):
 
         return [bearing_text, distance_text, altitude_text]
 
-    def __render_info_card__(self,
-                             framebuffer,
-                             identifier_text,
-                             additional_info_text,
-                             center_x,
-                             time_since_last_report=0.0):
+    def __render_info_card__(
+        self,
+        framebuffer,
+        identifier_text: str,
+        additional_info_text: str,
+        center_x: int,
+        time_since_last_report: float = 0.0
+    ):
         """
         Renders a targetting reticle on the screen.
         Assumes the X/Y projection has already been performed.
@@ -195,7 +239,7 @@ class AdsbElement(object):
         # find which one is the widest.
         all_text = [identifier_text] + additional_info_text
         all_textures_and_sizes = [hud_elements.HudDataCache.get_cached_text_texture(
-            text, self.__font__, BLACK, card_color, False, False) for text in all_text]
+            text, self.__font__, colors.BLACK, card_color, False, False) for text in all_text]
         widest_texture = max(all_textures_and_sizes,
                              key=lambda x: x[1][0])[1][0]
         text_height = all_textures_and_sizes[0][1][1]
@@ -230,13 +274,20 @@ class AdsbElement(object):
         pygame.draw.polygon(framebuffer, card_color,
                             [fill_top_left, fill_top_right, fill_bottom_right, fill_bottom_left])
 
-        pygame.draw.lines(framebuffer,
-                          BLACK, True, [fill_top_left, fill_top_right, fill_bottom_right, fill_bottom_left], 6)
+        pygame.draw.lines(
+            framebuffer,
+            colors.BLACK,
+            True,
+            [fill_top_left, fill_top_right, fill_bottom_right, fill_bottom_left],
+            6)
 
         self.__render_info_text__(
             all_textures_and_sizes, center_x, framebuffer, info_position_y, info_spacing)
 
-    def __get_card_color__(self, time_since_last_report):
+    def __get_card_color__(
+        self,
+        time_since_last_report: float
+    ):
         """
         Gets the color the card should be based on how long it has been
         since the traffic has had a report.
@@ -249,7 +300,7 @@ class AdsbElement(object):
         """
 
         try:
-            card_color = YELLOW
+            card_color = colors.YELLOW
 
             if time_since_last_report > self.start_fade_threshold:
                 max_distance = (
@@ -257,13 +308,21 @@ class AdsbElement(object):
                 proportion = (time_since_last_report -
                               self.start_fade_threshold) / max_distance
 
-                card_color = colors.get_color_mix(YELLOW, BLACK, proportion)
+                card_color = colors.get_color_mix(
+                    colors.YELLOW, colors.BLACK, proportion)
 
             return card_color
         except:
-            return YELLOW
+            return colors.YELLOW
 
-    def __render_info_text__(self, additional_info_textures, center_x, framebuffer, info_position_y, info_spacing):
+    def __render_info_text__(
+        self,
+        additional_info_textures,
+        center_x: int,
+        framebuffer,
+        info_position_y: int,
+        info_spacing
+    ):
         for info_texture, size in additional_info_textures:
             width_x, width_y = size
             half_width = width_x >> 1
@@ -282,7 +341,15 @@ class AdsbElement(object):
 
             info_position_y += int(width_y * info_spacing)
 
-    def __render_target_reticle__(self, framebuffer, identifier, center_x, center_y, reticle_lines, roll):
+    def __render_target_reticle__(
+        self,
+        framebuffer,
+        identifier: str,
+        center_x: int,
+        center_y: int,
+        reticle_lines,
+        roll
+    ):
         """
         Renders a targetting reticle on the screen.
         Assumes the X/Y projection has already been performed.
@@ -296,8 +363,12 @@ class AdsbElement(object):
         if center_y > (self.__height__ - border_space):
             center_y = int(self.__height__ - border_space)
 
-        pygame.draw.lines(framebuffer,
-                          RED, True, reticle_lines, 4)
+        pygame.draw.lines(
+            framebuffer,
+            colors.RED,
+            True,
+            reticle_lines,
+            4)
 
         # Move the identifer text away from the reticle
         if center_y < self.__center__[1]:
@@ -306,7 +377,9 @@ class AdsbElement(object):
             text_y = center_y - border_space
 
         rendered_text = self.__font__.render(
-            str(identifier), True, YELLOW)
+            str(identifier),
+            True,
+            colors.YELLOW)
         text_width, text_height = rendered_text.get_size()
 
         text = pygame.transform.rotate(rendered_text, roll)
@@ -314,7 +387,14 @@ class AdsbElement(object):
         framebuffer.blit(
             text, (center_x - (text_width >> 1), text_y - (text_height >> 1)))
 
-    def __render_texture__(self, framebuffer, position, texture, texture_size, roll):
+    def __render_texture__(
+        self,
+        framebuffer,
+        position,
+        texture,
+        texture_size,
+        roll
+    ):
         """
         Renders the text with the results centered on the given
         position.
@@ -326,6 +406,7 @@ class AdsbElement(object):
         text = pygame.transform.rotate(texture, roll)
 
         framebuffer.blit(
-            text, (position_x - (text_width >> 1), position_y - (text_height >> 1)))
+            text,
+            (position_x - (text_width >> 1), position_y - (text_height >> 1)))
 
         return text_width, text_height

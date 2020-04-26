@@ -1,22 +1,19 @@
 """
 Common code for HUD view elements.
 """
-
-
 import datetime
 import math
 import threading
 
 import pygame
 
-import units
-import configuration
-import traffic
 import views.utils as utils
+from common_utils import task_timer, units
+from configuration import configuration
+from data_sources import traffic
+from rendering import colors, display
 
-from lib.display import WHITE, BLACK, YELLOW, display_init
-from lib.task_timer import TaskTimer
-from traffic import AdsbTrafficClient, Traffic
+DEFAULT_FONT = "./assets/fonts/LiberationMono-Bold.ttf"
 
 SIN_RADIANS_BY_DEGREES = {}
 COS_RADIANS_BY_DEGREES = {}
@@ -34,10 +31,10 @@ for degrees in range(-360, 361):
 
 
 def get_reticle_size(
-    distance,
-    min_reticle_size=0.05,
-    max_reticle_size=0.20
-):
+    distance: float,
+    min_reticle_size: float = 0.05,
+    max_reticle_size: float = 0.20
+) -> float:
     """
     The the size of the reticle based on the distance of the target.
 
@@ -68,159 +65,11 @@ def get_reticle_size(
     return on_screen_reticle_scale
 
 
-class HudDataCache(object):
-    TEXT_TEXTURE_CACHE = {}
-    __CACHE_ENTRY_LAST_USED__ = {}
-    __CACHE_INVALIDATION_TIME__ = 60 * 5
-
-    RELIABLE_TRAFFIC = []
-    IS_TRAFFIC_AVAILABLE = False
-
-    __LOCK__ = threading.Lock()
-
-    __TRAFFIC_CLIENT__ = AdsbTrafficClient(
-        configuration.CONFIGURATION.get_traffic_manager_address())
-
-    @staticmethod
-    def update_traffic_reports():
-        HudDataCache.__LOCK__.acquire()
-
-        try:
-            HudDataCache.RELIABLE_TRAFFIC = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
-            HudDataCache.IS_TRAFFIC_AVAILABLE = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.is_traffic_available()
-        finally:
-            HudDataCache.__LOCK__.release()
-
-    @staticmethod
-    def get_reliable_traffic():
-        """
-        Returns a thread safe copy of the currently known reliable traffic.
-
-        Returns:
-            list -- A list of the reliable traffic.
-        """
-        traffic_clone = None
-        HudDataCache.__LOCK__.acquire()
-        try:
-            traffic_clone = HudDataCache.RELIABLE_TRAFFIC[:]
-        finally:
-            HudDataCache.__LOCK__.release()
-
-        return traffic_clone
-
-    @staticmethod
-    def __purge_texture__(
-        texture_to_purge
-    ):
-        """
-        Attempts to remove a texture from the cache.
-
-        Arguments:
-            texture_to_purge {string} -- The identifier of the texture to remove from the system.
-        """
-
-        try:
-            del HudDataCache.TEXT_TEXTURE_CACHE[texture_to_purge]
-            del HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_to_purge]
-        finally:
-            return True
-
-    @staticmethod
-    def __get_purge_key__(
-        now,
-        texture_key
-    ):
-        """
-        Returns the key of the traffic to purge if it should be, otherwise returns None.
-
-        Arguments:
-            now {datetime} -- The current time.
-            texture_key {string} -- The identifier of the texture we are interesting in.
-
-        Returns:
-            string -- The identifier to purge, or None
-        """
-
-        lsu = HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_key]
-        time_since_last_use = (
-            datetime.datetime.utcnow() - lsu).total_seconds()
-
-        return texture_key if time_since_last_use > HudDataCache.__CACHE_INVALIDATION_TIME__ else None
-
-    @staticmethod
-    def purge_old_textures():
-        """
-        Works through the traffic reports and removes any traffic that is
-        old, or the cache has timed out on.
-        """
-
-        # The second hardest problem in comp-sci...
-        textures_to_purge = []
-        HudDataCache.__LOCK__.acquire()
-        try:
-            now = datetime.datetime.utcnow()
-            textures_to_purge = [HudDataCache.__get_purge_key__(now, texture_key)
-                                 for texture_key in HudDataCache.__CACHE_ENTRY_LAST_USED__]
-            textures_to_purge = filter(lambda x: x is not None,
-                                       textures_to_purge)
-            [HudDataCache.__purge_texture__(texture_to_purge)
-             for texture_to_purge in textures_to_purge]
-        finally:
-            HudDataCache.__LOCK__.release()
-
-    @staticmethod
-    def get_cached_text_texture(
-        text,
-        font,
-        text_color=BLACK,
-        background_color=YELLOW,
-        use_alpha=False,
-        force_regen=False
-    ):
-        """
-        Retrieves a cached texture.
-        If the texture with the given text does not already exists, creates it.
-        Uses only the text has the key. If the colors change, the cache is not invalidated or changed.
-
-        Arguments:
-            text {string} -- The text to generate a texture for.
-            font {pygame.font} -- The font to use for the texture.
-
-        Keyword Arguments:
-            text_color {tuple} -- The RGB color for the text. (default: {BLACK})
-            background_color {tuple} -- The RGB color for the BACKGROUND. (default: {YELLOW})
-            use_alpha {bool} -- Should alpha be used? (default: {False})
-
-        Returns:
-            [tuple] -- The texture and the size of the texture
-        """
-
-        result = None
-        HudDataCache.__LOCK__.acquire()
-        try:
-            if text not in HudDataCache.TEXT_TEXTURE_CACHE or force_regen:
-                texture = font.render(text, True, text_color, background_color)
-                size = texture.get_size()
-
-                if use_alpha:
-                    texture = texture.convert()
-
-                HudDataCache.TEXT_TEXTURE_CACHE[text] = texture, size
-
-            HudDataCache.__CACHE_ENTRY_LAST_USED__[
-                text] = datetime.datetime.utcnow()
-            result = HudDataCache.TEXT_TEXTURE_CACHE[text]
-        finally:
-            HudDataCache.__LOCK__.release()
-
-        return result
-
-
 def get_heading_bug_x(
-    heading,
-    bearing,
-    degrees_per_pixel
-):
+    heading: float,
+    bearing: float,
+    degrees_per_pixel: float
+) -> int:
     """
     Gets the X position of a heading bug. 0 is the LHS.
 
@@ -244,13 +93,13 @@ def get_heading_bug_x(
 
 
 def get_onscreen_traffic_projection__(
-    heading,
-    pitch,
-    roll,
-    bearing,
-    distance,
-    altitude_delta,
-    pixels_per_degree
+    heading: float,
+    pitch: float,
+    roll: float,
+    bearing: float,
+    distance: float,
+    altitude_delta: float,
+    pixels_per_degree: float
 ):
     """
     Attempts to figure out where the traffic reticle should be rendered.
@@ -274,7 +123,7 @@ def get_onscreen_traffic_projection__(
 
 def run_ahrs_hud_element(
     element_type,
-    use_detail_font=True
+    use_detail_font: bool = True
 ):
     """
     Runs an AHRS based HUD element alone for testing purposes
@@ -286,12 +135,12 @@ def run_ahrs_hud_element(
         use_detail_font {bool} -- Should the detail font be used. (default: {True})
     """
 
-    from aircraft import AhrsSimulation
+    from data_sources import ahrs_simulation
     from datetime import datetime
 
     clock = pygame.time.Clock()
 
-    __backpage_framebuffer__, screen_size = display_init()  # args.debug)
+    __backpage_framebuffer__, screen_size = display.display_init()  # args.debug)
     __width__, __height__ = screen_size
     pygame.mouse.set_visible(False)
 
@@ -300,29 +149,30 @@ def run_ahrs_hud_element(
     font_size_std = int(__height__ / 10.0)
     font_size_detail = int(__height__ / 12.0)
 
-    __font__ = pygame.font.Font(
-        "./assets/fonts/LiberationMono-Bold.ttf", font_size_std)
-    __detail_font__ = pygame.font.Font(
-        "./assets/fonts/LiberationMono-Bold.ttf", font_size_detail)
+    __font__ = pygame.font.Font(DEFAULT_FONT, font_size_std)
+    __detail_font__ = pygame.font.Font(DEFAULT_FONT, font_size_detail)
 
     if use_detail_font:
         font = __detail_font__
     else:
         font = __font__
 
-    __aircraft__ = AhrsSimulation()
+    __aircraft__ = ahrs_simulation.AhrsSimulation()
 
     __pixels_per_degree_y__ = (__height__ / configuration.CONFIGURATION.get_degrees_of_pitch()
                                ) * configuration.CONFIGURATION.get_pitch_degrees_display_scaler()
 
-    hud_element = element_type(configuration.CONFIGURATION.get_degrees_of_pitch(),
-                               __pixels_per_degree_y__, font, (__width__, __height__))
+    hud_element = element_type(
+        configuration.CONFIGURATION.get_degrees_of_pitch(),
+        __pixels_per_degree_y__,
+        font,
+        (__width__, __height__))
 
     while True:
         orientation = __aircraft__.get_ahrs()
         orientation.utc_time = str(datetime.utcnow())
         __aircraft__.simulate()
-        __backpage_framebuffer__.fill(BLACK)
+        __backpage_framebuffer__.fill(colors.BLACK)
         hud_element.render(__backpage_framebuffer__, orientation)
         pygame.display.flip()
         clock.tick(60)
@@ -330,7 +180,7 @@ def run_ahrs_hud_element(
 
 def run_adsb_hud_element(
     element_type,
-    use_detail_font=True
+    use_detail_font: bool = True
 ):
     """
     Runs a ADSB based HUD element alone for testing purposes
@@ -342,16 +192,16 @@ def run_adsb_hud_element(
         use_detail_font {bool} -- Should the detail font be used. (default: {True})
     """
 
-    from hud_elements import HudDataCache
-    from aircraft import AhrsSimulation
-    from traffic import SimulatedTraffic
+    from data_sources import ahrs_simulation, traffic
+    from data_sources.data_cache import HudDataCache
 
-    simulated_traffic = (SimulatedTraffic(),
-                         SimulatedTraffic(), SimulatedTraffic())
+    simulated_traffic = (traffic.SimulatedTraffic(),
+                         traffic.SimulatedTraffic(),
+                         traffic.SimulatedTraffic())
 
     clock = pygame.time.Clock()
 
-    __backpage_framebuffer__, screen_size = display_init()  # args.debug)
+    __backpage_framebuffer__, screen_size = display.display_init()  # args.debug)
     __width__, __height__ = screen_size
     pygame.mouse.set_visible(False)
 
@@ -360,17 +210,15 @@ def run_adsb_hud_element(
     font_size_std = int(__height__ / 10.0)
     font_size_detail = int(__height__ / 12.0)
 
-    __font__ = pygame.font.Font(
-        "./assets/fonts/LiberationMono-Bold.ttf", font_size_std)
-    __detail_font__ = pygame.font.Font(
-        "./assets/fonts/LiberationMono-Bold.ttf", font_size_detail)
+    __font__ = pygame.font.Font(DEFAULT_FONT, font_size_std)
+    __detail_font__ = pygame.font.Font(DEFAULT_FONT, font_size_detail)
 
     if use_detail_font:
         font = __detail_font__
     else:
         font = __font__
 
-    __aircraft__ = AhrsSimulation()
+    __aircraft__ = ahrs_simulation.AhrsSimulation()
 
     __pixels_per_degree_y__ = (__height__ / configuration.CONFIGURATION.get_degrees_of_pitch()) * \
         configuration.CONFIGURATION.get_pitch_degrees_display_scaler()
@@ -384,14 +232,14 @@ def run_adsb_hud_element(
     while True:
         for test_data in simulated_traffic:
             test_data.simulate()
-            AdsbTrafficClient.TRAFFIC_MANAGER.handle_traffic_report(
+            traffic.AdsbTrafficClient.TRAFFIC_MANAGER.handle_traffic_report(
                 test_data.icao_address,
                 test_data.to_json())
 
         HudDataCache.purge_old_textures()
         orientation = __aircraft__.get_ahrs()
         __aircraft__.simulate()
-        __backpage_framebuffer__.fill(BLACK)
+        __backpage_framebuffer__.fill(colors.BLACK)
         hud_element.render(__backpage_framebuffer__, orientation)
         pygame.display.flip()
         clock.tick(60)

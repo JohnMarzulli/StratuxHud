@@ -1,20 +1,18 @@
 import pygame
 
-import testing
-testing.load_imports()
-
-from lib.display import *
-from lib.task_timer import TaskTimer
-import units
-from ahrs_element import AhrsElement
-from hud_elements import HudDataCache
+from common_utils import local_debug, units
+from common_utils.task_timer import TaskTimer
+from data_sources.ahrs_data import AhrsData
+from data_sources.data_cache import HudDataCache
+from rendering import colors
+from views.ahrs_element import AhrsElement
 
 
 class TrafficNotAvailable(AhrsElement):
     def __init__(
         self,
-        degrees_of_pitch,
-        pixels_per_degree_y,
+        degrees_of_pitch: float,
+        pixels_per_degree_y: float,
         font,
         framebuffer_size
     ):
@@ -30,7 +28,7 @@ class TrafficNotAvailable(AhrsElement):
     def render(
         self,
         framebuffer,
-        orientation
+        orientation: AhrsData
     ):
         self.task_timer.start()
 
@@ -38,8 +36,8 @@ class TrafficNotAvailable(AhrsElement):
             (texture, size) = HudDataCache.get_cached_text_texture(
                 "TRAFFIC UNAVAILABLE",
                 self.__font__,
-                text_color=RED,
-                background_color=BLACK,
+                text_color=colors.RED,
+                background_color=colors.BLACK,
                 use_alpha=True)
             width = size[0]
 

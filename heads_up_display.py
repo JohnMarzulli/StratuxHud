@@ -11,35 +11,24 @@ from time import sleep
 import pygame
 import requests
 
-import lib.display as display
-import lib.local_debug as local_debug
-import lib.utilities as utilities
-import traffic
-from aircraft import Aircraft
-from configuration import *
-from traffic import AdsbTrafficClient
-from lib.recurring_task import RecurringTask
-from lib.task_timer import TaskTimer, RollingStats
-import hud_elements
-import targets
-import traffic
-import restful_host
 import aithre
-from views import (adsb_on_screen_reticles,
-                   adsb_target_bugs,
-                   adsb_target_bugs_only,
-                   adsb_traffic_listing,
-                   ahrs_not_available,
-                   altitude,
-                   artificial_horizon,
-                   compass_and_heading_bottom_element,
-                   groundspeed, heading_target_bugs,
-                   level_reference,
-                   roll_indicator,
-                   skid_and_gs,
-                   system_info,
-                   target_count,
-                   time,
+import hud_elements
+from common_utils import local_debug, system_tools
+from common_utils.task_timer import RollingStats, TaskTimer
+from common_utils.tasks import RecurringTask
+from configuration import configuration, configuration_server
+from configuration.configuration import CONFIGURATION
+from data_sources import targets, traffic
+from data_sources.aircraft import Aircraft
+from data_sources.traffic import AdsbTrafficClient
+from data_sources.data_cache import HudDataCache
+from rendering import colors, display
+from views import (adsb_on_screen_reticles, adsb_target_bugs,
+                   adsb_target_bugs_only, adsb_traffic_listing,
+                   ahrs_not_available, altitude, artificial_horizon,
+                   compass_and_heading_bottom_element, groundspeed,
+                   heading_target_bugs, level_reference, roll_indicator,
+                   skid_and_gs, system_info, target_count, time,
                    traffic_not_available)
 
 # TODO - Disable functionality based on the enabled StratuxCapabilities
@@ -129,11 +118,11 @@ class HeadsUpDisplay(object):
 
     def __render_view_title__(self, text, surface):
         try:
-            texture, size = hud_elements.HudDataCache.get_cached_text_texture(
+            texture, size = HudDataCache.get_cached_text_texture(
                 text,
                 self.__detail_font__,
-                display.BLUE,
-                display.BLACK,
+                colors.BLUE,
+                colors.BLACK,
                 False)
 
             left_border = 0
@@ -193,7 +182,7 @@ class HeadsUpDisplay(object):
 
             current_fps = int(clock.get_fps())
             surface = pygame.display.get_surface()
-            surface.fill(display.BLACK)
+            surface.fill(colors.BLACK)
 
             self.frame_setup.stop()
             self.render_perf.start()
@@ -239,8 +228,12 @@ class HeadsUpDisplay(object):
                 render_perf_text = '{} / {}fps'.format(
                     self.render_perf.to_string(), current_fps)
 
-                self.__render_text__(render_perf_text, display.BLACK,
-                                     debug_status_left, debug_status_top, display.YELLOW)
+                self.__render_text__(
+                    render_perf_text,
+                    colors.BLACK,
+                    debug_status_left,
+                    debug_status_top,
+                    colors.YELLOW)
         finally:
             # Change the frame buffer
             if CONFIGURATION.flip_horizontal or CONFIGURATION.flip_vertical:
@@ -250,7 +243,7 @@ class HeadsUpDisplay(object):
             pygame.display.update()
             self.__fps__.push(current_fps)
             self.frame_cleanup.stop()
-            clock.tick(MAX_FRAMERATE)
+            clock.tick(configuration.MAX_FRAMERATE)
 
         return True
 
@@ -289,9 +282,9 @@ class HeadsUpDisplay(object):
         (text_width, text_height) = rendered_text.get_size()
         surface = pygame.display.get_surface()
 
-        surface.blit(rendered_text,
-                     (position_x - (text_width >> 1),
-                         position_y - (text_height >> 1)))
+        surface.blit(
+            rendered_text,
+            (position_x - (text_width >> 1), position_y - (text_height >> 1)))
 
         return text_width, text_height
 
@@ -344,8 +337,11 @@ class HeadsUpDisplay(object):
             if use_detail_font:
                 font = self.__detail_font__
 
-            return hud_element_class(CONFIGURATION.get_degrees_of_pitch(),
-                                     self.__pixels_per_degree_y__, font, (self.__width__, self.__height__))
+            return hud_element_class(
+                CONFIGURATION.get_degrees_of_pitch(),
+                self.__pixels_per_degree_y__,
+                font,
+                (self.__width__, self.__height__))
         except Exception as e:
             self.warn("Unable to build element {0}:{1}".format(
                 hud_element_class, e))
@@ -353,7 +349,7 @@ class HeadsUpDisplay(object):
 
     def __load_view_elements(self):
         """
-        Loads the list of available view elements from thee ifconfiguration
+        Loads the list of available view elements from the configuration
         file. Returns it as a map of the element name (Human/kind) to
         the Python object that instantiates it, and if it uses the
         "detail" (aka Large) font or not.
@@ -363,7 +359,7 @@ class HeadsUpDisplay(object):
         """
 
         view_elements = {}
-        with open(VIEW_ELEMENTS_FILE) as json_config_file:
+        with open(configuration.VIEW_ELEMENTS_FILE) as json_config_file:
             json_config_text = json_config_file.read()
             json_config = json.loads(json_config_text)
 
@@ -391,7 +387,7 @@ class HeadsUpDisplay(object):
         existing_elements = {}
         elements_requested = 0
 
-        with open(VIEWS_FILE) as json_config_file:
+        with open(configuration.VIEWS_FILE) as json_config_file:
             json_config_text = json_config_file.read()
             json_config = json.loads(json_config_text)
 
@@ -443,11 +439,11 @@ class HeadsUpDisplay(object):
 
     def __purge_old_textures__(self):
         self.cache_perf.start()
-        hud_elements.HudDataCache.purge_old_textures()
+        HudDataCache.purge_old_textures()
         self.cache_perf.stop()
 
     def __update_traffic_reports__(self):
-        hud_elements.HudDataCache.update_traffic_reports()
+        HudDataCache.update_traffic_reports()
 
     def __update_aithre__(self):
         if not CONFIGURATION.aithre_enabled:
@@ -478,8 +474,10 @@ class HeadsUpDisplay(object):
         self.frame_setup = TaskTimer('Setup')
         self.frame_cleanup = TaskTimer('Cleanup')
 
-        self.__frame_timers__ = {'Setup': self.frame_setup,
-                                 'Render': self.render_perf, 'Cleanup': self.frame_cleanup}
+        self.__frame_timers__ = {
+            'Setup': self.frame_setup,
+            'Render': self.render_perf,
+            'Cleanup': self.frame_cleanup}
 
         self.cache_perf = TaskTimer('Cache')
 
@@ -498,55 +496,50 @@ class HeadsUpDisplay(object):
         font_size_loading = int(self.__height__ / 4.0)
 
         self.__font__ = pygame.font.Font(
-            get_absolute_file_path("./assets/fonts/LiberationMono-Bold.ttf"), font_size_std)
+            configuration.get_absolute_file_path("../assets/fonts/LiberationMono-Bold.ttf"), font_size_std)
         self.__detail_font__ = pygame.font.Font(
-            get_absolute_file_path("./assets/fonts/LiberationMono-Bold.ttf"), font_size_detail)
+            configuration.get_absolute_file_path("../assets/fonts/LiberationMono-Bold.ttf"), font_size_detail)
         self.__loading_font__ = pygame.font.Font(
-            get_absolute_file_path("./assets/fonts/LiberationMono-Regular.ttf"), font_size_loading)
+            configuration.get_absolute_file_path("../assets/fonts/LiberationMono-Regular.ttf"), font_size_loading)
         self.__show_boot_screen__()
 
         self.__aircraft__ = Aircraft(self.__logger__)
 
-        self.__pixels_per_degree_y__ = int((self.__height__ / CONFIGURATION.get_degrees_of_pitch()) *
-                                           CONFIGURATION.get_pitch_degrees_display_scaler())
+        self.__pixels_per_degree_y__ = int(
+            (self.__height__ / CONFIGURATION.get_degrees_of_pitch()) * CONFIGURATION.get_pitch_degrees_display_scaler())
 
         self.__ahrs_not_available_element__ = self.__build_ahrs_hud_element(
             ahrs_not_available.AhrsNotAvailable)
 
         self.__hud_views__ = self.__build_hud_views()
 
-        logger = None
-
-        if self.__logger__ is not None:
-            logger = self.__logger__.logger
-
-        self.web_server = restful_host.HudServer()
+        self.web_server = configuration_server.HudServer()
 
         RecurringTask(
             "purge_old_textures",
             10.0,
             self.__purge_old_textures__,
-            logger)
+            logger.get_logger())
 
         RecurringTask(
             "rest_host",
             0.1,
             self.web_server.run,
-            logger,
+            logger.get_logger(),
             start_immediate=False)
 
         RecurringTask(
             "update_traffic",
             0.1,
             self.__update_traffic_reports__,
-            logger,
+            logger.get_logger(),
             start_immediate=True)
 
         RecurringTask(
             "update_aithre",
             5.0,
             self.__update_aithre__,
-            logger,
+            logger.get_logger(),
             start_immediate=True)
 
     def __show_boot_screen__(self):
@@ -554,12 +547,13 @@ class HeadsUpDisplay(object):
         Renders a BOOTING screen.
         """
 
-        disclaimer_text = ['Not intended as',
-                           'a primary collision evasion',
-                           'or flight instrument system.',
-                           'For advisory only.']
+        disclaimer_text = [
+            'Not intended as',
+            'a primary collision evasion',
+            'or flight instrument system.',
+            'For advisory only.']
 
-        texture = self.__loading_font__.render("LOADING", True, display.RED)
+        texture = self.__loading_font__.render("LOADING", True, colors.RED)
         text_width, text_height = texture.get_size()
 
         surface = pygame.display.get_surface()
@@ -568,20 +562,25 @@ class HeadsUpDisplay(object):
 
         y = (self.__height__ >> 2) + (self.__height__ >> 3)
         for text in disclaimer_text:
-            texture = self.__detail_font__.render(text, True, display.YELLOW)
+            texture = self.__detail_font__.render(text, True, colors.YELLOW)
             text_width, text_height = texture.get_size()
             surface.blit(
                 texture, ((self.__width__ >> 1) - (text_width >> 1), y))
             y += text_height + (text_height >> 3)
 
         texture = self.__detail_font__.render(
-            'Version {}'.format(VERSION), True, display.GREEN)
+            'Version {}'.format(configuration.VERSION),
+            True,
+            colors.GREEN)
         text_width, text_height = texture.get_size()
-        surface.blit(texture, ((
-            self.__width__ >> 1) - (text_width >> 1), self.__height__ - text_height))
+        surface.blit(
+            texture,
+            ((self.__width__ >> 1) - (text_width >> 1), self.__height__ - text_height))
 
         flipped = pygame.transform.flip(
-            surface, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical)
+            surface,
+            CONFIGURATION.flip_horizontal,
+            CONFIGURATION.flip_vertical)
         surface.blit(flipped, [0, 0])
         pygame.display.flip()
 
@@ -613,14 +612,14 @@ class HeadsUpDisplay(object):
         """
 
         if event.type == pygame.QUIT:
-            utilities.shutdown()
+            system_tools.shutdown()
             return False
 
         if event.type != pygame.KEYUP:
             return True
 
         if event.key in [pygame.K_ESCAPE]:
-            utilities.shutdown(0)
+            system_tools.shutdown(0)
             if local_debug.IS_PI:
                 self.__shutdown_stratux__()
 

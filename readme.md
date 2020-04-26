@@ -276,7 +276,7 @@ Make sure you are using a high-quality power cable if you are using a Pi 3B+
 5. `sudo apt-get install libgtk2.0-dev` a. Choose `Y` if prompted
 6. `sudo cp ./media/hud_logo.png /usr/share/plymouth/themes/pix/splash.png`
 7. `python --version`. Verify that your version is 2.7.14
-8. `sudo python setup.py develop` For Linux systems where you wish to develop or debug: `sudo setcap 'cap_net_raw,cap_net_admin+eip' ~/.local/lib/python2.7/site-packages/bluepy/bluepy-helper`
+8. `sudo python3 setup.py develop` For Linux systems where you wish to develop or debug: `sudo setcap 'cap_net_raw,cap_net_admin+eip' ~/.local/lib/python2.7/site-packages/bluepy/bluepy-helper`
 9. `sudo raspi-config`
 10. Choose "WiFi" again, and enter `stratux` as the SSID. No password.
 11. `sudo vim /etc/wpa_supplicant/wpa_supplicant.conf`

@@ -1,18 +1,23 @@
-from lib.task_timer import TaskTimer
-import math
 import pygame
 
-from adsb_element import AdsbElement
-from hud_elements import get_reticle_size, get_heading_bug_x, HudDataCache, max_target_bugs
-
-import utils
-import testing
-import lib.display as display
-testing.load_imports()
+import rendering.display
+from common_utils import units
+from common_utils.task_timer import TaskTimer
+from data_sources.ahrs_data import AhrsData
+from data_sources.data_cache import HudDataCache
+from data_sources.traffic import Traffic
+from hud_elements import get_heading_bug_x, get_reticle_size, max_target_bugs
+from views.adsb_element import *
 
 
 class AdsbTargetBugsOnly(AdsbElement):
-    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
+    def __init__(
+        self,
+        degrees_of_pitch: float,
+        pixels_per_degree_y: float,
+        font,
+        framebuffer_size
+    ):
         AdsbElement.__init__(
             self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size)
 
@@ -24,7 +29,13 @@ class AdsbTargetBugsOnly(AdsbElement):
         self.__top_border__ = 0
         self.__bottom_border__ = self.__height__ - int(self.__height__ * 0.1)
 
-    def __render_traffic_heading_bug__(self, traffic_report, heading, orientation, framebuffer):
+    def __render_traffic_heading_bug__(
+        self,
+        traffic_report: Traffic,
+        heading: float,
+        orientation: AhrsData,
+        framebuffer
+    ):
         """
         Render a single heading bug to the framebuffer.
 
@@ -44,7 +55,7 @@ class AdsbTargetBugsOnly(AdsbElement):
 
         try:
             is_below = (orientation.alt - 100) > traffic_report.altitude
-            reticle, reticle_edge_positon_y = self.get_below_reticle(
+            reticle, reticle_edge_position_y = self.get_below_reticle(
                 heading_bug_x, target_bug_scale) if is_below else self.get_above_reticle(heading_bug_x, target_bug_scale)
 
             bug_color = display.BLUE if traffic_report.is_on_ground() == True else display.RED
@@ -53,7 +64,11 @@ class AdsbTargetBugsOnly(AdsbElement):
         except:
             pass
 
-    def render(self, framebuffer, orientation):
+    def render(
+        self,
+        framebuffer,
+        orientation: AhrsData
+    ):
         # Render a heading strip along the top
 
         self.task_timer.start()

@@ -7,7 +7,9 @@ class AhrsElement(object):
     GPS_UNAVAILABLE_TEXT = "NO GPS"
     INOPERATIVE_TEXT = "INOP"
 
-    def uses_ahrs(self):
+    def uses_ahrs(
+        self
+    ) -> bool:
         """
         Does this element use AHRS data to render?
 

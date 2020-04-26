@@ -1,29 +1,33 @@
 import pygame
 
-import testing
-testing.load_imports()
-
-from lib.display import *
-from lib.task_timer import TaskTimer
-import units
 import hud_elements
-from ahrs_element import AhrsElement
-from hud_elements import *
-import targets
+from common_utils.task_timer import TaskTimer
+from data_sources import targets
+from data_sources.ahrs_data import AhrsData
+from rendering import colors, display
+from views.ahrs_element import AhrsElement
 
 
 class TargetCount(AhrsElement):
-    def uses_ahrs(self):
+    def uses_ahrs(
+        self
+    ) -> bool:
         """
         Does this element use AHRS data to render?
-               
+
         Returns:
             bool -- True if the element uses AHRS data.
         """
 
         return False
 
-    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
+    def __init__(
+        self,
+        degrees_of_pitch: float,
+        pixels_per_degree_y: float,
+        font,
+        framebuffer_size
+    ):
         self.task_timer = TaskTimer('TargetCount')
         self.__font__ = font
         center_y = framebuffer_size[1] >> 2
@@ -31,9 +35,13 @@ class TargetCount(AhrsElement):
         self.__text_y_pos__ = center_y - text_half_height
         self.__rhs__ = int(0.9 * framebuffer_size[0])
 
-        self.__left_x__ = 0 # WAS int(framebuffer_size[0] * 0.01)
+        self.__left_x__ = 0  # WAS int(framebuffer_size[0] * 0.01)
 
-    def render(self, framebuffer, orientation):
+    def render(
+        self,
+        framebuffer,
+        orientation: AhrsData
+    ):
         self.task_timer.start()
         # Get the traffic, and bail out of we have none
 
@@ -47,7 +55,7 @@ class TargetCount(AhrsElement):
         except Exception as e:
             text = "ERROR" + str(e)
 
-        texture = self.__font__.render(text, True, WHITE, BLACK)
+        texture = self.__font__.render(text, True, colors.WHITE, colors.BLACK)
 
         framebuffer.blit(
             texture, (self.__left_x__, self.__text_y_pos__))

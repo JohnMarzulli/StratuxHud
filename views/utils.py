@@ -1,10 +1,9 @@
-import testing
+from configuration import configuration
 
-testing.load_imports()
 
-import configuration
-
-def apply_declination(heading):
+def apply_declination(
+    heading
+) -> int:
     """
     Returns a heading to display with the declination adjust to convert from true to magnetic.
 
@@ -16,7 +15,8 @@ def apply_declination(heading):
     """
 
     try:
-        new_heading = int(heading - configuration.CONFIGURATION.get_declination())
+        declination_applied = heading - configuration.CONFIGURATION.get_declination()
+        new_heading = int(declination_applied)
     except:
         # If the heading is the unknown '---' then the math wil fail.
         return heading

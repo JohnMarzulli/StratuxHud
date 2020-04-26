@@ -1,18 +1,29 @@
-from lib.task_timer import TaskTimer
-from lib.display import *
-import units
 import pygame
 
-from adsb_element import *
+import rendering.display
+from common_utils import units
+from common_utils.task_timer import TaskTimer
+from data_sources.ahrs_data import AhrsData
+from data_sources.traffic import Traffic
+from data_sources.data_cache import HudDataCache
 from hud_elements import *
-
-testing.load_imports()
+from views.adsb_element import *
 
 
 class AdsbOnScreenReticles(AdsbElement):
-    def __init__(self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size):
+    def __init__(
+        self,
+        degrees_of_pitch: float,
+        pixels_per_degree_y: float,
+        font,
+        framebuffer_size
+    ):
         AdsbElement.__init__(
-            self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size)
+            self,
+            degrees_of_pitch,
+            pixels_per_degree_y,
+            font,
+            framebuffer_size)
 
         self.task_timer = TaskTimer('AdsbOnScreenReticles')
 
@@ -23,7 +34,12 @@ class AdsbOnScreenReticles(AdsbElement):
         self.__top_border__ = int(self.__height__ * 0.1)
         self.__bottom_border__ = self.__height__ - self.__top_border__
 
-    def __render_on_screen_reticle__(self,  framebuffer, orientation, traffic):
+    def __render_on_screen_reticle__(
+        self,
+        framebuffer,
+        orientation: AhrsData,
+        traffic: Traffic
+    ):
         """
         Draws a single reticle on the screen.
 
@@ -44,17 +60,23 @@ class AdsbOnScreenReticles(AdsbElement):
         reticle, reticle_size_px = self.get_onscreen_reticle(
             reticle_x, reticle_y, on_screen_reticle_scale)
 
-        reticle_x, reticle_y = self.__rotate_reticle__([[reticle_x, reticle_y]],
-                                                       orientation.roll)[0]
+        reticle_x, reticle_y = self.__rotate_reticle__(
+            [[reticle_x, reticle_y]],
+            orientation.roll)[0]
 
-        self.__render_target_reticle__(framebuffer,
-                                       identifier,
-                                       (reticle_x, reticle_y),
-                                       reticle,
-                                       orientation.roll,
-                                       reticle_size_px)
+        self.__render_target_reticle__(
+            framebuffer,
+            identifier,
+            (reticle_x, reticle_y),
+            reticle,
+            orientation.roll,
+            reticle_size_px)
 
-    def render(self, framebuffer, orientation):
+    def render(
+        self,
+        framebuffer,
+        orientation: AhrsData
+    ):
         """
         Renders all of the on-screen reticles  for nearby traffic.
 
@@ -67,16 +89,25 @@ class AdsbOnScreenReticles(AdsbElement):
         # Get the traffic, and bail out of we have none
         traffic_reports = HudDataCache.get_reliable_traffic()
 
-        traffic_reports = filter(lambda x: not x.is_on_ground(),
-                                 traffic_reports)
+        traffic_reports = list(filter(
+            lambda x: not x.is_on_ground(),
+            traffic_reports))
         traffic_reports = traffic_reports[:max_target_bugs]
 
-        [self.__render_on_screen_reticle__(framebuffer, orientation, traffic)
-         for traffic in traffic_reports]
+        [self.__render_on_screen_reticle__(
+            framebuffer, orientation, traffic) for traffic in traffic_reports]
 
         self.task_timer.stop()
 
-    def __render_target_reticle__(self, framebuffer, identifier, pos, reticle_lines, roll, reticle_size_px):
+    def __render_target_reticle__(
+        self,
+        framebuffer,
+        identifier: str,
+        pos,
+        reticle_lines,
+        roll: float,
+        reticle_size_px: int
+    ):
         """
         Renders a targetting reticle on the screen.
         Assumes the X/Y projection has already been performed.
@@ -89,12 +120,24 @@ class AdsbOnScreenReticles(AdsbElement):
         center_y = int(self.__height__ - border_space) \
             if center_y > (self.__height__ - border_space) else center_y
 
-        pygame.draw.lines(framebuffer,
-                          BLACK, True, reticle_lines, 20)
-        pygame.draw.lines(framebuffer,
-                          RED, True, reticle_lines, 10)
+        pygame.draw.lines(
+            framebuffer,
+            colors.BLACK,
+            True,
+            reticle_lines,
+            20)
+        pygame.draw.lines(
+            framebuffer,
+            colors.RED,
+            True,
+            reticle_lines,
+            10)
 
-    def __rotate_reticle__(self, reticle, roll):
+    def __rotate_reticle__(
+        self,
+        reticle,
+        roll: float
+    ) -> list:
         """
         Takes a series of line segments and rotates them (roll) about
         the screen's center
