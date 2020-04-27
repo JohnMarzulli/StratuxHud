@@ -406,7 +406,8 @@ You will find the solder pads on the bottom of the Raspberry Pi 3, near the Micr
 
 Date       | Version | Major Changes
 ---------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-2020-04-20 | 1.7     | Now able to cycle through views using the HudConfig page. Support for Illyrian by Aithre. Split Aithre data collection into a micro-service. Improve warning on some elements when GPS lock is lost. Fix user configuration files not always being used or saved. Support new V3 radio and Stratux 1.6\. Experimental support for Aithre in Stratux + HUD AIO configurations. Updates to distance conversion. Use the same naming strategy for aircraft as popular EFBs. Support data collected from Dynon serial output using the DynonToHud project. Indicate which speeds are IAS and groundspeed when GPS and Avionics data are both available. Update element positions. Added new indication when the Traffic service is not available.
+2020-04-24 | 1.7.1   | Keep Stratux based AHRS data in the cache and available longer. Add some logging around the AHRS cache.
+2020-04-20 | 1.7.0   | Now able to cycle through views using the HudConfig page. Support for Illyrian by Aithre. Split Aithre data collection into a micro-service. Improve warning on some elements when GPS lock is lost. Fix user configuration files not always being used or saved. Support new V3 radio and Stratux 1.6\. Experimental support for Aithre in Stratux + HUD AIO configurations. Updates to distance conversion. Use the same naming strategy for aircraft as popular EFBs. Support data collected from Dynon serial output using the DynonToHud project. Indicate which speeds are IAS and groundspeed when GPS and Avionics data are both available. Update element positions. Added new indication when the Traffic service is not available.
 2019-09-04 | 1.6     | Traffic manager moved to a stand-alone service in NodeJs/TypeScript.
 2019-06-30 | 1.5     | Support for the Aithre CO detector. New roll indicator. Various performance improvements. Visual warning if GPS is not plugged in. Use the OWNSHIP config from the receiver instead of the local config.
 2019-03-31 | 1.4     | Add connection reset button. Fixes issues with the Diagnostic view running out of space. Initial port to Python 3.7
@@ -426,8 +427,8 @@ Rasp Pi 3 (stand-alone)        | Kivic          | 50FPS - 60FPS                 
 Rasp Pi 3 (stand-alone)        | Hudly Wireless | 30FPS - 50FPS                      | Recommended
 Rasp Pi 3 (Running on Stratux) | Kivic          | 30FPS                              | Highly Recommended
 Rasp Pi 3 (Running on Stratux) | Hudly Wireless | 25FPS                              | Highly Recommended
-Rasp Pi 3B+                    | Kivic          | 55FPS - 60FPS                      | Recommended
-Rasp Pi 3B+                    | Hudly Wireless | 40FPS - 60FPS                      | Recommended
+Rasp Pi 3B+                    | Kivic          | 55FPS - 60FPS                      | Highly Recommended
+Rasp Pi 3B+                    | Hudly Wireless | 40FPS - 60FPS                      | Highly Recommended
 
 Please note that the frame rate is capped at 60FPS. Drawing any faster will not be detectable using the recommended output systems. Reducing the framerate will reduce the powerdraw.
 

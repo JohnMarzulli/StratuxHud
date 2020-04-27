@@ -11,7 +11,9 @@ class AircraftDataCache(object):
 
     def __init__(
         self,
-        max_age_seconds
+        max_age_seconds,
+        cache_name,
+        logger
     ):
         """
         Creates a new cache for a dictionary.
@@ -23,8 +25,13 @@ class AircraftDataCache(object):
         self.__max_age_seconds__ = max_age_seconds
         self.__lock_object__ = threading.Lock()
         self.__last_updated__ = None
+        self.__cache_name__ = cache_name
         self.__json_package__ = {}
-    
+        self.__logger__ = logger
+
+        self.__logger__.log_info_message(
+            "AircraftDataCache:Initialized data cache for '{}'".format(cache_name))
+
     def __get_data_age__(
         self
     ):
@@ -32,14 +39,16 @@ class AircraftDataCache(object):
         Returns the age of the data in seconds.
         INTENDED TO BE CALLED FROM INSIDE A LOCK.
         DOES NOT PERFORM ITS OWN LOCK.
-        
+
         Returns:
             float -- The age of the data in seconds.
         """
-        return (self.__max_age_seconds__ * 1000.0) if self.__json_package__ is None or self.__last_updated__ is None \
-                else (datetime.datetime.utcnow() - self.__last_updated__).total_seconds()
-            
-    
+
+        if self.__json_package__ is not None and self.__last_updated__ is not None:
+            return (datetime.datetime.utcnow() - self.__last_updated__).total_seconds()
+
+        return self.__max_age_seconds__ * 1000.0
+
     def garbage_collect(
         self
     ):
@@ -53,8 +62,16 @@ class AircraftDataCache(object):
         try:
             data_age = self.__get_data_age__()
 
-            if data_age > self.__max_age_seconds__:
+            if data_age > self.__max_age_seconds__ \
+                    and self.__json_package__ is not None \
+                    and len(self.__json_package__) > 0:
                 self.__json_package__ = {}
+
+                self.__logger__.log_warning_message(
+                    "AircraftDataCache:GCed {} with age={}, max={}".format(
+                        self.__cache_name__,
+                        data_age,
+                        self.__max_age_seconds__))
         finally:
             self.__lock_object__.release()
 
@@ -88,16 +105,28 @@ class AircraftDataCache(object):
             self.__lock_object__.acquire()
 
             data_age = self.__get_data_age__()
-            return data_age < self.__max_age_seconds__
+
+            is_recent = data_age < self.__max_age_seconds__
+
+            if not is_recent and self.__json_package__ is not None and len(self.__json_package__) > 0:
+                self.__logger__.log_warning_message(
+                    "AircraftDataCache:{} is too old at age={}, max={}".format(
+                        self.__cache_name__,
+                        data_age,
+                        self.__max_age_seconds__))
+
+            return is_recent
+        except Exception as ex:
+            print("is_available ex={}".format(ex))
         finally:
             self.__lock_object__.release()
-    
+
     def get_item_count(
         self
     ):
         """
         Get how many items (key count) are in the package, regardless of age.
-        
+
         Returns:
             int -- The number of keys in the package.
         """
@@ -128,6 +157,7 @@ class AircraftDataCache(object):
                 return {}
 
             time_since = datetime.datetime.utcnow() - self.__last_updated__
+
             if time_since.total_seconds() < self.__max_age_seconds__:
                 return self.__json_package__.copy()
         finally:
