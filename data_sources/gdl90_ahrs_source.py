@@ -3,8 +3,12 @@ from datetime import datetime
 import requests
 
 from common_utils import data_cache, logging_object
-from data_sources import ahrs_data
 from configuration import configuration
+from data_sources import ahrs_data
+
+MAX_AVIONICS_AGE = 0.3
+MAX_STRATUX_AHRS_AGE = 2.0
+AVIONICS_TIMEOUT = 0.2
 
 
 class AhrsStratux(logging_object.LoggingObject):
@@ -56,40 +60,6 @@ class AhrsStratux(logging_object.LoggingObject):
         values = list(filter(lambda x: x != default, values))
 
         return values[0] if values is not None and len(values) > 0 else default
-
-    def __get_situation__(
-        self,
-        service_address: str
-    ) -> str:
-        """
-        Grabs the AHRS (if available).
-
-        Arguments:
-            service_address {str} -- The address that contains the getSituation service. May be avionics or Stratux
-
-        Returns:
-            dict -- The resulting AHRS data if contact could be made, otherwise None
-        """
-
-        if service_address is None or len(service_address) < 1:
-            return None
-
-        url = "http://{0}/getSituation".format(
-            service_address)
-
-        try:
-            ahrs_json = self.__stratux_session__.get(
-                url,
-                timeout=configuration.AHRS_TIMEOUT).json()
-
-        except KeyboardInterrupt:
-            raise
-        except SystemExit:
-            raise
-        except Exception as ex:
-            return None
-
-        return ahrs_json
 
     def __decode_situation__(
         self,
@@ -215,11 +185,7 @@ class AhrsStratux(logging_object.LoggingObject):
         """
         Attempts to get the AHRS data from the Stratux source.
         """
-        new_ahrs_data = self.__get_situation__(
-            configuration.CONFIGURATION.stratux_address())
-
-        if new_ahrs_data is not None:
-            self.__stratux_ahrs_cache__.update(new_ahrs_data)
+        self.__stratux_ahrs_cache__.update()
 
     def update_avionics(
         self
@@ -227,11 +193,7 @@ class AhrsStratux(logging_object.LoggingObject):
         """
         Attempts to get the AHRS data from the avionics source.
         """
-        new_ahrs_data = self.__get_situation__(
-            configuration.CONFIGURATION.avionics_address())
-
-        if new_ahrs_data is not None:
-            self.__avionics_cache__.update(new_ahrs_data)
+        self.__avionics_cache__.update()
 
     def is_data_source_available(
         self
@@ -242,9 +204,8 @@ class AhrsStratux(logging_object.LoggingObject):
         Returns:
             bool -- True if data is available and recent.
         """
-        is_stratux_available = self.__stratux_ahrs_cache__ is not None and self.__stratux_ahrs_cache__.is_available()
-        is_avionics_available = self.__avionics_cache__ is not None \
-            and self.__avionics_cache__.is_available() \
+        is_stratux_available = self.__stratux_ahrs_cache__.is_available()
+        is_avionics_available = self.__avionics_cache__.is_available() \
             and self.__avionics_cache__.get_item_count() > 1
 
         return is_stratux_available or is_avionics_available
@@ -284,5 +245,17 @@ class AhrsStratux(logging_object.LoggingObject):
 
         self.__stratux_session__ = requests.Session()
 
-        self.__stratux_ahrs_cache__ = data_cache.DataCache(0.3)
-        self.__avionics_cache__ = data_cache.DataCache(0.3)
+        self.__stratux_ahrs_cache__ = data_cache.RestfulDataCache(
+            "StratuxAhrsCache",
+            self.__stratux_session__,
+            "http://{0}/getSituation".format(
+                configuration.CONFIGURATION.stratux_address()),
+            MAX_STRATUX_AHRS_AGE,
+            configuration.AHRS_TIMEOUT)
+        self.__avionics_cache__ = data_cache.RestfulDataCache(
+            "AvionicsCache",
+            self.__stratux_session__,
+            "http://{0}/getSituation".format(
+                configuration.CONFIGURATION.avionics_address()),
+            MAX_AVIONICS_AGE,
+            AVIONICS_TIMEOUT)
