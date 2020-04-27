@@ -11,13 +11,12 @@ from time import sleep
 import pygame
 import requests
 
-import aithre
 from common_utils import local_debug, system_tools
 from common_utils.task_timer import RollingStats, TaskTimer
 from common_utils.tasks import RecurringTask
 from configuration import configuration, configuration_server
 from configuration.configuration import CONFIGURATION
-from data_sources import targets, traffic
+from data_sources import aithre, targets, traffic
 from data_sources.ahrs_data import AhrsData
 from data_sources.aircraft import Aircraft
 from data_sources.data_cache import HudDataCache
