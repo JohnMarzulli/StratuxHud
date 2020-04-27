@@ -7,6 +7,7 @@ import time
 
 import requests
 
+from common_utils import data_cache
 from configuration import configuration
 
 ERROR_JSON_KEY = 'error'
@@ -21,7 +22,9 @@ PULSE_KEY = "heartrate"
 SIGNAL_STRENGTH_KEY = "signal"
 
 MAX_SECONDS_BETWEEN_CO_REPORT = 120
-MAX_SECONDS_BETWEEN_SPO2_REPORT = 30
+MAX_SECONDS_BETWEEN_SPO2_REPORT = 60
+
+SERVICE_CALL_TIMEOUT = 1.0
 
 
 class Spo2Report(object):
@@ -85,86 +88,69 @@ class AithreClient(object):
 
     INSTANCE = None
 
-    def __init__(self, rest_address):
+    def __init__(
+        self,
+        rest_address
+    ):
         self.__aithre_session__ = requests.Session()
         self.rest_address = rest_address
 
-        self.__last_co_report_time__ = None
-        self.__last_spo2_report_time__ = None
-        self.__co_report__ = None
-        self.__spo2_report__ = None
+        self.__aithre_source__ = data_cache.RestfulDataCache(
+            "Aithre",
+            self.__aithre_session__,
+            "http://{}/aithre".format(self.rest_address),
+            MAX_SECONDS_BETWEEN_CO_REPORT,
+            SERVICE_CALL_TIMEOUT)
+
+        self.__illyrian_source__ = data_cache.RestfulDataCache(
+            "Illyrian",
+            self.__aithre_session__,
+            "http://{}/illyrian".format(self.rest_address),
+            MAX_SECONDS_BETWEEN_SPO2_REPORT,
+            SERVICE_CALL_TIMEOUT)
+
         self.__co_has_been_connected__ = False
         self.__spo2_has_been_connected__ = False
 
         AithreClient.INSTANCE = self
 
-    def get_spo2_report(self):
-        if self.__last_spo2_report_time__ is not None and self.__spo2_report__ is not None:
-            delta_time = datetime.datetime.utcnow() - self.__last_spo2_report_time__
-            available = delta_time.total_seconds() < MAX_SECONDS_BETWEEN_SPO2_REPORT
+    def get_spo2_report(
+        self
+    ):
+        report = self.__illyrian_source__.get()
+        self.__spo2_has_been_connected__ = self.__spo2_has_been_connected__ \
+            or (report is not None and SPO2_LEVEL_KEY in report and report[SPO2_LEVEL_KEY] is not None)
 
-            if available:
-                self.__spo2_has_been_connected__ |= (
-                    SPO2_LEVEL_KEY in self.__spo2_report__ and self.__spo2_report__[SPO2_LEVEL_KEY] is not None)
+        return Spo2Report(
+            report,
+            self.__spo2_has_been_connected__)
 
-                return Spo2Report(self.__spo2_report__, self.__spo2_has_been_connected__)
+    def get_co_report(
+        self
+    ):
+        report = self.__aithre_source__.get()
+        self.__co_has_been_connected__ = self.__co_has_been_connected__ \
+            or (report is not None and CO_LEVEL_KEY in report and report[CO_LEVEL_KEY] is not None)
 
-        return Spo2Report(None, self.__spo2_has_been_connected__)
+        return CoReport(
+            report,
+            self.__co_has_been_connected__)
 
-    def get_co_report(self):
-        if self.__last_co_report_time__ is not None and self.__co_report__ is not None:
-            delta_time = datetime.datetime.utcnow() - self.__last_co_report_time__
-            available = delta_time.total_seconds() < MAX_SECONDS_BETWEEN_CO_REPORT
-
-            if available:
-                self.__co_has_been_connected__ |= (
-                    CO_LEVEL_KEY in self.__co_report__ and self.__co_report__[CO_LEVEL_KEY] is not None)
-                return CoReport(self.__co_report__, self.__co_has_been_connected__)
-
-        return CoReport(None, self.__co_has_been_connected__)
-
-    def __handle_co_report__(self, json_package):
-        try:
-            if json_package is not None:
-                decoded = json.loads(json_package)
-                if decoded is not None and ERROR_JSON_KEY not in decoded:
-                    self.__co_report__ = decoded
-                    self.__last_co_report_time__ = datetime.datetime.utcnow()
-        except Exception as ex:
-            print(ex)
-
-    def __handle_spo2_report__(self, json_package):
-        try:
-            if json_package is not None:
-                decoded = json.loads(json_package)
-                if decoded is not None and ERROR_JSON_KEY not in decoded:
-                    self.__spo2_report__ = decoded
-                    self.__last_spo2_report_time__ = datetime.datetime.utcnow()
-        except Exception as ex:
-            print(ex)
-
-    def update_aithre(self):
+    def update_aithre(
+        self
+    ):
         """
         Calls the aithre manager and gets the current data from all devices.
         """
         try:
-            co_url = "http://{}/aithre".format(self.rest_address)
-            spo2_url = "http://{}/illyrian".format(self.rest_address)
+            self.__aithre_source__.update()
+        except:
+            pass
 
-            self.__handle_co_report__(self.__aithre_session__.get(co_url,
-                                                                  timeout=configuration.AHRS_TIMEOUT).json())
-
-            self.__handle_spo2_report__(self.__aithre_session__.get(spo2_url,
-                                                                    timeout=configuration.AHRS_TIMEOUT).json())
-        except KeyboardInterrupt:
-            raise
-        except SystemExit:
-            raise
-        except Exception as ex:
-            # If we are spamming the REST too quickly, then we may loose a single update.
-            # Do no consider the service unavailable unless we are
-            # way below the max target framerate.
-            print('TRAFFIC.update() ex={}'.format(ex))
+        try:
+            self.__illyrian_source__.update()
+        except:
+            pass
 
 
 AithreClient(configuration.CONFIGURATION.aithre_manager_address)
