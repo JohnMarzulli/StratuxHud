@@ -7,7 +7,7 @@ from common_utils.logging_object import LoggingObject
 
 class StratuxStatus(LoggingObject):
     """
-    Object to hold retrieved status about the ADS-B reciever
+    Object to hold retrieved status about the ADS-B receiver
     """
 
     def __get_status__(

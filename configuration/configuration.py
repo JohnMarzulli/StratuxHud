@@ -13,7 +13,7 @@ EARTH_RADIUS_KILOMETERS_MILES = 6371
 MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT = 2
 MAX_FRAMERATE = 60
 TARGET_AHRS_FRAMERATE = 30
-AHRS_TIMEOUT = ((1.0 / TARGET_AHRS_FRAMERATE) * 4.0)
+AHRS_TIMEOUT = 10.0 * (1.0 / float(TARGET_AHRS_FRAMERATE))
 
 VERSION = "1.7.0"
 
@@ -512,8 +512,7 @@ class Configuration(object):
         try:
             with open(json_config_file) as json_config_file:
                 json_config_text = json_config_file.read()
-                json_config = json.loads(
-                    self.unescape_json_config_contents(json_config_text))
+                json_config = json.loads(json_config_text)
 
                 return json_config
         except:
@@ -561,21 +560,22 @@ class Configuration(object):
         self.degrees_of_pitch = Configuration.DEFAULT_DEGREES_OF_PITCH
         self.pitch_degrees_display_scaler = Configuration.DEFAULT_PITCH_DEGREES_DISPLAY_SCALER
         self.__configuration__ = self.__load_configuration__(
-            default_config_file, user_config_file)
+            default_config_file,
+            user_config_file)
         self.max_minutes_before_removal = self.__get_config_value__(
-            Configuration.MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT_KEY, MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT)
+            Configuration.MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT_KEY,
+            MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT)
         self.log_filename = "stratux_hud.log"
         self.flip_horizontal = False
         self.flip_vertical = False
         self.declination = 0.0
         self.aithre_enabled = False
         self.traffic_manager_address = self.__get_config_value__(
-            Configuration.TRAFFIC_MANAGER_KEY, Configuration.DEFAULT_TRAFFIC_MANAGER_ADDRESS
-        )
+            Configuration.TRAFFIC_MANAGER_KEY,
+            Configuration.DEFAULT_TRAFFIC_MANAGER_ADDRESS)
         self.aithre_manager_address = self.__get_config_value__(
             Configuration.AITHRE_MANAGER_KEY,
-            Configuration.DEFAULT_AITHRE_MANAGER_ADDRESS
-        )
+            Configuration.DEFAULT_AITHRE_MANAGER_ADDRESS)
         self.__stratux_session__ = requests.Session()
 
         self.stratux_status = receiver_status.StratuxStatus(
@@ -614,14 +614,14 @@ class Configuration(object):
             pass
 
         try:
-            self.declination = float(self.__configuration__[
-                                     Configuration.DECLINATION_KEY])
+            self.declination = float(
+                self.__configuration__[Configuration.DECLINATION_KEY])
         except:
             pass
 
         try:
-            self.aithre_enabled = bool(self.__configuration__[
-                                       Configuration.AITHRE_KEY])
+            self.aithre_enabled = bool(
+                self.__configuration__[Configuration.AITHRE_KEY])
         except:
             pass
 

@@ -97,6 +97,9 @@ def get_illyrian_spo2_color(
     Gets the color for the SPO2 level
     """
 
+    if isinstance(spo2_level, str):
+        return colors.RED
+
     if spo2_level is None:
         return colors.RED
 
@@ -125,6 +128,9 @@ def get_aithre_co_color(
     """
     color = colors.BLUE
 
+    if isinstance(co_ppm, str):
+        return colors.RED
+
     if co_ppm > CO_WARNING:
         color = colors.RED
     elif co_ppm > CO_SAFE:
@@ -146,6 +152,9 @@ def get_aithre_battery_color(
         color -- The color to show the battery percentage in.
     """
     color = colors.RED
+
+    if isinstance(battery_percent, str):
+        return colors.RED
 
     if battery_percent >= BATTERY_SAFE:
         color = colors.GREEN
