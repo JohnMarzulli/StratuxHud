@@ -315,6 +315,14 @@ The StratuxHud depends on the AithreManager and the TrafficManager
 
 The HudConfig depends on the StratuxHud
 
+#### 7.2.1 Upgrading From v1.7
+
+If you are compiling from source code and upgrading from V1.7, some additional steps will need to be taken.
+
+First, you will need to delete all .pyc files.
+It is also reccomended that you delete the `__pycache__` directory.
+The `traffic manager`, `node_modules`, `lib`, and `aithre_manager` directories are no longer used and should be removed.
+
 ### 7.3 Ownship
 
 You may have the HUD ignore your own aircraft using a "OWNSHIP" functionality. The OWNSHIP value is set using the Stratux. The HUD retrieves the Mode S code set as the OWNSHIP and then filters out all reports so they are ignored.
