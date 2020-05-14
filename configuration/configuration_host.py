@@ -190,12 +190,12 @@ class ConfigurationHost(BaseHTTPRequestHandler):
         self
     ) -> dict:
         try:
-            payload_len = int(self.headers.getheader('content-length', 0))
+            payload_len = int(self.headers.get('Content-Length'))
             payload = self.rfile.read(payload_len)
             payload = json.loads(payload)
             return payload
-        except:
-            return {}
+        except Exception as ex:
+            return {"ERROR": str(ex)}
 
     def __handle_invalid_route__(
         self
@@ -234,7 +234,8 @@ class ConfigurationHost(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write('Only GET is supported\n')
 
-    def __finish_get_put_delete_request__(
+
+    def __finish_request__(
         self,
         route,
         method: str
@@ -248,7 +249,7 @@ class ConfigurationHost(BaseHTTPRequestHandler):
                         'Content-type', route['media_type'])
                 self.end_headers()
                 if method != 'DELETE':
-                    self.wfile.write(json.dumps(content))
+                    self.wfile.write(json.dumps(content).encode())
             else:
                 self.send_response(404)
                 self.end_headers()
@@ -272,7 +273,7 @@ class ConfigurationHost(BaseHTTPRequestHandler):
             if 'file' in route:
                 self.__handle_file_request__(route, method)
             else:
-                self.__finish_get_put_delete_request__(route, method)
+                self.__finish_request__(route, method)
 
     def handle_method(
         self,
