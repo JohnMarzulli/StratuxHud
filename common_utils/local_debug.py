@@ -14,6 +14,7 @@ MAXIMUM_PYTHON_VERSION = 3.8
 IS_LINUX = 'linux' in os_platform
 DETECTED_CPU = platform.machine()
 IS_PI = "arm" in DETECTED_CPU
+IS_MAC = "darwin" in os_platform
 
 
 def validate_python_version():
