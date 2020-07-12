@@ -424,8 +424,9 @@ class Configuration(object):
 
         Wraps around to the first view if we try to go past the last view.
         """
-        self.__view_index__ += 1
-        self.__clamp_view__(hud_views)
+        self.__view_index__ = self.__clamp_view__(
+            hud_views,
+            self.__view_index__ + 1)
 
     def previous_view(
         self,
@@ -437,22 +438,28 @@ class Configuration(object):
         Wraps around to the last view if we try to "go previous"
         of the first view.
         """
-        self.__view_index__ -= 1
-        self.__clamp_view__(hud_views)
+        self.__view_index__ = self.__clamp_view__(
+            hud_views,
+            self.__view_index__ - 1)
 
     def __clamp_view__(
         self,
-        hud_views: list
-    ):
+        hud_views: list,
+        new_index: int
+    ) -> int:
         """
         Makes sure that the view index is within bounds.
         """
 
-        if self.__view_index__ >= (len(hud_views)):
-            self.__view_index__ = 0
+        num_views = len(hud_views)
 
-        if self.__view_index__ < 0:
-            self.__view_index__ = (len(hud_views) - 1)
+        if new_index >= num_views:
+            return 0
+
+        if new_index < 0:
+            return num_views - 1
+        
+        return new_index
 
     def update_configuration(
         self,

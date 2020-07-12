@@ -37,19 +37,20 @@ class HudViewConfiguration(object):
         indent=4,
         sort_keys=False)
 
-    VIEWS = json.dumps(
-        configuration.CONFIGURATION.get_views_list(),
-        indent=4,
-        sort_keys=False)
-
     @staticmethod
     def get_view_elements() -> list:
         return HudViewConfiguration.VIEW_ELEMENTS
 
     @staticmethod
     def get_views() -> list:
-        return HudViewConfiguration.VIEWS
-
+        return configuration.CONFIGURATION.get_views_list()
+    
+    @staticmethod
+    def get_views_json() -> str:
+        return json.dumps(
+            configuration.CONFIGURATION.get_views_list(),
+            indent=4,
+            sort_keys=False)
 
 def get_views_list(
     handler
