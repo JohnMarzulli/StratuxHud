@@ -39,9 +39,14 @@ def display_init():
         print("Running under X{}, flags={}".format(display_number, screen_mode))
         screen = pygame.display.set_mode(size, screen_mode)
     else:
+        if local_debug.IS_MAC:
+            screen = pygame.display.set_mode(size)
+
+            return screen, size
+
         # List of drivers:
         # https://wiki.libsdl.org/FAQUsingSDL
-        drivers = ['fbcon', 'directfb', 'svgalib', 'directx', 'windib']
+        drivers = ['fbcon', 'directfb', 'svgalib', 'directx', 'windib', 'Quartz']
         found = False
         for driver in drivers:
             if not os.getenv('SDL_VIDEODRIVER'):

@@ -1,11 +1,13 @@
 from setuptools import setup
+from lib.local_debug import IS_PI
 
 installs = ['pytest',
             'pygame',
             'ws4py',
-            'requests',
-            'bluepy']
+            'requests']
 
+if IS_PI:
+    installs += 'bluepy'
 
 setup(
     name='StratuxHud',
