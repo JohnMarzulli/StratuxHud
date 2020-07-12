@@ -128,7 +128,7 @@ class Configuration(object):
                     return full_views_contents[views_key]
                 else:
                     return full_views_contents
-        except:
+        except Exception:
             pass
 
         return None
@@ -160,7 +160,7 @@ class Configuration(object):
                 return self.__hud_views__
 
             return []
-        except:
+        except Exception:
             return []
 
     def write_views_list(
@@ -174,7 +174,7 @@ class Configuration(object):
         try:
             with open(__user_views_file__, 'w') as configfile:
                 configfile.write(view_config)
-        except:
+        except Exception:
             print("ERROR trying to write user views file.")
 
     def get_json_from_text(
@@ -226,7 +226,7 @@ class Configuration(object):
 
             with open(__user_config_file__, 'w') as configfile:
                 configfile.write(config_to_write)
-        except:
+        except Exception:
             print("ERROR trying to write user config file.")
 
     def set_from_json(
@@ -240,8 +240,7 @@ class Configuration(object):
         if json_config is None:
             return
 
-        set_from_maps = [Configuration.STRATUX_ADDRESS_KEY,
-                         Configuration.DATA_SOURCE_KEY]
+        set_from_maps = [Configuration.STRATUX_ADDRESS_KEY, Configuration.DATA_SOURCE_KEY]
 
         for key in set_from_maps:
             if key in json_config:
@@ -458,21 +457,26 @@ class Configuration(object):
     def update_configuration(
         self,
         json_config: dict
-    ):
+    ) -> dict:
         """
-        Updates the master configuration from a json provided dictionary.
+        Given a new piece of configuration, update it gracefully.
 
         Arguments:
-            json_config_file {dictionary} -- JSON provided config decoded into a dictionary.
+            json_config {dict} -- The new configuration... partial or whole.
+
+        Returns:
+            dict -- The updated configuration.
         """
 
         if json_config is None:
-            return
+            return self.__configuration__.copy()
 
         self.__configuration__.update(json_config)
         self.set_from_json(self.__configuration__)
         self.write_config()
 
+        return self.__configuration__.copy()
+    
     def unescape_json_config_contents(
         self,
         unescaped_contents: str
@@ -515,7 +519,7 @@ class Configuration(object):
                 json_config = json.loads(json_config_text)
 
                 return json_config
-        except:
+        except Exception:
             return {}
 
     def __load_configuration__(
@@ -604,31 +608,31 @@ class Configuration(object):
         try:
             self.flip_horizontal = self.__configuration__[
                 Configuration.FLIP_HORIZONTAL_KEY]
-        except:
+        except Exception:
             pass
 
         try:
             self.flip_vertical = self.__configuration__[
                 Configuration.FLIP_VERTICAL_KEY]
-        except:
+        except Exception:
             pass
 
         try:
             self.declination = float(
                 self.__configuration__[Configuration.DECLINATION_KEY])
-        except:
+        except Exception:
             pass
 
         try:
             self.aithre_enabled = bool(
                 self.__configuration__[Configuration.AITHRE_KEY])
-        except:
+        except Exception:
             pass
 
         try:
             self.traffic_manager_address = self.__configuration__[
                 Configuration.TRAFFIC_MANAGER_KEY]
-        except:
+        except Exception:
             pass
 
 

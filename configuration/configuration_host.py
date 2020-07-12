@@ -78,7 +78,7 @@ def get_settings(
 
 def set_settings(
     handler
-):
+) -> dict:
     """
     Handles a set-the-settings request.
     """
@@ -87,8 +87,8 @@ def set_settings(
         payload = handler.get_payload()
         print("settings/PUT:")
         print(payload)
-        configuration.CONFIGURATION.update_configuration(payload)
-        return configuration.CONFIGURATION.get_json_from_config()
+        response = configuration.CONFIGURATION.update_configuration(payload)
+        return response
     else:
         return ERROR_JSON
 
@@ -225,7 +225,7 @@ class ConfigurationHost(BaseHTTPRequestHandler):
                     shutil.copyfileobj(f, self.wfile)
                 finally:
                     f.close()
-            except:
+            except Exception:
                 self.send_response(404)
                 self.end_headers()
                 self.wfile.write('File not found\n')
@@ -233,7 +233,6 @@ class ConfigurationHost(BaseHTTPRequestHandler):
             self.send_response(405)
             self.end_headers()
             self.wfile.write('Only GET is supported\n')
-
 
     def __finish_request__(
         self,
@@ -288,7 +287,7 @@ class ConfigurationHost(BaseHTTPRequestHandler):
     def get_route(
         self
     ):
-        for path, route in ConfigurationHost.ROUTES.iteritems():
+        for path, route in ConfigurationHost.ROUTES.items():
             if re.match(path, self.path):
                 return route
         return None
