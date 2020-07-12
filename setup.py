@@ -5,7 +5,7 @@ installs = ['pytest',
             'pygame',
             'ws4py',
             'requests']
-            #'bluepy']
+
 if IS_PI:
     installs += 'bluepy'
 
