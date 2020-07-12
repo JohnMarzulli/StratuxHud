@@ -65,7 +65,7 @@ def __send_stratux_post__(
         requests.Session().post(url, timeout=2)
 
         return True
-    except:
+    except Exception:
 
         return False
 
@@ -92,7 +92,7 @@ class HeadsUpDisplay(object):
         """
         try:
             AdsbTrafficClient.INSTANCE.reset_traffic_manager()
-        except:
+        except Exception:
             pass
 
     def __shutdown_stratux__(
@@ -145,7 +145,7 @@ class HeadsUpDisplay(object):
             position = (left_border, top_border)
 
             surface.blit(texture, position)
-        except:
+        except Exception:
             pass
 
     def __is_ahrs_view__(
@@ -525,7 +525,7 @@ class HeadsUpDisplay(object):
                 aithre.AithreClient.INSTANCE.update_aithre()
                 self.log("Aithre updated")
 
-            except:
+            except Exception:
                 self.warn("Error attempting to update Aithre sensor values")
 
     def __init__(
@@ -602,22 +602,19 @@ class HeadsUpDisplay(object):
             "rest_host",
             0.1,
             self.web_server.run,
-            logger.get_logger(),
-            start_immediate=False)
+            logger.get_logger())
 
         RecurringTask(
             "update_traffic",
             0.1,
             self.__update_traffic_reports__,
-            logger.get_logger(),
-            start_immediate=True)
+            logger.get_logger())
 
         RecurringTask(
             "update_aithre",
             5.0,
             self.__update_aithre__,
-            logger.get_logger(),
-            start_immediate=True)
+            logger.get_logger())
 
     def __show_boot_screen__(
         self
