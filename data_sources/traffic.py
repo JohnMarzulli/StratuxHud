@@ -448,10 +448,10 @@ class TrafficManager(object):
         self.__lock__.acquire()
         try:
             traffic_with_position = {
-                k: v for k, v in self.traffic.iteritems()
+                k: v for k, v in self.traffic.items()
                 if v is not None and ownship != int(v.icao_address)
             }
-        except:
+        except Exception:
             traffic_with_position = []
         finally:
             self.__lock__.release()
