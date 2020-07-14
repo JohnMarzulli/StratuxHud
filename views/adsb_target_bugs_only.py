@@ -59,10 +59,10 @@ class AdsbTargetBugsOnly(AdsbElement):
             reticle, reticle_edge_position_y = self.get_below_reticle(
                 heading_bug_x, target_bug_scale) if is_below else self.get_above_reticle(heading_bug_x, target_bug_scale)
 
-            bug_color = display.BLUE if traffic_report.is_on_ground() == True else display.RED
+            bug_color = colors.BLUE if traffic_report.is_on_ground() == True else colors.RED
 
             pygame.draw.polygon(framebuffer, bug_color, reticle)
-        except:
+        except Exception:
             pass
 
     def render(
