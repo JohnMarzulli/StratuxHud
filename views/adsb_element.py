@@ -6,6 +6,7 @@ from common_utils import units
 from common_utils.task_timer import TaskTimer
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
+from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
 from rendering import colors, display
 from views import hud_elements, utils
@@ -237,7 +238,7 @@ class AdsbElement(object):
         # Render all of the textures and then
         # find which one is the widest.
         all_text = [identifier_text] + additional_info_text
-        all_textures_and_sizes = [hud_elements.HudDataCache.get_cached_text_texture(
+        all_textures_and_sizes = [HudDataCache.get_cached_text_texture(
             text, self.__font__, colors.BLACK, card_color, False, False) for text in all_text]
         widest_texture = max(all_textures_and_sizes,
                              key=lambda x: x[1][0])[1][0]
