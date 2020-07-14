@@ -305,14 +305,13 @@ class AdsbElement(object):
             if time_since_last_report > self.start_fade_threshold:
                 max_distance = (
                     configuration.CONFIGURATION.max_minutes_before_removal * 60.0) - self.start_fade_threshold
-                proportion = (time_since_last_report -
-                              self.start_fade_threshold) / max_distance
+                proportion = (time_since_last_report - self.start_fade_threshold) / max_distance
 
                 card_color = colors.get_color_mix(
                     colors.YELLOW, colors.BLACK, proportion)
 
             return card_color
-        except:
+        except Exception:
             return colors.YELLOW
 
     def __render_info_text__(
@@ -336,7 +335,7 @@ class AdsbElement(object):
 
             try:
                 framebuffer.blit(info_texture, [x_pos, info_position_y])
-            except:
+            except Exception:
                 pass
 
             info_position_y += int(width_y * info_spacing)
