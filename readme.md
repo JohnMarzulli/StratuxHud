@@ -10,7 +10,7 @@ This project aims to bring an affordable heads up display system into ANY cockpi
 
 The focus is to improve traffic awareness and to reduce the amount of time pilots reference tablets or an EFB.
 
-**NOTE:** This project relies on having a [Stratux](http://stratux.me/) build with AHRS and GPS. A suitable build can be done for less than $150 (USD).
+**NOTE:** This project relies on having a [Stratux](http://stratux.me/) build with AHRS and GPS. A suitable build can be done for less than \$150 (USD).
 
 There are two versions that can be built:
 
@@ -22,13 +22,13 @@ The first is as a stand-alone unit. For the standalone configuration, the HUD co
 
 The second is in an "All-In-One" (AIO) configuration. With an AIO setup, the HUD code runs on the Stratux.
 
-Feature                    | Stand Alone | AIO
--------------------------- | ----------- | ------------
-Keypad Control             | Yes         | No
-Dynon D180 Support         | Yes         | No
-Aithre CO Monitor          | Yes         | Experimental
-Illyrian SPO/Pulse Monitor | Yes         | Experimental
-Raspberry Pi 3b+           | Yes         | No
+| Feature                    | Stand Alone | AIO          |
+| -------------------------- | ----------- | ------------ |
+| Keypad Control             | Yes         | No           |
+| Dynon D180 Support         | Yes         | No           |
+| Aithre CO Monitor          | Yes         | Experimental |
+| Illyrian SPO/Pulse Monitor | Yes         | Experimental |
+| Raspberry Pi 3b+           | Yes         | No           |
 
 ### 2.2 Recommended Projector
 
@@ -36,10 +36,10 @@ Using the "Kivic HUD 2nd Gen" projector and a Raspberry Pi 3.
 
 ![Kivic Version](media/kivic_in_flight.jpg)
 
-Estimated cost is $240
+Estimated cost is \$240
 
-- $45 for RaspberryPi 3b+
-- $195 for Kivic 2nd Gen projector
+- \$45 for RaspberryPi 3b+
+- \$195 for Kivic 2nd Gen projector
 - Fans, case, cables
 
 Uses 5V USB power.
@@ -89,15 +89,15 @@ For more information on the setup, and installation of the DynonToHud service, p
 
 You may use a number pad as an input device. I used velcro to secure the number pad to my dashboard.
 
-Key       | Action
---------- | ----------------------------------------------------------------------------
-Backspace | Tell the Stratux that you are in a level position. Resets the AHRS to level.
-+         | Next view
--         | Previous view
-=         | Toggle rendering debug information
-Esc       | Send shutdown commands to both the HUD controller **and** the Stratux
-q         | (_Full keyboard only_) Quit to the command line.
-0/Ins     | Force a connection reset between the HUD and the Stratux
+| Key       | Action                                                                       |
+| --------- | ---------------------------------------------------------------------------- |
+| Backspace | Tell the Stratux that you are in a level position. Resets the AHRS to level. |
+| +         | Next view                                                                    |
+| -         | Previous view                                                                |
+| =         | Toggle rendering debug information                                           |
+| Esc       | Send shutdown commands to both the HUD controller **and** the Stratux        |
+| q         | (_Full keyboard only_) Quit to the command line.                             |
+| 0/Ins     | Force a connection reset between the HUD and the Stratux                     |
 
 ## 4 Included (Default) Views
 
@@ -144,7 +144,7 @@ Note that the bearing is calculated using the direction we are pointing (left si
 
 This shows us _at most_, the eight closest planes.
 
-The _IDENT_ifier will be the tail number when available, otherwise, the ICAO identifier or callsign may be used. The _BEAR_ing is the heading to take to fly to that target. The _DIST_ance is the distance to the target. The _ALT_itude is given in relative terms, with two digits dropped.
+The \_IDENT_ifier will be the tail number when available, otherwise, the ICAO identifier or callsign may be used. The \_BEAR_ing is the heading to take to fly to that target. The \_DIST_ance is the distance to the target. The \_ALT_itude is given in relative terms, with two digits dropped.
 
 In this example, the closest target is N4768B. The plane is only 4.4 statue mile away, and 1,500 feet above us.
 
@@ -208,8 +208,7 @@ _NOTE:_ If you are using the DynonToHud service AND the Stratux is unable to gai
 
 _NOTE:_ This _does not_ include a power source. You will need to supply ship power from a 5V USB port or from a battery. _NOTE:_ This is for a build that uses a separate Raspberry Pi to drive the display. If you wish to have an "All-In-One" solution where the HUD software runs on the Stratux, you will not need an additional Pi.
 
-- [Kivic HUD 2nd Gen](https://www.amazon.com/gp/product/B078GHFMG5/ref=ppx_yo_dt_b_asin_title_o01__o00_s00?ie=UTF8&psc=1)
-- [6' 3.5mm Analog Cable](https://www.amazon.com/gp/product/B074TDHRCC/ref=ppx_yo_dt_b_asin_title_o00_s01?ie=UTF8&psc=1)
+- [Aviator Systems Display](https://shop.aviatorsys.com/product/stratux-hud/) Choose "HUD Standalone"
 - [_OPTIONAL_ 3/4" Wire Braiding](https://www.amazon.com/gp/product/B073YL3HMC/ref=ppx_yo_dt_b_asin_title_o00_s01?ie=UTF8&psc=1)
 
 ### 5.2 Recommended Stand Alone Build
@@ -412,30 +411,31 @@ You will find the solder pads on the bottom of the Raspberry Pi 3, near the Micr
 
 ### 8.3 Revision History
 
-Date       | Version | Major Changes
----------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-2020-04-20 | 1.7     | Now able to cycle through views using the HudConfig page. Support for Illyrian by Aithre. Split Aithre data collection into a micro-service. Improve warning on some elements when GPS lock is lost. Fix user configuration files not always being used or saved. Support new V3 radio and Stratux 1.6\. Experimental support for Aithre in Stratux + HUD AIO configurations. Updates to distance conversion. Use the same naming strategy for aircraft as popular EFBs. Support data collected from Dynon serial output using the DynonToHud project. Indicate which speeds are IAS and groundspeed when GPS and Avionics data are both available. Update element positions. Added new indication when the Traffic service is not available.
-2019-09-04 | 1.6     | Traffic manager moved to a stand-alone service in NodeJs/TypeScript.
-2019-06-30 | 1.5     | Support for the Aithre CO detector. New roll indicator. Various performance improvements. Visual warning if GPS is not plugged in. Use the OWNSHIP config from the receiver instead of the local config.
-2019-03-31 | 1.4     | Add connection reset button. Fixes issues with the Diagnostic view running out of space. Initial port to Python 3.7
-2019-01-31 | 1.3     | Improvements to the communication with the Stratux. Update directions for Kivic install.
-2018-10-13 | 1.2     | Major performance increases
-2018-09-07 | 1.1     | New system to allow views to be configurable
-2018-07-17 | 1.0     | Initial release
+| Date       | Version | Major Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ---------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2020-10-31 | 2.0     | Migration to Python V3, with major refactoring of underlying code.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| 2020-04-20 | 1.7     | Now able to cycle through views using the HudConfig page. Support for Illyrian by Aithre. Split Aithre data collection into a micro-service. Improve warning on some elements when GPS lock is lost. Fix user configuration files not always being used or saved. Support new V3 radio and Stratux 1.6\. Experimental support for Aithre in Stratux + HUD AIO configurations. Updates to distance conversion. Use the same naming strategy for aircraft as popular EFBs. Support data collected from Dynon serial output using the DynonToHud project. Indicate which speeds are IAS and groundspeed when GPS and Avionics data are both available. Update element positions. Added new indication when the Traffic service is not available. |
+| 2019-09-04 | 1.6     | Traffic manager moved to a stand-alone service in NodeJs/TypeScript.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| 2019-06-30 | 1.5     | Support for the Aithre CO detector. New roll indicator. Various performance improvements. Visual warning if GPS is not plugged in. Use the OWNSHIP config from the receiver instead of the local config.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| 2019-03-31 | 1.4     | Add connection reset button. Fixes issues with the Diagnostic view running out of space. Initial port to Python 3.7                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| 2019-01-31 | 1.3     | Improvements to the communication with the Stratux. Update directions for Kivic install.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| 2018-10-13 | 1.2     | Major performance increases                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| 2018-09-07 | 1.1     | New system to allow views to be configurable                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| 2018-07-17 | 1.0     | Initial release                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 
 ### 8.4 Hardware Performance
 
 Please note that performance characteristics are only shown for displays that are currently available for purchase. The Hudly Classic is intentionally not listed.
 
-Board                          | Screen         | Frames Per Second (AHRS View Only) | Notes
------------------------------- | -------------- | ---------------------------------- | ------------------
-Rasp Pi 2                      | Sun Founder 5" | ~25FPS to ~30FPS                   | Not recommended
-Rasp Pi 3 (stand-alone)        | Kivic          | 50FPS - 60FPS                      | Recommended
-Rasp Pi 3 (stand-alone)        | Hudly Wireless | 30FPS - 50FPS                      | Recommended
-Rasp Pi 3 (Running on Stratux) | Kivic          | 30FPS                              | Highly Recommended
-Rasp Pi 3 (Running on Stratux) | Hudly Wireless | 25FPS                              | Highly Recommended
-Rasp Pi 3B+                    | Kivic          | 55FPS - 60FPS                      | Recommended
-Rasp Pi 3B+                    | Hudly Wireless | 40FPS - 60FPS                      | Recommended
+| Board                          | Screen         | Frames Per Second (AHRS View Only) | Notes              |
+| ------------------------------ | -------------- | ---------------------------------- | ------------------ |
+| Rasp Pi 2                      | Sun Founder 5" | ~25FPS to ~30FPS                   | Not recommended    |
+| Rasp Pi 3 (stand-alone)        | Kivic          | 50FPS - 60FPS                      | Recommended        |
+| Rasp Pi 3 (stand-alone)        | Hudly Wireless | 30FPS - 50FPS                      | Recommended        |
+| Rasp Pi 3 (Running on Stratux) | Kivic          | 30FPS                              | Highly Recommended |
+| Rasp Pi 3 (Running on Stratux) | Hudly Wireless | 25FPS                              | Highly Recommended |
+| Rasp Pi 3B+                    | Kivic          | 55FPS - 60FPS                      | Recommended        |
+| Rasp Pi 3B+                    | Hudly Wireless | 40FPS - 60FPS                      | Recommended        |
 
 Please note that the frame rate is capped at 60FPS. Drawing any faster will not be detectable using the recommended output systems. Reducing the framerate will reduce the powerdraw.
 
