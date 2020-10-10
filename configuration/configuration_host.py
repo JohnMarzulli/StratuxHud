@@ -3,14 +3,10 @@ Module to run a RESTful server to set and get the configuration.
 """
 
 
-import datetime
 import json
 import os
 import re
 import shutil
-import socket
-import sys
-import urllib
 from http.server import BaseHTTPRequestHandler
 
 from configuration import configuration

@@ -27,7 +27,9 @@ class RollingStats(object):
         self.last = None
         self.average = 0.0
 
-    def reset(self):
+    def reset(
+        self
+    ):
         """
         Resets the rolling mean and maximums.
         """
@@ -92,10 +94,11 @@ class RollingStats(object):
             else:
                 average_text = '---'
 
-            return "{0}, {1}, {2}, {3}".format(self.task_name,
-                                               last_text,
-                                               average_text,
-                                               slowest_text)
+            return "{0}, {1}, {2}, {3}".format(
+                self.task_name,
+                last_text,
+                average_text,
+                slowest_text)
         except:
             return '---'
 

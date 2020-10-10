@@ -19,6 +19,7 @@
 # NOTE - ALL UNITS ARE IN METERS
 
 import math
+from sys import float_info
 
 from common_utils import units
 from configuration import configuration
@@ -31,7 +32,10 @@ DEFAULT_K = 0.0001  # 0.01
 CLAMP_SPEED = 0.1  # The slowest M/S we are willing to do the math on.
 
 
-def get_bearing(starting_pos, ending_pos):
+def get_bearing(
+    starting_pos: list,
+    ending_pos: list
+) -> float:
     """
     Returns the bearing to the second GPS coord from the first.
 
@@ -57,7 +61,10 @@ def get_bearing(starting_pos, ending_pos):
     return bearing
 
 
-def get_distance(starting_pos, ending_pos):
+def get_distance(
+    starting_pos: list,
+    ending_pos: list
+) -> float:
     """
     Returns the distance to the traffic from the given point.
 
@@ -90,7 +97,10 @@ def get_distance(starting_pos, ending_pos):
     return c * r
 
 
-def get_distance_traveled(current_speed, time_slice):
+def get_distance_traveled(
+    current_speed: float,
+    time_slice: float
+) -> float:
     """
     Returns the distance traveled (single axis) in the given amount of time.
 
@@ -105,7 +115,10 @@ def get_distance_traveled(current_speed, time_slice):
     return current_speed * time_slice
 
 
-def get_time_to_distance(distance, current_speed):
+def get_time_to_distance(
+    distance: float,
+    current_speed: float
+) -> float:
     """
     Returns the number of seconds to travel the distance.
 
@@ -125,11 +138,20 @@ def get_time_to_distance(distance, current_speed):
     return distance / current_speed
 
 
-def get_free_fall_time(meters, mass, k=DEFAULT_K):
+def get_free_fall_time(
+    meters: float,
+    mass: float,
+    k: float = DEFAULT_K
+) -> float:
     return math.sqrt(mass/(gravity * k)) * math.acosh(math.e ** ((meters * k)/mass))
 
 
-def get_time_to_impact(altitude, current_speed=0, total_time=0, time_slice=0.1):
+def get_time_to_impact(
+    altitude: float,
+    current_speed: float = 0,
+    total_time: float = 0,
+    time_slice: float = 0.1
+) -> float:
     """
     Attempts to figure out how long it will take for something to
     hit the ground.

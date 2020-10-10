@@ -1,9 +1,9 @@
 from datetime import datetime
 
 import requests
-
 from common_utils import data_cache, logging_object
 from configuration import configuration
+
 from data_sources import ahrs_data
 
 MAX_AVIONICS_AGE = 0.3

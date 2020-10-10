@@ -1,7 +1,4 @@
-import datetime
-
-import requests
-
+from logging import Logger
 from common_utils.logging_object import LoggingObject
 
 
@@ -37,7 +34,7 @@ class StratuxStatus(LoggingObject):
         self,
         stratux_address: str,
         stratux_session,
-        logger,
+        logger: Logger,
         simulation_mode: bool = False
     ):
         """

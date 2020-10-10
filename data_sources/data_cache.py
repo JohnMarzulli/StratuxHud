@@ -109,8 +109,8 @@ class HudDataCache(object):
     def get_cached_text_texture(
         text: str,
         font,
-        text_color=colors.BLACK,
-        background_color=colors.YELLOW,
+        text_color: list = colors.BLACK,
+        background_color: list = colors.YELLOW,
         use_alpha: bool = False,
         force_regen: bool = False
     ):

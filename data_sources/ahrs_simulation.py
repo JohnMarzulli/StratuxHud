@@ -1,4 +1,5 @@
 from common_utils import simulated_values
+
 from data_sources import ahrs_data
 
 
@@ -52,4 +53,8 @@ class AhrsSimulation(object):
         self.yaw_simulator = simulated_values.SimulatedValue(5, 60, 1, 30, 180)
         self.speed_simulator = simulated_values.SimulatedValue(5, 10, 1, 0, 85)
         self.alt_simulator = simulated_values.SimulatedValue(
-            10, 100, -1, 0, 200)
+            10,
+            100,
+            -1,
+            0,
+            200)

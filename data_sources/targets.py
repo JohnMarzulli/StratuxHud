@@ -2,13 +2,15 @@
 Manages heading/target bugs.
 """
 
-
-import configuration
 import json
 
-class Targets(object):
+import configuration
 
-    def save(self):
+
+class Targets(object):
+    def save(
+        self
+    ):
         """
         Saves any targets to file.
         """
@@ -22,18 +24,24 @@ class Targets(object):
         except:
             return False
 
-
-    def clear_targets(self):
+    def clear_targets(
+        self
+    ):
         """
         Clears any targets.
         """
 
         self.targets = []
 
-    def add_target(self, latitude, longitude, altitude):
+    def add_target(
+        self,
+        latitude: float,
+        longitude: float,
+        altitude: float
+    ):
         """
         Adds the given lat/long as a target.
-        
+
         Arguments:
             latitude {float} -- The latitude of the target.
             longitude {float} -- The longitude of the target.
@@ -43,12 +51,12 @@ class Targets(object):
         if latitude is not None and longitude is not None:
             self.targets.append((latitude, longitude, altitude))
 
-    def __init__(self):
+    def __init__(
+        self
+    ):
         """
         Creates a new target manager.
         """
-
-        TARGET_MANAGER = self
 
         self.targets = []
 
@@ -60,9 +68,11 @@ class Targets(object):
                 if json_config is not None and "bugs" in json_config:
                     for lat_long_altitude in json_config["bugs"]:
                         if len(lat_long_altitude) == 3:
-                            self.add_target(lat_long_altitude[0], lat_long_altitude[1], lat_long_altitude[2])
+                            self.add_target(
+                                lat_long_altitude[0], lat_long_altitude[1], lat_long_altitude[2])
         except:
             pass
+
 
 TARGET_MANAGER = Targets()
 
@@ -72,5 +82,5 @@ if __name__ == '__main__':
 
     for target in TARGET_MANAGER.targets:
         print("Target: {0}, {1} : {2}".format(target[0], target[1], target[2]))
-    
+
     TARGET_MANAGER.save()

@@ -3,14 +3,12 @@ Holds code relevant to collecting and traffic information.
 """
 
 import datetime
-import json
 import math
 import random
 import threading
 import time
 
 import requests
-
 from common_utils import simulated_values, tasks
 from configuration import configuration
 
@@ -113,8 +111,8 @@ class Traffic(object):
 
     def get_bearing(
         self,
-        starting_lat,
-        starting_lon
+        starting_lat: float,
+        starting_lon: float
     ) -> float:
         """
         Returns the bearing to the traffic from the
@@ -133,8 +131,8 @@ class Traffic(object):
 
     def get_distance(
         self,
-        starting_lat,
-        starting_lon
+        starting_lat: float,
+        starting_lon: float
     ) -> float:
         """
         Returns the distance to the traffic from the
@@ -164,7 +162,7 @@ class Traffic(object):
 
     def update(
         self,
-        json_report
+        json_report: dict
     ):
         """
         Applies the new data to the existing traffic.
@@ -613,7 +611,7 @@ class AdsbTrafficClient:
     def received_message(
         self,
         icao_identifier: str,
-        adsb_traffic
+        adsb_traffic: dict
     ):
         """
         Handler for receiving a message.

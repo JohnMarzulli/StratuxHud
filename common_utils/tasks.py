@@ -3,7 +3,6 @@ Module to handle tasks that occur on a regularly scheduled interval.
 """
 
 import datetime
-import sys
 import threading
 import time
 from logging import Logger

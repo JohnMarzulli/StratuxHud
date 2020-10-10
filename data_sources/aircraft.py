@@ -1,9 +1,6 @@
-import datetime
-import math
-import threading
-
-from common_utils import logging_object, simulated_values, tasks
+from common_utils import logging_object, tasks
 from configuration import configuration
+
 from data_sources import ahrs_data, gdl90_ahrs_source
 
 

@@ -1,12 +1,6 @@
-import datetime
-import json
-import math
-import random
-import threading
 import time
 
 import requests
-
 from common_utils import data_cache
 from configuration import configuration
 
@@ -35,8 +29,8 @@ class Spo2Report(object):
 
     def __init__(
         self,
-        report,
-        has_been_connected
+        report: dict,
+        has_been_connected: bool
     ):
         self.spo2 = OFFLINE
         self.heartrate = OFFLINE
@@ -64,8 +58,8 @@ class CoReport(object):
 
     def __init__(
         self,
-        report,
-        has_been_connected
+        report: dict,
+        has_been_connected: bool
     ):
         self.co = OFFLINE
         self.battery = OFFLINE
