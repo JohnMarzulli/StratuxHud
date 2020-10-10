@@ -1,13 +1,12 @@
 import pygame
-
-import rendering.display
-from common_utils import units
 from common_utils.task_timer import TaskTimer
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
-from views.adsb_element import *
-from views.hud_elements import *
+from rendering import colors
+
+from views import hud_elements
+from views.adsb_element import AdsbElement
 
 
 class AdsbOnScreenReticles(AdsbElement):
@@ -56,7 +55,8 @@ class AdsbOnScreenReticles(AdsbElement):
             orientation, traffic)
 
         # Render using the Above us bug
-        on_screen_reticle_scale = get_reticle_size(traffic.distance)
+        on_screen_reticle_scale = hud_elements.get_reticle_size(
+            traffic.distance)
         reticle, reticle_size_px = self.get_onscreen_reticle(
             reticle_x, reticle_y, on_screen_reticle_scale)
 
@@ -92,7 +92,7 @@ class AdsbOnScreenReticles(AdsbElement):
         traffic_reports = list(filter(
             lambda x: not x.is_on_ground(),
             traffic_reports))
-        traffic_reports = traffic_reports[:max_target_bugs]
+        traffic_reports = traffic_reports[:hud_elements.max_target_bugs]
 
         [self.__render_on_screen_reticle__(
             framebuffer, orientation, traffic) for traffic in traffic_reports]
@@ -162,8 +162,8 @@ class AdsbOnScreenReticles(AdsbElement):
         translated_points = []
 
         int_roll = int(-roll)
-        cos_roll = COS_RADIANS_BY_DEGREES[int_roll]
-        sin_roll = SIN_RADIANS_BY_DEGREES[int_roll]
+        cos_roll = hud_elements.COS_RADIANS_BY_DEGREES[int_roll]
+        sin_roll = hud_elements.SIN_RADIANS_BY_DEGREES[int_roll]
         ox, oy = self.__center__
 
         translated_points = [[(ox + cos_roll * (x_y[0] - ox) - sin_roll * (x_y[1] - oy)),
@@ -174,4 +174,5 @@ class AdsbOnScreenReticles(AdsbElement):
 
 
 if __name__ == '__main__':
+    from views.hud_elements import run_adsb_hud_element
     run_adsb_hud_element(AdsbOnScreenReticles)

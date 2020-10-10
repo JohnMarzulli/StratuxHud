@@ -1,13 +1,9 @@
 from numbers import Number
 
 import pygame
-
 from common_utils.task_timer import TaskTimer
 from data_sources.ahrs_data import AhrsData
-from data_sources.data_cache import HudDataCache
-from data_sources.traffic import Traffic
-from views import utils
-from views.ahrs_element import AhrsElement
+
 from views.compass_and_heading_top_element import CompassAndHeadingTopElement
 from views.hud_elements import *
 

@@ -1,8 +1,7 @@
-import pygame
-
 from common_utils.task_timer import TaskTimer
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
+
 from views import hud_elements
 from views.ahrs_element import AhrsElement
 

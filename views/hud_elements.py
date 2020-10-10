@@ -1,17 +1,14 @@
 """
 Common code for HUD view elements.
 """
-import datetime
 import math
-import threading
 
 import pygame
+from common_utils import units
+from configuration import configuration
+from rendering import colors, display
 
 import views.utils as utils
-from common_utils import task_timer, units
-from configuration import configuration
-from data_sources import traffic
-from rendering import colors, display
 
 DEFAULT_FONT = "./assets/fonts/LiberationMono-Bold.ttf"
 
@@ -135,8 +132,9 @@ def run_ahrs_hud_element(
         use_detail_font {bool} -- Should the detail font be used. (default: {True})
     """
 
-    from data_sources import ahrs_simulation
     from datetime import datetime
+
+    from data_sources import ahrs_simulation
 
     clock = pygame.time.Clock()
 

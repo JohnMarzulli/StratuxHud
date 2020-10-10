@@ -1,9 +1,7 @@
 import pygame
-
 from common_utils.task_timer import TaskTimer
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
-from views.hud_elements import run_ahrs_hud_element
 
 
 class AhrsNotAvailable(object):
@@ -51,4 +49,6 @@ class AhrsNotAvailable(object):
 
 
 if __name__ == '__main__':
+    from views.hud_elements import run_ahrs_hud_element
+
     run_ahrs_hud_element(AhrsNotAvailable)

@@ -1,19 +1,15 @@
-import datetime
 import math
 import socket
 import subprocess
 
-import pygame
-
-from common_utils import local_debug, units
+from common_utils import local_debug
 from common_utils.task_timer import TaskTimer
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 from data_sources.aithre import AithreClient
-from data_sources.traffic import AdsbTrafficClient
 from rendering import colors
+
 from views.ahrs_element import AhrsElement
-from views.hud_elements import run_ahrs_hud_element
 
 NORMAL_TEMP = 50
 REDLINE_TEMP = 80
@@ -429,9 +425,13 @@ class Illyrian(AhrsElement):
 
 
 if __name__ == '__main__':
+    from views.hud_elements import run_ahrs_hud_element
+
     run_ahrs_hud_element(Aithre)
 
 if __name__ == '__main__':
+    from views.hud_elements import run_ahrs_hud_element
+
     # for temp in range(45, 95, 5):
     #     color = get_cpu_temp_text_color(temp)
     #     print("{3} => {0},{1},{2}".format(color[0], color[1], color[2], temp))

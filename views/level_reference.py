@@ -1,9 +1,8 @@
 import pygame
-
 from common_utils.task_timer import TaskTimer
 from rendering import colors
+
 from views.ahrs_element import AhrsElement
-from views.hud_elements import run_ahrs_hud_element
 
 
 class LevelReference(AhrsElement):
@@ -51,4 +50,5 @@ class LevelReference(AhrsElement):
 
 
 if __name__ == '__main__':
+    from views.hud_elements import run_ahrs_hud_element
     run_ahrs_hud_element(LevelReference)

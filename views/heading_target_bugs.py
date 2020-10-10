@@ -2,22 +2,16 @@
 View to render heading targets.
 """
 
-from numbers import Number
-
 import pygame
-
 from common_utils import units
 from common_utils.task_timer import TaskTimer
-from configuration import configuration
 from data_sources import norden, targets
 from data_sources.ahrs_data import AhrsData
-from data_sources.data_cache import HudDataCache
-from rendering import colors, display
+from rendering import colors
+
 from views import utils
 from views.adsb_target_bugs import AdsbTargetBugs
-from views.ahrs_element import AhrsElement
-from views.hud_elements import (get_heading_bug_x, get_reticle_size,
-                                run_adsb_hud_element)
+from views.hud_elements import get_heading_bug_x, get_reticle_size
 
 
 class HeadingAsTrafficObject(object):
@@ -176,4 +170,5 @@ class HeadingTargetBugs(AdsbTargetBugs):
 
 
 if __name__ == '__main__':
+    from views.hud_elements import run_adsb_hud_element
     run_adsb_hud_element(HeadingTargetBugs)

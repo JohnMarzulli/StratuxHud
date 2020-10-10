@@ -1,15 +1,14 @@
 import math
 
 import pygame
-
 from common_utils import units
-from common_utils.task_timer import TaskTimer
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
-from rendering import colors, display
-from views import hud_elements, utils
+from rendering import colors
+
+from views import utils
 
 
 class AdsbElement(object):
@@ -305,7 +304,8 @@ class AdsbElement(object):
             if time_since_last_report > self.start_fade_threshold:
                 max_distance = (
                     configuration.CONFIGURATION.max_minutes_before_removal * 60.0) - self.start_fade_threshold
-                proportion = (time_since_last_report - self.start_fade_threshold) / max_distance
+                proportion = (time_since_last_report -
+                              self.start_fade_threshold) / max_distance
 
                 card_color = colors.get_color_mix(
                     colors.YELLOW, colors.BLACK, proportion)

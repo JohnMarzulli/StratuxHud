@@ -1,12 +1,10 @@
-import pygame
-
 from common_utils.task_timer import TaskTimer
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
+
 from views import utils
 from views.adsb_element import AdsbElement
-from views.hud_elements import *
 
 
 class AdsbTrafficListing(AdsbElement):
@@ -171,4 +169,5 @@ class AdsbTrafficListing(AdsbElement):
 
 
 if __name__ == '__main__':
+    from views.hud_elements import run_adsb_hud_element
     run_adsb_hud_element(AdsbTrafficListing)
