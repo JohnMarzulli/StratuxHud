@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 
-import argparse
 import datetime
 import json
-import math
-import os
 import sys
 from time import sleep
 
@@ -16,12 +13,16 @@ from common_utils.task_timer import RollingStats, TaskTimer
 from common_utils.tasks import RecurringTask
 from configuration import configuration, configuration_server
 from configuration.configuration import CONFIGURATION
-from data_sources import aithre, targets, traffic
+from data_sources import aithre, targets
 from data_sources.ahrs_data import AhrsData
 from data_sources.aircraft import Aircraft
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import AdsbTrafficClient
 from rendering import colors, display
+# Due to the way we import the name of the class to be instantiated
+# from the configuration, all of the element class names need
+# to be imported EVEN if the compiler tries to tell you
+# they are not needed.
 from views import (adsb_on_screen_reticles, adsb_target_bugs,
                    adsb_target_bugs_only, adsb_traffic_listing,
                    ahrs_not_available, altitude, artificial_horizon,

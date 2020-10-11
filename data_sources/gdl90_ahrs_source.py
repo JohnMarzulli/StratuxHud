@@ -2,6 +2,7 @@ from datetime import datetime
 
 import requests
 from common_utils import data_cache, logging_object
+from common_utils.logger import HudLogger
 from configuration import configuration
 
 from data_sources import ahrs_data
@@ -239,7 +240,7 @@ class AhrsStratux(logging_object.LoggingObject):
 
     def __init__(
         self,
-        logger
+        logger: HudLogger
     ):
         super(AhrsStratux, self).__init__(logger)
 

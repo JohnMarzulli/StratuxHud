@@ -44,11 +44,11 @@ import logging
 import logging.handlers
 
 import heads_up_display
-from common_utils.logger import Logger
+from common_utils.logger import HudLogger
 
 python_logger = logging.getLogger("stratux_hud")
 python_logger.setLevel(logging.DEBUG)
-LOGGER = Logger(python_logger)
+LOGGER = HudLogger(python_logger)
 HANDLER = logging.handlers.RotatingFileHandler(
     "stratux_hud.log", maxBytes=1048576, backupCount=10)
 HANDLER.setFormatter(logging.Formatter(

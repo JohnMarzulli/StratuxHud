@@ -1,4 +1,5 @@
 from common_utils import logging_object, tasks
+from common_utils.logger import HudLogger
 from configuration import configuration
 
 from data_sources import ahrs_data, gdl90_ahrs_source
@@ -19,7 +20,7 @@ class Aircraft(logging_object.LoggingObject):
 
     def __init__(
         self,
-        logger=None,
+        logger: HudLogger = None,
         force_simulation: bool = False
     ):
         super(Aircraft, self).__init__(logger)

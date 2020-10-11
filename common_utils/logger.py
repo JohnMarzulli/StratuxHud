@@ -2,16 +2,19 @@
 Simple wrapper around a logger.
 """
 
-from common_utils import text_tools
 from logging import Logger
 
+from common_utils import text_tools
 
-class Logger(object):
+
+class HudLogger(object):
     """
     Wrapper around a normal logger so stuff gets printed too.
     """
 
-    def get_logger(self) -> Logger:
+    def get_logger(
+        self
+    ) -> Logger:
         return self.__logger__
 
     def log_info_message(

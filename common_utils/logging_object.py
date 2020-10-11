@@ -1,4 +1,4 @@
-from common_utils import logger
+from common_utils.logger import HudLogger
 
 
 class LoggingObject(object):
@@ -41,6 +41,9 @@ class LoggingObject(object):
 
     def __init__(
         self,
-        logger
+        logger: HudLogger
     ):
+        if (logger is not None) and (not isinstance(logger, HudLogger)):
+            raise("Recieved a non HudLogger as the logger.")
+
         self.__logger__ = logger
