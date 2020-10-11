@@ -52,7 +52,11 @@ class AdsbOnScreenReticles(AdsbElement):
 
         # Find where to draw the reticle....
         reticle_x, reticle_y = self.__get_traffic_projection__(
-            orientation, traffic)
+            orientation,
+            traffic)
+
+        if reticle_x is None or reticle_y is None:
+            return
 
         # Render using the Above us bug
         on_screen_reticle_scale = hud_elements.get_reticle_size(

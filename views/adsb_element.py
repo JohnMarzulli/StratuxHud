@@ -108,12 +108,16 @@ class AdsbElement(object):
         # TODO - Account for aircraft roll...
 
         altitude_delta = int(traffic.altitude - orientation.alt)
-        slope = altitude_delta / traffic.distance
+        slope = altitude_delta / traffic.distance if traffic.distance > 0 else 0.0
         vertical_degrees_to_target = math.degrees(math.atan(slope))
         vertical_degrees_to_target -= orientation.pitch
 
         # TODO - Double check ALL of this math...
         compass = orientation.get_onscreen_projection_heading()
+
+        if isinstance(compass, str):
+            return None, None
+
         horizontal_degrees_to_target = utils.apply_declination(
             traffic.bearing) - compass
 

@@ -52,7 +52,9 @@ class AdsbTargetBugsOnly(AdsbElement):
         target_bug_scale = get_reticle_size(traffic_report.distance)
 
         heading_bug_x = get_heading_bug_x(
-            heading, utils.apply_declination(traffic_report.bearing), self.__pixels_per_degree_x__)
+            heading,
+            utils.apply_declination(traffic_report.bearing),
+            self.__pixels_per_degree_x__)
 
         try:
             is_below = (orientation.alt - 100) > traffic_report.altitude
@@ -84,8 +86,12 @@ class AdsbTargetBugsOnly(AdsbElement):
 
         reports_to_show = traffic_reports[:max_target_bugs]
 
-        [self.__render_traffic_heading_bug__(
-            traffic_report, heading, orientation, framebuffer) for traffic_report in reports_to_show]
+        if not isinstance(heading, str):
+            [self.__render_traffic_heading_bug__(
+                traffic_report,
+                heading,
+                orientation,
+                framebuffer) for traffic_report in reports_to_show]
 
         self.task_timer.stop()
 
