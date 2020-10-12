@@ -239,7 +239,8 @@ class Configuration(object):
         if json_config is None:
             return
 
-        set_from_maps = [Configuration.STRATUX_ADDRESS_KEY, Configuration.DATA_SOURCE_KEY]
+        set_from_maps = [Configuration.STRATUX_ADDRESS_KEY,
+                         Configuration.DATA_SOURCE_KEY]
 
         for key in set_from_maps:
             if key in json_config:
@@ -457,7 +458,7 @@ class Configuration(object):
 
         if new_index < 0:
             return num_views - 1
-        
+
         return new_index
 
     def update_configuration(
@@ -482,7 +483,7 @@ class Configuration(object):
         self.write_config()
 
         return self.__configuration__.copy()
-    
+
     def unescape_json_config_contents(
         self,
         unescaped_contents: str
