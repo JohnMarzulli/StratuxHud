@@ -3,41 +3,27 @@ Main entry code for Stratux HUD
 """
 # !python
 #
+# StratuxHud
 #
-# Author: John Marzulli
+# Written for Python 3.5
+# This code may be run on the Stratux hardware,
+# or on a stand-alone Raspberry Pi.
+#
+# Heavily inspired by https://github.com/kdknigga/pyahrs
+#
+# Powershell to extract CSV perf data from logs:
+# ```
+# (((((get-content stratux_hud.log) -replace "^.* - INFO - ", "") -replace "\<.*?\..*?\.", "") -replace " object.*\>", "") -replace "---.*-", "") | Where {$_ -ne ""}
+# ```
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
+# Covered by the GPL V3
 # You can view the GNU General Public License at <http://www.gnu.org/licenses/>
-#
-# Written for Python 2.7
-#
-# Includes provisions for the basic logic to be run
-# for development\testing under Windows or Mac
-#
-#
-# Program to consume the AHRS and position data from a Stratux and display
-# it as a HUD style display.
-#
-# This code does not have to run on the Stratux hardware, but it can.
-# Assumes a 5" TFT display from SunFounder and a "HUD" reflector
-# from Amazon.
-#
-# Heavily inspired by https://github.com/kdknigga/pyahrs
-#
-# Required packages
-#
-# pip install pygame
-# pip install requests
-# pip instal ws4py
-#
-# Powershell to extract CSV perf data from logs:
-# ```
-# (((((get-content stratux_hud.log) -replace "^.* - INFO - ", "") -replace "\<.*?\..*?\.", "") -replace " object.*\>", "") -replace "---.*-", "") | Where {$_ -ne ""}
-# ```
+# The license is also available in LICENSE in this directory
 
 
 import logging
