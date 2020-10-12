@@ -41,8 +41,10 @@ class DataCache(object):
         Returns:
             float -- The age of the data in seconds.
         """
-        return (self.__max_age_seconds__ * 1000.0) if self.__json_package__ is None or self.__last_updated__ is None \
-            else (datetime.datetime.utcnow() - self.__last_updated__).total_seconds()
+        if self.__json_package__ is not None and self.__last_updated__ is not None:
+            return (datetime.datetime.utcnow() - self.__last_updated__).total_seconds()
+
+        return self.__max_age_seconds__ * 1000.0
 
     def garbage_collect(
         self
@@ -57,7 +59,7 @@ class DataCache(object):
         try:
             data_age = self.__get_data_age__()
 
-            if data_age > self.__max_age_seconds__:
+            if (data_age > self.__max_age_seconds__) and (self.__json_package__ is not None) and len(self.__json_package__) > 0:
                 self.__json_package__ = {}
         finally:
             self.__lock_object__.release()
@@ -92,7 +94,11 @@ class DataCache(object):
             self.__lock_object__.acquire()
 
             data_age = self.__get_data_age__()
-            return data_age < self.__max_age_seconds__
+            is_recent = data_age < self.__max_age_seconds__
+
+            return is_recent
+        except Exception as ex:
+            print("is_available ex={}".format(ex))
         finally:
             self.__lock_object__.release()
 
