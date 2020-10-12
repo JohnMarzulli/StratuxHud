@@ -20,8 +20,7 @@ class Aircraft(logging_object.LoggingObject):
 
     def __init__(
         self,
-        logger: HudLogger = None,
-        force_simulation: bool = False
+        logger: HudLogger = None
     ):
         super(Aircraft, self).__init__(logger)
 
