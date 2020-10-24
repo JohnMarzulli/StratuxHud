@@ -1,9 +1,9 @@
 from setuptools import setup
-from lib.local_debug import IS_PI
+
+from common_utils.local_debug import IS_PI
 
 installs = ['pytest',
             'pygame',
-            'ws4py',
             'requests']
 
 if IS_PI:

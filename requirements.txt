@@ -1,3 +1,2 @@
-ws4py
 requests
 pygame

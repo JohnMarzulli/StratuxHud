@@ -451,7 +451,6 @@ The following components are used:
 
 - Python
 - PyGame
-- Ws4Py
 
 ... and of course Stratux
 

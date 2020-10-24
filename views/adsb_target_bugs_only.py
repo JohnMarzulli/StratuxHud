@@ -57,6 +57,11 @@ class AdsbTargetBugsOnly(AdsbElement):
             self.__pixels_per_degree_x__)
 
         try:
+            # TODO
+            # Get any avaiable OWNSHIP data to make sure
+            # that we are comparing pressure altitude to pressure altitude....
+            # .. or use the Pressure Alt if that is available from the avionics.
+            # .. or just validate that we are using pressure altitude...
             is_below = (orientation.alt - 100) > traffic_report.altitude
             reticle, reticle_edge_position_y = self.get_below_reticle(
                 heading_bug_x, target_bug_scale) if is_below else self.get_above_reticle(heading_bug_x, target_bug_scale)

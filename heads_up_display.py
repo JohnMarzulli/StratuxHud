@@ -35,7 +35,6 @@ from views import (adsb_on_screen_reticles, adsb_target_bugs,
 # TODO - Check for the key existence anyway... cross update the capabilities
 
 # Traffic description in https://github.com/cyoung/stratux/blob/master/notes/app-vendor-integration.md
-# pip install ws4py
 # pip install requests
 
 
