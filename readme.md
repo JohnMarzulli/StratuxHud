@@ -273,7 +273,7 @@ Make sure you are using a high-quality power cable if you are using a Pi 3B+
 3. `git clone https://github.com/JohnMarzulli/StratuxHud.git`
 4. `cd StratuxHud`
 5. `sudo apt-get install libgtk2.0-dev` a. Choose `Y` if prompted
-6. `sudo cp ./media/hud_logo.png /usr/share/plymouth/themes/pix/splash.png`
+6. `cd tools; ./install_splash.sh`
 7. `python --version`. Verify that your version is 2.7.14
 8. `sudo python3 setup.py develop` For Linux systems where you wish to develop or debug: `sudo setcap 'cap_net_raw,cap_net_admin+eip' ~/.local/lib/python2.7/site-packages/bluepy/bluepy-helper`
 9. `sudo raspi-config`
@@ -287,9 +287,11 @@ Make sure you are using a high-quality power cable if you are using a Pi 3B+
 17. Enter the following text at the _bottom_ of the file:
 
 ```bash
-@reboot nodejs /home/pi/StratuxHud/traffic_manager/build/traffic_manager.js
-@reboot sudo python /home/pi/StratuxHud/aithre_manager/aithre_manager.py &
-@reboot sudo python /home/pi/StratuxHud/stratux_hud.py &
+@reboot nodejs       /home/pi/traffictohud/build/traffic_manager.js &
+@reboot sudo python3 /home/pi/aithretohud/aithre_manager.py &
+@reboot sudo python3 /home/pi/dynontohud/dynon_to_hud.py &
+@reboot sudo python3 /home/pi/StratuxHud/stratux_hud.py &
+@reboot nodejs       /home/pi/HudConfig/build/index.js &
 ```
 
 1. Save and quit.
