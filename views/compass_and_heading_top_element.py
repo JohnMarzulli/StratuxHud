@@ -146,13 +146,13 @@ class CompassAndHeadingTopElement(AhrsElement):
 
         # Render the text that is showing our AHRS and GPS headings
         heading_y_pos = self.__font__.get_height() << 1
-        self.__render_hallow_heading_box__(
+        self.__render_hollow_heading_box__(
             orientation,
             framebuffer,
             heading_y_pos)
         self.task_timer.stop()
 
-    def __render_hallow_heading_box__(
+    def __render_hollow_heading_box__(
         self,
         orientation: AhrsData,
         framebuffer,

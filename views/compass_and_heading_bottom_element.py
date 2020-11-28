@@ -90,7 +90,7 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
                 heading_mark_to_render[1])
                 for heading_mark_to_render in self.__heading_strip__[heading]]
 
-        self.__render_hallow_heading_box__(
+        self.__render_hollow_heading_box__(
             orientation,
             framebuffer,
             self._heading_box_y_)
