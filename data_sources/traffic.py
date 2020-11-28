@@ -458,7 +458,8 @@ class TrafficManager(object):
                               for identifier in traffic_with_position]
 
         sorted_traffic = sorted(
-            actionable_traffic, key=lambda traffic: traffic.distance)
+            actionable_traffic,
+            key=lambda traffic: traffic.distance)
 
         return sorted_traffic
 
