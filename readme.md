@@ -461,3 +461,8 @@ The following components are used:
 This project is covered by the GPL v3 license.
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
+## NOTES
+
+- Python 3.9 introduces issues with `isAlive`
+- PyGame 1.9.6 is the last known working version. v2.0 instroduces issues with window creation.
