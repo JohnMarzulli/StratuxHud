@@ -156,6 +156,58 @@ def get_meters_per_second_from_mph(
     return mph_to_ms * speed
 
 
+def get_converted_units(
+    units: str,
+    distance: float
+) -> float:
+    """
+    Given a value from the ADSB receiver, convert it into a known unit
+    that is understandable by a human.
+
+    Args:
+        units {string} -- 'statute', 'knots', or 'metric'
+        distance {float} -- The raw measurement from the ADS-B receiver (yards).
+
+    Returns:
+        float: The distance in the given units.
+
+    >>> get_converted_units('statute', 165000)
+    93.75
+    >>> get_converted_units('statute', 0)
+    0.0
+    >>> get_converted_units('statute', 0.0)
+    0.0
+    >>> get_converted_units('statute', 0)
+    0.0
+    >>> get_converted_units('statute', 10)
+    0.005681818181818182
+    >>> get_converted_units('statute', 165000)
+    93.75
+    >>> get_converted_units('knots', 165000)
+    81.46659622686225
+    >>> get_converted_units('metric', 165000)
+    150.87645504338843
+    >>> get_converted_units('statute', 5280)
+    3.0
+    >>> get_converted_units('knots', 5280)
+    2.606931079259592
+    >>> get_converted_units('metric', 5280)
+    4.82804656138843
+    """
+    if units is None:
+        units = STATUTE
+
+    if units == METRIC:
+        conversion = distance / yards_to_km
+
+        return conversion
+
+    if units == NAUTICAL:
+        return distance / yards_to_nm
+
+    return distance / yards_to_sm
+
+
 def get_converted_units_string(
     units: str,
     distance: float,

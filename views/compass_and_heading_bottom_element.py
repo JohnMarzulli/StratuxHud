@@ -82,11 +82,7 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
         heading = orientation.get_onscreen_projection_heading()
 
         if isinstance(heading, Number):
-            if heading < 0:
-                heading += 360
-
-            if heading > 360:
-                heading -= 360
+            heading = wrap_angle(heading)
 
             [self.__render_heading_mark__(
                 framebuffer,

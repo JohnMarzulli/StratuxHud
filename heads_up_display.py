@@ -24,12 +24,12 @@ from rendering import colors, display
 # to be imported EVEN if the compiler tries to tell you
 # they are not needed.
 from views import (adsb_on_screen_reticles, adsb_target_bugs,
-                   adsb_target_bugs_only, adsb_traffic_listing,
-                   ahrs_not_available, altitude, artificial_horizon,
-                   compass_and_heading_bottom_element, groundspeed,
-                   heading_target_bugs, hud_elements, level_reference,
-                   roll_indicator, skid_and_gs, system_info, target_count,
-                   time, traffic_not_available)
+                   adsb_target_bugs_only, adsb_top_view_scope,
+                   adsb_traffic_listing, ahrs_not_available, altitude,
+                   artificial_horizon, compass_and_heading_bottom_element,
+                   groundspeed, heading_target_bugs, hud_elements,
+                   level_reference, roll_indicator, skid_and_gs, system_info,
+                   target_count, time, traffic_not_available)
 
 # TODO - Disable functionality based on the enabled StratuxCapabilities
 # TODO - Check for the key existence anyway... cross update the capabilities
@@ -171,7 +171,7 @@ class HeadsUpDisplay(object):
             is_ahrs_view = is_ahrs_view or hud_element.uses_ahrs()
 
         return is_ahrs_view
-    
+
     def get_hud_views(
         self
     ) -> list:

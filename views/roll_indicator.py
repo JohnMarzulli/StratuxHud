@@ -7,8 +7,6 @@ from rendering import colors
 
 from views.ahrs_element import AhrsElement
 
-TWO_PI = 2.0 * math.pi
-
 
 class RollIndicatorText(AhrsElement):
     def __init__(
@@ -61,43 +59,6 @@ class RollIndicatorText(AhrsElement):
             roll_texture,
             (self.__center__[0] - text_half_width, self.__text_y_pos__))
         self.task_timer.stop()
-
-
-def wrap_angle(
-    angle: float
-) -> float:
-    """
-    Wraps an angle (degrees) to be between 0.0 and 360
-    Arguments:
-        angle {float} -- The input angle
-    Returns: and value that is between 0 and 360, inclusive.
-    """
-
-    if angle < -360.0:
-        return wrap_angle(angle + 360.0)
-
-    if angle > 360.0:
-        return wrap_angle(angle - 360.0)
-
-    return angle
-
-
-def wrap_radians(
-    radians: float
-) -> float:
-    """
-    Wraps an angle that is in radians to be between 0.0 and 2Pi
-    Arguments:
-        angle {float} -- The input angle
-    Returns: and value that is between 0 and 2Pi, inclusive.
-    """
-    if radians < 0.0:
-        return wrap_radians(radians + TWO_PI)
-
-    if radians > TWO_PI:
-        return wrap_angle(radians - TWO_PI)
-
-    return radians
 
 
 class RollIndicator(AhrsElement):

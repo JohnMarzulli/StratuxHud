@@ -4,7 +4,6 @@ import pygame
 from common_utils.task_timer import TaskTimer
 from data_sources.ahrs_data import AhrsData
 
-from views import utils
 from views.ahrs_element import AhrsElement
 from views.hud_elements import *
 
@@ -85,11 +84,9 @@ class CompassAndHeadingTopElement(AhrsElement):
 
             displayed_left = to_the_left
             displayed_right = to_the_right
-            if to_the_left < 0:
-                to_the_left += 360
 
-            if to_the_right > 360:
-                to_the_right -= 360
+            to_the_left = wrap_angle(to_the_left)
+            to_the_right = wrap_angle(to_the_right)
 
             if (displayed_left == 0) or ((displayed_left % 90) == 0):
                 line_x_left = self.__center_x__ - \
@@ -121,7 +118,7 @@ class CompassAndHeadingTopElement(AhrsElement):
 
         self.__render_heading_text__(
             framebuffer,
-            utils.apply_declination(heading),
+            apply_declination(heading),
             x_pos,
             self.compass_text_y)
 
@@ -162,9 +159,9 @@ class CompassAndHeadingTopElement(AhrsElement):
         heading_y_pos: int
     ):
         heading_text = "{0} | {1}".format(
-            str(utils.apply_declination(
+            str(apply_declination(
                 orientation.get_onscreen_projection_display_heading())).rjust(3),
-            str(utils.apply_declination(
+            str(apply_declination(
                 orientation.get_onscreen_gps_heading())).rjust(3))
 
         rendered_text = self.__font__.render(

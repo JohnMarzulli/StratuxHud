@@ -23,6 +23,10 @@
     "class": "adsb_on_screen_reticles.AdsbOnScreenReticles",
     "detail_font": false
   },
+  "ADSB Scope": {
+    "class": "adsb_top_view_scope.AdsbTopViewScope",
+    "detail_font": true
+  },
   "Altitude": {
     "class": "altitude.Altitude",
     "detail_font": true

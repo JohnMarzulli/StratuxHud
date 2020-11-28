@@ -2,8 +2,7 @@ from common_utils.task_timer import TaskTimer
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 
-from views import utils
-from views.adsb_element import AdsbElement
+from views.adsb_element import AdsbElement, apply_declination
 from views.hud_elements import get_heading_bug_x, max_target_bugs
 
 
@@ -38,7 +37,7 @@ class AdsbTargetBugs(AdsbElement):
         """
 
         heading_bug_x = get_heading_bug_x(
-            heading, utils.apply_declination(traffic_report.bearing), self.__pixels_per_degree_x__)
+            heading, apply_declination(traffic_report.bearing), self.__pixels_per_degree_x__)
 
         additional_info_text = self.__get_additional_target_text__(
             traffic_report, orientation)

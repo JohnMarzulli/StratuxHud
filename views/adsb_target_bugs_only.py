@@ -5,8 +5,7 @@ from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
 from rendering import colors
 
-from views import utils
-from views.adsb_element import AdsbElement
+from views.adsb_element import AdsbElement, apply_declination
 from views.hud_elements import (get_heading_bug_x, get_reticle_size,
                                 max_target_bugs)
 
@@ -53,7 +52,7 @@ class AdsbTargetBugsOnly(AdsbElement):
 
         heading_bug_x = get_heading_bug_x(
             heading,
-            utils.apply_declination(traffic_report.bearing),
+            apply_declination(traffic_report.bearing),
             self.__pixels_per_degree_x__)
 
         try:

@@ -140,7 +140,7 @@ class HudDataCache(object):
                 size = texture.get_size()
 
                 if use_alpha:
-                    texture = texture.convert()
+                    texture = texture.convert_alpha()
 
                 HudDataCache.TEXT_TEXTURE_CACHE[text] = texture, size
 

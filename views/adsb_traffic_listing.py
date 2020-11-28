@@ -3,8 +3,7 @@ from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
 
-from views import utils
-from views.adsb_element import AdsbElement
+from views.adsb_element import AdsbElement, apply_declination
 
 
 class AdsbTrafficListing(AdsbElement):
@@ -51,7 +50,7 @@ class AdsbTrafficListing(AdsbElement):
     ):
         identifier = report[0]
         try:
-            bearing = str(utils.apply_declination(float(report[1])))
+            bearing = str(apply_declination(float(report[1])))
         except:
             bearing = str(report[1])
         distance_text = report[2]
@@ -91,8 +90,7 @@ class AdsbTrafficListing(AdsbElement):
         if altitude_delta > 0:
             delta_sign = '+'
         altitude_text = "{0}{1}".format(delta_sign, altitude_delta)
-        bearing_text = "{0:.0f}".format(
-            utils.apply_declination(traffic.bearing))
+        bearing_text = "{0:.0f}".format(apply_declination(traffic.bearing))
 
         return [identifier, bearing_text, distance_text, altitude_text, traffic.icao_address]
 
