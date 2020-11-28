@@ -16,6 +16,7 @@ from views.hud_elements import wrap_angle
 
 class AdsbTopViewScope(AdsbElement):
     MAXIMUM_DISTANCE = 20.0
+    ROTATION_PHASE_SHIFT = 270
 
     def __init__(
         self,
@@ -37,6 +38,53 @@ class AdsbTopViewScope(AdsbElement):
         self.__bottom_border__ = self.__height__ - self.__top_border__
 
         self.__draw_identifiers__ = False
+
+        self.__adjustment__ = 0.0
+
+    def __get_traffic_indicator__(
+        self,
+        indicator_position: list,
+        our_heading: float,
+        traffic_heading: float
+    ) -> list:
+        """Generates the coordinates for a reticle indicating
+        traffic is above use.
+
+        Arguments:
+            center_x {int} -- Center X screen position
+            center_y {int} -- Center Y screen position
+            scale {float} -- The scale of the reticle relative to the screen.
+        """
+
+        # TODO: Make the scale varibale.
+        size = self.__framebuffer_size__[1] * 0.04
+        half_size = int((size / 2.0) + 0.5)
+        quarter_size = int((size / 4.0) + 0.5)
+
+        # 1 - Come up with the 0,0 based line coordinates
+        target = [
+            [-quarter_size, half_size],
+            [0, -half_size],
+            [quarter_size, half_size]
+        ]
+
+        # 2 - determine the angle of rotation compared to our "up"
+        rotation = 360.0 - our_heading
+        rotation = rotation + traffic_heading
+        rotation = wrap_angle(rotation + self.__adjustment__)
+
+        # 3 - Rotate the zero-based points
+        rotation_radians = math.radians(rotation)
+        rotation_sin = math.sin(rotation_radians)
+        rotation_cos = math.cos(rotation_radians)
+        rotated_points = [[point[0] * rotation_cos - point[1] * rotation_sin,
+                           point[0] * rotation_sin + point[1] * rotation_cos] for point in target]
+
+        # 4 - Translate to the bug center point
+        translated_points = [(point[0] + indicator_position[0],
+                              point[1] + indicator_position[1]) for point in rotated_points]
+
+        return translated_points
 
     def __get_display_units__(
         self
@@ -117,24 +165,34 @@ class AdsbTopViewScope(AdsbElement):
         delta_angle = traffic.bearing - delta_angle
         # We need to rotate by 270 to make sure that
         # the orientation is correct AND to correct the phase.
-        delta_angle = wrap_angle(270 + delta_angle)
+        delta_angle = wrap_angle(
+            AdsbTopViewScope.ROTATION_PHASE_SHIFT + delta_angle)
 
         # Find where to draw the reticle....
         screen_x, screen_y = self.__get_screen_projection_from_center__(
             delta_angle,
             pixels_from_center)
-        
+
         target_color = colors.BLUE if traffic.is_on_ground() == True else colors.RED
 
-        pygame.draw.circle(
-            framebuffer,
-            target_color,
-            (screen_x, screen_y),
-            4,
-            4)
+        if traffic.track is not None:
+            points = self.__get_traffic_indicator__(
+                [screen_x, screen_y],
+                orientation.get_heading(),
+                traffic.track)
+            pygame.draw.polygon(framebuffer, target_color, points)
+        else:
+            pygame.draw.circle(
+                framebuffer,
+                target_color,
+                (screen_x, screen_y),
+                4,
+                4)
 
         if self.__draw_identifiers__:
-            identifier = traffic.get_display_name()
+            #identifier = traffic.get_display_name()
+            identifier = str(
+                traffic.track) if traffic.track is not None else "inop"
 
             rendered_text, size = HudDataCache.get_cached_text_texture(
                 identifier,
@@ -162,11 +220,7 @@ class AdsbTopViewScope(AdsbElement):
             orientation {Orientation} -- The orientation of the plane the HUD is in.
         """
 
-        # TODO: Get running under debug
         # TODO: Position text better (like info cards)
-        # TODO: Use a visual that implies direction
-        # TODO: Rotate symbol to show direction
-        # TODO: Draw aircraft symbol in the middle
         # TODO: Add altitiude delta text
         # TODO: TEST!!!
 
@@ -191,7 +245,8 @@ class AdsbTopViewScope(AdsbElement):
             delta_angle = heading - delta_angle
             # We need to rotate by 270 to make sure that
             # the orientation is correct AND to correct the phase.
-            delta_angle = wrap_angle(270 + delta_angle)
+            delta_angle = wrap_angle(
+                AdsbTopViewScope.ROTATION_PHASE_SHIFT + delta_angle)
             pixels_from_center = self.__get_pixel_distance__(
                 AdsbTopViewScope.MAXIMUM_DISTANCE)
 
@@ -211,7 +266,8 @@ class AdsbTopViewScope(AdsbElement):
 
             framebuffer.blit(
                 heading_text,
-                (screen_x - half_width, screen_y - half_height))
+                (screen_x - half_width, screen_y - half_height),
+                special_flags=pygame.BLEND_RGBA_ADD)
 
         self.task_timer.start()
         # Get the traffic, and bail out of we have none

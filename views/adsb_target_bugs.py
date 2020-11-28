@@ -25,7 +25,13 @@ class AdsbTargetBugs(AdsbElement):
         self.__top_border__ = int(self.__height__ * 0.2)
         self.__bottom_border__ = self.__height__ - int(self.__height__ * 0.1)
 
-    def __render_traffic_heading_bug__(self, traffic_report, heading, orientation, framebuffer):
+    def __render_traffic_heading_bug__(
+        self,
+        traffic_report,
+        heading,
+        orientation,
+        framebuffer
+    ):
         """
         Render a single heading bug to the framebuffer.
 
@@ -37,10 +43,13 @@ class AdsbTargetBugs(AdsbElement):
         """
 
         heading_bug_x = get_heading_bug_x(
-            heading, apply_declination(traffic_report.bearing), self.__pixels_per_degree_x__)
+            heading,
+            apply_declination(traffic_report.bearing),
+            self.__pixels_per_degree_x__)
 
         additional_info_text = self.__get_additional_target_text__(
-            traffic_report, orientation)
+            traffic_report,
+            orientation)
 
         try:
             self.__render_info_card__(
@@ -69,11 +78,14 @@ class AdsbTargetBugs(AdsbElement):
             self.task_timer.stop()
             return
 
-        traffic_reports = traffic_reports[:max_target_bugs]
-
         # Draw the heading bugs in reverse order so the traffic closest to
         # us will be the most visible
-        traffic_reports.reverse()
+        traffic_reports.sort(
+            key=lambda traffic: traffic.distance,
+            reverse=True)
+
+        # Make sure only the closest bugs are rendered.
+        traffic_reports = traffic_reports[:max_target_bugs]
 
         [self.__render_traffic_heading_bug__(
             traffic_report,

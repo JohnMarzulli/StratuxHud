@@ -23,6 +23,7 @@ class Traffic(object):
     LONGITUDE_KEY = 'Lng'
     DISTANCE_KEY = 'Distance'
     BEARING_KEY = 'Bearing'
+    TRACK_KEY = 'Track'
     ALTITUDE_KEY = 'Alt'
     # We need to key off the ICAO address due to 'Anonymous Mode'...
     ICAO_ADDR_KEY = 'Icao_addr'
@@ -192,6 +193,7 @@ class Traffic(object):
         self.distance = None
         self.bearing = None
         self.altitude = None
+        self.track = None
 
         self.__json__ = json_from_stratux
         self.__update_from_json__()
@@ -264,6 +266,11 @@ class Traffic(object):
                 self.bearing = float(self.__json__[Traffic.BEARING_KEY])
             else:
                 self.bearing = None
+            
+            if Traffic.TRACK_KEY in self.__json__:
+                self.track = float(self.__json__[Traffic.TRACK_KEY])
+            else:
+                self.track = None
 
             if Traffic.ALTITUDE_KEY in self.__json__:
                 self.altitude = float(self.__json__[Traffic.ALTITUDE_KEY])

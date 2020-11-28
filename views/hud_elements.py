@@ -142,11 +142,7 @@ def get_heading_bug_x(
     """
 
     delta = (bearing - heading + 180)
-    if delta < 0:
-        delta += 360
-
-    if delta > 360:
-        delta -= 360
+    delta = wrap_angle(delta)
 
     return int(delta * degrees_per_pixel)
 
