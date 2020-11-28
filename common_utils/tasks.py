@@ -5,7 +5,7 @@ Module to handle tasks that occur on a regularly scheduled interval.
 import datetime
 import threading
 import time
-from logging import Logger
+from logging import Logger, setLoggerClass
 
 
 class IntermittentTask(object):
@@ -58,6 +58,23 @@ class RecurringTask(object):
     Object to control and handle a recurring task.
     """
 
+    def __is_alive__(
+        self
+    ) -> bool:
+        if self.__thread__ is None:
+            return False
+
+        # Python 3.0 to 3.8 use isAlive
+        # Python 3.9 and later use is_alive
+
+        if hasattr(self.__thread__, 'is_alive'):
+            return self.__thread__.is_alive()
+
+        if hasattr(self.__thread__, 'isAlive'):
+            return self.__thread__.isAlive()
+
+        return False
+
     def start(
         self
     ) -> bool:
@@ -66,7 +83,7 @@ class RecurringTask(object):
         """
         if self.__task_callback__ is not None \
             and self.__thread__ is not None \
-                and not self.__thread__.isAlive():
+                and not self.__is_alive__():
             self.__is_running__ = True
             self.__thread__.start()
 
