@@ -1,5 +1,4 @@
 import math
-from views import target_count
 
 import pygame
 from common_utils import units
@@ -8,6 +7,7 @@ from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
+from pygame import Surface
 from rendering import colors
 
 from views.adsb_element import AdsbElement
@@ -37,7 +37,7 @@ class AdsbTopViewScope(AdsbElement):
         self.__top_border__ = int(self.__height__ * 0.05)
         self.__bottom_border__ = self.__height__ - self.__top_border__
 
-        self.__draw_identifiers__ = False
+        self.__draw_identifiers__ = True
 
         self.__adjustment__ = 0.0
 
@@ -190,9 +190,7 @@ class AdsbTopViewScope(AdsbElement):
                 4)
 
         if self.__draw_identifiers__:
-            #identifier = traffic.get_display_name()
-            identifier = str(
-                traffic.track) if traffic.track is not None else "inop"
+            identifier = traffic.get_display_name()
 
             rendered_text, size = HudDataCache.get_cached_text_texture(
                 identifier,
@@ -202,14 +200,147 @@ class AdsbTopViewScope(AdsbElement):
                 True,
                 False)
 
+            # Half size to reduce text clutter
+            rendered_text = pygame.transform.smoothscale(
+                rendered_text,
+                [size[0] >> 1, size[1] >> 1])
+
             framebuffer.blit(
                 rendered_text,
                 (screen_x, screen_y),
                 special_flags=pygame.BLEND_RGBA_ADD)
 
-    def render(
+    def __render_heading_text__(
         self,
         framebuffer,
+        orientation: AhrsData
+    ):
+        rendered_text, size = HudDataCache.get_cached_text_texture(
+            '{0:03d}'.format(orientation.get_heading()),
+            self.__font__,
+            colors.GREEN,
+            colors.BLACK,
+            True,
+            False)
+
+        half_width = size[0] >> 1
+        text_height = size[1]
+        border_size = text_height >> 3
+
+        framebuffer.blit(
+            rendered_text,
+            ((self.__center__[0] - half_width), self.__top_border__),
+            special_flags=pygame.BLEND_RGBA_ADD)
+
+        left = self.__center__[0] - half_width - border_size
+        right = self.__center__[0] + half_width + border_size
+        top = self.__top_border__ - border_size
+        bottom = self.__top_border__ + text_height + border_size
+
+        heading_text_box_lines = [[left, top], [
+            right, top], [right, bottom], [left, bottom]]
+
+        pygame.draw.lines(
+            framebuffer,
+            colors.GREEN,
+            True,
+            heading_text_box_lines,
+            2)
+
+    def __render_ownship__(
+        self,
+        framebuffer: Surface
+    ):
+        """
+        Draws the graphic for an aircraft, but always pointing straight up.
+        This is to indicate our own aircraft, position, and heading
+        which will always be straight up.
+
+        Args:
+            framebuffer {Surface} -- The render target.
+        """
+        points = self.__get_traffic_indicator__(
+            self.__center__,
+            0,
+            0)
+
+        pygame.draw.polygon(framebuffer, colors.GREEN, points)
+
+    def __draw_distance_rings__(
+        self,
+        framebuffer: Surface
+    ):
+        """
+        Draws rings that indicate how far out another aircraft is.
+        Each ring represents 5 units. The spacing will always be
+        the same no matter what the units are.
+
+        Args:
+            framebuffer {Surface} -- The render target.
+        """
+        for distance in [5, 10, 15, 20]:
+            radius_pixels = self.__get_pixel_distance__(distance)
+            pygame.draw.circle(
+                framebuffer,
+                colors.GREEN,
+                self.__center__,
+                radius_pixels,
+                2)
+
+    def __draw_compass_text__(
+        self,
+        framebuffer: Surface,
+        our_heading: int,
+        heading_to_draw: int
+    ):
+        delta_angle = heading_to_draw - our_heading
+        # We need to rotate by 270 to make sure that
+        # the orientation is correct AND to correct the phase.
+        delta_angle = wrap_angle(
+            AdsbTopViewScope.ROTATION_PHASE_SHIFT + delta_angle)
+        pixels_from_center = self.__get_pixel_distance__(
+            AdsbTopViewScope.MAXIMUM_DISTANCE)
+
+        screen_x, screen_y = self.__get_screen_projection_from_center__(
+            delta_angle,
+            pixels_from_center)
+
+        heading_text, size = HudDataCache.get_cached_text_texture(
+            str(heading_to_draw),
+            self.__font__,
+            colors.YELLOW,
+            colors.BLACK,
+            True,
+            False)
+        half_width = size[0] >> 1
+        half_height = size[1] >> 1
+
+        framebuffer.blit(
+            heading_text,
+            (screen_x - half_width, screen_y - half_height),
+            special_flags=pygame.BLEND_RGBA_ADD)
+
+    def __draw_all_compass_headings__(
+        self,
+        framebuffer: Surface,
+        orientation: AhrsData
+    ):
+        """
+        Draw the text for ALL compass headings. 0, 90, 180, and 270
+        This will make it clear that the scope is drawn user relative
+        instead of absolute.
+
+        Args:
+            framebuffer (Surface): [description]
+            orientation (AhrsData): [description]
+        """
+        our_heading = int(orientation.get_heading())
+        [self.__draw_compass_text__(framebuffer, our_heading, heading_to_draw)
+         for heading_to_draw in [0, 90, 180, 270]]
+
+    def render(
+        self,
+        framebuffer: Surface,
         orientation: AhrsData
     ):
         """
@@ -220,56 +351,16 @@ class AdsbTopViewScope(AdsbElement):
             orientation {Orientation} -- The orientation of the plane the HUD is in.
         """
 
-        # TODO: Position text better (like info cards)
-        # TODO: Add altitiude delta text
-        # TODO: TEST!!!
-
-        pygame.draw.circle(
-            framebuffer,
-            colors.GREEN,
-            self.__center__,
-            2,
-            2)
-
-        for distance in [5, 10, 15, 20]:
-            radius_pixels = self.__get_pixel_distance__(distance)
-            pygame.draw.circle(
-                framebuffer,
-                colors.GREEN,
-                self.__center__,
-                radius_pixels,
-                2)
-
-        for heading in [0, 90, 180, 270]:
-            delta_angle = orientation.get_heading()
-            delta_angle = heading - delta_angle
-            # We need to rotate by 270 to make sure that
-            # the orientation is correct AND to correct the phase.
-            delta_angle = wrap_angle(
-                AdsbTopViewScope.ROTATION_PHASE_SHIFT + delta_angle)
-            pixels_from_center = self.__get_pixel_distance__(
-                AdsbTopViewScope.MAXIMUM_DISTANCE)
-
-            screen_x, screen_y = self.__get_screen_projection_from_center__(
-                delta_angle,
-                pixels_from_center)
-
-            heading_text, size = HudDataCache.get_cached_text_texture(
-                str(heading),
-                self.__font__,
-                colors.YELLOW,
-                colors.BLACK,
-                True,
-                False)
-            half_width = size[0] >> 1
-            half_height = size[1] >> 1
-
-            framebuffer.blit(
-                heading_text,
-                (screen_x - half_width, screen_y - half_height),
-                special_flags=pygame.BLEND_RGBA_ADD)
-
+        # TODO: Investigate altitiude delta text
+        # TODO: Try listing identifiers on side with lines leading to the aircraft
+        # TODO: MORE TESTING!!!
         self.task_timer.start()
+
+        self.__render_heading_text__(framebuffer, orientation)
+        self.__render_ownship__(framebuffer)
+        self.__draw_distance_rings__(framebuffer)
+        self.__draw_all_compass_headings__(framebuffer, orientation)
+
         # Get the traffic, and bail out of we have none
         traffic_reports = HudDataCache.get_reliable_traffic()
         traffic_reports.sort(
