@@ -29,6 +29,7 @@ The second is in an "All-In-One" (AIO) configuration. With an AIO setup, the HUD
 | Aithre CO Monitor          | Yes         | Experimental |
 | Illyrian SPO/Pulse Monitor | Yes         | Experimental |
 | Raspberry Pi 3b+           | Yes         | No           |
+| Raspberry Pi 4             | Yes         | No           |
 
 ### 2.2 Recommended Projector
 
@@ -303,16 +304,19 @@ To ensure proper operation, if you are a developer the order services are brough
 The following order is suggested:
 
 1. Stratux
-2. AithreManager
-3. TrafficManager
-4. StratuxHud
-5. HudConfig
+1. AithreManager
+1. DynonToHud
+1. TrafficManager
+1. StratuxHud
+1. HudConfig
 
 The AithreManager has no external dependencies.
 
+The DynonToHud service has no external dependencies.
+
 The TrafficManager uses the Stratux ADS-B services and received.
 
-The StratuxHud depends on the AithreManager and the TrafficManager
+The StratuxHud depends on the AithreManager and the TrafficManager. It can optionally use DynonToHud.
 
 The HudConfig depends on the StratuxHud
 
@@ -415,7 +419,7 @@ You will find the solder pads on the bottom of the Raspberry Pi 3, near the Micr
 
 | Date       | Version | Major Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | ---------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2020-10-31 | 2.0     | Migration to Python V3, with major refactoring of underlying code.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| 2020-10-31 | 2.0     | Migration to Python V3, with major refactoring of underlying code. New TopDownScope element and view.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | 2020-04-20 | 1.7     | Now able to cycle through views using the HudConfig page. Support for Illyrian by Aithre. Split Aithre data collection into a micro-service. Improve warning on some elements when GPS lock is lost. Fix user configuration files not always being used or saved. Support new V3 radio and Stratux 1.6\. Experimental support for Aithre in Stratux + HUD AIO configurations. Updates to distance conversion. Use the same naming strategy for aircraft as popular EFBs. Support data collected from Dynon serial output using the DynonToHud project. Indicate which speeds are IAS and groundspeed when GPS and Avionics data are both available. Update element positions. Added new indication when the Traffic service is not available. |
 | 2019-09-04 | 1.6     | Traffic manager moved to a stand-alone service in NodeJs/TypeScript.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | 2019-06-30 | 1.5     | Support for the Aithre CO detector. New roll indicator. Various performance improvements. Visual warning if GPS is not plugged in. Use the OWNSHIP config from the receiver instead of the local config.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
@@ -431,13 +435,15 @@ Please note that performance characteristics are only shown for displays that ar
 
 | Board                          | Screen         | Frames Per Second (AHRS View Only) | Notes              |
 | ------------------------------ | -------------- | ---------------------------------- | ------------------ |
-| Rasp Pi 2                      | Sun Founder 5" | ~25FPS to ~30FPS                   | Not recommended    |
+| Rasp Pi 2 (stand-alone)        | Sun Founder 5" | ~25FPS to ~30FPS                   | Not recommended    |
 | Rasp Pi 3 (stand-alone)        | Kivic          | 50FPS - 60FPS                      | Recommended        |
 | Rasp Pi 3 (stand-alone)        | Hudly Wireless | 30FPS - 50FPS                      | Recommended        |
 | Rasp Pi 3 (Running on Stratux) | Kivic          | 30FPS                              | Highly Recommended |
 | Rasp Pi 3 (Running on Stratux) | Hudly Wireless | 25FPS                              | Highly Recommended |
-| Rasp Pi 3B+                    | Kivic          | 55FPS - 60FPS                      | Recommended        |
-| Rasp Pi 3B+                    | Hudly Wireless | 40FPS - 60FPS                      | Recommended        |
+| Rasp Pi 3B+ (stand-alone)      | Kivic          | 55FPS - 60FPS                      | Recommended        |
+| Rasp Pi 3B+ (stand-alone)      | Hudly Wireless | 40FPS - 60FPS                      | Recommended        |
+| Rasp Pi 4 (stand-alone)        | Kivic          | 60FPS                              | Highly Recommended |
+| Rasp Pi 4 (stand-alone)        | Hudly Wireless | 60FPS                              | Highly Recommended |
 
 Please note that the frame rate is capped at 60FPS. Drawing any faster will not be detectable using the recommended output systems. Reducing the framerate will reduce the powerdraw.
 
