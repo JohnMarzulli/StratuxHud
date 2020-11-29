@@ -287,9 +287,9 @@ Make sure you are using a high-quality power cable if you are using a Pi 3B+
 17. Enter the following text at the _bottom_ of the file:
 
 ```bash
-@reboot nodejs       /home/pi/traffictohud/build/traffic_manager.js &
-@reboot sudo python3 /home/pi/aithretohud/aithre_manager.py &
-@reboot sudo python3 /home/pi/dynontohud/dynon_to_hud.py &
+@reboot sudo python3 /home/pi/AithreToHud/aithre_manager.py &
+@reboot nodejs       /home/pi/TrafficToHud/build/traffic_manager.js &
+@reboot python3      /home/pi/DynonToHud/dynon_to_hud.py &
 @reboot sudo python3 /home/pi/StratuxHud/stratux_hud.py &
 @reboot nodejs       /home/pi/HudConfig/build/index.js &
 ```
