@@ -12,7 +12,7 @@ if IS_PI:
 setup(
     name='StratuxHud',
     version='2.0',
-    python_requires='>=3.8',
+    python_requires='>=3.7',
     description='Graphics for a Heads Up Display projector powered by a Stratux receiver.',
     url='https://github.com/JohnMarzulli/StratuxHud',
     author='John Marzulli',
