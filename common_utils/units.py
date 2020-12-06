@@ -208,6 +208,27 @@ def get_converted_units(
     return distance / yards_to_sm
 
 
+def get_distance_unit_suffix(
+    units: str
+) -> str:
+    """
+    Get the suffix for measurements of distance in the current units.
+
+    Args:
+        units (str): The system we are measuring in.
+
+    Returns:
+        str: The suffix to append to measurements.
+    """
+
+    if units == METRIC:
+        return UNIT_LABELS[METRIC][DISTANCE]
+    elif units == NAUTICAL:
+        return UNIT_LABELS[NAUTICAL][DISTANCE]
+
+    return UNIT_LABELS[STATUTE][DISTANCE]
+
+
 def get_converted_units_string(
     units: str,
     distance: float,
