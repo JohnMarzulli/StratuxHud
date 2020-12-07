@@ -3,7 +3,7 @@ from datetime import datetime
 from numbers import Number
 
 import pygame
-from common_utils import units
+from common_utils import local_debug, units
 from common_utils.task_timer import TaskTimer
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
@@ -599,8 +599,16 @@ class AdsbTopViewScope(AdsbElement):
 
         groundspeed = units.get_converted_units(
             configuration.CONFIGURATION.get_units(),
-            # orientation.airspeed * units.feet_to_nm) # For debug only.
             orientation.groundspeed * units.yards_to_nm)
+
+        if local_debug.is_debug() \
+            and orientation.airspeed is not None \
+            and isinstance(
+                orientation.airspeed,
+                Number):
+            groundspeed = units.get_converted_units(
+                configuration.CONFIGURATION.get_units(),
+                orientation.airspeed * units.feet_to_nm)  # For debug only.
 
         distance_in_10_minutes = groundspeed / 6
 
