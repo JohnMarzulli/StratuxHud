@@ -117,7 +117,7 @@ class AdsbTopViewScope(AdsbElement):
         distance_in_user_units: float,
         scope_range: float
     ) -> int:
-        max_pixel_distance = self.__center__[1] - self.__top_border__
+        max_pixel_distance = self.__scope_center__[1] - self.__top_border__
 
         if distance_in_user_units > scope_range:
             return max_pixel_distance
@@ -150,8 +150,8 @@ class AdsbTopViewScope(AdsbElement):
         delta_angle_radians = math.radians(angle_degrees)
         reticle_x = math.cos(delta_angle_radians)
         reticle_y = math.sin(delta_angle_radians)
-        screen_x = (reticle_x * distance_pixels) + self.__center__[0]
-        screen_y = (reticle_y * distance_pixels) + self.__center__[1]
+        screen_x = (reticle_x * distance_pixels) + self.__scope_center__[0]
+        screen_y = (reticle_y * distance_pixels) + self.__scope_center__[1]
 
         return (int(screen_x), int(screen_y))
 
@@ -294,7 +294,7 @@ class AdsbTopViewScope(AdsbElement):
             framebuffer {Surface} -- The render target.
         """
         points = self.__get_traffic_indicator__(
-            self.__center__,
+            self.__scope_center__,
             0,
             0)
 
@@ -338,15 +338,15 @@ class AdsbTopViewScope(AdsbElement):
             pygame.draw.circle(
                 framebuffer,
                 colors.GREEN,
-                self.__center__,
+                self.__scope_center__,
                 radius_pixels,
                 2)
             distance_text = "{}{}".format(
                 distance,
                 units_suffix)
             #pythag_dist = int(math.sqrt(2 * (radius_pixels * radius_pixels)))
-            text_pos = [self.__center__[0] + int(sin_half_pi * radius_pixels),
-                        self.__center__[1] - int(cos_half_pi * radius_pixels)]
+            text_pos = [self.__scope_center__[0] + int(sin_half_pi * radius_pixels),
+                        self.__scope_center__[1] - int(cos_half_pi * radius_pixels)]
 
             rendered_text, size = HudDataCache.get_cached_text_texture(
                 distance_text,
@@ -432,16 +432,21 @@ class AdsbTopViewScope(AdsbElement):
         Returns:
             [type]: [description]
         """
+        # TODO: Add something here to protect against "flapping" of the zoom
+        #       when the aircraft is really close to the boundary between
         is_valid_groundspeed = orientation.groundspeed is not None and isinstance(
             orientation.groundspeed,
             Number)
+
+        # TODO: Add some sort of "zoom" transition to show that a zoom in
+        #       or zoom out has occured.
 
         if not is_valid_groundspeed:
             return AdsbTopViewScope.DEFAULT_SCOPE_RANGE
 
         groundspeed = units.get_converted_units(
-            CONFIGURATION.get_units(),
-            orientation.groundspeed)
+            configuration.CONFIGURATION.get_units(),
+            orientation.groundspeed * units.yards_to_nm)
 
         distance_in_10_minutes = groundspeed / 6
 
