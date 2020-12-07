@@ -1,4 +1,5 @@
 import math
+from datetime import datetime
 from numbers import Number
 
 import pygame
@@ -15,6 +16,153 @@ from views.adsb_element import AdsbElement
 from views.hud_elements import wrap_angle
 
 
+def clamp(
+    minimum,
+    value,
+    maximum
+):
+    """
+    Makes sure the given value (middle param) is always between the maximum and minimum.
+
+    Arguments:
+        minimum {number} -- The smallest the value can be (inclusive).
+        value {number} -- The value to clamp.
+        maximum {number} -- The largest the value can be (inclusive).
+
+    Returns:
+        number -- The value within the allowable range.
+    """
+
+    if value < minimum:
+        return minimum
+
+    if value > maximum:
+        return maximum
+
+    return value
+
+
+def interpolate(
+    left_value,
+    right_value,
+    proportion
+):
+    """
+    Finds the spot between the two values.
+
+    Arguments:
+        left_value {number} -- The value on the "left" that 0.0 would return.
+        right_value {number} -- The value on the "right" that 1.0 would return.
+        proportion {float} -- The proportion from the left to the right hand side.
+
+    >>> interpolate(0, 255, 0.5)
+    127
+    >>> interpolate(10, 20, 0.5)
+    15
+    >>> interpolate(0, 255, 0.0)
+    0
+    >>> interpolate(0, 255, 0)
+    0
+    >>> interpolate(0, 255, 1)
+    255
+    >>> interpolate(0, 255, 1.5)
+    255
+    >>> interpolate(0, 255, -0.5)
+    0
+    >>> interpolate(0, 255, 0.1)
+    25
+    >>> interpolate(0, 255, 0.9)
+    229
+    >>> interpolate(255, 0, 0.5)
+    127
+    >>> interpolate(20, 10, 0.5)
+    15
+    >>> interpolate(255, 0, 0.0)
+    255
+    >>> interpolate(255, 0, 0)
+    255
+    >>> interpolate(255, 0, 1)
+    0
+    >>> interpolate(255, 0, 1.5)
+    0
+    >>> interpolate(255, 0, -0.5)
+    255
+    >>> interpolate(255, 0, 0.1)
+    229
+    >>> interpolate(255, 0, 0.9)
+    25
+
+    Returns:
+        float -- The number that is the given amount between the left and right.
+    """
+
+    left_value = clamp(0.0, left_value, 255.0)
+    right_value = clamp(0.0, right_value, 255.0)
+    proportion = clamp(0.0, proportion, 1.0)
+
+    return clamp(
+        0,
+        int(float(left_value) + (float(right_value -
+                                       float(left_value)) * float(proportion))),
+        255)
+
+
+class ZoomTracker(object):
+    SECONDS_FOR_ZOOM = 3
+    MINIMUM_SECONDS_BETWEEN_ZOOM_CHANGE = SECONDS_FOR_ZOOM * 5
+
+    def __init__(
+        self,
+        starting_zoom: (int,  int)
+    ) -> None:
+        super().__init__()
+
+        self.__last_changed__ = datetime.utcnow()
+        self.__last_zoom__ = starting_zoom[0]
+        self.__target_zoom__ = starting_zoom
+
+    def set_target_zoom(
+        self,
+        new_target_zoom: (int, int)
+    ):
+        if new_target_zoom is None:
+            return
+
+        if new_target_zoom[0] == self.__target_zoom__[0]:
+            return
+
+        delta_since_last_change = (
+            datetime.utcnow() - self.__last_changed__).total_seconds()
+
+        if delta_since_last_change < ZoomTracker.MINIMUM_SECONDS_BETWEEN_ZOOM_CHANGE:
+            return
+
+        self.__last_zoom__ = self.__target_zoom__
+        self.__last_changed__ = datetime.utcnow()
+        self.__target_zoom__ = new_target_zoom
+
+    def get_target_zoom(
+        self
+    ):
+        delta_since_last_change = (
+            datetime.utcnow() - self.__last_changed__).total_seconds()
+
+        proportion_into_zoom = delta_since_last_change / ZoomTracker.SECONDS_FOR_ZOOM
+
+        if proportion_into_zoom > 1.0:
+            return self.__target_zoom__
+
+        computed_range = interpolate(
+            self.__last_zoom__[0],
+            self.__target_zoom__[0],
+            proportion_into_zoom)
+
+        # Use the minor steps from the previous zoom
+        # so the whole process has visual consistency
+        # and does not startle the aviator.
+        return [computed_range, self.__last_zoom__[1]]
+
+
 class AdsbTopViewScope(AdsbElement):
 
     # Arranged in (range, step_range)
@@ -24,7 +172,14 @@ class AdsbTopViewScope(AdsbElement):
     # (20, 5) is 20 units in range, 5 unit steps
 
     DEFAULT_SCOPE_RANGE = (10, 5)
-    SCOPE_RANGES = [(1, 0), (2, 1), (5, 1), (10, 5), (20, 5), (50, 10)]
+    SCOPE_RANGES = [
+        (1, 0),
+        (2, 1),
+        (5, 1),
+        (10, 5),
+        (15, 5),
+        (20, 5),
+        (50, 10)]
     ROTATION_PHASE_SHIFT = 270
 
     def __init__(
@@ -55,6 +210,9 @@ class AdsbTopViewScope(AdsbElement):
         # that we loose to much fidelity in front of us.
         self.__scope_center__ = [self.__center__[0],
                                  self.__center__[1] + (self.__center__[1] >> 1)]
+
+        self.__zoom_tracker__ = ZoomTracker(
+            AdsbTopViewScope.DEFAULT_SCOPE_RANGE)
 
     def __get_maximum_scope_range__(
         self
@@ -228,9 +386,9 @@ class AdsbTopViewScope(AdsbElement):
                 False)
 
             # Half size to reduce text clutter
-            rendered_text = pygame.transform.smoothscale(
-                rendered_text,
-                [size[0] >> 1, size[1] >> 1])
+            # rendered_text = pygame.transform.smoothscale(
+            #     rendered_text,
+            #     [size[0] >> 1, size[1] >> 1])
 
             framebuffer.blit(
                 rendered_text,
@@ -342,7 +500,7 @@ class AdsbTopViewScope(AdsbElement):
                 radius_pixels,
                 2)
             distance_text = "{}{}".format(
-                distance,
+                int(distance),
                 units_suffix)
             #pythag_dist = int(math.sqrt(2 * (radius_pixels * radius_pixels)))
             text_pos = [self.__scope_center__[0] + int(sin_half_pi * radius_pixels),
@@ -357,9 +515,9 @@ class AdsbTopViewScope(AdsbElement):
                 False)
 
             # Half size to reduce text clutter
-            # rendered_text = pygame.transform.scale(
-            #    rendered_text,
-            #    [size[0] >> 1, size[1] >> 1])
+            rendered_text = pygame.transform.scale(
+                rendered_text,
+                [size[0] >> 1, size[1] >> 1])
 
             framebuffer.blit(
                 rendered_text,
@@ -432,20 +590,16 @@ class AdsbTopViewScope(AdsbElement):
         Returns:
             [type]: [description]
         """
-        # TODO: Add something here to protect against "flapping" of the zoom
-        #       when the aircraft is really close to the boundary between
         is_valid_groundspeed = orientation.groundspeed is not None and isinstance(
             orientation.groundspeed,
             Number)
-
-        # TODO: Add some sort of "zoom" transition to show that a zoom in
-        #       or zoom out has occured.
 
         if not is_valid_groundspeed:
             return AdsbTopViewScope.DEFAULT_SCOPE_RANGE
 
         groundspeed = units.get_converted_units(
             configuration.CONFIGURATION.get_units(),
+            # orientation.airspeed * units.feet_to_nm) # For debug only.
             orientation.groundspeed * units.yards_to_nm)
 
         distance_in_10_minutes = groundspeed / 6
@@ -458,6 +612,15 @@ class AdsbTopViewScope(AdsbElement):
                 return possible_range
 
         return self.__get_maximum_scope_range__()
+
+    def __get_scope_zoom__(
+        self,
+        orientation: AhrsData
+    ) -> (float, float):
+        ideal_range = self.__get_scope_range__(orientation)
+        self.__zoom_tracker__.set_target_zoom(ideal_range)
+
+        return self.__zoom_tracker__.get_target_zoom()
 
     def render(
         self,
@@ -477,7 +640,7 @@ class AdsbTopViewScope(AdsbElement):
         # TODO: MORE TESTING!!!
         self.task_timer.start()
 
-        scope_range = self.__get_scope_range__(orientation)
+        scope_range = self.__get_scope_zoom__(orientation)
 
         self.__render_heading_text__(framebuffer, orientation)
         self.__render_ownship__(framebuffer)
