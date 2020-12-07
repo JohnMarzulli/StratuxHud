@@ -19,6 +19,7 @@
     },
     {
       "elements": [
+        "Groundspeed",
         "ADSB Scope",
         "Traffic Not Available"
       ],
