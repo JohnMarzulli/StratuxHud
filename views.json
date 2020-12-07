@@ -20,6 +20,7 @@
     {
       "elements": [
         "Groundspeed",
+        "Altitude",
         "ADSB Scope",
         "Traffic Not Available"
       ],
