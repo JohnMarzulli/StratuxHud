@@ -118,7 +118,7 @@ class ZoomTracker(object):
         super().__init__()
 
         self.__last_changed__ = datetime.utcnow()
-        self.__last_zoom__ = starting_zoom[0]
+        self.__last_zoom__ = starting_zoom
         self.__target_zoom__ = starting_zoom
 
     def set_target_zoom(
@@ -197,6 +197,9 @@ class AdsbTopViewScope(AdsbElement):
             framebuffer_size)
 
         self.task_timer = TaskTimer('AdsbTopViewScope')
+        self.rings_timer = TaskTimer('AdsbTopViewScopeRings')
+        self.bugs_timer = TaskTimer('AdsbTopViewScopeBugs')
+        self.range_timer = TaskTimer('AdsbTopViewScopeScopeRange')
 
         self.__top_border__ = int(self.__height__ * 0.05)
         self.__bottom_border__ = self.__height__ - self.__top_border__
@@ -221,7 +224,7 @@ class AdsbTopViewScope(AdsbElement):
         Get the maximum
 
         Returns:
-            int: [description]
+            (int, int): Tuple of the maximum distance for the scope, and the distance between each ring.
         """
         return AdsbTopViewScope.SCOPE_RANGES[:1][0]
 
@@ -318,7 +321,8 @@ class AdsbTopViewScope(AdsbElement):
         framebuffer,
         orientation: AhrsData,
         traffic: Traffic,
-        scope_range: float
+        scope_range: float,
+        first_ring_pixel_distance: int
     ):
         """
         Draws a single reticle on the screen.
@@ -327,6 +331,7 @@ class AdsbTopViewScope(AdsbElement):
             framebuffer {Surface} -- Render target
             orientation {Orientation} -- The orientation of the plane.
             traffic {Traffic} -- The traffic to draw the reticle for.
+            first_ring_pixel_distance {int} -- The distance (in pixels) from the ownship to the first scope ring. Used for clutter control.
         """
 
         display_distance = units.get_converted_units(
@@ -373,6 +378,11 @@ class AdsbTopViewScope(AdsbElement):
                 (screen_x, screen_y),
                 4,
                 4)
+
+        # Do not draw identifier text for any targets further than
+        # the first scope ring.
+        if pixels_from_center > first_ring_pixel_distance:
+            return
 
         if self.__draw_identifiers__:
             identifier = traffic.get_display_name()
@@ -462,7 +472,7 @@ class AdsbTopViewScope(AdsbElement):
         self,
         framebuffer: Surface,
         scope_range: (int, int)
-    ):
+    ) -> int:
         """
         Draws rings that indicate how far out another aircraft is.
         Each ring represents 5 units. The spacing will always be
@@ -470,6 +480,9 @@ class AdsbTopViewScope(AdsbElement):
 
         Args:
             framebuffer {Surface} -- The render target.
+
+        Returns:
+            int: The distance (in pixels from the center to the first ring. Used for clutter control.)
         """
 
         max_distance = scope_range[0]
@@ -480,6 +493,7 @@ class AdsbTopViewScope(AdsbElement):
         half_pi = math.radians(45)
         sin_half_pi = math.sin(half_pi)
         cos_half_pi = math.cos(half_pi)
+        ring_pixel_distances = []
 
         if step > 0:
             ring_distances = list(
@@ -499,6 +513,7 @@ class AdsbTopViewScope(AdsbElement):
                 self.__scope_center__,
                 radius_pixels,
                 2)
+            ring_pixel_distances.append(radius_pixels)
             distance_text = "{}{}".format(
                 int(distance),
                 units_suffix)
@@ -522,6 +537,7 @@ class AdsbTopViewScope(AdsbElement):
             framebuffer.blit(
                 rendered_text,
                 text_pos)
+        return ring_pixel_distances[0]
 
     def __draw_compass_text__(
         self,
@@ -588,8 +604,10 @@ class AdsbTopViewScope(AdsbElement):
             orientation (AhrsData): [description]
 
         Returns:
-            [type]: [description]
+            (int, int): The maximum distance the scope will cover and the distance between each ring.
         """
+        self.range_timer.start()
+
         is_valid_groundspeed = orientation.groundspeed is not None and isinstance(
             orientation.groundspeed,
             Number)
@@ -617,8 +635,11 @@ class AdsbTopViewScope(AdsbElement):
         for possible_range in AdsbTopViewScope.SCOPE_RANGES:
             range_distance = possible_range[0]
             if range_distance > distance_in_10_minutes:
+                self.range_timer.stop()
+
                 return possible_range
 
+        self.range_timer.stop()
         return self.__get_maximum_scope_range__()
 
     def __get_scope_zoom__(
@@ -650,22 +671,28 @@ class AdsbTopViewScope(AdsbElement):
 
         scope_range = self.__get_scope_zoom__(orientation)
 
-        self.__render_heading_text__(framebuffer, orientation)
         self.__render_ownship__(framebuffer)
-        self.__draw_distance_rings__(framebuffer, scope_range)
+
+        self.rings_timer.start()
+        self.__render_heading_text__(framebuffer, orientation)
+        first_ring_pixel_radius = self.__draw_distance_rings__(
+            framebuffer, scope_range)
         self.__draw_all_compass_headings__(
             framebuffer,
             orientation,
             scope_range[0])
+        self.rings_timer.stop()
 
         # Get the traffic, and bail out of we have none
+        self.bugs_timer.start()
         traffic_reports = HudDataCache.get_reliable_traffic()
         traffic_reports.sort(
             key=lambda traffic: traffic.distance,
             reverse=True)
 
         [self.__render_on_screen_target__(
-            framebuffer, orientation, traffic, scope_range[0]) for traffic in traffic_reports]
+            framebuffer, orientation, traffic, scope_range[0], first_ring_pixel_radius) for traffic in traffic_reports]
+        self.bugs_timer.stop()
 
         self.task_timer.stop()
 

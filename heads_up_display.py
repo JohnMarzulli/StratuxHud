@@ -9,7 +9,7 @@ import pygame
 import requests
 
 from common_utils import local_debug, system_tools
-from common_utils.task_timer import RollingStats, TaskTimer
+from common_utils.task_timer import RollingStats, TaskTimer, TimerRegistry
 from common_utils.tasks import RecurringTask
 from configuration import configuration, configuration_server
 from configuration.configuration import CONFIGURATION
@@ -243,17 +243,12 @@ class HeadsUpDisplay(object):
             if (self.__last_perf_render__ is None) or (now - self.__last_perf_render__).total_seconds() > 60:
                 self.__last_perf_render__ = now
 
-                [self.log('RENDER, {}, {}'.format(now, element_times))
-                    for element_times in render_times]
-
-                [self.log('FRAME, {}, {}'.format(
+                self.log("-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-")
+                self.log("Category, Date, TaskName, Min, Avg, Max")
+                [self.log('PERF, {}, {}'.format(
                     now,
-                    self.__frame_timers__[aspect].to_string()))
-                    for aspect in self.__frame_timers__.keys()]
-
-                self.log('OVERALL, {}, {}'.format(
-                    now,
-                    self.__fps__.to_string()))
+                    timer.to_string()))
+                    for timer in TimerRegistry.get_timers()]
 
                 self.log("-----------------------------------")
 

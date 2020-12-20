@@ -1,5 +1,6 @@
 import datetime
 import queue
+import threading
 import time
 
 
@@ -103,10 +104,29 @@ class RollingStats(object):
             return '---'
 
 
+class TimerRegistry(object):
+    __TIMERS__ = {}
+
+    @staticmethod
+    def add_task_timer(
+        new_timer
+    ):
+        if new_timer is None:
+            return
+
+        TimerRegistry.__TIMERS__[new_timer.task_name] = new_timer
+
+    @staticmethod
+    def get_timers():
+        return TimerRegistry.__TIMERS__.values()
+
+
 class TaskTimer(object):
     """
     Class to track how long a task takes.
     """
+
+    __TIMER_STACK__ = {}
 
     def __init__(
         self,
@@ -116,6 +136,32 @@ class TaskTimer(object):
         self.__start_time__ = None
         self.is_running = False
         self.task_name = task_name
+
+        TimerRegistry.add_task_timer(self)
+
+    def __push_timer_on_stack__(
+        self
+    ):
+        """
+        This is so we can eventually keep track of the call graph,
+        and inclusive vs exclusive execution time.
+        """
+        tid = threading.get_ident()
+
+        if tid not in TaskTimer.__TIMER_STACK__:
+            TaskTimer.__TIMER_STACK__[tid] = []
+
+        TaskTimer.__TIMER_STACK__[tid].append(self.task_name)
+
+    def __pop_timer_from_stack__(
+        self
+    ):
+        tid = threading.get_ident()
+
+        if tid not in TaskTimer.__TIMER_STACK__:
+            return
+
+        TaskTimer.__TIMER_STACK__[tid].pop()
 
     def reset(
         self
@@ -131,6 +177,8 @@ class TaskTimer(object):
         self.__start_time__ = datetime.datetime.utcnow()
         self.is_running = True
 
+        self.__push_timer_on_stack__()
+
     def stop(
         self
     ):
@@ -142,6 +190,8 @@ class TaskTimer(object):
         value = (datetime.datetime.utcnow() -
                  self.__start_time__).total_seconds() * 1000.0
         self.__stats__.push(value)
+
+        self.__pop_timer_from_stack__()
 
     def to_string(
         self
