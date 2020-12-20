@@ -418,7 +418,7 @@ class AdsbTopViewScope(AdsbElement):
             orientation (AhrsData): Our current AHRS data.
         """
         rendered_text, size = HudDataCache.get_cached_text_texture(
-            '{0:03d}'.format(orientation.get_heading()),
+            '{0:03}'.format(orientation.get_heading()),
             self.__font__,
             colors.GREEN,
             colors.BLACK,
