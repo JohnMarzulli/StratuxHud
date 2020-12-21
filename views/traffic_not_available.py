@@ -15,7 +15,6 @@ class TrafficNotAvailable(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.task_timer = TaskTimer('TrafficNotAvailable')
         self.__font__ = font
         font_height = font.get_height()
         self.__text_y_pos__ = int(font_height * 0.7)
@@ -29,8 +28,6 @@ class TrafficNotAvailable(AhrsElement):
         framebuffer,
         orientation: AhrsData
     ):
-        self.task_timer.start()
-
         if not HudDataCache.IS_TRAFFIC_AVAILABLE:
             (texture, size) = HudDataCache.get_cached_text_texture(
                 "TRAFFIC UNAVAILABLE",
@@ -43,7 +40,6 @@ class TrafficNotAvailable(AhrsElement):
             framebuffer.blit(
                 texture,
                 (self.__center_x__ - (width >> 1), self.__text_y_pos__))
-        self.task_timer.stop()
 
 
 if __name__ == '__main__':

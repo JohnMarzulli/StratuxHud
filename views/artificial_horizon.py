@@ -64,7 +64,6 @@ class ArtificialHorizon(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.task_timer = TaskTimer('ArtificialHorizon')
         self.__framebuffer_size__ = framebuffer_size
         self.__center__ = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
         self.__long_line_width__ = self.__framebuffer_size__[0] * 0.4
@@ -131,8 +130,6 @@ class ArtificialHorizon(AhrsElement):
             orientation {orientation} -- The airplane's orientation (roll & pitch)
         """
 
-        self.task_timer.start()
-
         # Creating aliases to the functions saves time...
         draw_line = pygame.draw.lines
         pitch = orientation.pitch
@@ -150,8 +147,6 @@ class ArtificialHorizon(AhrsElement):
 
         [self.__render_reference_line__(framebuffer, line_info, draw_line, roll)
             for line_info in lines_centers_and_angles]
-
-        self.task_timer.stop()
 
     def __get_line_coords__(
         self,

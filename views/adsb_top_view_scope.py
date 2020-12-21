@@ -4,7 +4,7 @@ from numbers import Number
 
 import pygame
 from common_utils import local_debug, units
-from common_utils.task_timer import TaskTimer
+from common_utils.task_timer import TaskProfiler, TaskTimer
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
@@ -196,10 +196,9 @@ class AdsbTopViewScope(AdsbElement):
             font,
             framebuffer_size)
 
-        self.task_timer = TaskTimer('AdsbTopViewScope')
-        self.rings_timer = TaskTimer('AdsbTopViewScopeRings')
-        self.bugs_timer = TaskTimer('AdsbTopViewScopeBugs')
-        self.range_timer = TaskTimer('AdsbTopViewScopeScopeRange')
+        self.rings_timer = TaskProfiler('AdsbTopViewScopeRings')
+        self.bugs_timer = TaskProfiler('AdsbTopViewScopeBugs')
+        self.range_timer = TaskProfiler('AdsbTopViewScopeScopeRange')
 
         self.__top_border__ = int(self.__height__ * 0.05)
         self.__bottom_border__ = self.__height__ - self.__top_border__
@@ -216,6 +215,17 @@ class AdsbTopViewScope(AdsbElement):
 
         self.__zoom_tracker__ = ZoomTracker(
             AdsbTopViewScope.DEFAULT_SCOPE_RANGE)
+
+        size = self.__framebuffer_size__[1] * 0.04
+        half_size = int((size / 2.0) + 0.5)
+        quarter_size = int((size / 4.0) + 0.5)
+
+        # 1 - Come up with the 0,0 based line coordinates
+        self.__target_indicator__ = [
+            [-quarter_size, half_size],
+            [0, -half_size],
+            [quarter_size, half_size]
+        ]
 
     def __get_maximum_scope_range__(
         self
@@ -243,18 +253,6 @@ class AdsbTopViewScope(AdsbElement):
             scale {float} -- The scale of the reticle relative to the screen.
         """
 
-        # TODO: Make the scale varibale.
-        size = self.__framebuffer_size__[1] * 0.04
-        half_size = int((size / 2.0) + 0.5)
-        quarter_size = int((size / 4.0) + 0.5)
-
-        # 1 - Come up with the 0,0 based line coordinates
-        target = [
-            [-quarter_size, half_size],
-            [0, -half_size],
-            [quarter_size, half_size]
-        ]
-
         # 2 - determine the angle of rotation compared to our "up"
         rotation = 360.0 - our_heading
         rotation = rotation + traffic_heading
@@ -265,7 +263,7 @@ class AdsbTopViewScope(AdsbElement):
         rotation_sin = math.sin(rotation_radians)
         rotation_cos = math.cos(rotation_radians)
         rotated_points = [[point[0] * rotation_cos - point[1] * rotation_sin,
-                           point[0] * rotation_sin + point[1] * rotation_cos] for point in target]
+                           point[0] * rotation_sin + point[1] * rotation_cos] for point in self.__target_indicator__]
 
         # 4 - Translate to the bug center point
         translated_points = [(point[0] + indicator_position[0],
@@ -667,7 +665,6 @@ class AdsbTopViewScope(AdsbElement):
         # TODO: Investigate altitiude delta text
         # TODO: Try listing identifiers on side with lines leading to the aircraft
         # TODO: MORE TESTING!!!
-        self.task_timer.start()
 
         scope_range = self.__get_scope_zoom__(orientation)
 
@@ -693,8 +690,6 @@ class AdsbTopViewScope(AdsbElement):
         [self.__render_on_screen_target__(
             framebuffer, orientation, traffic, scope_range[0], first_ring_pixel_radius) for traffic in traffic_reports]
         self.bugs_timer.stop()
-
-        self.task_timer.stop()
 
 
 if __name__ == '__main__':

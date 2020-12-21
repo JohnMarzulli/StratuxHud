@@ -17,7 +17,6 @@ class AdsbTargetBugs(AdsbElement):
         AdsbElement.__init__(
             self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size)
 
-        self.task_timer = TaskTimer('AdsbTargetBugs')
         self.__listing_text_start_y__ = int(self.__font__.get_height() * 4)
         self.__listing_text_start_x__ = int(
             self.__framebuffer_size__[0] * 0.01)
@@ -68,14 +67,12 @@ class AdsbTargetBugs(AdsbElement):
     ):
         # Render a heading strip along the top
 
-        self.task_timer.start()
         heading = orientation.get_onscreen_projection_heading()
 
         # Get the traffic, and bail out of we have none
         traffic_reports = HudDataCache.get_reliable_traffic()
 
         if traffic_reports is None:
-            self.task_timer.stop()
             return
 
         # Draw the heading bugs in reverse order so the traffic closest to
@@ -92,8 +89,6 @@ class AdsbTargetBugs(AdsbElement):
             heading,
             orientation,
             framebuffer) for traffic_report in traffic_reports]
-
-        self.task_timer.stop()
 
 
 if __name__ == '__main__':

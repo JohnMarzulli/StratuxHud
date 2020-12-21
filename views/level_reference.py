@@ -13,7 +13,6 @@ class LevelReference(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.task_timer = TaskTimer('LevelReference')
         self.level_reference_lines = []
 
         width = framebuffer_size[0]
@@ -39,14 +38,12 @@ class LevelReference(AhrsElement):
         Renders a "straight and level" line to the HUD.
         """
 
-        self.task_timer.start()
         [pygame.draw.lines(
             framebuffer,
             colors.WHITE,
             False,
             line,
             6) for line in self.level_reference_lines]
-        self.task_timer.stop()
 
 
 if __name__ == '__main__':

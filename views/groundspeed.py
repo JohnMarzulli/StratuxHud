@@ -17,7 +17,6 @@ class Groundspeed(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.task_timer = TaskTimer('Groundspeed')
         self.__font__ = font
         self.__font_height__ = font.get_height()
         center_y = framebuffer_size[1] >> 2
@@ -32,8 +31,6 @@ class Groundspeed(AhrsElement):
         framebuffer,
         orientation: AhrsData
     ):
-        self.task_timer.start()
-
         speed_units = configuration.CONFIGURATION.__get_config_value__(
             configuration.Configuration.DISTANCE_UNITS_KEY,
             units.STATUTE)
@@ -93,8 +90,6 @@ class Groundspeed(AhrsElement):
             framebuffer.blit(
                 ias_texture,
                 (self.__left_x__, self.__text_y_pos__))
-
-        self.task_timer.stop()
 
 
 if __name__ == '__main__':

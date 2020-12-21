@@ -24,8 +24,6 @@ class AdsbOnScreenReticles(AdsbElement):
             font,
             framebuffer_size)
 
-        self.task_timer = TaskTimer('AdsbOnScreenReticles')
-
         self.__listing_text_start_y__ = int(self.__font__.get_height() * 4)
         self.__listing_text_start_x__ = int(
             self.__framebuffer_size__[0] * 0.01)
@@ -89,7 +87,6 @@ class AdsbOnScreenReticles(AdsbElement):
             orientation {Orientation} -- The orientation of the plane the HUD is in.
         """
 
-        self.task_timer.start()
         # Get the traffic, and bail out of we have none
         traffic_reports = HudDataCache.get_reliable_traffic()
 
@@ -100,8 +97,6 @@ class AdsbOnScreenReticles(AdsbElement):
 
         [self.__render_on_screen_reticle__(
             framebuffer, orientation, traffic) for traffic in traffic_reports]
-
-        self.task_timer.stop()
 
     def __render_target_reticle__(
         self,

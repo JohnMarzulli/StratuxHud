@@ -1,7 +1,7 @@
 import threading
 from datetime import datetime
 
-from common_utils.task_timer import TaskTimer
+from common_utils.task_timer import TaskProfiler
 from configuration import configuration
 from rendering import colors
 
@@ -18,25 +18,19 @@ class HudDataCache(object):
 
     __LOCK__ = threading.Lock()
 
-    __UPDATE_TIMER__ = TaskTimer("HudDataCache::update_traffic_reports")
-    __GET_RELIABLE_TIMER__ = TaskTimer("HudDataCache::get_reliable_traffic")
-    __PURGE_TIMER__ = TaskTimer("HudDataCache::purge_old_textures")
-    __GET_CACHED_TIMER__ = TaskTimer("HudDataCache::get_cached_text_texture")
-
     __TRAFFIC_CLIENT__ = traffic.AdsbTrafficClient(
         configuration.CONFIGURATION.get_traffic_manager_address())
 
     @staticmethod
     def update_traffic_reports():
-        HudDataCache.__UPDATE_TIMER__.start()
-        HudDataCache.__LOCK__.acquire()
+        with TaskProfiler("HudDataCache::update_traffic_reports"):
+            HudDataCache.__LOCK__.acquire()
 
-        try:
-            HudDataCache.RELIABLE_TRAFFIC = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
-            HudDataCache.IS_TRAFFIC_AVAILABLE = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.is_traffic_available()
-        finally:
-            HudDataCache.__LOCK__.release()
-            HudDataCache.__UPDATE_TIMER__.stop()
+            try:
+                HudDataCache.RELIABLE_TRAFFIC = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
+                HudDataCache.IS_TRAFFIC_AVAILABLE = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.is_traffic_available()
+            finally:
+                HudDataCache.__LOCK__.release()
 
     @staticmethod
     def get_reliable_traffic() -> list:
@@ -46,14 +40,13 @@ class HudDataCache(object):
         Returns:
             list -- A list of the reliable traffic.
         """
-        HudDataCache.__GET_RELIABLE_TIMER__.start()
-        traffic_clone = None
-        HudDataCache.__LOCK__.acquire()
-        try:
-            traffic_clone = HudDataCache.RELIABLE_TRAFFIC[:]
-        finally:
-            HudDataCache.__LOCK__.release()
-            HudDataCache.__GET_RELIABLE_TIMER__.stop()
+        with TaskProfiler("HudDataCache::get_reliable_traffic"):
+            traffic_clone = None
+            HudDataCache.__LOCK__.acquire()
+            try:
+                traffic_clone = HudDataCache.RELIABLE_TRAFFIC[:]
+            finally:
+                HudDataCache.__LOCK__.release()
 
         return traffic_clone
 
@@ -103,20 +96,19 @@ class HudDataCache(object):
         """
 
         # The second hardest problem in comp-sci...
-        HudDataCache.__PURGE_TIMER__.start()
-        textures_to_purge = []
-        HudDataCache.__LOCK__.acquire()
-        try:
-            now = datetime.utcnow()
-            textures_to_purge = [HudDataCache.__get_purge_key__(now, texture_key)
-                                 for texture_key in HudDataCache.__CACHE_ENTRY_LAST_USED__]
-            textures_to_purge = list(filter(lambda x: x is not None,
-                                            textures_to_purge))
-            [HudDataCache.__purge_texture__(texture_to_purge)
-             for texture_to_purge in textures_to_purge]
-        finally:
-            HudDataCache.__LOCK__.release()
-            HudDataCache.__PURGE_TIMER__.stop()
+        with TaskProfiler("HudDataCache::purge_old_textures"):
+            textures_to_purge = []
+            HudDataCache.__LOCK__.acquire()
+            try:
+                now = datetime.utcnow()
+                textures_to_purge = [HudDataCache.__get_purge_key__(now, texture_key)
+                                     for texture_key in HudDataCache.__CACHE_ENTRY_LAST_USED__]
+                textures_to_purge = list(filter(lambda x: x is not None,
+                                                textures_to_purge))
+                [HudDataCache.__purge_texture__(texture_to_purge)
+                 for texture_to_purge in textures_to_purge]
+            finally:
+                HudDataCache.__LOCK__.release()
 
     @staticmethod
     def get_cached_text_texture(
@@ -145,25 +137,24 @@ class HudDataCache(object):
             [tuple] -- The texture and the size of the texture
         """
 
-        HudDataCache.__GET_CACHED_TIMER__.start()
-        result = None
-        HudDataCache.__LOCK__.acquire()
-        try:
-            if text not in HudDataCache.TEXT_TEXTURE_CACHE or force_regen:
-                texture = font.render(text, True, text_color, background_color)
-                size = texture.get_size()
+        with TaskProfiler("HudDataCache::get_cached_text_texture"):
+            result = None
+            HudDataCache.__LOCK__.acquire()
+            try:
+                if text not in HudDataCache.TEXT_TEXTURE_CACHE or force_regen:
+                    texture = font.render(
+                        text, True, text_color, background_color)
+                    size = texture.get_size()
 
-                if use_alpha:
-                    texture = texture.convert_alpha()
+                    if use_alpha:
+                        texture = texture.convert_alpha()
 
-                HudDataCache.TEXT_TEXTURE_CACHE[text] = texture, size
+                    HudDataCache.TEXT_TEXTURE_CACHE[text] = texture, size
 
-            HudDataCache.__CACHE_ENTRY_LAST_USED__[
-                text] = datetime.utcnow()
-            result = HudDataCache.TEXT_TEXTURE_CACHE[text]
-        finally:
-            HudDataCache.__LOCK__.release()
-
-        HudDataCache.__GET_CACHED_TIMER__.stop()
+                HudDataCache.__CACHE_ENTRY_LAST_USED__[
+                    text] = datetime.utcnow()
+                result = HudDataCache.TEXT_TEXTURE_CACHE[text]
+            finally:
+                HudDataCache.__LOCK__.release()
 
         return result

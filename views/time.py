@@ -14,7 +14,6 @@ class Time(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.task_timer = TaskTimer('Time')
         self.__font__ = font
         font_height = font.get_height()
         text_half_height = int(font_height) >> 1
@@ -30,8 +29,6 @@ class Time(AhrsElement):
         framebuffer,
         orientation: AhrsData
     ):
-        self.task_timer.start()
-
         time_text = str(orientation.utc_time).split('.')[0] \
             + "UTC" if orientation.utc_time is not None else AhrsElement.GPS_UNAVAILABLE_TEXT
         texture = self.__font__.render(
@@ -44,7 +41,6 @@ class Time(AhrsElement):
         framebuffer.blit(
             texture,
             (self.__center_x__ - (width >> 1), self.__text_y_pos__))
-        self.task_timer.stop()
 
 
 if __name__ == '__main__':

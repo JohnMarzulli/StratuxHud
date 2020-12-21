@@ -16,7 +16,6 @@ class RollIndicatorText(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.task_timer = TaskTimer('RollIndicatorText')
         self.__roll_elements__ = {}
         self.__framebuffer_size__ = framebuffer_size
         self.__center__ = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
@@ -39,7 +38,6 @@ class RollIndicatorText(AhrsElement):
         framebuffer,
         orientation: AhrsData
     ):
-        self.task_timer.start()
         roll = int(orientation.roll)
         pitch = int(orientation.pitch)
         pitch_direction = ''
@@ -58,7 +56,6 @@ class RollIndicatorText(AhrsElement):
         framebuffer.blit(
             roll_texture,
             (self.__center__[0] - text_half_width, self.__text_y_pos__))
-        self.task_timer.stop()
 
 
 class RollIndicator(AhrsElement):
@@ -69,7 +66,6 @@ class RollIndicator(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.task_timer = TaskTimer('RollIndicator')
         self.__framebuffer_size__ = framebuffer_size
         self.__center__ = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
         half_texture_height = int(font.get_height()) >> 1
@@ -98,8 +94,6 @@ class RollIndicator(AhrsElement):
         framebuffer,
         orientation: AhrsData
     ):
-        self.task_timer.start()
-
         roll_in_radians = math.radians(orientation.roll)
 
         # Draws the reference arc
@@ -141,8 +135,6 @@ class RollIndicator(AhrsElement):
             self.half_pi - roll_in_radians - self.roll_indicator_arc_radians,
             self.half_pi - roll_in_radians + self.roll_indicator_arc_radians,
             self.reference_line_size * 2)
-
-        self.task_timer.stop()
 
 
 if __name__ == '__main__':
