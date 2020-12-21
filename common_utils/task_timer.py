@@ -268,7 +268,7 @@ class TaskProfiler(object):
                 exclusive_mean = "{:.1f}".format(exclusive_ms / call_count)
 
             logger.log_info_message(
-                '{0}, {1}, {2}, {3}, {4}, {5}'.format(
+                '{0}, {1}, {2:.1f}, {3:.1f}, {4}, {5}'.format(
                     task_name,
                     call_count,
                     inclusive_ms,
