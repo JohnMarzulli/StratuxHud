@@ -4,7 +4,7 @@ from numbers import Number
 
 import pygame
 from common_utils import local_debug, units
-from common_utils.task_timer import TaskProfiler, TaskTimer
+from common_utils.task_timer import TaskProfiler
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
@@ -195,10 +195,6 @@ class AdsbTopViewScope(AdsbElement):
             pixels_per_degree_y,
             font,
             framebuffer_size)
-
-        self.rings_timer = TaskProfiler('AdsbTopViewScopeRings')
-        self.bugs_timer = TaskProfiler('AdsbTopViewScopeBugs')
-        self.range_timer = TaskProfiler('AdsbTopViewScopeScopeRange')
 
         self.__top_border__ = int(self.__height__ * 0.05)
         self.__bottom_border__ = self.__height__ - self.__top_border__
@@ -604,8 +600,6 @@ class AdsbTopViewScope(AdsbElement):
         Returns:
             (int, int): The maximum distance the scope will cover and the distance between each ring.
         """
-        self.range_timer.start()
-
         is_valid_groundspeed = orientation.groundspeed is not None and isinstance(
             orientation.groundspeed,
             Number)
@@ -633,11 +627,8 @@ class AdsbTopViewScope(AdsbElement):
         for possible_range in AdsbTopViewScope.SCOPE_RANGES:
             range_distance = possible_range[0]
             if range_distance > distance_in_10_minutes:
-                self.range_timer.stop()
-
                 return possible_range
 
-        self.range_timer.stop()
         return self.__get_maximum_scope_range__()
 
     def __get_scope_zoom__(
@@ -666,30 +657,29 @@ class AdsbTopViewScope(AdsbElement):
         # TODO: Try listing identifiers on side with lines leading to the aircraft
         # TODO: MORE TESTING!!!
 
-        scope_range = self.__get_scope_zoom__(orientation)
+        with TaskProfiler('AdsbTopViewScopeScopeZoomAndRange'):
+            scope_range = self.__get_scope_zoom__(orientation)
 
         self.__render_ownship__(framebuffer)
 
-        self.rings_timer.start()
-        self.__render_heading_text__(framebuffer, orientation)
-        first_ring_pixel_radius = self.__draw_distance_rings__(
-            framebuffer, scope_range)
-        self.__draw_all_compass_headings__(
-            framebuffer,
-            orientation,
-            scope_range[0])
-        self.rings_timer.stop()
+        with TaskProfiler('AdsbTopViewScopeRings'):
+            self.__render_heading_text__(framebuffer, orientation)
+            first_ring_pixel_radius = self.__draw_distance_rings__(
+                framebuffer, scope_range)
+            self.__draw_all_compass_headings__(
+                framebuffer,
+                orientation,
+                scope_range[0])
 
         # Get the traffic, and bail out of we have none
-        self.bugs_timer.start()
-        traffic_reports = HudDataCache.get_reliable_traffic()
-        traffic_reports.sort(
-            key=lambda traffic: traffic.distance,
-            reverse=True)
+        with TaskProfiler('AdsbTopViewScopeBugs'):
+            traffic_reports = HudDataCache.get_reliable_traffic()
+            traffic_reports.sort(
+                key=lambda traffic: traffic.distance,
+                reverse=True)
 
-        [self.__render_on_screen_target__(
-            framebuffer, orientation, traffic, scope_range[0], first_ring_pixel_radius) for traffic in traffic_reports]
-        self.bugs_timer.stop()
+            [self.__render_on_screen_target__(
+                framebuffer, orientation, traffic, scope_range[0], first_ring_pixel_radius) for traffic in traffic_reports]
 
 
 if __name__ == '__main__':
