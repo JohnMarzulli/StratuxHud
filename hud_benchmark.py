@@ -93,9 +93,9 @@ for attempt in range(0, 4):
     LOGGER.log_info_message("    div::int_operator")
     with TaskProfiler("div::int_operator"):
         for rand_val in random_ints:
-            radians = rand_val / 2
-            radians = rand_val / 4
-
+            radians = int(rand_val / 2)
+            radians = int(rand_val / 4)
+    
     LOGGER.log_info_message("    div::int_shifted")
     with TaskProfiler("div::int_shifted"):
         for rand_val in random_ints:
