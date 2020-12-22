@@ -3,7 +3,6 @@ Shared code to help speed up various math functions.
 """
 
 import math
-from views.hud_elements import COS_RADIANS_BY_DEGREES
 
 SIN_BY_DEGREES = {}
 COS_BY_DEGREES = {}
