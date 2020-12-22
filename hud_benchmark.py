@@ -53,6 +53,28 @@ with TaskProfiler("math::radians_to_degrees_cached"):
     for rand_val in random_angles:
         degrees = fast_math.get_degrees(rand_val)
 
+with TaskProfiler("math::mult_times"):
+    for rand_val in random_angles:
+        radians = rand_val * 2.0
+        radians = rand_val * 4.0
+
+with TaskProfiler("math::mult_shifted"):
+    for rand_val in random_angles:
+        as_int = int(rand_val)
+        radians = as_int << 1
+        radians = as_int << 2
+
+with TaskProfiler("math::div_divved"):
+    for rand_val in random_angles:
+        radians = rand_val / 2.0
+        radians = rand_val / 4.0
+
+with TaskProfiler("math::div_shifted"):
+    for rand_val in random_angles:
+        as_int = int(rand_val)
+        radians = as_int >> 1
+        radians = as_int >> 2
+
 TaskProfiler.log(LOGGER)
 
 quit()
