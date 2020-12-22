@@ -598,15 +598,17 @@ class HeadsUpDisplay(object):
         text_width, text_height = texture.get_size()
 
         surface = pygame.display.get_surface()
-        surface.blit(texture, ((
-            self.__width__ >> 1) - (text_width >> 1), self.__detail_font__.get_height()))
+        surface.blit(
+            texture,
+            ((self.__width__ >> 1) - (text_width >> 1), self.__detail_font__.get_height()))
 
         y = (self.__height__ >> 2) + (self.__height__ >> 3)
         for text in disclaimer_text:
             texture = self.__detail_font__.render(text, True, colors.YELLOW)
             text_width, text_height = texture.get_size()
             surface.blit(
-                texture, ((self.__width__ >> 1) - (text_width >> 1), y))
+                texture,
+                ((self.__width__ >> 1) - (text_width >> 1), y))
             y += text_height + (text_height >> 3)
 
         texture = self.__detail_font__.render(

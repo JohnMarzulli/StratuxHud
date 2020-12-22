@@ -1,9 +1,8 @@
-import math
 from datetime import datetime
 from numbers import Number
 
 import pygame
-from common_utils import local_debug, units
+from common_utils import fast_math, local_debug, units
 from common_utils.task_timer import TaskProfiler
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
@@ -207,7 +206,7 @@ class AdsbTopViewScope(AdsbElement):
         # such that we can see aircraft sneeking up behind us, but not so much
         # that we loose to much fidelity in front of us.
         self.__scope_center__ = [self.__center__[0],
-                                 self.__center__[1] + (self.__center__[1] >> 1)]
+                                 self.__center__[1] + int(self.__center__[1] >> 1)]
 
         self.__zoom_tracker__ = ZoomTracker(
             AdsbTopViewScope.DEFAULT_SCOPE_RANGE)
@@ -215,6 +214,9 @@ class AdsbTopViewScope(AdsbElement):
         size = self.__framebuffer_size__[1] * 0.04
         half_size = int((size / 2.0) + 0.5)
         quarter_size = int((size / 4.0) + 0.5)
+
+        self.__sin_half_pi__ = fast_math.SIN_BY_DEGREES[45]
+        self.__cos_half_pi__ = fast_math.COS_BY_DEGREES[45]
 
         # 1 - Come up with the 0,0 based line coordinates
         self.__target_indicator__ = [
@@ -252,12 +254,11 @@ class AdsbTopViewScope(AdsbElement):
         # 2 - determine the angle of rotation compared to our "up"
         rotation = 360.0 - our_heading
         rotation = rotation + traffic_heading
-        rotation = wrap_angle(rotation + self.__adjustment__)
+        roation_degrees = int(wrap_angle(rotation + self.__adjustment__))
 
         # 3 - Rotate the zero-based points
-        rotation_radians = math.radians(rotation)
-        rotation_sin = math.sin(rotation_radians)
-        rotation_cos = math.cos(rotation_radians)
+        rotation_sin = fast_math.SIN_BY_DEGREES[roation_degrees]
+        rotation_cos = fast_math.COS_BY_DEGREES[roation_degrees]
         rotated_points = [[point[0] * rotation_cos - point[1] * rotation_sin,
                            point[0] * rotation_sin + point[1] * rotation_cos] for point in self.__target_indicator__]
 
@@ -302,9 +303,9 @@ class AdsbTopViewScope(AdsbElement):
         Returns:
             (int, int): The x,y coordinates in screen space.
         """
-        delta_angle_radians = math.radians(angle_degrees)
-        reticle_x = math.cos(delta_angle_radians)
-        reticle_y = math.sin(delta_angle_radians)
+        int_degs = int(fast_math.wrap_degrees(angle_degrees))
+        reticle_x = fast_math.COS_BY_DEGREES[int_degs]
+        reticle_y = fast_math.SIN_BY_DEGREES[int_degs]
         screen_x = (reticle_x * distance_pixels) + self.__scope_center__[0]
         screen_y = (reticle_y * distance_pixels) + self.__scope_center__[1]
 
@@ -390,9 +391,9 @@ class AdsbTopViewScope(AdsbElement):
                 False)
 
             # Half size to reduce text clutter
-            # rendered_text = pygame.transform.smoothscale(
-            #     rendered_text,
-            #     [size[0] >> 1, size[1] >> 1])
+            rendered_text = pygame.transform.smoothscale(
+                rendered_text,
+                [size[0] >> 1, size[1] >> 1])
 
             framebuffer.blit(
                 rendered_text,
@@ -484,9 +485,6 @@ class AdsbTopViewScope(AdsbElement):
         ring_distances = [max_distance]
         distance_units = configuration.CONFIGURATION.get_units()
         units_suffix = units.get_distance_unit_suffix(distance_units)
-        half_pi = math.radians(45)
-        sin_half_pi = math.sin(half_pi)
-        cos_half_pi = math.cos(half_pi)
         ring_pixel_distances = []
 
         if step > 0:
@@ -511,9 +509,12 @@ class AdsbTopViewScope(AdsbElement):
             distance_text = "{}{}".format(
                 int(distance),
                 units_suffix)
-            #pythag_dist = int(math.sqrt(2 * (radius_pixels * radius_pixels)))
-            text_pos = [self.__scope_center__[0] + int(sin_half_pi * radius_pixels),
-                        self.__scope_center__[1] - int(cos_half_pi * radius_pixels)]
+
+            text_x = self.__scope_center__[0] \
+                + int(self.__sin_half_pi__ * radius_pixels)
+            text_y = self.__scope_center__[1] \
+                - int(self.__cos_half_pi__ * radius_pixels)
+            text_pos = [text_x, text_y]
 
             rendered_text, size = HudDataCache.get_cached_text_texture(
                 distance_text,
@@ -531,6 +532,7 @@ class AdsbTopViewScope(AdsbElement):
             framebuffer.blit(
                 rendered_text,
                 text_pos)
+
         return ring_pixel_distances[0]
 
     def __draw_compass_text__(
