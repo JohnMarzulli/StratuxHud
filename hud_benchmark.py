@@ -24,6 +24,8 @@ random_angles = [random.randrange(
 random_radians = [math.radians(random.randrange(
     0, 360) + ((random.randrange(0, 9) / 10))) for i in range(1, max_test_calls)]
 
+random_ints = [random.randrange(0, 1000) for i in range(1, max_test_calls)]
+
 for attempt in range(0, 4):
     LOGGER.log_info_message("Round #{}".format(attempt))
 
@@ -62,31 +64,43 @@ for attempt in range(0, 4):
         for rand_val in random_angles:
             degrees = fast_math.get_degrees(rand_val)
 
-    LOGGER.log_info_message("    mult::operator")
-    with TaskProfiler("mult::operator"):
+    LOGGER.log_info_message("    mult::float_operator")
+    with TaskProfiler("mult::float_operator"):
         for rand_val in random_angles:
             radians = rand_val * 2.0
             radians = rand_val * 4.0
 
-    LOGGER.log_info_message("    mult::shifted")
-    with TaskProfiler("mult::shifted"):
+    LOGGER.log_info_message("    mult::float_shifted")
+    with TaskProfiler("mult::float_shifted"):
         for rand_val in random_angles:
             as_int = int(rand_val)
             radians = as_int << 1
             radians = as_int << 2
 
-    LOGGER.log_info_message("    div::operator")
-    with TaskProfiler("div::operator"):
+    LOGGER.log_info_message("    div::float_operator")
+    with TaskProfiler("div::float_operator"):
         for rand_val in random_angles:
             radians = rand_val / 2.0
             radians = rand_val / 4.0
 
-    LOGGER.log_info_message("    div::shifted")
-    with TaskProfiler("div::shifted"):
+    LOGGER.log_info_message("    div::float_shifted")
+    with TaskProfiler("div::float_shifted"):
         for rand_val in random_angles:
             as_int = int(rand_val)
             radians = as_int >> 1
             radians = as_int >> 2
+
+    LOGGER.log_info_message("    div::int_operator")
+    with TaskProfiler("div::int_operator"):
+        for rand_val in random_ints:
+            radians = rand_val / 2
+            radians = rand_val / 4
+
+    LOGGER.log_info_message("    div::int_shifted")
+    with TaskProfiler("div::int_shifted"):
+        for rand_val in random_ints:
+            radians = rand_val >> 1
+            radians = rand_val >> 2
 
 TaskProfiler.log(LOGGER)
 
