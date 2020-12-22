@@ -27,6 +27,21 @@ random_radians = [math.radians(random.randrange(
 random_ints = [random.randrange(0, 1000) for i in range(1, max_test_calls)]
 random_floats = [float(i) for i in random_ints]
 
+
+def mult_for_list(
+    num: float
+):
+    val = num * 2.0
+    val = num * 4.0
+
+
+def div_for_list(
+    num: float
+):
+    val = num / 2.0
+    val = num / 4.0
+
+
 for attempt in range(0, 4):
     LOGGER.log_info_message("Round #{}".format(attempt))
 
@@ -70,7 +85,7 @@ for attempt in range(0, 4):
         for rand_val in random_floats:
             radians = rand_val * 2.0
             radians = rand_val * 4.0
-    
+
     LOGGER.log_info_message("    div::float_operator")
     with TaskProfiler("div::float_operator"):
         for rand_val in random_floats:
@@ -83,46 +98,45 @@ for attempt in range(0, 4):
             as_int = int(rand_val)
             radians = as_int << 1
             radians = as_int << 2
-    
+
     LOGGER.log_info_message("    div::float_to_int_shifted")
     with TaskProfiler("div::float_to_int_shifted"):
         for rand_val in random_floats:
             as_int = int(rand_val)
             radians = as_int >> 1
             radians = as_int >> 2
-    
+
     LOGGER.log_info_message("    mult::int_shifted")
     with TaskProfiler("mult::int_shifted"):
         for rand_val in random_ints:
             radians = rand_val << 1
             radians = rand_val << 2
-    
+
     LOGGER.log_info_message("    mult::int_operator")
     with TaskProfiler("mult::int_operator"):
         for rand_val in random_ints:
             radians = rand_val * 2
             radians = rand_val * 4
 
-
     LOGGER.log_info_message("    div::int_operator")
     with TaskProfiler("div::int_operator"):
         for rand_val in random_ints:
             radians = rand_val / 2
             radians = rand_val / 4
-    
+
     LOGGER.log_info_message("    div::int_shifted")
     with TaskProfiler("div::int_shifted"):
         for rand_val in random_ints:
             radians = rand_val >> 1
             radians = rand_val >> 2
-    
+
     LOGGER.log_info_message("    mult::float_operator_list_comprehension")
     with TaskProfiler("mult::float_operator_list_comprehension"):
-        [(rand_val * 2.0, rand_val * 4.0) for rand_val in random_floats]
-    
+        [mult_for_list(rand_val) for rand_val in random_floats]
+
     LOGGER.log_info_message("    div::float_operator_list_comprehension")
     with TaskProfiler("div::float_operator_list_comprehension"):
-        [(rand_val / 2.0, rand_val / 4.0) for rand_val in random_floats]
+        [div_for_list(rand_val) for rand_val in random_floats]
 
 TaskProfiler.log(LOGGER)
 
