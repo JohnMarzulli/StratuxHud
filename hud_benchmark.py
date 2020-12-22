@@ -115,6 +115,14 @@ for attempt in range(0, 4):
         for rand_val in random_ints:
             radians = rand_val >> 1
             radians = rand_val >> 2
+    
+    LOGGER.log_info_message("    mult::float_operator_list_comprehension")
+    with TaskProfiler("mult::float_operator_list_comprehension"):
+        [(rand_val * 2.0, rand_val * 4.0) for rand_val in random_floats]
+    
+    LOGGER.log_info_message("    div::float_operator_list_comprehension")
+    with TaskProfiler("div::float_operator_list_comprehension"):
+        [(rand_val / 2.0, rand_val / 4.0) for rand_val in random_floats]
 
 TaskProfiler.log(LOGGER)
 
