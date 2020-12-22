@@ -25,6 +25,7 @@ random_radians = [math.radians(random.randrange(
     0, 360) + ((random.randrange(0, 9) / 10))) for i in range(1, max_test_calls)]
 
 random_ints = [random.randrange(0, 1000) for i in range(1, max_test_calls)]
+random_floats = [float(i) for i in random_ints]
 
 for attempt in range(0, 4):
     LOGGER.log_info_message("Round #{}".format(attempt))
@@ -66,35 +67,48 @@ for attempt in range(0, 4):
 
     LOGGER.log_info_message("    mult::float_operator")
     with TaskProfiler("mult::float_operator"):
-        for rand_val in random_angles:
+        for rand_val in random_floats:
             radians = rand_val * 2.0
             radians = rand_val * 4.0
-
-    LOGGER.log_info_message("    mult::float_shifted")
-    with TaskProfiler("mult::float_shifted"):
-        for rand_val in random_angles:
-            as_int = int(rand_val)
-            radians = as_int << 1
-            radians = as_int << 2
-
+    
     LOGGER.log_info_message("    div::float_operator")
     with TaskProfiler("div::float_operator"):
-        for rand_val in random_angles:
+        for rand_val in random_floats:
             radians = rand_val / 2.0
             radians = rand_val / 4.0
 
-    LOGGER.log_info_message("    div::float_shifted")
-    with TaskProfiler("div::float_shifted"):
-        for rand_val in random_angles:
+    LOGGER.log_info_message("    mult::float_to_int_shifted")
+    with TaskProfiler("mult::float_to_int_shifted"):
+        for rand_val in random_floats:
+            as_int = int(rand_val)
+            radians = as_int << 1
+            radians = as_int << 2
+    
+    LOGGER.log_info_message("    div::float_to_int_shifted")
+    with TaskProfiler("div::float_to_int_shifted"):
+        for rand_val in random_floats:
             as_int = int(rand_val)
             radians = as_int >> 1
             radians = as_int >> 2
+    
+    LOGGER.log_info_message("    mult::int_shifted")
+    with TaskProfiler("mult::int_shifted"):
+        for rand_val in random_ints:
+            radians = rand_val << 1
+            radians = rand_val << 2
+    
+    LOGGER.log_info_message("    mult::int_operator")
+    with TaskProfiler("mult::int_operator"):
+        for rand_val in random_ints:
+            radians = rand_val * 2
+            radians = rand_val * 4
+
 
     LOGGER.log_info_message("    div::int_operator")
     with TaskProfiler("div::int_operator"):
         for rand_val in random_ints:
-            radians = int(rand_val / 2)
-            radians = int(rand_val / 4)
+            radians = rand_val / 2
+            radians = rand_val / 4
     
     LOGGER.log_info_message("    div::int_shifted")
     with TaskProfiler("div::int_shifted"):
