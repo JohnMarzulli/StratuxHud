@@ -27,7 +27,6 @@ class TargetCount(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.task_timer = TaskTimer('TargetCount')
         self.__font__ = font
         center_y = framebuffer_size[1] >> 2
         text_half_height = int(font.get_height()) >> 1
@@ -41,7 +40,6 @@ class TargetCount(AhrsElement):
         framebuffer,
         orientation: AhrsData
     ):
-        self.task_timer.start()
         # Get the traffic, and bail out of we have none
 
         text = "NO TARGETS"
@@ -58,7 +56,6 @@ class TargetCount(AhrsElement):
 
         framebuffer.blit(
             texture, (self.__left_x__, self.__text_y_pos__))
-        self.task_timer.stop()
 
 
 if __name__ == '__main__':

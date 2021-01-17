@@ -5,8 +5,7 @@ from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
 from rendering import colors
 
-from views import utils
-from views.adsb_element import AdsbElement
+from views.adsb_element import AdsbElement, apply_declination
 from views.hud_elements import (get_heading_bug_x, get_reticle_size,
                                 max_target_bugs)
 
@@ -22,7 +21,6 @@ class AdsbTargetBugsOnly(AdsbElement):
         AdsbElement.__init__(
             self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size)
 
-        self.task_timer = TaskTimer('AdsbTargetBugs')
         self.__listing_text_start_y__ = int(self.__font__.get_height() * 4)
         self.__listing_text_start_x__ = int(
             self.__framebuffer_size__[0] * 0.01)
@@ -53,7 +51,7 @@ class AdsbTargetBugsOnly(AdsbElement):
 
         heading_bug_x = get_heading_bug_x(
             heading,
-            utils.apply_declination(traffic_report.bearing),
+            apply_declination(traffic_report.bearing),
             self.__pixels_per_degree_x__)
 
         try:
@@ -79,14 +77,12 @@ class AdsbTargetBugsOnly(AdsbElement):
     ):
         # Render a heading strip along the top
 
-        self.task_timer.start()
         heading = orientation.get_onscreen_projection_heading()
 
         # Get the traffic, and bail out of we have none
         traffic_reports = HudDataCache.get_reliable_traffic()
 
         if traffic_reports is None:
-            self.task_timer.stop()
             return
 
         reports_to_show = traffic_reports[:max_target_bugs]
@@ -97,8 +93,6 @@ class AdsbTargetBugsOnly(AdsbElement):
                 heading,
                 orientation,
                 framebuffer) for traffic_report in reports_to_show]
-
-        self.task_timer.stop()
 
 
 if __name__ == '__main__':

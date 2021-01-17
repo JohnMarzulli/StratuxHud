@@ -7,8 +7,6 @@ from rendering import colors
 
 from views.ahrs_element import AhrsElement
 
-TWO_PI = 2.0 * math.pi
-
 
 class RollIndicatorText(AhrsElement):
     def __init__(
@@ -18,7 +16,6 @@ class RollIndicatorText(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.task_timer = TaskTimer('RollIndicatorText')
         self.__roll_elements__ = {}
         self.__framebuffer_size__ = framebuffer_size
         self.__center__ = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
@@ -41,7 +38,6 @@ class RollIndicatorText(AhrsElement):
         framebuffer,
         orientation: AhrsData
     ):
-        self.task_timer.start()
         roll = int(orientation.roll)
         pitch = int(orientation.pitch)
         pitch_direction = ''
@@ -56,48 +52,10 @@ class RollIndicatorText(AhrsElement):
             colors.WHITE)
         texture_size = roll_texture.get_size()
         text_half_width, text_half_height = texture_size
-        text_half_width = int(text_half_width / 2)
+        text_half_width = text_half_width >> 1
         framebuffer.blit(
             roll_texture,
             (self.__center__[0] - text_half_width, self.__text_y_pos__))
-        self.task_timer.stop()
-
-
-def wrap_angle(
-    angle: float
-) -> float:
-    """
-    Wraps an angle (degrees) to be between 0.0 and 360
-    Arguments:
-        angle {float} -- The input angle
-    Returns: and value that is between 0 and 360, inclusive.
-    """
-
-    if angle < -360.0:
-        return wrap_angle(angle + 360.0)
-
-    if angle > 360.0:
-        return wrap_angle(angle - 360.0)
-
-    return angle
-
-
-def wrap_radians(
-    radians: float
-) -> float:
-    """
-    Wraps an angle that is in radians to be between 0.0 and 2Pi
-    Arguments:
-        angle {float} -- The input angle
-    Returns: and value that is between 0 and 2Pi, inclusive.
-    """
-    if radians < 0.0:
-        return wrap_radians(radians + TWO_PI)
-
-    if radians > TWO_PI:
-        return wrap_angle(radians - TWO_PI)
-
-    return radians
 
 
 class RollIndicator(AhrsElement):
@@ -108,7 +66,6 @@ class RollIndicator(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.task_timer = TaskTimer('RollIndicator')
         self.__framebuffer_size__ = framebuffer_size
         self.__center__ = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
         half_texture_height = int(font.get_height()) >> 1
@@ -118,8 +75,11 @@ class RollIndicator(AhrsElement):
         self.top_arc_squash = 0.75
         self.arc_angle_adjust = math.pi / 8.0
         self.roll_indicator_arc_radians = 0.03
-        self.arc_box = [self.__center__[0] - self.arc_radius, self.__center__[1] - (
-            self.arc_radius / 2), self.arc_radius * 2, (self.arc_radius * 2) * self.top_arc_squash]
+        self.arc_box = [
+            self.__center__[0] - self.arc_radius,
+            self.__center__[1] - (self.arc_radius >> 1),
+            self.arc_radius << 1,
+            (self.arc_radius << 1) * self.top_arc_squash]
         self.reference_line_size = 20
         self.reference_arc_box = [self.arc_box[0],
                                   self.arc_box[1] - self.reference_line_size,
@@ -127,9 +87,9 @@ class RollIndicator(AhrsElement):
                                   self.arc_box[3] - self.reference_line_size]
         self.smaller_reference_arc_box = [self.arc_box[0],
                                           self.arc_box[1] -
-                                          (self.reference_line_size/2),
+                                          (self.reference_line_size >> 1),
                                           self.arc_box[2],
-                                          self.arc_box[3] - (self.reference_line_size/2)]
+                                          self.arc_box[3] - (self.reference_line_size >> 1)]
         self.half_pi = math.pi / 2.0
 
     def render(
@@ -137,8 +97,6 @@ class RollIndicator(AhrsElement):
         framebuffer,
         orientation: AhrsData
     ):
-        self.task_timer.start()
-
         roll_in_radians = math.radians(orientation.roll)
 
         # Draws the reference arc
@@ -159,7 +117,7 @@ class RollIndicator(AhrsElement):
                 self.smaller_reference_arc_box,
                 reference_roll_in_radians - self.roll_indicator_arc_radians,
                 reference_roll_in_radians + self.roll_indicator_arc_radians,
-                int(self.reference_line_size / 2))
+                (self.reference_line_size >> 1))
 
         # Draw the REALLY important reference angles longer
         for roll_angle in [-90, -60, -45, 0, 45, 60, 90]:
@@ -180,8 +138,6 @@ class RollIndicator(AhrsElement):
             self.half_pi - roll_in_radians - self.roll_indicator_arc_radians,
             self.half_pi - roll_in_radians + self.roll_indicator_arc_radians,
             self.reference_line_size * 2)
-
-        self.task_timer.stop()
 
 
 if __name__ == '__main__':

@@ -1,9 +1,11 @@
 import threading
 from datetime import datetime
 
+from common_utils.task_timer import TaskProfiler
 from configuration import configuration
-from data_sources import traffic
 from rendering import colors
+
+from data_sources import traffic
 
 
 class HudDataCache(object):
@@ -21,13 +23,14 @@ class HudDataCache(object):
 
     @staticmethod
     def update_traffic_reports():
-        HudDataCache.__LOCK__.acquire()
+        with TaskProfiler("HudDataCache::update_traffic_reports"):
+            HudDataCache.__LOCK__.acquire()
 
-        try:
-            HudDataCache.RELIABLE_TRAFFIC = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
-            HudDataCache.IS_TRAFFIC_AVAILABLE = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.is_traffic_available()
-        finally:
-            HudDataCache.__LOCK__.release()
+            try:
+                HudDataCache.RELIABLE_TRAFFIC = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
+                HudDataCache.IS_TRAFFIC_AVAILABLE = traffic.AdsbTrafficClient.TRAFFIC_MANAGER.is_traffic_available()
+            finally:
+                HudDataCache.__LOCK__.release()
 
     @staticmethod
     def get_reliable_traffic() -> list:
@@ -37,12 +40,13 @@ class HudDataCache(object):
         Returns:
             list -- A list of the reliable traffic.
         """
-        traffic_clone = None
-        HudDataCache.__LOCK__.acquire()
-        try:
-            traffic_clone = HudDataCache.RELIABLE_TRAFFIC[:]
-        finally:
-            HudDataCache.__LOCK__.release()
+        with TaskProfiler("HudDataCache::get_reliable_traffic"):
+            traffic_clone = None
+            HudDataCache.__LOCK__.acquire()
+            try:
+                traffic_clone = HudDataCache.RELIABLE_TRAFFIC[:]
+            finally:
+                HudDataCache.__LOCK__.release()
 
         return traffic_clone
 
@@ -92,18 +96,19 @@ class HudDataCache(object):
         """
 
         # The second hardest problem in comp-sci...
-        textures_to_purge = []
-        HudDataCache.__LOCK__.acquire()
-        try:
-            now = datetime.utcnow()
-            textures_to_purge = [HudDataCache.__get_purge_key__(now, texture_key)
-                                 for texture_key in HudDataCache.__CACHE_ENTRY_LAST_USED__]
-            textures_to_purge = list(filter(lambda x: x is not None,
-                                            textures_to_purge))
-            [HudDataCache.__purge_texture__(texture_to_purge)
-             for texture_to_purge in textures_to_purge]
-        finally:
-            HudDataCache.__LOCK__.release()
+        with TaskProfiler("HudDataCache::purge_old_textures"):
+            textures_to_purge = []
+            HudDataCache.__LOCK__.acquire()
+            try:
+                now = datetime.utcnow()
+                textures_to_purge = [HudDataCache.__get_purge_key__(now, texture_key)
+                                     for texture_key in HudDataCache.__CACHE_ENTRY_LAST_USED__]
+                textures_to_purge = list(filter(lambda x: x is not None,
+                                                textures_to_purge))
+                [HudDataCache.__purge_texture__(texture_to_purge)
+                 for texture_to_purge in textures_to_purge]
+            finally:
+                HudDataCache.__LOCK__.release()
 
     @staticmethod
     def get_cached_text_texture(
@@ -132,22 +137,24 @@ class HudDataCache(object):
             [tuple] -- The texture and the size of the texture
         """
 
-        result = None
-        HudDataCache.__LOCK__.acquire()
-        try:
-            if text not in HudDataCache.TEXT_TEXTURE_CACHE or force_regen:
-                texture = font.render(text, True, text_color, background_color)
-                size = texture.get_size()
+        with TaskProfiler("HudDataCache::get_cached_text_texture"):
+            result = None
+            HudDataCache.__LOCK__.acquire()
+            try:
+                if text not in HudDataCache.TEXT_TEXTURE_CACHE or force_regen:
+                    texture = font.render(
+                        text, True, text_color, background_color)
+                    size = texture.get_size()
 
-                if use_alpha:
-                    texture = texture.convert()
+                    if use_alpha:
+                        texture = texture.convert_alpha()
 
-                HudDataCache.TEXT_TEXTURE_CACHE[text] = texture, size
+                    HudDataCache.TEXT_TEXTURE_CACHE[text] = texture, size
 
-            HudDataCache.__CACHE_ENTRY_LAST_USED__[
-                text] = datetime.utcnow()
-            result = HudDataCache.TEXT_TEXTURE_CACHE[text]
-        finally:
-            HudDataCache.__LOCK__.release()
+                HudDataCache.__CACHE_ENTRY_LAST_USED__[
+                    text] = datetime.utcnow()
+                result = HudDataCache.TEXT_TEXTURE_CACHE[text]
+            finally:
+                HudDataCache.__LOCK__.release()
 
         return result

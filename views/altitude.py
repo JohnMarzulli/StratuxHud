@@ -15,7 +15,6 @@ class Altitude(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.task_timer = TaskTimer('Altitude')
         self.__font__ = font
         center_y = framebuffer_size[1] >> 2
         text_half_height = int(font.get_height()) >> 1
@@ -27,7 +26,6 @@ class Altitude(AhrsElement):
         framebuffer,
         orientation: AhrsData
     ):
-        self.task_timer.start()
         is_altitude_valid = orientation.alt is not None and isinstance(
             orientation.alt,
             Number)
@@ -44,7 +42,6 @@ class Altitude(AhrsElement):
         framebuffer.blit(
             alt_texture,
             (self.__rhs__ - text_width, self.__text_y_pos__))
-        self.task_timer.stop()
 
 
 if __name__ == '__main__':

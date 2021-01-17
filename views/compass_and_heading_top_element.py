@@ -4,7 +4,6 @@ import pygame
 from common_utils.task_timer import TaskTimer
 from data_sources.ahrs_data import AhrsData
 
-from views import utils
 from views.ahrs_element import AhrsElement
 from views.hud_elements import *
 
@@ -17,7 +16,6 @@ class CompassAndHeadingTopElement(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.task_timer = TaskTimer('CompassAndHeadingTopElement')
         self.__framebuffer_size__ = framebuffer_size
         self.__center__ = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
         self.__long_line_width__ = self.__framebuffer_size__[0] * 0.2
@@ -72,8 +70,6 @@ class CompassAndHeadingTopElement(AhrsElement):
             self.__heading_strip__[
                 heading] = self.__generate_heading_strip__(heading)
 
-        self.__render_heading_mark_timer__ = TaskTimer("HeadingRender")
-
     def __generate_heading_strip__(
         self,
         heading: int
@@ -85,11 +81,9 @@ class CompassAndHeadingTopElement(AhrsElement):
 
             displayed_left = to_the_left
             displayed_right = to_the_right
-            if to_the_left < 0:
-                to_the_left += 360
 
-            if to_the_right > 360:
-                to_the_right -= 360
+            to_the_left = wrap_angle(to_the_left)
+            to_the_right = wrap_angle(to_the_right)
 
             if (displayed_left == 0) or ((displayed_left % 90) == 0):
                 line_x_left = self.__center_x__ - \
@@ -121,7 +115,7 @@ class CompassAndHeadingTopElement(AhrsElement):
 
         self.__render_heading_text__(
             framebuffer,
-            utils.apply_declination(heading),
+            apply_declination(heading),
             x_pos,
             self.compass_text_y)
 
@@ -133,8 +127,6 @@ class CompassAndHeadingTopElement(AhrsElement):
         """
         Renders the current heading to the HUD.
         """
-
-        self.task_timer.start()
 
         # Render a crude compass
         # Render a heading strip along the top
@@ -149,22 +141,21 @@ class CompassAndHeadingTopElement(AhrsElement):
 
         # Render the text that is showing our AHRS and GPS headings
         heading_y_pos = self.__font__.get_height() << 1
-        self.__render_hallow_heading_box__(
+        self.__render_hollow_heading_box__(
             orientation,
             framebuffer,
             heading_y_pos)
-        self.task_timer.stop()
 
-    def __render_hallow_heading_box__(
+    def __render_hollow_heading_box__(
         self,
         orientation: AhrsData,
         framebuffer,
         heading_y_pos: int
     ):
         heading_text = "{0} | {1}".format(
-            str(utils.apply_declination(
+            str(apply_declination(
                 orientation.get_onscreen_projection_display_heading())).rjust(3),
-            str(utils.apply_declination(
+            str(apply_declination(
                 orientation.get_onscreen_gps_heading())).rjust(3))
 
         rendered_text = self.__font__.render(

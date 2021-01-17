@@ -8,12 +8,12 @@ from common_utils import units
 from configuration import configuration
 from rendering import colors, display
 
-import views.utils as utils
-
 DEFAULT_FONT = "./assets/fonts/LiberationMono-Bold.ttf"
 
 SIN_RADIANS_BY_DEGREES = {}
 COS_RADIANS_BY_DEGREES = {}
+
+TWO_PI = 2.0 * math.pi
 
 max_target_bugs = 25
 imperial_occlude = units.yards_to_sm * 10
@@ -25,6 +25,68 @@ for degrees in range(-360, 361):
     radians = math.radians(degrees)
     SIN_RADIANS_BY_DEGREES[degrees] = math.sin(radians)
     COS_RADIANS_BY_DEGREES[degrees] = math.cos(radians)
+
+
+def wrap_angle(
+    angle: float
+) -> float:
+    """
+    Wraps an angle (degrees) to be between 0.0 and 360
+    Arguments:
+        angle {float} -- The input angle
+    Returns: and value that is between 0 and 360, inclusive.
+    """
+
+    if angle < 0.0:
+        return wrap_angle(angle + 360.0)
+
+    if angle > 360.0:
+        return wrap_angle(angle - 360.0)
+
+    return angle
+
+
+def wrap_radians(
+    radians: float
+) -> float:
+    """
+    Wraps an angle that is in radians to be between 0.0 and 2Pi
+    Arguments:
+        angle {float} -- The input angle
+    Returns: and value that is between 0 and 2Pi, inclusive.
+    """
+    if radians < 0.0:
+        return wrap_radians(radians + TWO_PI)
+
+    if radians > TWO_PI:
+        return wrap_radians(radians - TWO_PI)
+
+    return radians
+
+
+def apply_declination(
+    heading
+) -> int:
+    """
+    Returns a heading to display with the declination adjust to convert from true to magnetic.
+
+    Arguments:
+        heading {float} -- The TRUE heading.
+
+    Returns:
+        float -- The MAGNETIC heading.
+    """
+
+    try:
+        declination_applied = heading - configuration.CONFIGURATION.get_declination()
+        new_heading = int(declination_applied)
+    except:
+        # If the heading is the unknown '---' then the math wil fail.
+        return heading
+
+    new_heading = wrap_angle(new_heading)
+
+    return new_heading
 
 
 def get_reticle_size(
@@ -80,11 +142,7 @@ def get_heading_bug_x(
     """
 
     delta = (bearing - heading + 180)
-    if delta < 0:
-        delta += 360
-
-    if delta > 360:
-        delta -= 360
+    delta = wrap_angle(delta)
 
     return int(delta * degrees_per_pixel)
 
@@ -259,5 +317,6 @@ if __name__ == '__main__':
         x, y = get_onscreen_traffic_projection__(
             heading, pitch, roll, bearing, distance, altitude_delta, pixels_per_degree)
         print("    {0}, {1}".format(x + 400, y + 240))
-        print("TRUE: {0} -> {1} MAG".format(bearing,
-                                            utils.apply_declination(bearing)))
+        print("TRUE: {0} -> {1} MAG".format(
+            bearing,
+            apply_declination(bearing)))

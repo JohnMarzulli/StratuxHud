@@ -8,7 +8,7 @@ from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
 from rendering import colors
 
-from views import utils
+from views.hud_elements import apply_declination
 
 
 class AdsbElement(object):
@@ -118,7 +118,7 @@ class AdsbElement(object):
         if isinstance(compass, str):
             return None, None
 
-        horizontal_degrees_to_target = utils.apply_declination(
+        horizontal_degrees_to_target = apply_declination(
             traffic.bearing) - compass
 
         screen_y = -vertical_degrees_to_target * self.__pixels_per_degree_y__
@@ -219,7 +219,7 @@ class AdsbElement(object):
             delta_sign = '+'
         altitude_text = "{0}{1}".format(delta_sign, altitude_delta)
         bearing_text = "{0}".format(
-            int(utils.apply_declination(traffic_report.bearing)))
+            int(apply_declination(traffic_report.bearing)))
 
         return [bearing_text, distance_text, altitude_text]
 

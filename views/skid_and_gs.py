@@ -15,7 +15,6 @@ class SkidAndGs(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.task_timer = TaskTimer('SkidAndGs')
         self.__font__ = font
         center_y = framebuffer_size[1] >> 2
         text_half_height = int(font.get_height()) >> 1
@@ -28,7 +27,6 @@ class SkidAndGs(AhrsElement):
         framebuffer,
         orientation: AhrsData
     ):
-        self.task_timer.start()
         is_valid = isinstance(orientation.g_load, Number)
         g_load_text = "{0:.1f} Gs".format(
             orientation.g_load) if is_valid else orientation.g_load
@@ -42,7 +40,6 @@ class SkidAndGs(AhrsElement):
         framebuffer.blit(
             texture,
             (self.__rhs__ - text_width, self.__text_y_pos__))
-        self.task_timer.stop()
 
 
 if __name__ == '__main__':

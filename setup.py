@@ -3,7 +3,7 @@ from setuptools import setup
 from common_utils.local_debug import IS_PI
 
 installs = ['pytest',
-            'pygame',
+            'pygame==1.9.6',
             'requests']
 
 if IS_PI:
@@ -11,8 +11,8 @@ if IS_PI:
 
 setup(
     name='StratuxHud',
-    version='1.8.0',
-    python_requires='>=3.8',
+    version='2.0',
+    python_requires='>=3.7',
     description='Graphics for a Heads Up Display projector powered by a Stratux receiver.',
     url='https://github.com/JohnMarzulli/StratuxHud',
     author='John Marzulli',

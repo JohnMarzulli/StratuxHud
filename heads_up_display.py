@@ -9,8 +9,9 @@ import pygame
 import requests
 
 from common_utils import local_debug, system_tools
-from common_utils.task_timer import RollingStats, TaskTimer
-from common_utils.tasks import RecurringTask
+from common_utils.task_timer import (RollingStats, TaskProfiler, TaskTimer,
+                                     TimerRegistry)
+from common_utils.tasks import IntermittentTask, RecurringTask
 from configuration import configuration, configuration_server
 from configuration.configuration import CONFIGURATION
 from data_sources import aithre, targets
@@ -24,12 +25,12 @@ from rendering import colors, display
 # to be imported EVEN if the compiler tries to tell you
 # they are not needed.
 from views import (adsb_on_screen_reticles, adsb_target_bugs,
-                   adsb_target_bugs_only, adsb_traffic_listing,
-                   ahrs_not_available, altitude, artificial_horizon,
-                   compass_and_heading_bottom_element, groundspeed,
-                   heading_target_bugs, hud_elements, level_reference,
-                   roll_indicator, skid_and_gs, system_info, target_count,
-                   time, traffic_not_available)
+                   adsb_target_bugs_only, adsb_top_view_scope,
+                   adsb_traffic_listing, ahrs_not_available, altitude,
+                   artificial_horizon, compass_and_heading_bottom_element,
+                   groundspeed, heading_target_bugs, hud_elements,
+                   level_reference, roll_indicator, skid_and_gs, system_info,
+                   target_count, time, traffic_not_available)
 
 # TODO - Disable functionality based on the enabled StratuxCapabilities
 # TODO - Check for the key existence anyway... cross update the capabilities
@@ -171,7 +172,7 @@ class HeadsUpDisplay(object):
             is_ahrs_view = is_ahrs_view or hud_element.uses_ahrs()
 
         return is_ahrs_view
-    
+
     def get_hud_views(
         self
     ) -> list:
@@ -200,11 +201,8 @@ class HeadsUpDisplay(object):
         current_fps = 0  # initialize up front avoids exception
 
         try:
-            self.frame_setup.start()
             if not self.__handle_input__():
                 return False
-
-            render_times = []
 
             orientation = self.__aircraft__.get_orientation()
 
@@ -216,9 +214,6 @@ class HeadsUpDisplay(object):
             surface = pygame.display.get_surface()
             surface.fill(colors.BLACK)
 
-            self.frame_setup.stop()
-            self.render_perf.start()
-
             self.__render_view_title__(view_name, surface)
 
             # Order of drawing is important
@@ -229,39 +224,17 @@ class HeadsUpDisplay(object):
             # drawn with a black background
             # to overdraw the pitch lines
             # and improve readability
-            try:
-                render_times = [self.__ahrs_not_available_element__.render(surface, orientation)] if show_unavailable \
-                    else [self.__render_view_element__(hud_element, orientation) for hud_element in view]
-            except Exception as e:
-                self.warn("LOOP:" + str(e))
-            finally:
-                self.render_perf.stop()
-
-            self.frame_cleanup.start()
-            now = datetime.datetime.utcnow()
-
-            if (self.__last_perf_render__ is None) or (now - self.__last_perf_render__).total_seconds() > 60:
-                self.__last_perf_render__ = now
-
-                [self.log('RENDER, {}, {}'.format(now, element_times))
-                    for element_times in render_times]
-
-                [self.log('FRAME, {}, {}'.format(
-                    now,
-                    self.__frame_timers__[aspect].to_string()))
-                    for aspect in self.__frame_timers__.keys()]
-
-                self.log('OVERALL, {}, {}'.format(
-                    now,
-                    self.__fps__.to_string()))
-
-                self.log("-----------------------------------")
+            with TaskProfiler("Render::AllElements"):
+                try:
+                    [self.__ahrs_not_available_element__.render(surface, orientation)] if show_unavailable \
+                        else [self.__render_view_element__(hud_element, orientation) for hud_element in view]
+                except Exception as e:
+                    self.warn("LOOP:" + str(e))
 
             if self.__should_render_perf__:
-                debug_status_left = int(self.__width__ >> 1)
-                debug_status_top = int(self.__height__ * 0.2)
-                render_perf_text = '{} / {}fps'.format(
-                    self.render_perf.to_string(), current_fps)
+                debug_status_left = int(self.__width__ * 0.9)
+                debug_status_top = int(self.__height__ * 0.1)
+                render_perf_text = '{}fps'.format(current_fps)
 
                 self.__render_text__(
                     render_perf_text,
@@ -269,6 +242,9 @@ class HeadsUpDisplay(object):
                     debug_status_left,
                     debug_status_top,
                     colors.YELLOW)
+
+            self.__render_perf_task__.run()
+            self.__reset_perf_task__.run()
         finally:
             # Change the frame buffer
             if CONFIGURATION.flip_horizontal or CONFIGURATION.flip_vertical:
@@ -279,7 +255,7 @@ class HeadsUpDisplay(object):
                 surface.blit(flipped, [0, 0])
             pygame.display.update()
             self.__fps__.push(current_fps)
-            self.frame_cleanup.stop()
+
             clock.tick(configuration.MAX_FRAMERATE)
 
         return True
@@ -290,27 +266,15 @@ class HeadsUpDisplay(object):
         orientation: AhrsData
     ):
         element_name = str(hud_element)
+        element_name = element_name.split(" object")[0]
+        element_name = element_name.split('<')[-1]
 
-        try:
+        with TaskProfiler(element_name):
             surface = pygame.display.get_surface()
-            if element_name not in self.__view_element_timers:
-                self.__view_element_timers[element_name] = TaskTimer(
-                    element_name)
-
-            timer = self.__view_element_timers[element_name]
-            timer.start()
             try:
                 hud_element.render(surface, orientation)
             except Exception as e:
                 self.warn('ELEMENT {} EX:{}'.format(element_name, e))
-            timer.stop()
-            timer_string = timer.to_string()
-
-            return timer_string
-        except Exception as ex:
-            self.warn('__render_view_element__ EX:{}'.format(ex))
-
-            return 'Element View Timer Error:{}'.format(ex)
 
     def __render_text__(
         self,
@@ -505,9 +469,7 @@ class HeadsUpDisplay(object):
     def __purge_old_textures__(
         self
     ):
-        self.cache_perf.start()
         HudDataCache.purge_old_textures()
-        self.cache_perf.stop()
 
     def __update_traffic_reports__(
         self
@@ -523,10 +485,14 @@ class HeadsUpDisplay(object):
         if aithre.AithreClient.INSTANCE is not None:
             try:
                 aithre.AithreClient.INSTANCE.update_aithre()
-                self.log("Aithre updated")
 
             except Exception:
                 self.warn("Error attempting to update Aithre sensor values")
+
+    def __render_perf__(
+        self
+    ):
+        TaskProfiler.log(self.__logger__)
 
     def __init__(
         self,
@@ -536,24 +502,23 @@ class HeadsUpDisplay(object):
         Initialize and create a new HUD.
         """
 
-        self.__last_perf_render__ = None
+        self.__render_perf_task__ = IntermittentTask(
+            "Render Performance Data",
+            15.0,
+            self.__render_perf__,
+            logger)
+
+        self.__reset_perf_task__ = IntermittentTask(
+            "Reset Performance Data",
+            15 * 60,
+            TaskProfiler.reset,
+            logger)
+
         self.__logger__ = logger
-        self.__view_element_timers = {}
         self.__fps__ = RollingStats('FPS')
         self.__texture_cache_size__ = RollingStats('TextureCacheSize')
         self.__texture_cache_misses__ = RollingStats('TextureCacheMisses')
         self.__texture_cache_purges__ = RollingStats('TextureCachePurges')
-
-        self.render_perf = TaskTimer('Render')
-        self.frame_setup = TaskTimer('Setup')
-        self.frame_cleanup = TaskTimer('Cleanup')
-
-        self.__frame_timers__ = {
-            'Setup': self.frame_setup,
-            'Render': self.render_perf,
-            'Cleanup': self.frame_cleanup}
-
-        self.cache_perf = TaskTimer('Cache')
 
         self.__fps__.push(0)
 
@@ -633,15 +598,17 @@ class HeadsUpDisplay(object):
         text_width, text_height = texture.get_size()
 
         surface = pygame.display.get_surface()
-        surface.blit(texture, ((
-            self.__width__ >> 1) - (text_width >> 1), self.__detail_font__.get_height()))
+        surface.blit(
+            texture,
+            ((self.__width__ >> 1) - (text_width >> 1), self.__detail_font__.get_height()))
 
         y = (self.__height__ >> 2) + (self.__height__ >> 3)
         for text in disclaimer_text:
             texture = self.__detail_font__.render(text, True, colors.YELLOW)
             text_width, text_height = texture.get_size()
             surface.blit(
-                texture, ((self.__width__ >> 1) - (text_width >> 1), y))
+                texture,
+                ((self.__width__ >> 1) - (text_width >> 1), y))
             y += text_height + (text_height >> 3)
 
         texture = self.__detail_font__.render(

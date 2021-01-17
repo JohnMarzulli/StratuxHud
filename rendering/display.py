@@ -52,8 +52,8 @@ def display_init():
 
             try:
                 pygame.display.init()
-            except pygame.error:
-                print('Driver: {0} failed.'.format(driver))
+            except pygame.error as ex:
+                print('Driver: {0} failed. EX={1}'.format(driver, ex))
                 continue
 
             found = True

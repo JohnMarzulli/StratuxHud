@@ -3,8 +3,7 @@ from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
 
-from views import utils
-from views.adsb_element import AdsbElement
+from views.adsb_element import AdsbElement, apply_declination
 
 
 class AdsbTrafficListing(AdsbElement):
@@ -34,7 +33,6 @@ class AdsbTrafficListing(AdsbElement):
             font,
             framebuffer_size)
 
-        self.task_timer = TaskTimer('AdsbTargetBugs')
         self.__listing_text_start_y__ = int(self.__font__.get_height())
         self.__listing_text_start_x__ = int(
             self.__framebuffer_size__[0] * 0.01)
@@ -51,7 +49,7 @@ class AdsbTrafficListing(AdsbElement):
     ):
         identifier = report[0]
         try:
-            bearing = str(utils.apply_declination(float(report[1])))
+            bearing = str(apply_declination(float(report[1])))
         except:
             bearing = str(report[1])
         distance_text = report[2]
@@ -91,8 +89,7 @@ class AdsbTrafficListing(AdsbElement):
         if altitude_delta > 0:
             delta_sign = '+'
         altitude_text = "{0}{1}".format(delta_sign, altitude_delta)
-        bearing_text = "{0:.0f}".format(
-            utils.apply_declination(traffic.bearing))
+        bearing_text = "{0:.0f}".format(apply_declination(traffic.bearing))
 
         return [identifier, bearing_text, distance_text, altitude_text, traffic.icao_address]
 
@@ -132,13 +129,10 @@ class AdsbTrafficListing(AdsbElement):
     ):
         # Render a heading strip along the top
 
-        self.task_timer.start()
-
         # Get the traffic, and bail out of we have none
         traffic_reports = HudDataCache.get_reliable_traffic()
 
         if traffic_reports is None:
-            self.task_timer.stop()
             return
 
         # Render a list of traffic that we have positions
@@ -165,7 +159,6 @@ class AdsbTrafficListing(AdsbElement):
             framebuffer.blit(traffic_text_texture, (x_pos, y_pos))
 
             y_pos += self.__next_line_distance__
-        self.task_timer.stop()
 
 
 if __name__ == '__main__':

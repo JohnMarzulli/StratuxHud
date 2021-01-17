@@ -19,6 +19,15 @@
     },
     {
       "elements": [
+        "Groundspeed",
+        "Altitude",
+        "ADSB Scope",
+        "Traffic Not Available"
+      ],
+      "name": "Traffic Scope"
+    },
+    {
+      "elements": [
         "Compass",
         "ADSB Target Bugs Only",
         "ADSB Target Bugs",

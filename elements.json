@@ -11,6 +11,10 @@
     "class": "compass_and_heading_bottom_element.CompassAndHeadingBottomElement",
     "detail_font": true
   },
+  "Top Compass" :{
+    "class": "compass_and_heading_top_element.CompassAndHeadingTopElement",
+    "detail_font": true
+  },
   "ADSB Target Bugs": {
     "class": "adsb_target_bugs.AdsbTargetBugs",
     "detail_font": false
@@ -22,6 +26,10 @@
   "ADSB Reticles": {
     "class": "adsb_on_screen_reticles.AdsbOnScreenReticles",
     "detail_font": false
+  },
+  "ADSB Scope": {
+    "class": "adsb_top_view_scope.AdsbTopViewScope",
+    "detail_font": true
   },
   "Altitude": {
     "class": "altitude.Altitude",

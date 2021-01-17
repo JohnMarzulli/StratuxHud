@@ -12,7 +12,6 @@ class AhrsNotAvailable(object):
         font,
         framebuffer_size
     ):
-        self.task_timer = TaskTimer('AhrsNotAvailable')
         self.__not_available_lines__ = []
 
         width, height = framebuffer_size
@@ -32,7 +31,6 @@ class AhrsNotAvailable(object):
         available.
         """
 
-        self.task_timer.start()
         pygame.draw.line(
             framebuffer,
             self.__na_color__,
@@ -45,7 +43,6 @@ class AhrsNotAvailable(object):
             self.__not_available_lines__[1][0],
             self.__not_available_lines__[1][1],
             self.__na_line_width__)
-        self.task_timer.stop()
 
 
 if __name__ == '__main__':

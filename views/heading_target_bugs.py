@@ -9,9 +9,9 @@ from data_sources import norden, targets
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
 
-from views import utils
 from views.adsb_target_bugs import AdsbTargetBugs
-from views.hud_elements import get_heading_bug_x, get_reticle_size
+from views.hud_elements import (apply_declination, get_heading_bug_x,
+                                get_reticle_size)
 
 
 class HeadingAsTrafficObject(object):
@@ -47,7 +47,6 @@ class HeadingTargetBugs(AdsbTargetBugs):
             font,
             framebuffer_size)
 
-        self.task_timer = TaskTimer('HeadingTargetBugs')
         self.__listing_text_start_y__ = int(self.__font__.get_height())
         self.__listing_text_start_x__ = int(
             self.__framebuffer_size__[0] * 0.01)
@@ -90,7 +89,6 @@ class HeadingTargetBugs(AdsbTargetBugs):
     ):
         # Render a heading strip along the top
 
-        self.task_timer.start()
         heading = orientation.get_onscreen_projection_heading()
 
         # Get the traffic, and bail out of we have none
@@ -140,7 +138,7 @@ class HeadingTargetBugs(AdsbTargetBugs):
             self.__render_info_card__(
                 framebuffer,
                 "{0:.1f}".format(
-                    utils.apply_declination(bearing_to_target)),
+                    apply_declination(bearing_to_target)),
                 additional_info_text,
                 heading_bug_x,
                 False)
@@ -154,7 +152,7 @@ class HeadingTargetBugs(AdsbTargetBugs):
 
             heading_bug_x = get_heading_bug_x(
                 heading,
-                utils.apply_declination(as_traffic.bearing),
+                apply_declination(as_traffic.bearing),
                 self.__pixels_per_degree_x__)
 
             reticle, reticle_edge_position_y = self.get_below_reticle(
@@ -165,8 +163,6 @@ class HeadingTargetBugs(AdsbTargetBugs):
                 framebuffer,
                 colors.BLUE,
                 reticle)
-
-        self.task_timer.stop()
 
 
 if __name__ == '__main__':
