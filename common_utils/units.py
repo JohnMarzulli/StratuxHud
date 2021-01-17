@@ -275,6 +275,10 @@ def get_converted_units_string(
     '150.9 KM'
     >>> get_converted_units_string('metric', 165000, DISTANCE, False)
     '151 KM'
+    >>> get_converted_units_string('knots', 165000, DISTANCE, True)
+    '81.5 NM'
+    >>> get_converted_units_string('knots', 165000, DISTANCE, False)
+    '81 NM'
     >>> get_converted_units_string('statute', 165000, DISTANCE, False)
     '94 SM'
     >>> get_converted_units_string('statute', 5280, SPEED)
