@@ -33,7 +33,6 @@ class AdsbTrafficListing(AdsbElement):
             font,
             framebuffer_size)
 
-        self.task_timer = TaskTimer('AdsbTargetBugs')
         self.__listing_text_start_y__ = int(self.__font__.get_height())
         self.__listing_text_start_x__ = int(
             self.__framebuffer_size__[0] * 0.01)
@@ -130,13 +129,10 @@ class AdsbTrafficListing(AdsbElement):
     ):
         # Render a heading strip along the top
 
-        self.task_timer.start()
-
         # Get the traffic, and bail out of we have none
         traffic_reports = HudDataCache.get_reliable_traffic()
 
         if traffic_reports is None:
-            self.task_timer.stop()
             return
 
         # Render a list of traffic that we have positions
@@ -163,7 +159,6 @@ class AdsbTrafficListing(AdsbElement):
             framebuffer.blit(traffic_text_texture, (x_pos, y_pos))
 
             y_pos += self.__next_line_distance__
-        self.task_timer.stop()
 
 
 if __name__ == '__main__':

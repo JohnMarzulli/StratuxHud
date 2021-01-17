@@ -47,7 +47,6 @@ class HeadingTargetBugs(AdsbTargetBugs):
             font,
             framebuffer_size)
 
-        self.task_timer = TaskTimer('HeadingTargetBugs')
         self.__listing_text_start_y__ = int(self.__font__.get_height())
         self.__listing_text_start_x__ = int(
             self.__framebuffer_size__[0] * 0.01)
@@ -90,7 +89,6 @@ class HeadingTargetBugs(AdsbTargetBugs):
     ):
         # Render a heading strip along the top
 
-        self.task_timer.start()
         heading = orientation.get_onscreen_projection_heading()
 
         # Get the traffic, and bail out of we have none
@@ -165,8 +163,6 @@ class HeadingTargetBugs(AdsbTargetBugs):
                 framebuffer,
                 colors.BLUE,
                 reticle)
-
-        self.task_timer.stop()
 
 
 if __name__ == '__main__':

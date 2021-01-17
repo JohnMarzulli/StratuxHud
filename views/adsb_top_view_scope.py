@@ -1,10 +1,9 @@
-import math
 from datetime import datetime
 from numbers import Number
 
 import pygame
-from common_utils import local_debug, units
-from common_utils.task_timer import TaskTimer
+from common_utils import fast_math, local_debug, units
+from common_utils.task_timer import TaskProfiler
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
@@ -118,7 +117,7 @@ class ZoomTracker(object):
         super().__init__()
 
         self.__last_changed__ = datetime.utcnow()
-        self.__last_zoom__ = starting_zoom[0]
+        self.__last_zoom__ = starting_zoom
         self.__target_zoom__ = starting_zoom
 
     def set_target_zoom(
@@ -196,8 +195,6 @@ class AdsbTopViewScope(AdsbElement):
             font,
             framebuffer_size)
 
-        self.task_timer = TaskTimer('AdsbTopViewScope')
-
         self.__top_border__ = int(self.__height__ * 0.05)
         self.__bottom_border__ = self.__height__ - self.__top_border__
 
@@ -209,10 +206,24 @@ class AdsbTopViewScope(AdsbElement):
         # such that we can see aircraft sneeking up behind us, but not so much
         # that we loose to much fidelity in front of us.
         self.__scope_center__ = [self.__center__[0],
-                                 self.__center__[1] + (self.__center__[1] >> 1)]
+                                 self.__center__[1] + int(self.__center__[1] >> 1)]
 
         self.__zoom_tracker__ = ZoomTracker(
             AdsbTopViewScope.DEFAULT_SCOPE_RANGE)
+
+        size = self.__framebuffer_size__[1] * 0.04
+        half_size = int((size / 2.0) + 0.5)
+        quarter_size = int((size / 4.0) + 0.5)
+
+        self.__sin_half_pi__ = fast_math.SIN_BY_DEGREES[45]
+        self.__cos_half_pi__ = fast_math.COS_BY_DEGREES[45]
+
+        # 1 - Come up with the 0,0 based line coordinates
+        self.__target_indicator__ = [
+            [-quarter_size, half_size],
+            [0, -half_size],
+            [quarter_size, half_size]
+        ]
 
     def __get_maximum_scope_range__(
         self
@@ -221,7 +232,7 @@ class AdsbTopViewScope(AdsbElement):
         Get the maximum
 
         Returns:
-            int: [description]
+            (int, int): Tuple of the maximum distance for the scope, and the distance between each ring.
         """
         return AdsbTopViewScope.SCOPE_RANGES[:1][0]
 
@@ -240,29 +251,16 @@ class AdsbTopViewScope(AdsbElement):
             scale {float} -- The scale of the reticle relative to the screen.
         """
 
-        # TODO: Make the scale varibale.
-        size = self.__framebuffer_size__[1] * 0.04
-        half_size = int((size / 2.0) + 0.5)
-        quarter_size = int((size / 4.0) + 0.5)
-
-        # 1 - Come up with the 0,0 based line coordinates
-        target = [
-            [-quarter_size, half_size],
-            [0, -half_size],
-            [quarter_size, half_size]
-        ]
-
         # 2 - determine the angle of rotation compared to our "up"
         rotation = 360.0 - our_heading
         rotation = rotation + traffic_heading
-        rotation = wrap_angle(rotation + self.__adjustment__)
+        roation_degrees = int(wrap_angle(rotation + self.__adjustment__))
 
         # 3 - Rotate the zero-based points
-        rotation_radians = math.radians(rotation)
-        rotation_sin = math.sin(rotation_radians)
-        rotation_cos = math.cos(rotation_radians)
+        rotation_sin = fast_math.SIN_BY_DEGREES[roation_degrees]
+        rotation_cos = fast_math.COS_BY_DEGREES[roation_degrees]
         rotated_points = [[point[0] * rotation_cos - point[1] * rotation_sin,
-                           point[0] * rotation_sin + point[1] * rotation_cos] for point in target]
+                           point[0] * rotation_sin + point[1] * rotation_cos] for point in self.__target_indicator__]
 
         # 4 - Translate to the bug center point
         translated_points = [(point[0] + indicator_position[0],
@@ -305,9 +303,9 @@ class AdsbTopViewScope(AdsbElement):
         Returns:
             (int, int): The x,y coordinates in screen space.
         """
-        delta_angle_radians = math.radians(angle_degrees)
-        reticle_x = math.cos(delta_angle_radians)
-        reticle_y = math.sin(delta_angle_radians)
+        int_degs = int(fast_math.wrap_degrees(angle_degrees))
+        reticle_x = fast_math.COS_BY_DEGREES[int_degs]
+        reticle_y = fast_math.SIN_BY_DEGREES[int_degs]
         screen_x = (reticle_x * distance_pixels) + self.__scope_center__[0]
         screen_y = (reticle_y * distance_pixels) + self.__scope_center__[1]
 
@@ -318,7 +316,8 @@ class AdsbTopViewScope(AdsbElement):
         framebuffer,
         orientation: AhrsData,
         traffic: Traffic,
-        scope_range: float
+        scope_range: float,
+        first_ring_pixel_distance: int
     ):
         """
         Draws a single reticle on the screen.
@@ -327,6 +326,7 @@ class AdsbTopViewScope(AdsbElement):
             framebuffer {Surface} -- Render target
             orientation {Orientation} -- The orientation of the plane.
             traffic {Traffic} -- The traffic to draw the reticle for.
+            first_ring_pixel_distance {int} -- The distance (in pixels) from the ownship to the first scope ring. Used for clutter control.
         """
 
         display_distance = units.get_converted_units(
@@ -374,6 +374,11 @@ class AdsbTopViewScope(AdsbElement):
                 4,
                 4)
 
+        # Do not draw identifier text for any targets further than
+        # the first scope ring.
+        if pixels_from_center > first_ring_pixel_distance:
+            return
+
         if self.__draw_identifiers__:
             identifier = traffic.get_display_name()
 
@@ -386,9 +391,9 @@ class AdsbTopViewScope(AdsbElement):
                 False)
 
             # Half size to reduce text clutter
-            # rendered_text = pygame.transform.smoothscale(
-            #     rendered_text,
-            #     [size[0] >> 1, size[1] >> 1])
+            rendered_text = pygame.transform.smoothscale(
+                rendered_text,
+                [size[0] >> 1, size[1] >> 1])
 
             framebuffer.blit(
                 rendered_text,
@@ -408,7 +413,7 @@ class AdsbTopViewScope(AdsbElement):
             orientation (AhrsData): Our current AHRS data.
         """
         rendered_text, size = HudDataCache.get_cached_text_texture(
-            '{0:03d}'.format(orientation.get_heading()),
+            '{0:03}'.format(orientation.get_heading()),
             self.__font__,
             colors.GREEN,
             colors.BLACK,
@@ -462,7 +467,7 @@ class AdsbTopViewScope(AdsbElement):
         self,
         framebuffer: Surface,
         scope_range: (int, int)
-    ):
+    ) -> int:
         """
         Draws rings that indicate how far out another aircraft is.
         Each ring represents 5 units. The spacing will always be
@@ -470,6 +475,9 @@ class AdsbTopViewScope(AdsbElement):
 
         Args:
             framebuffer {Surface} -- The render target.
+
+        Returns:
+            int: The distance (in pixels from the center to the first ring. Used for clutter control.)
         """
 
         max_distance = scope_range[0]
@@ -477,9 +485,7 @@ class AdsbTopViewScope(AdsbElement):
         ring_distances = [max_distance]
         distance_units = configuration.CONFIGURATION.get_units()
         units_suffix = units.get_distance_unit_suffix(distance_units)
-        half_pi = math.radians(45)
-        sin_half_pi = math.sin(half_pi)
-        cos_half_pi = math.cos(half_pi)
+        ring_pixel_distances = []
 
         if step > 0:
             ring_distances = list(
@@ -499,12 +505,16 @@ class AdsbTopViewScope(AdsbElement):
                 self.__scope_center__,
                 radius_pixels,
                 2)
+            ring_pixel_distances.append(radius_pixels)
             distance_text = "{}{}".format(
                 int(distance),
                 units_suffix)
-            #pythag_dist = int(math.sqrt(2 * (radius_pixels * radius_pixels)))
-            text_pos = [self.__scope_center__[0] + int(sin_half_pi * radius_pixels),
-                        self.__scope_center__[1] - int(cos_half_pi * radius_pixels)]
+
+            text_x = self.__scope_center__[0] \
+                + int(self.__sin_half_pi__ * radius_pixels)
+            text_y = self.__scope_center__[1] \
+                - int(self.__cos_half_pi__ * radius_pixels)
+            text_pos = [text_x, text_y]
 
             rendered_text, size = HudDataCache.get_cached_text_texture(
                 distance_text,
@@ -522,6 +532,8 @@ class AdsbTopViewScope(AdsbElement):
             framebuffer.blit(
                 rendered_text,
                 text_pos)
+
+        return ring_pixel_distances[0]
 
     def __draw_compass_text__(
         self,
@@ -588,7 +600,7 @@ class AdsbTopViewScope(AdsbElement):
             orientation (AhrsData): [description]
 
         Returns:
-            [type]: [description]
+            (int, int): The maximum distance the scope will cover and the distance between each ring.
         """
         is_valid_groundspeed = orientation.groundspeed is not None and isinstance(
             orientation.groundspeed,
@@ -646,28 +658,30 @@ class AdsbTopViewScope(AdsbElement):
         # TODO: Investigate altitiude delta text
         # TODO: Try listing identifiers on side with lines leading to the aircraft
         # TODO: MORE TESTING!!!
-        self.task_timer.start()
 
-        scope_range = self.__get_scope_zoom__(orientation)
+        with TaskProfiler('AdsbTopViewScopeScopeZoomAndRange'):
+            scope_range = self.__get_scope_zoom__(orientation)
 
-        self.__render_heading_text__(framebuffer, orientation)
         self.__render_ownship__(framebuffer)
-        self.__draw_distance_rings__(framebuffer, scope_range)
-        self.__draw_all_compass_headings__(
-            framebuffer,
-            orientation,
-            scope_range[0])
+
+        with TaskProfiler('AdsbTopViewScopeRings'):
+            self.__render_heading_text__(framebuffer, orientation)
+            first_ring_pixel_radius = self.__draw_distance_rings__(
+                framebuffer, scope_range)
+            self.__draw_all_compass_headings__(
+                framebuffer,
+                orientation,
+                scope_range[0])
 
         # Get the traffic, and bail out of we have none
-        traffic_reports = HudDataCache.get_reliable_traffic()
-        traffic_reports.sort(
-            key=lambda traffic: traffic.distance,
-            reverse=True)
+        with TaskProfiler('AdsbTopViewScopeBugs'):
+            traffic_reports = HudDataCache.get_reliable_traffic()
+            traffic_reports.sort(
+                key=lambda traffic: traffic.distance,
+                reverse=True)
 
-        [self.__render_on_screen_target__(
-            framebuffer, orientation, traffic, scope_range[0]) for traffic in traffic_reports]
-
-        self.task_timer.stop()
+            [self.__render_on_screen_target__(
+                framebuffer, orientation, traffic, scope_range[0], first_ring_pixel_radius) for traffic in traffic_reports]
 
 
 if __name__ == '__main__':

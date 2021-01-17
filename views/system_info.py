@@ -180,7 +180,6 @@ class SystemInfo(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.task_timer = TaskTimer('Time')
         self.__font__ = font
         self.font_height = font.get_height()
         self.__text_y_pos__ = framebuffer_size[1] - self.font_height
@@ -243,8 +242,6 @@ class SystemInfo(AhrsElement):
         framebuffer,
         orientation: AhrsData
     ):
-        self.task_timer.start()
-
         self.__update_ip_timer__ -= 1
         if self.__update_ip_timer__ <= 0:
             self.__ip_address__ = get_ip_address()
@@ -292,8 +289,6 @@ class SystemInfo(AhrsElement):
 
             render_y = render_y - (self.font_height * self.__line_spacing__)
 
-        self.task_timer.stop()
-
 
 class Aithre(AhrsElement):
     def uses_ahrs(
@@ -315,7 +310,6 @@ class Aithre(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.task_timer = TaskTimer('Aithre')
         self.__font__ = font
         center_y = framebuffer_size[1] >> 2
         text_half_height = int(font.get_height()) >> 1
@@ -327,8 +321,6 @@ class Aithre(AhrsElement):
         framebuffer,
         orientation: AhrsData
     ):
-        self.task_timer.start()
-
         if AithreClient.INSTANCE is not None and configuration.CONFIGURATION.aithre_enabled:
             co_level = AithreClient.INSTANCE.get_co_report()
 
@@ -336,7 +328,6 @@ class Aithre(AhrsElement):
                 co_color = colors.RED
                 co_ppm_text = "OFFLINE"
             elif not co_level.has_been_connected:
-                self.task_timer.stop()
                 return
             else:
                 co_color = get_aithre_co_color(co_level.co)
@@ -348,7 +339,6 @@ class Aithre(AhrsElement):
 
             framebuffer.blit(
                 co_ppm_texture, (self.__lhs__, self.__text_y_pos__))
-        self.task_timer.stop()
 
 
 class Illyrian(AhrsElement):
@@ -375,7 +365,6 @@ class Illyrian(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.task_timer = TaskTimer('Illyrian')
         self.__font__ = font
         center_y = framebuffer_size[1] >> 2
         text_half_height = int(font.get_height()) >> 1
@@ -389,8 +378,6 @@ class Illyrian(AhrsElement):
         framebuffer,
         orientation: AhrsData
     ):
-        self.task_timer.start()
-
         if AithreClient.INSTANCE is not None and configuration.CONFIGURATION.aithre_enabled:
             report = AithreClient.INSTANCE.get_spo2_report()
             spo2_level = report.spo2
@@ -402,7 +389,6 @@ class Illyrian(AhrsElement):
                     spo2_color = colors.RED
                     spo2_text = "OFFLINE"
                 else:
-                    self.task_timer.stop()
                     return
             else:
                 spo2_color = get_illyrian_spo2_color(spo2_level)
@@ -420,8 +406,6 @@ class Illyrian(AhrsElement):
 
             framebuffer.blit(
                 heartbeat_texture, (self.__lhs__, self.__pulse_y_pos__))
-
-        self.task_timer.stop()
 
 
 if __name__ == '__main__':

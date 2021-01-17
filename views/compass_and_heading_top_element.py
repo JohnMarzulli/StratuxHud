@@ -16,7 +16,6 @@ class CompassAndHeadingTopElement(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.task_timer = TaskTimer('CompassAndHeadingTopElement')
         self.__framebuffer_size__ = framebuffer_size
         self.__center__ = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
         self.__long_line_width__ = self.__framebuffer_size__[0] * 0.2
@@ -70,8 +69,6 @@ class CompassAndHeadingTopElement(AhrsElement):
         for heading in range(0, 361):
             self.__heading_strip__[
                 heading] = self.__generate_heading_strip__(heading)
-
-        self.__render_heading_mark_timer__ = TaskTimer("HeadingRender")
 
     def __generate_heading_strip__(
         self,
@@ -131,8 +128,6 @@ class CompassAndHeadingTopElement(AhrsElement):
         Renders the current heading to the HUD.
         """
 
-        self.task_timer.start()
-
         # Render a crude compass
         # Render a heading strip along the top
 
@@ -150,7 +145,6 @@ class CompassAndHeadingTopElement(AhrsElement):
             orientation,
             framebuffer,
             heading_y_pos)
-        self.task_timer.stop()
 
     def __render_hollow_heading_box__(
         self,

@@ -231,7 +231,7 @@ def get_distance_unit_suffix(
 
 def get_converted_units_string(
     units: str,
-    distance: float,
+    raw_value: float,
     unit_type: str = DISTANCE,
     decimal_places: bool = True
 ) -> str:
@@ -241,7 +241,7 @@ def get_converted_units_string(
 
     Arguments:
         units {string} -- 'statute', 'knots', or 'metric'
-        distance {float} -- The raw measurement from the ADS-B receiver (yards).
+        raw_value {float} -- The raw measurement from the ADS-B receiver (yards).
 
     Keyword Arguments:
         unit_type {string} -- 'speed' or 'distance' (default: {DISTANCE})
@@ -250,60 +250,74 @@ def get_converted_units_string(
         string -- A string for display in the given units and type.
 
     >>> get_converted_units_string('statute', 165000, SPEED)
-    '94 MPH'
+    '094 MPH'
+    >>> get_converted_units_string('knots', 165000, SPEED)
+    '081 KTS'
+    >>> get_converted_units_string('metric', 165000, SPEED)
+    '151 KPH'
+    >>> get_converted_units_string('metric', 16500, SPEED)
+    '015 KPH'
     >>> get_converted_units_string('statute', 0, DISTANCE)
     '0 yards'
     >>> get_converted_units_string('statute', 0.0, DISTANCE, True)
     '0 yards'
     >>> get_converted_units_string('statute', 0, SPEED, False)
-    '0 MPH'
+    '000 MPH'
     >>> get_converted_units_string('statute', 0, SPEED, True)
-    '0 MPH'
+    '000 MPH'
     >>> get_converted_units_string('statute', 10, DISTANCE)
     '10 yards'
     >>> get_converted_units_string('statute', 165000, DISTANCE)
     '93.8 SM'
     >>> get_converted_units_string('statute', 165000, DISTANCE, True)
     '93.8 SM'
+    >>> get_converted_units_string('metric', 165000, DISTANCE, True)
+    '150.9 KM'
+    >>> get_converted_units_string('metric', 165000, DISTANCE, False)
+    '151 KM'
     >>> get_converted_units_string('statute', 165000, DISTANCE, False)
     '94 SM'
     >>> get_converted_units_string('statute', 5280, SPEED)
-    '3 MPH'
+    '003 MPH'
     >>> get_converted_units_string('statute', 5280, SPEED, False)
-    '3 MPH'
+    '003 MPH'
     >>> get_converted_units_string('statute', 5280, SPEED, True)
-    '3 MPH'
+    '003 MPH'
     >>> get_converted_units_string('statute', 5680, SPEED, True)
-    '3 MPH'
+    '003 MPH'
+    >>> get_converted_units_string('metric', 5680, SPEED, True)
+    '005 KPH'
+    >>> get_converted_units_string('metric', 5680, SPEED, False)
+    '005 KPH'
     """
 
     if units is None:
         units = STATUTE
 
     formatter_string = "{0:.1f}"
-    formatter_no_decimals = "{0:.0f}"
+    formatter_distance_no_decimals = "{0:.0f}"
+    formatter_speed_no_decimals = "{0:03.0f}"
 
-    if not decimal_places or unit_type is SPEED:
-        distance = int(distance)
-        formatter_string = formatter_no_decimals
+    is_speed = unit_type is SPEED
+
+    if not decimal_places or is_speed:
+        raw_value = int(raw_value)
+        formatter_string = formatter_speed_no_decimals if is_speed else formatter_distance_no_decimals
 
     with_units_formatter = formatter_string + " {1}"
 
     if units == METRIC:
-        conversion = distance / yards_to_km
+        conversion = raw_value / yards_to_km
 
-        if conversion < 0.5 and units != SPEED:
-            return with_units_formatter.format(conversion,  UNIT_LABELS[METRIC][unit_type])
-
-        return with_units_formatter.format(distance / yards_to_m, "m")
+        return with_units_formatter.format(conversion,  UNIT_LABELS[METRIC][unit_type])
 
     if units == NAUTICAL:
-        return with_units_formatter.format(distance / yards_to_nm, UNIT_LABELS[NAUTICAL][unit_type])
+        return with_units_formatter.format(raw_value / yards_to_nm, UNIT_LABELS[NAUTICAL][unit_type])
 
-    if distance < IMPERIAL_NEARBY and unit_type != SPEED:
-        return formatter_no_decimals.format(distance) + " yards"
+    if raw_value < IMPERIAL_NEARBY and not is_speed:
+        return formatter_distance_no_decimals.format(raw_value) + " yards"
 
-    return with_units_formatter.format(distance / yards_to_sm, UNIT_LABELS[STATUTE][unit_type])
+    return with_units_formatter.format(raw_value / yards_to_sm, UNIT_LABELS[STATUTE][unit_type])
 
 
 if __name__ == '__main__':

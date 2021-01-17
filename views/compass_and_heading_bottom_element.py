@@ -22,7 +22,7 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
             pixels_per_degree_y,
             font,
             framebuffer_size)
-        self.task_timer = TaskTimer('CompassAndHeadingBottomElement')
+
         self.__line_top__ = framebuffer_size[1] - self.line_height
         self.__line_bottom__ = framebuffer_size[1]
         self.heading_text_y = self.__line_top__ - (font.get_height() * 1.2)
@@ -34,8 +34,8 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
         self.__border_width__ = 4
         text_height = font.get_height()
         border_vertical_size = (text_height >> 1) + (text_height >> 2)
-        vertical_alignment_offset = int(
-            (border_vertical_size / 2.0) + 0.5) + self.__border_width__
+        vertical_alignment_offset = int((border_vertical_size >> 1) + 0.5) \
+            + self.__border_width__
         half_width = int(self.__heading_text__[360][1][0] * 3.5)
         self.__heading_text_box_lines__ = [
             [self.__center_x__ - half_width, self._heading_box_y_ -
@@ -74,8 +74,6 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
         Renders the current heading to the HUD.
         """
 
-        self.task_timer.start()
-
         # Render a crude compass
         # Render a heading strip along the top
 
@@ -94,7 +92,6 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
             orientation,
             framebuffer,
             self._heading_box_y_)
-        self.task_timer.stop()
 
 
 if __name__ == '__main__':

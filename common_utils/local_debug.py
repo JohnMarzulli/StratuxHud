@@ -46,7 +46,7 @@ def is_debug() -> bool:
     returns True if this should be run as a local debug (Mac or Windows).
     """
 
-    return os_platform in ["win32", "darwin"]
+    return (os_platform in ["win32", "darwin"]) or (IS_LINUX and not IS_PI)
 
 
 validate_python_version()
