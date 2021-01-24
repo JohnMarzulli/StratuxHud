@@ -1,5 +1,4 @@
 import pygame
-from common_utils.task_timer import TaskTimer
 from rendering import colors
 
 from views.ahrs_element import AhrsElement
@@ -13,17 +12,18 @@ class LevelReference(AhrsElement):
         font,
         framebuffer_size
     ):
+        super().__init__(font, framebuffer_size)
+
         self.level_reference_lines = []
 
         width = framebuffer_size[0]
-        center = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
 
         edge_proportion = int(width * 0.05)
 
-        artificial_horizon_level = [[int(width * 0.4),  center[1]],
-                                    [int(width * 0.6),  center[1]]]
-        left_hash = [[0, center[1]], [edge_proportion, center[1]]]
-        right_hash = [[width - edge_proportion, center[1]], [width, center[1]]]
+        artificial_horizon_level = [[int(width * 0.4),  self.__center__[1]],
+                                    [int(width * 0.6),  self.__center__[1]]]
+        left_hash = [[0, self.__center_y__], [edge_proportion, self.__center_y__]]
+        right_hash = [[width - edge_proportion, self.__center_y__], [width, self.__center_y__]]
 
         self.level_reference_lines.append(artificial_horizon_level)
         self.level_reference_lines.append(left_hash)

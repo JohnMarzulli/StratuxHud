@@ -3,7 +3,6 @@ import socket
 import subprocess
 
 from common_utils import local_debug
-from common_utils.task_timer import TaskTimer
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 from data_sources.aithre import AithreClient
@@ -180,18 +179,13 @@ class SystemInfo(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.__font__ = font
-        self.font_height = font.get_height()
-        self.__text_y_pos__ = framebuffer_size[1] - self.font_height
-        self.__rhs__ = int(0.9 * framebuffer_size[0])
+        super().__init__(font, framebuffer_size)
 
-        self.__left_x__ = int(framebuffer_size[0] * 0.01)
-        self.__center_x__ = framebuffer_size[0] >> 1
+        self.__text_y_pos__ = framebuffer_size[1] - self.__font_height__
         self.__update_ip_timer__ = 0
         self.__update_temp_timer__ = 0
         self.__ip_address__ = get_ip_address()
         self.__cpu_temp__ = None
-        self.__framebuffer_size__ = framebuffer_size
         self.__line_spacing__ = 1.01
 
     def __get_aithre_text_and_color__(
@@ -279,7 +273,7 @@ class SystemInfo(AhrsElement):
             # Draw the label in a standard color.
             texture_lhs = self.__font__.render(
                 line[0], True, colors.BLUE, colors.BLACK)
-            framebuffer.blit(texture_lhs, (0, render_y))
+            framebuffer.blit(texture_lhs, (self.__left_border__, render_y))
             size = texture_lhs.get_size()
 
             # Draw the value in the encoded colors.
@@ -287,7 +281,8 @@ class SystemInfo(AhrsElement):
                 line[1][0], True, line[1][1], colors.BLACK)
             framebuffer.blit(texture_rhs, (size[0], render_y))
 
-            render_y = render_y - (self.font_height * self.__line_spacing__)
+            render_y = render_y - \
+                (self.__font_height__ * self.__line_spacing__)
 
 
 class Aithre(AhrsElement):
@@ -310,11 +305,10 @@ class Aithre(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.__font__ = font
-        center_y = framebuffer_size[1] >> 2
-        text_half_height = int(font.get_height()) >> 1
-        self.__text_y_pos__ = center_y + (10 * text_half_height)
-        self.__lhs__ = 0
+        super().__init__(font, framebuffer_size)
+
+        self.__text_y_pos__ = self.__center_y__ + \
+            (10 * self.__font_half_height__)
 
     def render(
         self,
@@ -335,10 +329,14 @@ class Aithre(AhrsElement):
                 co_ppm_text = "{}{}".format(co_level.co, units_text)
 
             co_ppm_texture = self.__font__.render(
-                co_ppm_text, True, co_color, colors.BLACK)
+                co_ppm_text,
+                True,
+                co_color,
+                colors.BLACK)
 
             framebuffer.blit(
-                co_ppm_texture, (self.__lhs__, self.__text_y_pos__))
+                co_ppm_texture,
+                (self.__left_border__, self.__text_y_pos__))
 
 
 class Illyrian(AhrsElement):
@@ -365,12 +363,10 @@ class Illyrian(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.__font__ = font
-        center_y = framebuffer_size[1] >> 2
-        text_half_height = int(font.get_height()) >> 1
-        self.__text_y_pos__ = center_y + (6 * text_half_height)
-        self.__pulse_y_pos__ = center_y + (8 * text_half_height)
-        self.__lhs__ = 0
+        super().__init__(font, framebuffer_size)
+
+        self.__text_y_pos__ = self.__center_y__ + (6 * self.__font_half_height__)
+        self.__pulse_y_pos__ = self.__center_y__ + (8 * self.__font_half_height__)
         self.__has_been_connected__ = False
 
     def render(
@@ -402,10 +398,12 @@ class Illyrian(AhrsElement):
                 heartbeat_text, True, colors.GREEN, colors.BLACK)
 
             framebuffer.blit(
-                spo2_ppm_texture, (self.__lhs__, self.__text_y_pos__))
+                spo2_ppm_texture,
+                (self.__left_border__, self.__text_y_pos__))
 
             framebuffer.blit(
-                heartbeat_texture, (self.__lhs__, self.__pulse_y_pos__))
+                heartbeat_texture,
+                (self.__left_border__, self.__pulse_y_pos__))
 
 
 if __name__ == '__main__':

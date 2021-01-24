@@ -1,7 +1,6 @@
 from numbers import Number
 
 from common_utils import units
-from common_utils.task_timer import TaskTimer
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
@@ -17,14 +16,9 @@ class Groundspeed(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.__font__ = font
-        self.__font_height__ = font.get_height()
-        center_y = framebuffer_size[1] >> 2
-        text_half_height = int(self.__font_height__) >> 1
-        self.__text_y_pos__ = center_y - text_half_height
-        self.__rhs__ = int(0.9 * framebuffer_size[0])
+        super().__init__(font, framebuffer_size)
 
-        self.__left_x__ = 0  # WAS int(framebuffer_size[0] * 0.01)
+        self.__text_y_pos__ = (self.__center_y__>> 1) - self.__font_half_height__
 
     def render(
         self,
@@ -84,12 +78,12 @@ class Groundspeed(AhrsElement):
 
         framebuffer.blit(
             gs_texture,
-            (self.__left_x__, self.__text_y_pos__ + gs_position_adj))
+            (self.__left_border__, self.__text_y_pos__ + gs_position_adj))
 
         if ias_texture is not None:
             framebuffer.blit(
                 ias_texture,
-                (self.__left_x__, self.__text_y_pos__))
+                (self.__left_border__, self.__text_y_pos__))
 
 
 if __name__ == '__main__':

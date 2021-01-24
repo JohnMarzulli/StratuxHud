@@ -1,5 +1,4 @@
 import pygame
-from common_utils.task_timer import TaskTimer
 from data_sources.ahrs_data import AhrsData
 
 from views.ahrs_element import AhrsElement
@@ -64,13 +63,12 @@ class ArtificialHorizon(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.__framebuffer_size__ = framebuffer_size
-        self.__center__ = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
+        super().__init__(font, framebuffer_size)
+
         self.__long_line_width__ = self.__framebuffer_size__[0] * 0.4
         self.__short_line_width__ = self.__framebuffer_size__[0] * 0.2
         self.__pixels_per_degree_y__ = int(pixels_per_degree_y)
         self.__height__ = framebuffer_size[1]
-        self.__font__ = font
 
         self.__reference_angles__ = range(
             -degrees_of_pitch,

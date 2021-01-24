@@ -1,4 +1,3 @@
-from common_utils.task_timer import TaskTimer
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from rendering import colors
@@ -15,13 +14,9 @@ class TrafficNotAvailable(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.__font__ = font
-        font_height = font.get_height()
-        self.__text_y_pos__ = int(font_height * 0.7)
-        self.__rhs__ = int(0.9 * framebuffer_size[0])
+        super().__init__(font, framebuffer_size)
 
-        self.__left_x__ = int(framebuffer_size[0] * 0.01)
-        self.__center_x__ = framebuffer_size[0] >> 1
+        self.__text_y_pos__ = int(self.__font_height__ * 0.7)
 
     def render(
         self,

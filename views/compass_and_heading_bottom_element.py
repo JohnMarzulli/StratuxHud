@@ -1,7 +1,6 @@
 from numbers import Number
 
 import pygame
-from common_utils.task_timer import TaskTimer
 from data_sources.ahrs_data import AhrsData
 
 from views.compass_and_heading_top_element import CompassAndHeadingTopElement

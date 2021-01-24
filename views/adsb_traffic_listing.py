@@ -1,4 +1,3 @@
-from common_utils.task_timer import TaskTimer
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic

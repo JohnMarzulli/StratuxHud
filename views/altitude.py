@@ -1,6 +1,5 @@
 from numbers import Number
 
-from common_utils.task_timer import TaskTimer
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
 
@@ -15,11 +14,11 @@ class Altitude(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.__font__ = font
-        center_y = framebuffer_size[1] >> 2
-        text_half_height = int(font.get_height()) >> 1
-        self.__text_y_pos__ = center_y - text_half_height
-        self.__rhs__ = int(framebuffer_size[0])  # was 0.9
+        super().__init__(font, framebuffer_size)
+
+        alt_y_pos = self.__center_y__ >> 1
+
+        self.__text_y_pos__ = alt_y_pos - self.__font_half_height__
 
     def render(
         self,
@@ -41,7 +40,7 @@ class Altitude(AhrsElement):
 
         framebuffer.blit(
             alt_texture,
-            (self.__rhs__ - text_width, self.__text_y_pos__))
+            (self.__right_border__ - text_width, self.__text_y_pos__))
 
 
 if __name__ == '__main__':

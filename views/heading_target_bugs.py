@@ -4,7 +4,6 @@ View to render heading targets.
 
 import pygame
 from common_utils import units
-from common_utils.task_timer import TaskTimer
 from data_sources import norden, targets
 from data_sources.ahrs_data import AhrsData
 from rendering import colors

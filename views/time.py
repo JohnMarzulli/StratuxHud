@@ -1,4 +1,3 @@
-from common_utils.task_timer import TaskTimer
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
 
@@ -14,15 +13,10 @@ class Time(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.__font__ = font
-        font_height = font.get_height()
-        text_half_height = int(font_height) >> 1
-        self.__text_y_pos__ = framebuffer_size[1] - \
-            text_half_height - font_height
-        self.__rhs__ = int(0.9 * framebuffer_size[0])
+        super().__init__(font, framebuffer_size)
 
-        self.__left_x__ = int(framebuffer_size[0] * 0.01)
-        self.__center_x__ = framebuffer_size[0] >> 1
+        self.__text_y_pos__ = framebuffer_size[1] - \
+            self.__font_half_height__ - self.__font_height__
 
     def render(
         self,

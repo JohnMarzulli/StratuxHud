@@ -1,11 +1,11 @@
 from numbers import Number
 
 import pygame
-from common_utils.task_timer import TaskTimer
 from data_sources.ahrs_data import AhrsData
 
 from views.ahrs_element import AhrsElement
-from views.hud_elements import *
+from views.hud_elements import (apply_declination, colors,
+                                run_ahrs_hud_element, wrap_angle)
 
 
 class CompassAndHeadingTopElement(AhrsElement):
@@ -16,20 +16,19 @@ class CompassAndHeadingTopElement(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.__framebuffer_size__ = framebuffer_size
-        self.__center__ = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
+        super().__init__(font, framebuffer_size)
+
         self.__long_line_width__ = self.__framebuffer_size__[0] * 0.2
         self.__short_line_width__ = self.__framebuffer_size__[0] * 0.1
         self.__pixels_per_degree_y__ = pixels_per_degree_y
 
-        self.heading_text_y = int(font.get_height())
-        self.compass_text_y = int(font.get_height())
+        self.heading_text_y = self.__font_height__
+        self.compass_text_y = self.__font_height__
 
         self.pixels_per_degree_x = framebuffer_size[0] / 360.0
         cardinal_direction_line_proportion = 0.2
         self.line_height = int(
             framebuffer_size[1] * cardinal_direction_line_proportion)
-        self.__font__ = font
 
         self.__heading_text__ = {}
 
@@ -42,21 +41,20 @@ class CompassAndHeadingTopElement(AhrsElement):
             width, height = texture.get_size()
             self.__heading_text__[heading] = texture, (width >> 1, height >> 1)
 
-        text_height = font.get_height()
-        border_vertical_size = (text_height >> 1) + (text_height >> 2)
+        border_vertical_size = self.__font_half_height__ + (self.__font_height__ >> 2)
         half_width = int(self.__heading_text__[360][1][0] * 3.5)
 
         self.__center_x__ = self.__center__[0]
 
         self.__heading_text_box_lines__ = [
             [self.__center_x__ - half_width,
-             self.compass_text_y + (1.5 * text_height) - border_vertical_size],
+             self.compass_text_y + (1.5 * self.__font_height__) - border_vertical_size],
             [self.__center_x__ + half_width,
-             self.compass_text_y + (1.5 * text_height) - border_vertical_size],
+             self.compass_text_y + (1.5 * self.__font_height__) - border_vertical_size],
             [self.__center_x__ + half_width,
-             self.compass_text_y + (1.5 * text_height) + border_vertical_size],
+             self.compass_text_y + (1.5 * self.__font_height__) + border_vertical_size],
             [self.__center_x__ - half_width,
-             self.compass_text_y + (1.5 * text_height) + border_vertical_size]]
+             self.compass_text_y + (1.5 * self.__font_height__) + border_vertical_size]]
 
         self.__heading_strip_offset__ = {}
 

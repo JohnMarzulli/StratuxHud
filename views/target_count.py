@@ -1,4 +1,3 @@
-from common_utils.task_timer import TaskTimer
 from data_sources import targets
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
@@ -27,13 +26,9 @@ class TargetCount(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.__font__ = font
-        center_y = framebuffer_size[1] >> 2
-        text_half_height = int(font.get_height()) >> 1
-        self.__text_y_pos__ = center_y - text_half_height
-        self.__rhs__ = int(0.9 * framebuffer_size[0])
+        super().__init__(font, framebuffer_size)
 
-        self.__left_x__ = 0  # WAS int(framebuffer_size[0] * 0.01)
+        self.__text_y_pos__ = self.__center_y__ - self.__font_half_height__
 
     def render(
         self,
@@ -52,10 +47,14 @@ class TargetCount(AhrsElement):
         except Exception as e:
             text = "ERROR" + str(e)
 
-        texture = self.__font__.render(text, True, colors.WHITE, colors.BLACK)
+        texture = self.__font__.render(
+            text,
+            True,
+            colors.WHITE, colors.BLACK)
 
         framebuffer.blit(
-            texture, (self.__left_x__, self.__text_y_pos__))
+            texture,
+            (self.__left_border__, self.__text_y_pos__))
 
 
 if __name__ == '__main__':

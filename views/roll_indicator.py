@@ -1,7 +1,6 @@
 import math
 
 import pygame
-from common_utils.task_timer import TaskTimer
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
 
@@ -16,12 +15,10 @@ class RollIndicatorText(AhrsElement):
         font,
         framebuffer_size
     ):
+        super().__init__(font, framebuffer_size)
+
         self.__roll_elements__ = {}
-        self.__framebuffer_size__ = framebuffer_size
-        self.__center__ = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
-        half_texture_height = int(font.get_height()) >> 1
-        self.__font__ = font
-        self.__text_y_pos__ = self.__center__[1] - half_texture_height
+        self.__text_y_pos__ = self.__center_y__ - self.__font_half_height__
 
         for reference_angle in range(-180, 181):
             text = font.render(
@@ -55,7 +52,7 @@ class RollIndicatorText(AhrsElement):
         text_half_width = text_half_width >> 1
         framebuffer.blit(
             roll_texture,
-            (self.__center__[0] - text_half_width, self.__text_y_pos__))
+            (self.__center_x__ - text_half_width, self.__text_y_pos__))
 
 
 class RollIndicator(AhrsElement):
@@ -66,18 +63,16 @@ class RollIndicator(AhrsElement):
         font,
         framebuffer_size
     ):
-        self.__framebuffer_size__ = framebuffer_size
-        self.__center__ = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
-        half_texture_height = int(font.get_height()) >> 1
-        self.__font__ = font
-        self.__text_y_pos__ = self.__center__[1] - half_texture_height
+        super().__init__(font, framebuffer_size)
+
+        self.__text_y_pos__ = self.__center_y__ - self.__font_half_height__
         self.arc_radius = int(framebuffer_size[1] / 3)
         self.top_arc_squash = 0.75
         self.arc_angle_adjust = math.pi / 8.0
         self.roll_indicator_arc_radians = 0.03
         self.arc_box = [
-            self.__center__[0] - self.arc_radius,
-            self.__center__[1] - (self.arc_radius >> 1),
+            self.__center_x__ - self.arc_radius,
+            self.__center_y__ - (self.arc_radius >> 1),
             self.arc_radius << 1,
             (self.arc_radius << 1) * self.top_arc_squash]
         self.reference_line_size = 20

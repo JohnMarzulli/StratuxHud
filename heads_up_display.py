@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import datetime
 import json
 import sys
 from time import sleep
@@ -9,8 +8,7 @@ import pygame
 import requests
 
 from common_utils import local_debug, system_tools
-from common_utils.task_timer import (RollingStats, TaskProfiler, TaskTimer,
-                                     TimerRegistry)
+from common_utils.task_timer import RollingStats, TaskProfiler
 from common_utils.tasks import IntermittentTask, RecurringTask
 from configuration import configuration, configuration_server
 from configuration.configuration import CONFIGURATION
