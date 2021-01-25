@@ -17,15 +17,16 @@ class AdsbTargetBugsOnly(AdsbElement):
         font,
         framebuffer_size
     ):
-        AdsbElement.__init__(
-            self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size)
+        super().__init__(
+            degrees_of_pitch,
+            pixels_per_degree_y,
+            font,
+            framebuffer_size)
 
         self.__listing_text_start_y__ = int(self.__font__.get_height() * 4)
         self.__listing_text_start_x__ = int(
             self.__framebuffer_size__[0] * 0.01)
         self.__next_line_distance__ = int(font.get_height() * 1.5)
-        self.__top_border__ = 0
-        self.__bottom_border__ = self.__height__ - int(self.__height__ * 0.1)
 
     def __render_traffic_heading_bug__(
         self,

@@ -25,8 +25,7 @@ class AdsbTrafficListing(AdsbElement):
         font,
         framebuffer_size
     ):
-        AdsbElement.__init__(
-            self,
+        super().__init__(
             degrees_of_pitch,
             pixels_per_degree_y,
             font,
@@ -38,8 +37,6 @@ class AdsbTrafficListing(AdsbElement):
         self.__next_line_distance__ = int(font.get_height())
         self.__max_reports__ = int(
             (self.__height__ - self.__listing_text_start_y__) / self.__next_line_distance__) - 1
-        self.__top_border__ = int(self.__height__ * 0.2)
-        self.__bottom_border__ = self.__height__ - int(self.__height__ * 0.1)
 
     def __get_listing__(
         self,

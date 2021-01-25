@@ -16,8 +16,7 @@ class AdsbOnScreenReticles(AdsbElement):
         font,
         framebuffer_size
     ):
-        AdsbElement.__init__(
-            self,
+        super().__init__(
             degrees_of_pitch,
             pixels_per_degree_y,
             font,
@@ -27,8 +26,6 @@ class AdsbOnScreenReticles(AdsbElement):
         self.__listing_text_start_x__ = int(
             self.__framebuffer_size__[0] * 0.01)
         self.__next_line_distance__ = int(font.get_height() * 1.5)
-        self.__top_border__ = int(self.__height__ * 0.1)
-        self.__bottom_border__ = self.__height__ - self.__top_border__
 
     def __render_on_screen_reticle__(
         self,

@@ -1,4 +1,5 @@
 import math
+from views.ahrs_element import HudElement
 
 import pygame
 from common_utils import units
@@ -11,7 +12,7 @@ from rendering import colors
 from views.hud_elements import apply_declination
 
 
-class AdsbElement(object):
+class AdsbElement(HudElement):
     def uses_ahrs(
         self
     ) -> bool:
@@ -31,18 +32,12 @@ class AdsbElement(object):
         font,
         framebuffer_size
     ):
+        super().__init__(font, framebuffer_size)
+
         self.__roll_elements__ = {}
-        self.__framebuffer_size__ = framebuffer_size
-        self.__center__ = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
-        half_texture_height = int(font.get_height()) >> 1
-        self.__text_y_pos__ = self.__center__[1] - half_texture_height
-        self.__font__ = font
-        self.__top_border__ = int(framebuffer_size[1] * 0.5)
-        self.__bottom_border__ = framebuffer_size[1] - self.__top_border__
+        self.__text_y_pos__ = self.__center_y__ - self.__font_half_height__
         self.__pixels_per_degree_y__ = pixels_per_degree_y
         self.__pixels_per_degree_x__ = self.__framebuffer_size__[0] / 360.0
-        self.__height__ = framebuffer_size[1]
-        self.__width__ = framebuffer_size[0]
         self.start_fade_threshold = (
             configuration.CONFIGURATION.max_minutes_before_removal * 60) / 2
 

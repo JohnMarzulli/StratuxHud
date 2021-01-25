@@ -188,15 +188,11 @@ class AdsbTopViewScope(AdsbElement):
         font,
         framebuffer_size
     ):
-        AdsbElement.__init__(
-            self,
+        super().__init__(
             degrees_of_pitch,
             pixels_per_degree_y,
             font,
             framebuffer_size)
-
-        self.__top_border__ = int(self.__height__ * 0.05)
-        self.__bottom_border__ = self.__height__ - self.__top_border__
 
         self.__draw_identifiers__ = True
 
@@ -205,8 +201,8 @@ class AdsbTopViewScope(AdsbElement):
         # Make the center of the scope towards the bottome of the screen
         # such that we can see aircraft sneeking up behind us, but not so much
         # that we loose to much fidelity in front of us.
-        self.__scope_center__ = [self.__center__[0],
-                                 self.__center__[1] + int(self.__center__[1] >> 1)]
+        self.__scope_center__ = [self.__center_x__,
+                                 self.__center_y__ + int(self.__center_y__ >> 1)]
 
         self.__zoom_tracker__ = ZoomTracker(
             AdsbTopViewScope.DEFAULT_SCOPE_RANGE)
