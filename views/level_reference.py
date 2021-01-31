@@ -43,7 +43,7 @@ class LevelReference(AhrsElement):
             colors.WHITE,
             False,
             line,
-            6) for line in self.level_reference_lines]
+            int(self.__line_width__ * 1.5)) for line in self.level_reference_lines]
 
 
 if __name__ == '__main__':

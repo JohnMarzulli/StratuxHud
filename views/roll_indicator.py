@@ -75,7 +75,7 @@ class RollIndicator(AhrsElement):
             self.__center_y__ - (self.arc_radius >> 1),
             self.arc_radius << 1,
             (self.arc_radius << 1) * self.top_arc_squash]
-        self.reference_line_size = 20
+        self.reference_line_size = self.__line_width__ * 5
         self.reference_arc_box = [self.arc_box[0],
                                   self.arc_box[1] - self.reference_line_size,
                                   self.arc_box[2],
@@ -101,7 +101,7 @@ class RollIndicator(AhrsElement):
             self.arc_box,
             self.arc_angle_adjust,
             math.pi - self.arc_angle_adjust,
-            4)
+            self.__line_width__)
 
         # Draw the important reference angles
         for roll_angle in [-30, -15, 15, 30]:

@@ -171,7 +171,7 @@ class CompassAndHeadingTopElement(AhrsElement):
             colors.GREEN,
             True,
             self.__heading_text_box_lines__,
-            2)
+            self.__line_width__ >> 1)
 
     def __render_heading_text__(
         self,

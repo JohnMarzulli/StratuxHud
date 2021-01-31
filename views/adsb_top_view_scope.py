@@ -368,7 +368,7 @@ class AdsbTopViewScope(AdsbElement):
                 target_color,
                 (screen_x, screen_y),
                 4,
-                4)
+                4 >> 1)
 
         # Do not draw identifier text for any targets further than
         # the first scope ring.
@@ -438,7 +438,7 @@ class AdsbTopViewScope(AdsbElement):
             colors.GREEN,
             True,
             heading_text_box_lines,
-            2)
+            self.__line_width__ >> 1)
 
     def __render_ownship__(
         self,
@@ -500,7 +500,7 @@ class AdsbTopViewScope(AdsbElement):
                 colors.GREEN,
                 self.__scope_center__,
                 radius_pixels,
-                2)
+                self.__line_width__ >> 1)
             ring_pixel_distances.append(radius_pixels)
             distance_text = "{}{}".format(
                 int(distance),

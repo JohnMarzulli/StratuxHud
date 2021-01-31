@@ -120,13 +120,13 @@ class AdsbOnScreenReticles(AdsbElement):
             colors.BLACK,
             True,
             reticle_lines,
-            20)
+            self.__line_width__ * 5)
         pygame.draw.lines(
             framebuffer,
             colors.RED,
             True,
             reticle_lines,
-            10)
+            int(self.__line_width__ * 2.5))
 
     def __rotate_reticle__(
         self,

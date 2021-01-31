@@ -261,11 +261,10 @@ class AdsbElement(HudElement):
             edge_left -= diff
             edge_right = self.__framebuffer_size__[0]
 
-        pixel_border_size = 4
-        fill_top_left = [edge_left - pixel_border_size,
-                         info_position_y - pixel_border_size]
-        fill_top_right = [edge_right + pixel_border_size, fill_top_left[1]]
-        fill_bottom_right = [fill_top_right[0], info_position_y + pixel_border_size +
+        fill_top_left = [edge_left - self.__line_width__,
+                         info_position_y - self.__line_width__]
+        fill_top_right = [edge_right + self.__line_width__, fill_top_left[1]]
+        fill_bottom_right = [fill_top_right[0], info_position_y + self.__line_width__ +
                              int((len(additional_info_text) + 1) * info_spacing * text_height)]
         fill_bottom_left = [fill_top_left[0], fill_bottom_right[1]]
 
@@ -277,7 +276,7 @@ class AdsbElement(HudElement):
             colors.BLACK,
             True,
             [fill_top_left, fill_top_right, fill_bottom_right, fill_bottom_left],
-            6)
+            int(self.__line_width__ * 1.5))
 
         self.__render_info_text__(
             all_textures_and_sizes, center_x, framebuffer, info_position_y, info_spacing)
@@ -361,12 +360,12 @@ class AdsbElement(HudElement):
         if center_y > (self.__height__ - border_space):
             center_y = int(self.__height__ - border_space)
 
-        pygame.draw.lines(
+        pygame.draw.aalines(
             framebuffer,
             colors.RED,
             True,
             reticle_lines,
-            4)
+            self.__line_width__)
 
         # Move the identifer text away from the reticle
         if center_y < self.__center__[1]:

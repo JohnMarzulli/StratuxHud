@@ -81,7 +81,6 @@ class ArtificialHorizon(AhrsElement):
         self,
         framebuffer,
         line_info,
-        draw_line,
         roll: float
     ):
         """
@@ -90,13 +89,17 @@ class ArtificialHorizon(AhrsElement):
         Arguments:
             framebuffer {Surface} -- The target framebuffer to draw to.
             line_info {triplet} -- The line coords, center, and angle.
-            draw_line {function} -- The function to draw the line.
             rot_text {function} -- The function to rotate the text.
             roll {float} -- How much the plane is rolled.
         """
 
         line_coords, line_center, reference_angle = line_info
-        draw_line(framebuffer, colors.GREEN, False, line_coords, 4)
+        pygame.draw.lines(
+            framebuffer,
+            colors.GREEN,
+            False,
+            line_coords,
+            self.__line_width__)
 
         text, half_size = self.__pitch_elements__[reference_angle]
         roll = int(roll)
@@ -129,7 +132,6 @@ class ArtificialHorizon(AhrsElement):
         """
 
         # Creating aliases to the functions saves time...
-        draw_line = pygame.draw.lines
         pitch = orientation.pitch
         roll = orientation.roll
 
@@ -143,7 +145,7 @@ class ArtificialHorizon(AhrsElement):
             lambda center:
             center[1][1] >= 0 and center[1][1] <= self.__height__, lines_centers_and_angles))
 
-        [self.__render_reference_line__(framebuffer, line_info, draw_line, roll)
+        [self.__render_reference_line__(framebuffer, line_info, roll)
             for line_info in lines_centers_and_angles]
 
     def __get_line_coords__(

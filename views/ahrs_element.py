@@ -33,6 +33,8 @@ class HudElement(object):
         self.__font_height__ =  int(font.get_height())
         self.__font_half_height__ = int(self.__font_height__ >> 1)
 
+        self.__line_width__ = int((self.__height__ / 120) + 0.5)
+
     def uses_ahrs(
         self
     ) -> bool:
