@@ -101,3 +101,43 @@ def tan(
 ) -> float:
     clamped_degs = int(wrap_degrees(degrees))
     return TAN_BY_DEGREES[clamped_degs]
+
+
+def translate_points(
+    list_of_points: list,
+    translation: list
+) -> list:
+    return [[point[0] + translation[0],
+            point[1] + translation[1]] for point in list_of_points]
+
+
+def rotate_points(
+    list_of_points: list,
+    rotation_center: list,
+    rotation_degrees: float
+) -> list:
+    """Generates the coordinates for a reticle indicating
+    traffic is above use.
+
+    Arguments:
+        center_x {int} -- Center X screen position
+        center_y {int} -- Center Y screen position
+        scale {float} -- The scale of the reticle relative to the screen.
+    """
+
+    # 2 - determine the angle of rotation compared to our "up"
+    rotation_degrees = int(wrap_degrees(rotation_degrees))
+
+    detranslated_points = translate_points(
+        list_of_points,
+        [-rotation_center[0], -rotation_center[1]])
+
+    # 3 - Rotate the zero-based points
+    rotation_sin = SIN_BY_DEGREES[rotation_degrees]
+    rotation_cos = COS_BY_DEGREES[rotation_degrees]
+    rotated_points = [[point[0] * rotation_cos - point[1] * rotation_sin,
+                       point[0] * rotation_sin + point[1] * rotation_cos] for point in detranslated_points]
+
+    translated_points = translate_points(rotated_points, rotation_center)
+
+    return translated_points
