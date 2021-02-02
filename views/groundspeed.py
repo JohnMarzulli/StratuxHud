@@ -38,7 +38,16 @@ class Groundspeed(AhrsElement):
             decimal_places=False)
                 
         split_from_units = text.split(" ")
-        split_from_units.append(" " + type_of_speed)
+
+        # In the case of "---" or other
+        # result where the unit is missing
+        # add a blank item
+        # to the position of the speed-type
+        # indicator remains the same veritcally
+        if len(split_from_units) == 1:
+            split_from_units.append("")
+
+        split_from_units.append(type_of_speed)
 
         is_first = True
         text_with_scale_and_color = []
@@ -53,40 +62,64 @@ class Groundspeed(AhrsElement):
 
         return text_with_scale_and_color
     
-    def __draw_complex_text__(
+    def __render_text__(
+        self,
+        framebuffer,
+        text: str,
+        position: list,
+        color :list,
+        scale : float
+    ) -> list:
+        texture, size = HudDataCache.get_cached_text_texture(
+            text,
+            self.__font__,
+            color,
+            colors.BLACK,
+            True,
+            False)
+        
+        scaled_size = [int(size[0] * scale), int(size[1] * scale)]
+            
+        texture = pygame.transform.smoothscale(
+            texture,
+            scaled_size)
+        
+        framebuffer.blit(
+            texture,
+            position)
+        
+        return scaled_size
+
+    
+    def __render_speed_text__(
         self,
         framebuffer,
         starting_position: list,
         scale_text_color_list: list
     ):
-        current_x = starting_position[0]
-
-        # TODO - Make this more complex.
         # Take the speed and render it on the left at the given y
         # then take [1], render at the new X and given y
         # then take[2], render at same X as [1], moved down the split vertical
 
-        for (scale, text, color) in scale_text_color_list:
-            texture, size = HudDataCache.get_cached_text_texture(
-                text,
-                self.__font__,
-                color,
-                colors.BLACK,
-                True,
-                False)
-            
-            scaled_size = [int(size[0] * scale), int(size[1] * scale)]
-            
-            texture = pygame.transform.smoothscale(
-                texture,
-                scaled_size)
-            
-            framebuffer.blit(
-                texture,
-                (current_x, starting_position[1]))
-            
-            current_x += scaled_size[0]
+        speed_package = scale_text_color_list[0]
+        speed_size = self.__render_text__(
+            framebuffer,
+            speed_package[1],
+            starting_position,
+            speed_package[2],
+            speed_package[0])
+        
+        current_position = [starting_position[0] + speed_size[0], starting_position[1]]
 
+        for (scale, text, color) in scale_text_color_list[1:]:
+            info_size = self.__render_text__(
+                framebuffer,
+                text,
+                current_position,
+                color,
+                scale)
+
+            current_position[1] += info_size[1]
 
     def render(
         self,
@@ -117,13 +150,13 @@ class Groundspeed(AhrsElement):
 
         gs_position_adj = self.__font_height__ if is_valid_airspeed is not None else 0
 
-        self.__draw_complex_text__(
+        self.__render_speed_text__(
             framebuffer,
             [self.__left_border__, self.__text_y_pos__ + gs_position_adj],
             groundspeed_text)
         
         if airspeed_text is not None:
-            self.__draw_complex_text__(
+            self.__render_speed_text__(
                 framebuffer,
                 [self.__left_border__, self.__text_y_pos__],
                 airspeed_text)
