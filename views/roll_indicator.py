@@ -1,58 +1,9 @@
-import math
-
 import pygame
+from common_utils.fast_math import cos, rotate_points, sin, translate_points
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
 
 from views.ahrs_element import AhrsElement
-
-
-class RollIndicatorText(AhrsElement):
-    def __init__(
-        self,
-        degrees_of_pitch: float,
-        pixels_per_degree_y: float,
-        font,
-        framebuffer_size
-    ):
-        super().__init__(font, framebuffer_size)
-
-        self.__roll_elements__ = {}
-        self.__text_y_pos__ = self.__center_y__ - self.__font_half_height__
-
-        for reference_angle in range(-180, 181):
-            text = font.render(
-                "{0:3}".format(int(math.fabs(reference_angle))),
-                True,
-                colors.WHITE,
-                colors.BLACK)
-            size_x, size_y = text.get_size()
-            self.__roll_elements__[reference_angle] = (
-                text, (size_x >> 1, size_y >> 1))
-
-    def render(
-        self,
-        framebuffer,
-        orientation: AhrsData
-    ):
-        roll = int(orientation.roll)
-        pitch = int(orientation.pitch)
-        pitch_direction = ''
-        if pitch > 0:
-            pitch_direction = '+'
-        attitude_text = "{0}{1:3} | {2:3}".format(pitch_direction, pitch, roll)
-
-        roll_texture = self.__font__.render(
-            attitude_text,
-            True,
-            colors.BLACK,
-            colors.WHITE)
-        texture_size = roll_texture.get_size()
-        text_half_width, text_half_height = texture_size
-        text_half_width = text_half_width >> 1
-        framebuffer.blit(
-            roll_texture,
-            (self.__center_x__ - text_half_width, self.__text_y_pos__))
 
 
 class RollIndicator(AhrsElement):
@@ -66,73 +17,249 @@ class RollIndicator(AhrsElement):
         super().__init__(font, framebuffer_size)
 
         self.__text_y_pos__ = self.__center_y__ - self.__font_half_height__
-        self.arc_radius = int(framebuffer_size[1] / 3)
-        self.top_arc_squash = 0.75
-        self.arc_angle_adjust = math.pi / 8.0
-        self.roll_indicator_arc_radians = 0.03
-        self.arc_box = [
-            self.__center_x__ - self.arc_radius,
-            self.__center_y__ - (self.arc_radius >> 1),
-            self.arc_radius << 1,
-            (self.arc_radius << 1) * self.top_arc_squash]
-        self.reference_line_size = self.__line_width__ * 5
-        self.reference_arc_box = [self.arc_box[0],
-                                  self.arc_box[1] - self.reference_line_size,
-                                  self.arc_box[2],
-                                  self.arc_box[3] - self.reference_line_size]
-        self.smaller_reference_arc_box = [self.arc_box[0],
-                                          self.arc_box[1] -
-                                          (self.reference_line_size >> 1),
-                                          self.arc_box[2],
-                                          self.arc_box[3] - (self.reference_line_size >> 1)]
-        self.half_pi = math.pi / 2.0
+        self.arc_radius = int(self.__width__ / 3)
+        self.__indicator_arc_center__ = [
+            self.__center__[0],
+            self.__center__[1] + (self.arc_radius >> 2)]
+        self.__indicator_arc__ = self.__get_points_on_arc__(range(-60, 61, 5))
+
+        self.__zero_angle_triangle__ = self.__get_zero_angle_reference_shape__()
+        self.__current_angle_triangle__ = self.__get_current_angle_triangle_shape__()
+        self.__current_angle_box__ = self.__get_current_angle_box_shape__()
+        self.__arc_width__ = int(self.__line_width__ * 1.5)
+        self.__roll_angle_marks__ = self.__get_major_roll_indicator_marks__()
+
+    def __get_point_on_arc__(
+        self,
+        radius: int,
+        start_angle: int,
+    ) -> list:
+        """
+        Given an angle and a radius, calculate the x,y for the point on a circle.
+        Assumes a center of 0,0
+
+        Args:
+            radius (int): The radius of the circle/arc
+            start_angle (int): The angle to generate the point for.
+
+        Returns:
+            list: The x,y of the point on the circle.
+        """
+        point = [radius * sin(start_angle), radius * cos(start_angle)]
+
+        return point
+
+    def __get_points_on_arc__(
+        self,
+        angles: list
+    ) -> list:
+        """
+        Given a list of angles, generate the points for them
+        on the roll indicator arc.
+
+        Args:
+            angles (list): The list of points to get the circle points for.
+
+        Returns:
+            list: The list of points on the indicator arc.
+        """
+        segments = [self.__get_point_on_arc__(
+            self.arc_radius, start_angle - 180) for start_angle in angles]
+
+        return translate_points(segments, self.__indicator_arc_center__)
+
+    def __get_angle_mark_points__(
+        self
+    ) -> dict:
+        """
+        Get the list of line segments that define the angle indication marks.
+
+        Returns:
+            dict: A dictionary, keyed by angle, of where the indicator marks start.
+        """
+        angles = [-60, -30, 30, 60]
+        mark_start_points = self.__get_points_on_arc__(angles)
+
+        angle_and_start_points = {}
+        index = 0
+
+        for angle in angles:
+            angle_and_start_points[angle] = mark_start_points[index]
+            index += 1
+
+        return angle_and_start_points
+
+    def __get_arc_center__(
+        self
+    ) -> list:
+        """
+        Get the top-center point of the indicator arc (0 degrees)
+
+        Returns:
+            list: The x,y of the arc center/nuetral
+        """
+        return self.__get_points_on_arc__([0])[0]
+
+    def __get_zero_angle_reference_shape__(
+        self
+    ) -> list:
+        """
+        Generates the triangle shape that indicates the zero-roll/level
+        position on the indicator arc. It is intended to be shown
+        as a triangle, with the point facing down.
+        The position is to be with the point touching the arc,
+        with all points above the arc.
+
+        Returns:
+            list: A list of points that describe a closed shape.
+        """
+        zero_angle_triangle_size = int(self.__width__ * 0.01)
+        bottom_point = self.__get_arc_center__()[1]
+
+        bottom = bottom_point - (self.__line_width__ << 1) - 1
+        left = self.__center_x__ - zero_angle_triangle_size
+        right = self.__center_x__ + zero_angle_triangle_size
+        top = bottom - (zero_angle_triangle_size << 1) - \
+            (self.__line_width__ >> 1) - 1
+
+        return [[self.__center_x__, bottom], [left, top], [right, top]]
+
+    def __get_current_angle_triangle_shape__(
+        self
+    ) -> list:
+        """
+        Generates the triangle shape that indicates the current
+        roll along the indicator arc.
+        It is intended to be shown as a triangle, with the point facing up.
+        The position is to be with the point touching the arc.
+        All points would be below the arc.
+
+        Returns:
+            list: A list of points that describe a closed shape.
+        """
+        zero_angle_triangle_size = int(self.__width__ * 0.015)
+
+        top_point = self.__get_arc_center__()[1]
+        top = top_point + (self.__line_width__ << 1) + 1
+
+        bottom = top + (zero_angle_triangle_size << 1) + 1
+        left = self.__center_x__ - zero_angle_triangle_size
+        right = self.__center_x__ + zero_angle_triangle_size
+
+        return [[self.__center_x__, top], [left, bottom], [right, bottom]]
+
+    def __get_current_angle_box_shape__(
+        self
+    ) -> list:
+        """
+        Generates an "underline" box for the current angle indicator.
+        The positions is intended to be below the flat base
+        of the indicator triangle.
+
+        Returns:
+            list: A list of points that describe a closed shape.
+        """
+        zero_angle_triangle_size = int(self.__width__ * 0.015)
+
+        top_point = self.__get_arc_center__()[1]
+        top = top_point + (self.__line_width__ << 1) + 1
+
+        top = top + (zero_angle_triangle_size << 1) + \
+            int(self.__line_width__ * 1.5)
+        bottom = top + self.__line_width__
+        left = self.__center_x__ - zero_angle_triangle_size
+        right = self.__center_x__ + zero_angle_triangle_size
+
+        return [[left, top], [right, top], [right, bottom], [left, bottom]]
+
+    def __get_major_roll_indicator_marks__(
+        self
+    ) -> list:
+        """
+        Generates a list of line segments.
+        Each line segment describes an indicator mark for the
+        roll indicator arc.
+
+        The position of the marks is intended to start "on" the arc
+        and then procede to the top of the screen.
+        Each mark will be angled to match the roll angle.
+        For example, the 60deg mark is angled 60 away from verticle.
+
+        Returns:
+            list: A list containing line segments. Each segment is two points.
+        """
+
+        # What needs to happen:
+        # Build a dictionary that is keyed by angle.
+        # The value is the roll indicator line
+        # The line segment is calculated by:
+        # - Find the point on the circle for the roll
+        # - Define a line that starts at 0,0, then goes up the determined distance
+        # - Rotate the segment by the rotation
+        # - Translate the segment by the point on the circle
+        angles_and_start_points = self.__get_angle_mark_points__()
+
+        roll_angle_marks = []
+
+        for roll_angle in list(angles_and_start_points.keys()):
+            angle_mark_start = angles_and_start_points[roll_angle]
+            angle_mark_end = [0, int(self.arc_radius / 10)]
+
+            angle_mark_end = rotate_points(
+                [angle_mark_end], [0, 0], roll_angle)[0]
+            angle_mark_end[0] = angle_mark_end[0] + angle_mark_start[0]
+            angle_mark_end[1] = angle_mark_start[1] - angle_mark_end[1]
+
+            roll_angle_marks.append([angle_mark_start, angle_mark_end])
+
+        return roll_angle_marks
 
     def render(
         self,
         framebuffer,
         orientation: AhrsData
     ):
-        roll_in_radians = math.radians(orientation.roll)
-
-        # Draws the reference arc
-        pygame.draw.arc(
+        pygame.draw.lines(
             framebuffer,
-            colors.GREEN,
-            self.arc_box,
-            self.arc_angle_adjust,
-            math.pi - self.arc_angle_adjust,
-            self.__line_width__)
+            colors.WHITE,
+            False,
+            self.__indicator_arc__,
+            self.__arc_width__)
 
-        # Draw the important reference angles
-        for roll_angle in [-30, -15, 15, 30]:
-            reference_roll_in_radians = math.radians(roll_angle + 90.0)
-            pygame.draw.arc(
-                framebuffer,
-                colors.GREEN,
-                self.smaller_reference_arc_box,
-                reference_roll_in_radians - self.roll_indicator_arc_radians,
-                reference_roll_in_radians + self.roll_indicator_arc_radians,
-                (self.reference_line_size >> 1))
+        # Render the Zero line
+        pygame.draw.polygon(
+            framebuffer,
+            colors.WHITE,
+            self.__zero_angle_triangle__,
+            0)  # Make filled
 
-        # Draw the REALLY important reference angles longer
-        for roll_angle in [-90, -60, -45, 0, 45, 60, 90]:
-            reference_roll_in_radians = math.radians(roll_angle + 90.0)
-            pygame.draw.arc(
+        # Draw the important angle/roll step marks
+        for segment_start, segment_end in self.__roll_angle_marks__:
+            pygame.draw.line(
                 framebuffer,
-                colors.GREEN,
-                self.reference_arc_box,
-                reference_roll_in_radians - self.roll_indicator_arc_radians,
-                reference_roll_in_radians + self.roll_indicator_arc_radians,
-                self.reference_line_size)
+                colors.WHITE,
+                segment_start,
+                segment_end,
+                self.__line_width__)
 
         # Draws the current roll
-        pygame.draw.arc(
+        pygame.draw.polygon(
             framebuffer,
-            colors.YELLOW,
-            self.arc_box,
-            self.half_pi - roll_in_radians - self.roll_indicator_arc_radians,
-            self.half_pi - roll_in_radians + self.roll_indicator_arc_radians,
-            self.reference_line_size * 2)
+            colors.WHITE,
+            rotate_points(
+                self.__current_angle_triangle__,
+                self.__indicator_arc_center__,
+                orientation.roll),
+            0)  # Make filled
+
+        pygame.draw.polygon(
+            framebuffer,
+            colors.WHITE,
+            rotate_points(
+                self.__current_angle_box__,
+                self.__indicator_arc_center__,
+                orientation.roll),
+            0)  # Make filled
 
 
 if __name__ == '__main__':
