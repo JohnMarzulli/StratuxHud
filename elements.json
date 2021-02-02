@@ -53,7 +53,7 @@
   },
   "Traffic Not Available": {
     "class": "traffic_not_available.TrafficNotAvailable",
-    "detail_font": false
+    "detail_font": true
   },
   "Level Reference": {
     "class": "level_reference.LevelReference",
