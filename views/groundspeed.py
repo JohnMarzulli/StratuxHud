@@ -18,18 +18,68 @@ class Groundspeed(AhrsElement):
     ):
         super().__init__(font, framebuffer_size)
 
-        self.__text_y_pos__ = (self.__center_y__>> 1) - self.__font_half_height__
+        self.__text_y_pos__ = (self.__center_y__ >> 1) - \
+            self.__font_half_height__
+        self.__speed_units__ = configuration.CONFIGURATION.__get_config_value__(
+            configuration.Configuration.DISTANCE_UNITS_KEY,
+            units.STATUTE)
+
+    def __get_indicated_text__(
+        self,
+        speed,
+        type_of_speed: str,
+        color: list
+    ) -> list:
+        """
+        Given a speed, generate a list of text description pacakges
+        that will result in the speed and annotations
+        being rendered
+
+        Args:
+            speed (float, str): The speed we are going. Will be float if a number, str if a form of "inop"
+            type_of_speed (str): The type of speed annotation. GND or IAS
+            color (list): The color to render the speed and annotations.
+
+        Returns:
+            list: A list of text description packages.
+        """
+
+        text = speed if isinstance(speed, str) else units.get_converted_units_string(
+            self.__speed_units__,
+            speed,
+            unit_type=units.SPEED,
+            decimal_places=False)
+
+        split_from_units = text.split(" ")
+
+        # In the case of "---" or other
+        # result where the unit is missing
+        # add a blank item
+        # to the position of the speed-type
+        # indicator remains the same veritcally
+        if len(split_from_units) == 1:
+            split_from_units.append("")
+
+        split_from_units.append(type_of_speed)
+
+        is_first = True
+        text_with_scale_and_color = []
+
+        for text_piece in split_from_units:
+            scale = 1.0 if is_first else 0.5
+            package = [scale, text_piece, color]
+
+            text_with_scale_and_color.append(package)
+
+            is_first = False
+
+        return text_with_scale_and_color
 
     def render(
         self,
         framebuffer,
         orientation: AhrsData
     ):
-        speed_units = configuration.CONFIGURATION.__get_config_value__(
-            configuration.Configuration.DISTANCE_UNITS_KEY,
-            units.STATUTE)
-
-        airspeed_text = None
         is_valid_airspeed = orientation.is_avionics_source and isinstance(
             orientation.airspeed,
             Number)
@@ -37,53 +87,34 @@ class Groundspeed(AhrsElement):
             orientation.groundspeed,
             Number)
 
-        airspeed_text = units.get_converted_units_string(
-            speed_units,
-            orientation.airspeed * units.feet_to_nm,
-            unit_type=units.SPEED,
-            decimal_places=False) if is_valid_airspeed else None
-
-        groundspeed_text = units.get_converted_units_string(
-            speed_units,
-            (orientation.groundspeed * units.yards_to_nm),
-            unit_type=units.SPEED,
-            decimal_places=False) if is_valid_groundspeed else orientation.groundspeed
-
-        groundspeed_text += " GND"
-
-        if airspeed_text is not None:
-            airspeed_text += " IAS"
-            ias_len = len(airspeed_text)
-            gnd_len = len(groundspeed_text)
-            max_len = gnd_len if ias_len < gnd_len else ias_len
-            airspeed_text = airspeed_text.rjust(max_len)
-            groundspeed_text = groundspeed_text.rjust(max_len)
-
         gs_display_color = colors.WHITE if is_valid_groundspeed and orientation.gps_online else colors.RED
         airspeed_color = colors.WHITE if is_valid_airspeed else colors.RED
 
-        ias_texture = self.__font__.render(
-            airspeed_text,
-            True,
-            airspeed_color,
-            colors.BLACK) if airspeed_text is not None else None
+        airspeed_text = self.__get_indicated_text__(
+            orientation.airspeed * units.feet_to_nm,
+            "IAS",
+            airspeed_color) if is_valid_airspeed else None
 
-        gs_texture = self.__font__.render(
-            groundspeed_text,
-            True,
-            gs_display_color,
-            colors.BLACK)
+        shown_gs = orientation.groundspeed * \
+            units.yards_to_nm if is_valid_groundspeed else orientation.groundspeed
 
-        gs_position_adj = self.__font_height__ if ias_texture is not None else 0
+        groundspeed_text = self.__get_indicated_text__(
+            shown_gs,
+            "GND",
+            gs_display_color)
 
-        framebuffer.blit(
-            gs_texture,
-            (self.__left_border__, self.__text_y_pos__ + gs_position_adj))
+        gs_position_adj = self.__font_height__ if is_valid_airspeed is not None else 0
 
-        if ias_texture is not None:
-            framebuffer.blit(
-                ias_texture,
-                (self.__left_border__, self.__text_y_pos__))
+        self.__render_text_with_stacked_annotations__(
+            framebuffer,
+            [self.__left_border__, self.__text_y_pos__ + gs_position_adj],
+            groundspeed_text)
+
+        if airspeed_text is not None:
+            self.__render_text_with_stacked_annotations__(
+                framebuffer,
+                [self.__left_border__, self.__text_y_pos__],
+                airspeed_text)
 
 
 if __name__ == '__main__':
