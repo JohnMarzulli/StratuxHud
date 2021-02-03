@@ -58,8 +58,21 @@ class HudElement(object):
         text: str,
         position: list,
         color: list,
-        scale: float
+        scale: float = 1.0
     ) -> list:
+        """
+        Renders the given text at the position, color, and scale given.
+
+        Args:
+            framebuffer: The surface to render to.
+            text (str): The text to render.
+            position (list): The upper-left hand corner position to render the text at
+            color (list): The foreground color of the text.
+            scale (float): Any size adjustment (proportion) to adjust the render by.
+
+        Returns:
+            list: The size of the rendered text.
+        """
         texture, size = HudDataCache.get_cached_text_texture(
             text,
             self.__font__,
@@ -86,6 +99,22 @@ class HudElement(object):
         starting_position: list,
         scale_text_color_list: list
     ):
+        """
+        Renders text such that the main text is left most,
+        and any additional text packages are rendered to its
+        immediate right, but stacked on top of each other.
+        The position of the stacked text is based on the width
+        of the main text.
+        The first annotation is veritically positioned at the given y,
+        with each additional annotation being moved down by the vertical size
+        of the previous annotation.
+
+        Args:
+            framebuffer: The surface to render the text to.
+            starting_position (list): The starting upper-left hand position to render the text at.
+            scale_text_color_list (list): A list of text description packages.
+        """
+
         # Take the speed and render it on the left at the given y
         # then take [1], render at the new X and given y
         # then take[2], render at same X as [1], moved down the split vertical
