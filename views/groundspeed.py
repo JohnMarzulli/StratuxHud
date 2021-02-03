@@ -30,6 +30,20 @@ class Groundspeed(AhrsElement):
         type_of_speed: str,
         color: list
     ) -> list:
+        """
+        Given a speed, generate a list of text description pacakges
+        that will result in the speed and annotations
+        being rendered
+
+        Args:
+            speed (float, str): The speed we are going. Will be float if a number, str if a form of "inop"
+            type_of_speed (str): The type of speed annotation. GND or IAS
+            color (list): The color to render the speed and annotations.
+
+        Returns:
+            list: A list of text description packages.
+        """
+
         text = speed if isinstance(speed, str) else units.get_converted_units_string(
             self.__speed_units__,
             speed,
