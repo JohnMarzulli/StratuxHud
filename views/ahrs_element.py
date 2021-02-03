@@ -2,6 +2,10 @@
 Base class for AHRS view elements.
 """
 
+import pygame
+from data_sources.data_cache import HudDataCache
+from rendering import colors
+
 
 class HudElement(object):
     def __init__(
@@ -14,14 +18,15 @@ class HudElement(object):
         border_margin = 0.01
 
         self.__font__ = font
-        
+
         self.__framebuffer_size__ = framebuffer_size
         self.__center__ = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
 
         self.__width__ = framebuffer_size[0]
         self.__height__ = framebuffer_size[1]
 
-        self.__right_border__ = int((1.0 - border_margin) * framebuffer_size[0])
+        self.__right_border__ = int((1.0 - border_margin)
+                                    * framebuffer_size[0])
         self.__left_border__ = int(framebuffer_size[0] * border_margin)
 
         self.__top_border__ = int(self.__height__ * border_margin)
@@ -30,7 +35,7 @@ class HudElement(object):
         self.__center_x__ = framebuffer_size[0] >> 1
         self.__center_y__ = framebuffer_size[1] >> 1
 
-        self.__font_height__ =  int(font.get_height())
+        self.__font_height__ = int(font.get_height())
         self.__font_half_height__ = int(self.__font_height__ >> 1)
 
         self.__line_width__ = int((self.__height__ / 120) + 0.5)
@@ -47,6 +52,66 @@ class HudElement(object):
 
         return False
 
+    def __render_text__(
+        self,
+        framebuffer,
+        text: str,
+        position: list,
+        color: list,
+        scale: float
+    ) -> list:
+        texture, size = HudDataCache.get_cached_text_texture(
+            text,
+            self.__font__,
+            color,
+            colors.BLACK,
+            True,
+            False)
+
+        scaled_size = [int(size[0] * scale), int(size[1] * scale)]
+
+        texture = pygame.transform.smoothscale(
+            texture,
+            scaled_size)
+
+        framebuffer.blit(
+            texture,
+            position)
+
+        return scaled_size
+
+    def __render_text_with_stacked_annotations__(
+        self,
+        framebuffer,
+        starting_position: list,
+        scale_text_color_list: list
+    ):
+        # Take the speed and render it on the left at the given y
+        # then take [1], render at the new X and given y
+        # then take[2], render at same X as [1], moved down the split vertical
+
+        speed_package = scale_text_color_list[0]
+        speed_size = self.__render_text__(
+            framebuffer,
+            speed_package[1],
+            starting_position,
+            speed_package[2],
+            speed_package[0])
+
+        current_position = [starting_position[0] + speed_size[0],
+                            starting_position[1]]
+
+        for (scale, text, color) in scale_text_color_list[1:]:
+            info_size = self.__render_text__(
+                framebuffer,
+                text,
+                current_position,
+                color,
+                scale)
+
+            current_position[1] += info_size[1]
+
+
 class AhrsElement(HudElement):
     GPS_UNAVAILABLE_TEXT = "NO GPS"
     INOPERATIVE_TEXT = "INOP"
@@ -57,7 +122,7 @@ class AhrsElement(HudElement):
         framebuffer_size
     ) -> None:
         super().__init__(font, framebuffer_size)
-    
+
     def uses_ahrs(
         self
     ) -> bool:
