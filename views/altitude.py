@@ -20,6 +20,37 @@ class Altitude(AhrsElement):
 
         self.__text_y_pos__ = alt_y_pos - self.__font_half_height__
 
+    def __get_indicated_text__(
+        self,
+        orientation: AhrsData,
+        color: list
+    ) -> list:
+        is_altitude_valid = orientation.alt is not None and isinstance(
+            orientation.alt,
+            Number)
+
+        text_package = []
+        alt_value = str(int(orientation.alt)) \
+            if is_altitude_valid else AhrsElement.INOPERATIVE_TEXT
+        color = colors.WHITE if is_altitude_valid else colors.RED
+
+        text_package.append(alt_value)
+        text_package.append("ft " if is_altitude_valid else "   ")
+        text_package.append("MSL")
+
+        is_first = True
+        text_with_scale_and_color = []
+
+        for text_piece in text_package:
+            scale = 1.0 if is_first else 0.5
+            package = [scale, text_piece, color]
+
+            text_with_scale_and_color.append(package)
+
+            is_first = False
+
+        return text_with_scale_and_color
+
     def render(
         self,
         framebuffer,
@@ -28,19 +59,12 @@ class Altitude(AhrsElement):
         is_altitude_valid = orientation.alt is not None and isinstance(
             orientation.alt,
             Number)
-        altitude_text = str(int(orientation.alt)) + \
-            "' MSL" if is_altitude_valid else AhrsElement.INOPERATIVE_TEXT
         color = colors.WHITE if is_altitude_valid else colors.RED
-        alt_texture = self.__font__.render(
-            altitude_text,
-            True,
-            color,
-            colors.BLACK)
-        text_width, text_height = alt_texture.get_size()
-
-        framebuffer.blit(
-            alt_texture,
-            (self.__right_border__ - text_width, self.__text_y_pos__))
+        annotated_text = self.__get_indicated_text__(orientation, color)
+        self.__render_text_with_stacked_annotations_right_justified__(
+            framebuffer,
+            [self.__right_border__, self.__text_y_pos__],
+            annotated_text)
 
 
 if __name__ == '__main__':
