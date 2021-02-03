@@ -1,6 +1,5 @@
 from datetime import datetime
 
-import pygame
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from rendering import colors
@@ -30,28 +29,19 @@ class TrafficNotAvailable(AhrsElement):
     ):
         if HudDataCache.IS_TRAFFIC_AVAILABLE:
             return
-        
+
         current_time = datetime.utcnow()
         is_shown = (current_time.second % 2) == 0
 
         if not is_shown:
             return
 
-        (texture, size) = HudDataCache.get_cached_text_texture(
+        self.__render_text__(
+            framebuffer,
             "ERROR: ADS-B IN",
-            self.__font__,
-            text_color=colors.RED,
-            background_color=colors.BLACK,
-            use_alpha=True)
-
-        # Half size to reduce text clutter
-        rendered_text = pygame.transform.smoothscale(
-            texture,
-            [size[0] >> 1, size[1] >> 1])
-
-        framebuffer.blit(
-            rendered_text,
-            self.__position__)
+            self.__position__,
+            colors.RED,
+            0.5)
 
 
 if __name__ == '__main__':
