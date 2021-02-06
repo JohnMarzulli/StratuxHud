@@ -1,5 +1,6 @@
 from datetime import datetime
 from numbers import Number
+from typing import Tuple
 
 import pygame
 from common_utils import fast_math, local_debug, units
@@ -112,7 +113,7 @@ class ZoomTracker(object):
 
     def __init__(
         self,
-        starting_zoom: (int,  int)
+        starting_zoom: Tuple[int, int]
     ) -> None:
         super().__init__()
 
@@ -122,7 +123,7 @@ class ZoomTracker(object):
 
     def set_target_zoom(
         self,
-        new_target_zoom: (int, int)
+        new_target_zoom: Tuple[int, int]
     ):
         if new_target_zoom is None:
             return
@@ -223,7 +224,7 @@ class AdsbTopViewScope(AdsbElement):
 
     def __get_maximum_scope_range__(
         self
-    ) -> (int, int):
+    ) -> Tuple[int, int]:
         """
         Get the maximum
 
@@ -281,7 +282,7 @@ class AdsbTopViewScope(AdsbElement):
         self,
         angle_degrees: float,
         distance_pixels: float
-    ) -> (int, int):
+    ) -> Tuple[int, int]:
         """
         Given an angle (0 is straight up, 180 is straight down), and a distance
         returns a x,y coordinate that locates the point FROM THE CENTER of the screen.
@@ -462,7 +463,7 @@ class AdsbTopViewScope(AdsbElement):
     def __draw_distance_rings__(
         self,
         framebuffer: Surface,
-        scope_range: (int, int)
+        scope_range: Tuple[int, int]
     ) -> int:
         """
         Draws rings that indicate how far out another aircraft is.
@@ -587,7 +588,7 @@ class AdsbTopViewScope(AdsbElement):
     def __get_scope_range__(
         self,
         orientation: AhrsData
-    ) -> (int, int):
+    ) -> Tuple[int, int]:
         """
         Given a ground speed, figure out how far the scope should be.
         This is done by figuring out how far you will be in 10 minutes
@@ -632,7 +633,7 @@ class AdsbTopViewScope(AdsbElement):
     def __get_scope_zoom__(
         self,
         orientation: AhrsData
-    ) -> (float, float):
+    ) -> Tuple[float, float]:
         ideal_range = self.__get_scope_range__(orientation)
         self.__zoom_tracker__.set_target_zoom(ideal_range)
 
