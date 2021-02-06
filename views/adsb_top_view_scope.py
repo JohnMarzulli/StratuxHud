@@ -17,6 +17,7 @@ from rendering import colors
 
 from views.adsb_element import AdsbElement
 
+
 def clamp(
     minimum,
     value,
@@ -242,8 +243,8 @@ class AdsbTopViewScope(AdsbElement):
         half_size = int((size / 2.0) + 0.5)
         quarter_size = int((size / 4.0) + 0.5)
 
-        self.__sin_half_pi__ = fast_math.SIN_BY_DEGREES[45]
-        self.__cos_half_pi__ = fast_math.COS_BY_DEGREES[45]
+        self.__sin_half_pi__ = fast_math.SIN_BY_DEGREES[30]
+        self.__cos_half_pi__ = fast_math.COS_BY_DEGREES[30]
 
         # 1 - Come up with the 0,0 based line coordinates
         self.__target_indicator__ = [
@@ -281,7 +282,8 @@ class AdsbTopViewScope(AdsbElement):
         # 2 - determine the angle of rotation compared to our "up"
         rotation = 360.0 - our_heading
         rotation = rotation + traffic_heading
-        roation_degrees = int(fast_math.wrap_degrees(rotation + self.__adjustment__))
+        roation_degrees = int(fast_math.wrap_degrees(
+            rotation + self.__adjustment__))
 
         # 3 - Rotate the zero-based points
         rotation_sin = fast_math.SIN_BY_DEGREES[roation_degrees]
@@ -533,9 +535,6 @@ class AdsbTopViewScope(AdsbElement):
                 radius_pixels,
                 self.__line_width__ >> 1)
             ring_pixel_distances.append(radius_pixels)
-            distance_text = "{}{}".format(
-                int(distance),
-                units_suffix)
 
             text_x = self.__scope_center__[0] \
                 + int(self.__sin_half_pi__ * radius_pixels)
@@ -543,22 +542,10 @@ class AdsbTopViewScope(AdsbElement):
                 - int(self.__cos_half_pi__ * radius_pixels)
             text_pos = [text_x, text_y]
 
-            rendered_text, size = HudDataCache.get_cached_text_texture(
-                distance_text,
-                self.__font__,
-                colors.GREEN,
-                colors.BLACK,
-                False,
-                False)
-
-            # Half size to reduce text clutter
-            rendered_text = pygame.transform.scale(
-                rendered_text,
-                [size[0] >> 1, size[1] >> 1])
-
-            framebuffer.blit(
-                rendered_text,
-                text_pos)
+            self.__render_text_with_stacked_annotations__(
+                framebuffer,
+                text_pos,
+                [[1.0, str(int(distance)), colors.GREEN], [0.5, units_suffix, colors.GREEN]])
 
         return ring_pixel_distances[0]
 
