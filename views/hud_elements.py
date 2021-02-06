@@ -203,8 +203,10 @@ def run_adsb_hud_element(
     from data_sources import ahrs_simulation, traffic
     from data_sources.data_cache import HudDataCache
 
-    simulated_traffic = [traffic.SimulatedTraffic(
-    ), traffic.SimulatedTraffic(), traffic.SimulatedTraffic()]
+    simulated_traffic = [
+        traffic.SimulatedTraffic(),
+        traffic.SimulatedTraffic(),
+        traffic.SimulatedTraffic()]
 
     clock = pygame.time.Clock()
 
