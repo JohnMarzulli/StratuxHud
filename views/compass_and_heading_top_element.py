@@ -1,11 +1,11 @@
 from numbers import Number
 
 import pygame
+from common_utils import fast_math
 from data_sources.ahrs_data import AhrsData
 
 from views.ahrs_element import AhrsElement
-from views.hud_elements import (apply_declination, colors,
-                                run_ahrs_hud_element, wrap_angle)
+from views.hud_elements import apply_declination, colors, run_ahrs_hud_element
 
 
 class CompassAndHeadingTopElement(AhrsElement):
@@ -80,8 +80,8 @@ class CompassAndHeadingTopElement(AhrsElement):
             displayed_left = to_the_left
             displayed_right = to_the_right
 
-            to_the_left = wrap_angle(to_the_left)
-            to_the_right = wrap_angle(to_the_right)
+            to_the_left = fast_math.wrap_degrees(to_the_left)
+            to_the_right = fast_math.wrap_degrees(to_the_right)
 
             if (displayed_left == 0) or ((displayed_left % 90) == 0):
                 line_x_left = self.__center_x__ - \

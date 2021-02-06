@@ -16,8 +16,6 @@ from data_sources.traffic import Traffic
 from rendering import colors
 
 from views.adsb_element import AdsbElement
-from views.hud_elements import wrap_angle
-
 
 def clamp(
     minimum,
@@ -283,7 +281,7 @@ class AdsbTopViewScope(AdsbElement):
         # 2 - determine the angle of rotation compared to our "up"
         rotation = 360.0 - our_heading
         rotation = rotation + traffic_heading
-        roation_degrees = int(wrap_angle(rotation + self.__adjustment__))
+        roation_degrees = int(fast_math.wrap_degrees(rotation + self.__adjustment__))
 
         # 3 - Rotate the zero-based points
         rotation_sin = fast_math.SIN_BY_DEGREES[roation_degrees]
@@ -373,7 +371,7 @@ class AdsbTopViewScope(AdsbElement):
         delta_angle = traffic.bearing - delta_angle
         # We need to rotate by 270 to make sure that
         # the orientation is correct AND to correct the phase.
-        delta_angle = wrap_angle(
+        delta_angle = fast_math.wrap_degrees(
             AdsbTopViewScope.ROTATION_PHASE_SHIFT + delta_angle)
 
         # Find where to draw the reticle....
@@ -574,7 +572,7 @@ class AdsbTopViewScope(AdsbElement):
         delta_angle = heading_to_draw - our_heading
         # We need to rotate by 270 to make sure that
         # the orientation is correct AND to correct the phase.
-        delta_angle = wrap_angle(
+        delta_angle = fast_math.wrap_degrees(
             AdsbTopViewScope.ROTATION_PHASE_SHIFT + delta_angle)
         pixels_from_center = self.__get_pixel_distance__(
             scope_range, scope_range)

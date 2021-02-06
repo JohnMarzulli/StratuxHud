@@ -4,55 +4,16 @@ Common code for HUD view elements.
 import math
 
 import pygame
-from common_utils import units
+from common_utils import fast_math, units
 from configuration import configuration
 from rendering import colors, display
 
 DEFAULT_FONT = "./assets/fonts/LiberationMono-Bold.ttf"
 
-TWO_PI = 2.0 * math.pi
-
 max_target_bugs = 25
 imperial_occlude = units.yards_to_sm * 10
 imperial_faraway = units.yards_to_sm * 5
 imperial_superclose = units.yards_to_sm / 8.0
-
-
-def wrap_angle(
-    angle: float
-) -> float:
-    """
-    Wraps an angle (degrees) to be between 0.0 and 360
-    Arguments:
-        angle {float} -- The input angle
-    Returns: and value that is between 0 and 360, inclusive.
-    """
-
-    if angle < 0.0:
-        return wrap_angle(angle + 360.0)
-
-    if angle > 360.0:
-        return wrap_angle(angle - 360.0)
-
-    return angle
-
-
-def wrap_radians(
-    radians: float
-) -> float:
-    """
-    Wraps an angle that is in radians to be between 0.0 and 2Pi
-    Arguments:
-        angle {float} -- The input angle
-    Returns: and value that is between 0 and 2Pi, inclusive.
-    """
-    if radians < 0.0:
-        return wrap_radians(radians + TWO_PI)
-
-    if radians > TWO_PI:
-        return wrap_radians(radians - TWO_PI)
-
-    return radians
 
 
 def apply_declination(
@@ -75,7 +36,7 @@ def apply_declination(
         # If the heading is the unknown '---' then the math wil fail.
         return heading
 
-    new_heading = wrap_angle(new_heading)
+    new_heading = fast_math.wrap_degrees(new_heading)
 
     return new_heading
 
@@ -133,7 +94,7 @@ def get_heading_bug_x(
     """
 
     delta = (bearing - heading + 180)
-    delta = wrap_angle(delta)
+    delta = fast_math.wrap_degrees(delta)
 
     return int(delta * degrees_per_pixel)
 
@@ -242,7 +203,8 @@ def run_adsb_hud_element(
     from data_sources import ahrs_simulation, traffic
     from data_sources.data_cache import HudDataCache
 
-    simulated_traffic = [traffic.SimulatedTraffic(), traffic.SimulatedTraffic(), traffic.SimulatedTraffic()]
+    simulated_traffic = [traffic.SimulatedTraffic(
+    ), traffic.SimulatedTraffic(), traffic.SimulatedTraffic()]
 
     clock = pygame.time.Clock()
 
