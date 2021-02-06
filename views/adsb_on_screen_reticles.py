@@ -1,4 +1,5 @@
 import pygame
+from common_utils import fast_math
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
@@ -157,8 +158,8 @@ class AdsbOnScreenReticles(AdsbElement):
         translated_points = []
 
         int_roll = int(-roll)
-        cos_roll = hud_elements.COS_RADIANS_BY_DEGREES[int_roll]
-        sin_roll = hud_elements.SIN_RADIANS_BY_DEGREES[int_roll]
+        cos_roll = fast_math.cos(int_roll)
+        sin_roll = fast_math.sin(int_roll)
         ox, oy = self.__center__
 
         translated_points = [[(ox + cos_roll * (x_y[0] - ox) - sin_roll * (x_y[1] - oy)),
