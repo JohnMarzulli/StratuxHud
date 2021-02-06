@@ -1,3 +1,7 @@
+"""
+View element for a "radar scope" that looks from the top downwards.
+"""
+
 from datetime import datetime
 from numbers import Number
 from typing import Tuple
@@ -9,7 +13,6 @@ from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
-from pygame import Surface
 from rendering import colors
 
 from views.adsb_element import AdsbElement
@@ -107,7 +110,13 @@ def interpolate(
         255)
 
 
-class ZoomTracker(object):
+class ZoomTracker:
+    """
+    Tracks what our current zoom is and should be.
+    Handles gracefully transitioning the desired
+    zoom distance, while providing flapping prevention.
+    """
+
     SECONDS_FOR_ZOOM = 3
     MINIMUM_SECONDS_BETWEEN_ZOOM_CHANGE = SECONDS_FOR_ZOOM * 5
 
@@ -125,6 +134,16 @@ class ZoomTracker(object):
         self,
         new_target_zoom: Tuple[int, int]
     ):
+        """
+        Sets the desired target zoom distance.
+
+        If a zoom target has been set too recently
+        then the request is ignored. (Anti-flapping)
+
+        Args:
+            new_target_zoom (Tuple[int, int]): The total distance of the zoom and distance between rings.
+        """
+
         if new_target_zoom is None:
             return
 
@@ -144,6 +163,15 @@ class ZoomTracker(object):
     def get_target_zoom(
         self
     ):
+        """
+        Get what our ideal, current zoom is.
+
+        Returns a tuple that is the ideal distance
+        AND the distance between rings.
+
+        Returns:
+            [type]: [description]
+        """
         delta_since_last_change = (
             datetime.utcnow() - self.__last_changed__).total_seconds()
 
@@ -164,6 +192,10 @@ class ZoomTracker(object):
 
 
 class AdsbTopViewScope(AdsbElement):
+    """
+    A view element for the HUD that draws a radar style scope
+    showing where traffic is relative to our current position.
+    """
 
     # Arranged in (range, step_range)
     # So:
@@ -320,7 +352,7 @@ class AdsbTopViewScope(AdsbElement):
         Draws a single reticle on the screen.
 
         Arguments:
-            framebuffer {Surface} -- Render target
+            framebuffer {pygame.Surface} -- Render target
             orientation {Orientation} -- The orientation of the plane.
             traffic {Traffic} -- The traffic to draw the reticle for.
             first_ring_pixel_distance {int} -- The distance (in pixels) from the ownship to the first scope ring. Used for clutter control.
@@ -355,7 +387,7 @@ class AdsbTopViewScope(AdsbElement):
         if screen_y < 0 or screen_y > self.__height__:
             return
 
-        target_color = colors.BLUE if traffic.is_on_ground() == True else colors.RED
+        target_color = colors.BLUE if traffic.is_on_ground() else colors.RED
 
         if traffic.track is not None:
             points = self.__get_traffic_indicator__(
@@ -443,7 +475,7 @@ class AdsbTopViewScope(AdsbElement):
 
     def __render_ownship__(
         self,
-        framebuffer: Surface
+        framebuffer: pygame.Surface
     ):
         """
         Draws the graphic for an aircraft, but always pointing straight up.
@@ -451,7 +483,7 @@ class AdsbTopViewScope(AdsbElement):
         which will always be straight up.
 
         Args:
-            framebuffer {Surface} -- The render target.
+            framebuffer {pygame.Surface} -- The render target.
         """
         points = self.__get_traffic_indicator__(
             self.__scope_center__,
@@ -462,7 +494,7 @@ class AdsbTopViewScope(AdsbElement):
 
     def __draw_distance_rings__(
         self,
-        framebuffer: Surface,
+        framebuffer: pygame.Surface,
         scope_range: Tuple[int, int]
     ) -> int:
         """
@@ -471,7 +503,7 @@ class AdsbTopViewScope(AdsbElement):
         the same no matter what the units are.
 
         Args:
-            framebuffer {Surface} -- The render target.
+            framebuffer {pygame.Surface} -- The render target.
 
         Returns:
             int: The distance (in pixels from the center to the first ring. Used for clutter control.)
@@ -534,7 +566,7 @@ class AdsbTopViewScope(AdsbElement):
 
     def __draw_compass_text__(
         self,
-        framebuffer: Surface,
+        framebuffer: pygame.Surface,
         our_heading: int,
         heading_to_draw: int,
         scope_range: int
@@ -568,7 +600,7 @@ class AdsbTopViewScope(AdsbElement):
 
     def __draw_all_compass_headings__(
         self,
-        framebuffer: Surface,
+        framebuffer: pygame.Surface,
         orientation: AhrsData,
         scope_range: int
     ):
@@ -578,12 +610,17 @@ class AdsbTopViewScope(AdsbElement):
         instead of absolute.
 
         Args:
-            framebuffer (Surface): [description]
+            framebuffer (pygame.Surface): [description]
             orientation (AhrsData): [description]
         """
         our_heading = int(orientation.get_heading())
-        [self.__draw_compass_text__(framebuffer, our_heading, heading_to_draw, scope_range)
-         for heading_to_draw in [0, 90, 180, 270]]
+
+        for heading_to_draw in [0, 90, 180, 270]:
+            self.__draw_compass_text__(
+                framebuffer,
+                our_heading,
+                heading_to_draw,
+                scope_range)
 
     def __get_scope_range__(
         self,
@@ -641,14 +678,14 @@ class AdsbTopViewScope(AdsbElement):
 
     def render(
         self,
-        framebuffer: Surface,
+        framebuffer: pygame.Surface,
         orientation: AhrsData
     ):
         """
         Renders all of the on-screen reticles  for nearby traffic.
 
         Arguments:
-            framebuffer {Surface} -- The render target.
+            framebuffer {pygame.Surface} -- The render target.
             orientation {Orientation} -- The orientation of the plane the HUD is in.
         """
 
@@ -677,6 +714,7 @@ class AdsbTopViewScope(AdsbElement):
                 key=lambda traffic: traffic.distance,
                 reverse=True)
 
+            # pylint: disable=expression-not-assigned
             [self.__render_on_screen_target__(
                 framebuffer, orientation, traffic, scope_range[0], first_ring_pixel_radius) for traffic in traffic_reports]
 
