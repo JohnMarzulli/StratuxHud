@@ -139,21 +139,29 @@ class HudDataCache(object):
 
         with TaskProfiler("HudDataCache::get_cached_text_texture"):
             result = None
+            text_key = "{0}:{1}:{2}:{3}:{4}".format(
+                font,
+                text,
+                text_color,
+                background_color,
+                use_alpha)
             HudDataCache.__LOCK__.acquire()
             try:
-                if text not in HudDataCache.TEXT_TEXTURE_CACHE or force_regen:
+                if text_key not in HudDataCache.TEXT_TEXTURE_CACHE or force_regen:
                     texture = font.render(
-                        text, True, text_color, background_color)
+                        text,
+                        True,
+                        text_color,
+                        background_color)
                     size = texture.get_size()
 
                     if use_alpha:
                         texture = texture.convert_alpha()
 
-                    HudDataCache.TEXT_TEXTURE_CACHE[text] = texture, size
+                    HudDataCache.TEXT_TEXTURE_CACHE[text_key] = texture, size
 
-                HudDataCache.__CACHE_ENTRY_LAST_USED__[
-                    text] = datetime.utcnow()
-                result = HudDataCache.TEXT_TEXTURE_CACHE[text]
+                HudDataCache.__CACHE_ENTRY_LAST_USED__[text_key] = datetime.utcnow()
+                result = HudDataCache.TEXT_TEXTURE_CACHE[text_key]
             finally:
                 HudDataCache.__LOCK__.release()
 
