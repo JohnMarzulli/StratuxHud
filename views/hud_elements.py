@@ -4,64 +4,16 @@ Common code for HUD view elements.
 import math
 
 import pygame
-from common_utils import units
+from common_utils import fast_math, units
 from configuration import configuration
 from rendering import colors, display
 
 DEFAULT_FONT = "./assets/fonts/LiberationMono-Bold.ttf"
 
-SIN_RADIANS_BY_DEGREES = {}
-COS_RADIANS_BY_DEGREES = {}
-
-TWO_PI = 2.0 * math.pi
-
 max_target_bugs = 25
 imperial_occlude = units.yards_to_sm * 10
 imperial_faraway = units.yards_to_sm * 5
 imperial_superclose = units.yards_to_sm / 8.0
-
-# Fill the quick trig look up tables.
-for degrees in range(-360, 361):
-    radians = math.radians(degrees)
-    SIN_RADIANS_BY_DEGREES[degrees] = math.sin(radians)
-    COS_RADIANS_BY_DEGREES[degrees] = math.cos(radians)
-
-
-def wrap_angle(
-    angle: float
-) -> float:
-    """
-    Wraps an angle (degrees) to be between 0.0 and 360
-    Arguments:
-        angle {float} -- The input angle
-    Returns: and value that is between 0 and 360, inclusive.
-    """
-
-    if angle < 0.0:
-        return wrap_angle(angle + 360.0)
-
-    if angle > 360.0:
-        return wrap_angle(angle - 360.0)
-
-    return angle
-
-
-def wrap_radians(
-    radians: float
-) -> float:
-    """
-    Wraps an angle that is in radians to be between 0.0 and 2Pi
-    Arguments:
-        angle {float} -- The input angle
-    Returns: and value that is between 0 and 2Pi, inclusive.
-    """
-    if radians < 0.0:
-        return wrap_radians(radians + TWO_PI)
-
-    if radians > TWO_PI:
-        return wrap_radians(radians - TWO_PI)
-
-    return radians
 
 
 def apply_declination(
@@ -84,7 +36,7 @@ def apply_declination(
         # If the heading is the unknown '---' then the math wil fail.
         return heading
 
-    new_heading = wrap_angle(new_heading)
+    new_heading = fast_math.wrap_degrees(new_heading)
 
     return new_heading
 
@@ -142,7 +94,7 @@ def get_heading_bug_x(
     """
 
     delta = (bearing - heading + 180)
-    delta = wrap_angle(delta)
+    delta = fast_math.wrap_degrees(delta)
 
     return int(delta * degrees_per_pixel)
 
@@ -251,9 +203,10 @@ def run_adsb_hud_element(
     from data_sources import ahrs_simulation, traffic
     from data_sources.data_cache import HudDataCache
 
-    simulated_traffic = (traffic.SimulatedTraffic(),
-                         traffic.SimulatedTraffic(),
-                         traffic.SimulatedTraffic())
+    simulated_traffic = [
+        traffic.SimulatedTraffic(),
+        traffic.SimulatedTraffic(),
+        traffic.SimulatedTraffic()]
 
     clock = pygame.time.Clock()
 
@@ -302,21 +255,34 @@ def run_adsb_hud_element(
 
 
 if __name__ == '__main__':
-    for distance in range(0, int(2.5 * units.yards_to_sm), int(units.yards_to_sm / 10.0)):
-        print("{0}' -> {1}".format(distance, get_reticle_size(distance)))
+    for __distance__ in range(
+            0,
+            int(2.5 * units.yards_to_sm),
+            int(units.yards_to_sm / 10.0)):
+        print("{0}' -> {1}".format(__distance__, get_reticle_size(__distance__)))
 
-    heading = 327
-    pitch = 0
-    roll = 0
-    distance = 1000
-    altitude_delta = 1000
-    pixels_per_degree = 10
-    for bearing in range(0, 360, 10):
-        print("Bearing {0} -> {1}px".format(bearing,
-                                            get_heading_bug_x(heading, bearing, 2.2222222)))
+    __heading__ = 327
+    __pitch__ = 0
+    __roll__ = 0
+    __distance__ = 1000
+    __altitude_delta__ = 1000
+    __pixels_per_degree__ = 10
+    for __bearing__ in range(0, 360, 10):
+        print("Bearing {0} -> {1}px".format(
+            __bearing__,
+            get_heading_bug_x(
+                __heading__,
+                __bearing__,
+                2.2222222)))
         x, y = get_onscreen_traffic_projection__(
-            heading, pitch, roll, bearing, distance, altitude_delta, pixels_per_degree)
+            __heading__,
+            __pitch__,
+            __roll__,
+            __bearing__,
+            __distance__,
+            __altitude_delta__,
+            __pixels_per_degree__)
         print("    {0}, {1}".format(x + 400, y + 240))
         print("TRUE: {0} -> {1} MAG".format(
-            bearing,
-            apply_declination(bearing)))
+            __bearing__,
+            apply_declination(__bearing__)))

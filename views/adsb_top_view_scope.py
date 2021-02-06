@@ -1,5 +1,10 @@
+"""
+View element for a "radar scope" that looks from the top downwards.
+"""
+
 from datetime import datetime
 from numbers import Number
+from typing import Tuple
 
 import pygame
 from common_utils import fast_math, local_debug, units
@@ -8,11 +13,9 @@ from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
-from pygame import Surface
 from rendering import colors
 
 from views.adsb_element import AdsbElement
-from views.hud_elements import wrap_angle
 
 
 def clamp(
@@ -106,13 +109,19 @@ def interpolate(
         255)
 
 
-class ZoomTracker(object):
+class ZoomTracker:
+    """
+    Tracks what our current zoom is and should be.
+    Handles gracefully transitioning the desired
+    zoom distance, while providing flapping prevention.
+    """
+
     SECONDS_FOR_ZOOM = 3
     MINIMUM_SECONDS_BETWEEN_ZOOM_CHANGE = SECONDS_FOR_ZOOM * 5
 
     def __init__(
         self,
-        starting_zoom: (int,  int)
+        starting_zoom: Tuple[int, int]
     ) -> None:
         super().__init__()
 
@@ -122,8 +131,18 @@ class ZoomTracker(object):
 
     def set_target_zoom(
         self,
-        new_target_zoom: (int, int)
+        new_target_zoom: Tuple[int, int]
     ):
+        """
+        Sets the desired target zoom distance.
+
+        If a zoom target has been set too recently
+        then the request is ignored. (Anti-flapping)
+
+        Args:
+            new_target_zoom (Tuple[int, int]): The total distance of the zoom and distance between rings.
+        """
+
         if new_target_zoom is None:
             return
 
@@ -143,6 +162,15 @@ class ZoomTracker(object):
     def get_target_zoom(
         self
     ):
+        """
+        Get what our ideal, current zoom is.
+
+        Returns a tuple that is the ideal distance
+        AND the distance between rings.
+
+        Returns:
+            [type]: [description]
+        """
         delta_since_last_change = (
             datetime.utcnow() - self.__last_changed__).total_seconds()
 
@@ -163,6 +191,10 @@ class ZoomTracker(object):
 
 
 class AdsbTopViewScope(AdsbElement):
+    """
+    A view element for the HUD that draws a radar style scope
+    showing where traffic is relative to our current position.
+    """
 
     # Arranged in (range, step_range)
     # So:
@@ -211,8 +243,8 @@ class AdsbTopViewScope(AdsbElement):
         half_size = int((size / 2.0) + 0.5)
         quarter_size = int((size / 4.0) + 0.5)
 
-        self.__sin_half_pi__ = fast_math.SIN_BY_DEGREES[45]
-        self.__cos_half_pi__ = fast_math.COS_BY_DEGREES[45]
+        self.__sin_half_pi__ = fast_math.SIN_BY_DEGREES[30]
+        self.__cos_half_pi__ = fast_math.COS_BY_DEGREES[30]
 
         # 1 - Come up with the 0,0 based line coordinates
         self.__target_indicator__ = [
@@ -223,7 +255,7 @@ class AdsbTopViewScope(AdsbElement):
 
     def __get_maximum_scope_range__(
         self
-    ) -> (int, int):
+    ) -> Tuple[int, int]:
         """
         Get the maximum
 
@@ -250,7 +282,8 @@ class AdsbTopViewScope(AdsbElement):
         # 2 - determine the angle of rotation compared to our "up"
         rotation = 360.0 - our_heading
         rotation = rotation + traffic_heading
-        roation_degrees = int(wrap_angle(rotation + self.__adjustment__))
+        roation_degrees = int(fast_math.wrap_degrees(
+            rotation + self.__adjustment__))
 
         # 3 - Rotate the zero-based points
         rotation_sin = fast_math.SIN_BY_DEGREES[roation_degrees]
@@ -281,7 +314,7 @@ class AdsbTopViewScope(AdsbElement):
         self,
         angle_degrees: float,
         distance_pixels: float
-    ) -> (int, int):
+    ) -> Tuple[int, int]:
         """
         Given an angle (0 is straight up, 180 is straight down), and a distance
         returns a x,y coordinate that locates the point FROM THE CENTER of the screen.
@@ -319,7 +352,7 @@ class AdsbTopViewScope(AdsbElement):
         Draws a single reticle on the screen.
 
         Arguments:
-            framebuffer {Surface} -- Render target
+            framebuffer {pygame.Surface} -- Render target
             orientation {Orientation} -- The orientation of the plane.
             traffic {Traffic} -- The traffic to draw the reticle for.
             first_ring_pixel_distance {int} -- The distance (in pixels) from the ownship to the first scope ring. Used for clutter control.
@@ -340,7 +373,7 @@ class AdsbTopViewScope(AdsbElement):
         delta_angle = traffic.bearing - delta_angle
         # We need to rotate by 270 to make sure that
         # the orientation is correct AND to correct the phase.
-        delta_angle = wrap_angle(
+        delta_angle = fast_math.wrap_degrees(
             AdsbTopViewScope.ROTATION_PHASE_SHIFT + delta_angle)
 
         # Find where to draw the reticle....
@@ -354,7 +387,7 @@ class AdsbTopViewScope(AdsbElement):
         if screen_y < 0 or screen_y > self.__height__:
             return
 
-        target_color = colors.BLUE if traffic.is_on_ground() == True else colors.RED
+        target_color = colors.BLUE if traffic.is_on_ground() else colors.RED
 
         if traffic.track is not None:
             points = self.__get_traffic_indicator__(
@@ -442,7 +475,7 @@ class AdsbTopViewScope(AdsbElement):
 
     def __render_ownship__(
         self,
-        framebuffer: Surface
+        framebuffer: pygame.Surface
     ):
         """
         Draws the graphic for an aircraft, but always pointing straight up.
@@ -450,7 +483,7 @@ class AdsbTopViewScope(AdsbElement):
         which will always be straight up.
 
         Args:
-            framebuffer {Surface} -- The render target.
+            framebuffer {pygame.Surface} -- The render target.
         """
         points = self.__get_traffic_indicator__(
             self.__scope_center__,
@@ -461,8 +494,8 @@ class AdsbTopViewScope(AdsbElement):
 
     def __draw_distance_rings__(
         self,
-        framebuffer: Surface,
-        scope_range: (int, int)
+        framebuffer: pygame.Surface,
+        scope_range: Tuple[int, int]
     ) -> int:
         """
         Draws rings that indicate how far out another aircraft is.
@@ -470,7 +503,7 @@ class AdsbTopViewScope(AdsbElement):
         the same no matter what the units are.
 
         Args:
-            framebuffer {Surface} -- The render target.
+            framebuffer {pygame.Surface} -- The render target.
 
         Returns:
             int: The distance (in pixels from the center to the first ring. Used for clutter control.)
@@ -502,9 +535,6 @@ class AdsbTopViewScope(AdsbElement):
                 radius_pixels,
                 self.__line_width__ >> 1)
             ring_pixel_distances.append(radius_pixels)
-            distance_text = "{}{}".format(
-                int(distance),
-                units_suffix)
 
             text_x = self.__scope_center__[0] \
                 + int(self.__sin_half_pi__ * radius_pixels)
@@ -512,28 +542,16 @@ class AdsbTopViewScope(AdsbElement):
                 - int(self.__cos_half_pi__ * radius_pixels)
             text_pos = [text_x, text_y]
 
-            rendered_text, size = HudDataCache.get_cached_text_texture(
-                distance_text,
-                self.__font__,
-                colors.GREEN,
-                colors.BLACK,
-                False,
-                False)
-
-            # Half size to reduce text clutter
-            rendered_text = pygame.transform.scale(
-                rendered_text,
-                [size[0] >> 1, size[1] >> 1])
-
-            framebuffer.blit(
-                rendered_text,
-                text_pos)
+            self.__render_text_with_stacked_annotations__(
+                framebuffer,
+                text_pos,
+                [[1.0, str(int(distance)), colors.GREEN], [0.5, units_suffix, colors.GREEN]])
 
         return ring_pixel_distances[0]
 
     def __draw_compass_text__(
         self,
-        framebuffer: Surface,
+        framebuffer: pygame.Surface,
         our_heading: int,
         heading_to_draw: int,
         scope_range: int
@@ -541,7 +559,7 @@ class AdsbTopViewScope(AdsbElement):
         delta_angle = heading_to_draw - our_heading
         # We need to rotate by 270 to make sure that
         # the orientation is correct AND to correct the phase.
-        delta_angle = wrap_angle(
+        delta_angle = fast_math.wrap_degrees(
             AdsbTopViewScope.ROTATION_PHASE_SHIFT + delta_angle)
         pixels_from_center = self.__get_pixel_distance__(
             scope_range, scope_range)
@@ -567,7 +585,7 @@ class AdsbTopViewScope(AdsbElement):
 
     def __draw_all_compass_headings__(
         self,
-        framebuffer: Surface,
+        framebuffer: pygame.Surface,
         orientation: AhrsData,
         scope_range: int
     ):
@@ -577,17 +595,22 @@ class AdsbTopViewScope(AdsbElement):
         instead of absolute.
 
         Args:
-            framebuffer (Surface): [description]
+            framebuffer (pygame.Surface): [description]
             orientation (AhrsData): [description]
         """
         our_heading = int(orientation.get_heading())
-        [self.__draw_compass_text__(framebuffer, our_heading, heading_to_draw, scope_range)
-         for heading_to_draw in [0, 90, 180, 270]]
+
+        for heading_to_draw in [0, 90, 180, 270]:
+            self.__draw_compass_text__(
+                framebuffer,
+                our_heading,
+                heading_to_draw,
+                scope_range)
 
     def __get_scope_range__(
         self,
         orientation: AhrsData
-    ) -> (int, int):
+    ) -> Tuple[int, int]:
         """
         Given a ground speed, figure out how far the scope should be.
         This is done by figuring out how far you will be in 10 minutes
@@ -632,7 +655,7 @@ class AdsbTopViewScope(AdsbElement):
     def __get_scope_zoom__(
         self,
         orientation: AhrsData
-    ) -> (float, float):
+    ) -> Tuple[float, float]:
         ideal_range = self.__get_scope_range__(orientation)
         self.__zoom_tracker__.set_target_zoom(ideal_range)
 
@@ -640,14 +663,14 @@ class AdsbTopViewScope(AdsbElement):
 
     def render(
         self,
-        framebuffer: Surface,
+        framebuffer: pygame.Surface,
         orientation: AhrsData
     ):
         """
         Renders all of the on-screen reticles  for nearby traffic.
 
         Arguments:
-            framebuffer {Surface} -- The render target.
+            framebuffer {pygame.Surface} -- The render target.
             orientation {Orientation} -- The orientation of the plane the HUD is in.
         """
 
@@ -676,6 +699,7 @@ class AdsbTopViewScope(AdsbElement):
                 key=lambda traffic: traffic.distance,
                 reverse=True)
 
+            # pylint: disable=expression-not-assigned
             [self.__render_on_screen_target__(
                 framebuffer, orientation, traffic, scope_range[0], first_ring_pixel_radius) for traffic in traffic_reports]
 

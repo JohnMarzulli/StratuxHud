@@ -8,7 +8,7 @@ import pygame
 from common_utils import local_debug
 
 # The SunFounder 5" TFT
-DEFAULT_SCREEN_SIZE = 800, 480
+DEFAULT_SCREEN_SIZE = 800, 480 #1600, 960
 
 
 def __get_screen_size_and_mode__():

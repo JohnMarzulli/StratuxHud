@@ -93,6 +93,47 @@ class HudElement(object):
 
         return scaled_size
 
+    def __render_text_right_justified__(
+        self,
+        framebuffer,
+        text: str,
+        position: list,
+        color: list,
+        scale: float = 1.0
+    ) -> list:
+        """
+        Renders the given text at the position, color, and scale given.
+
+        Args:
+            framebuffer: The surface to render to.
+            text (str): The text to render.
+            position (list): The upper-right hand corner position to render the text at
+            color (list): The foreground color of the text.
+            scale (float): Any size adjustment (proportion) to adjust the render by.
+
+        Returns:
+            list: The size of the rendered text.
+        """
+        texture, size = HudDataCache.get_cached_text_texture(
+            text,
+            self.__font__,
+            color,
+            colors.BLACK,
+            True,
+            False)
+
+        scaled_size = [int(size[0] * scale), int(size[1] * scale)]
+
+        texture = pygame.transform.smoothscale(
+            texture,
+            scaled_size)
+
+        framebuffer.blit(
+            texture,
+            [position[0] - scaled_size[0], position[1]])
+
+        return scaled_size
+
     def __render_text_with_stacked_annotations__(
         self,
         framebuffer,
@@ -109,25 +150,27 @@ class HudElement(object):
         with each additional annotation being moved down by the vertical size
         of the previous annotation.
 
+        This version is LEFT JUSTIFIED
+
         Args:
             framebuffer: The surface to render the text to.
             starting_position (list): The starting upper-left hand position to render the text at.
             scale_text_color_list (list): A list of text description packages.
         """
 
-        # Take the speed and render it on the left at the given y
+        # Take the main info and render it on the left at the given y
         # then take [1], render at the new X and given y
         # then take[2], render at same X as [1], moved down the split vertical
 
-        speed_package = scale_text_color_list[0]
-        speed_size = self.__render_text__(
+        main_package = scale_text_color_list[0]
+        main_size = self.__render_text__(
             framebuffer,
-            speed_package[1],
+            main_package[1],
             starting_position,
-            speed_package[2],
-            speed_package[0])
+            main_package[2],
+            main_package[0])
 
-        current_position = [starting_position[0] + speed_size[0],
+        current_position = [starting_position[0] + main_size[0],
                             starting_position[1]]
 
         for (scale, text, color) in scale_text_color_list[1:]:
@@ -139,6 +182,58 @@ class HudElement(object):
                 scale)
 
             current_position[1] += info_size[1]
+
+    def __render_text_with_stacked_annotations_right_justified__(
+        self,
+        framebuffer,
+        starting_position: list,
+        scale_text_color_list: list
+    ):
+        """
+        Renders text such that the main text is left most,
+        and any additional text packages are rendered to its
+        immediate right, but stacked on top of each other.
+        The position of the stacked text is based on the width
+        of the main text.
+        The first annotation is veritically positioned at the given y,
+        with each additional annotation being moved down by the vertical size
+        of the previous annotation.
+
+        This version does it such that the text is right
+        justified.
+
+        Args:
+            framebuffer: The surface to render the text to.
+            starting_position (list): The starting upper-right hand position to render the text at.
+            scale_text_color_list (list): A list of text description packages.
+        """
+
+        # Take the main info and render it on the left at the given y
+        # then take [1], render at the new X and given y
+        # then take[2], render at same X as [1], moved down the split vertical
+
+        current_position = [starting_position[0], starting_position[1]]
+        longest_x = 0
+
+        for (scale, text, color) in scale_text_color_list[1:]:
+            info_size = self.__render_text_right_justified__(
+                framebuffer,
+                text,
+                current_position,
+                color,
+                scale)
+
+            current_position[1] += info_size[1]
+
+            longest_x = info_size[0] if info_size[0] > longest_x else longest_x
+
+        main_package = scale_text_color_list[0]
+        self.__render_text_right_justified__(
+            framebuffer,
+            main_package[1],
+            [current_position[0] - longest_x, starting_position[1]],
+            main_package[2],
+            main_package[0])
 
 
 class AhrsElement(HudElement):

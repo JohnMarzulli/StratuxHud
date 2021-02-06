@@ -14,7 +14,7 @@ MAX_FRAMERATE = 60
 TARGET_AHRS_FRAMERATE = 30
 AHRS_TIMEOUT = 10.0 * (1.0 / float(TARGET_AHRS_FRAMERATE))
 
-VERSION = "2.0"
+VERSION = "2.0 ALPHA"
 
 ########################
 # Default Config Files #
@@ -577,10 +577,19 @@ class Configuration(object):
             Configuration.MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT_KEY,
             MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT)
         self.log_filename = "stratux_hud.log"
-        self.flip_horizontal = False
-        self.flip_vertical = False
-        self.declination = 0.0
-        self.aithre_enabled = False
+
+        self.flip_horizontal = self.__get_config_value__(
+            Configuration.FLIP_HORIZONTAL_KEY,
+            False)
+        self.flip_vertical = self.__get_config_value__(
+            Configuration.FLIP_VERTICAL_KEY,
+            False)
+        self.declination = self.__get_config_value__(
+            Configuration.DECLINATION_KEY,
+            0.0)
+        self.aithre_enabled = self.__get_config_value__(
+            Configuration.AITHRE_KEY,
+            True)
         self.traffic_manager_address = self.__get_config_value__(
             Configuration.TRAFFIC_MANAGER_KEY,
             Configuration.DEFAULT_TRAFFIC_MANAGER_ADDRESS)
@@ -611,36 +620,6 @@ class Configuration(object):
         #   "ownship": "N701GV",
         #   "data_source": "stratux",
         #   "declination": 0.0
-
-        try:
-            self.flip_horizontal = self.__configuration__[
-                Configuration.FLIP_HORIZONTAL_KEY]
-        except Exception:
-            pass
-
-        try:
-            self.flip_vertical = self.__configuration__[
-                Configuration.FLIP_VERTICAL_KEY]
-        except Exception:
-            pass
-
-        try:
-            self.declination = float(
-                self.__configuration__[Configuration.DECLINATION_KEY])
-        except Exception:
-            pass
-
-        try:
-            self.aithre_enabled = bool(
-                self.__configuration__[Configuration.AITHRE_KEY])
-        except Exception:
-            pass
-
-        try:
-            self.traffic_manager_address = self.__configuration__[
-                Configuration.TRAFFIC_MANAGER_KEY]
-        except Exception:
-            pass
 
 
 CONFIGURATION = Configuration(DEFAULT_CONFIG_FILE, __user_config_file__)

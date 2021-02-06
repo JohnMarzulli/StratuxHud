@@ -69,8 +69,8 @@ class HudDataCache(object):
 
     @staticmethod
     def __get_purge_key__(
-        now,
-        texture_key
+        now: datetime,
+        texture_key: str
     ):
         """
         Returns the key of the traffic to purge if it should be, otherwise returns None.
@@ -84,7 +84,7 @@ class HudDataCache(object):
         """
 
         lsu = HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_key]
-        time_since_last_use = (datetime.utcnow() - lsu).total_seconds()
+        time_since_last_use = (now - lsu).total_seconds()
 
         return texture_key if time_since_last_use > HudDataCache.__CACHE_INVALIDATION_TIME__ else None
 
@@ -97,16 +97,19 @@ class HudDataCache(object):
 
         # The second hardest problem in comp-sci...
         with TaskProfiler("HudDataCache::purge_old_textures"):
-            textures_to_purge = []
+
             HudDataCache.__LOCK__.acquire()
             try:
                 now = datetime.utcnow()
-                textures_to_purge = [HudDataCache.__get_purge_key__(now, texture_key)
-                                     for texture_key in HudDataCache.__CACHE_ENTRY_LAST_USED__]
+                textures_to_purge = [HudDataCache.__get_purge_key__(
+                    now,
+                    texture_key) for texture_key in HudDataCache.__CACHE_ENTRY_LAST_USED__]
                 textures_to_purge = list(filter(lambda x: x is not None,
                                                 textures_to_purge))
-                [HudDataCache.__purge_texture__(texture_to_purge)
-                 for texture_to_purge in textures_to_purge]
+
+                # pylint:disable=expression-not-assigned
+                [HudDataCache.__purge_texture__(
+                    texture_to_purge) for texture_to_purge in textures_to_purge]
             finally:
                 HudDataCache.__LOCK__.release()
 
@@ -139,21 +142,30 @@ class HudDataCache(object):
 
         with TaskProfiler("HudDataCache::get_cached_text_texture"):
             result = None
+            text_key = "{0}:{1}:{2}:{3}:{4}".format(
+                font,
+                text,
+                text_color,
+                background_color,
+                use_alpha)
             HudDataCache.__LOCK__.acquire()
             try:
-                if text not in HudDataCache.TEXT_TEXTURE_CACHE or force_regen:
+                if text_key not in HudDataCache.TEXT_TEXTURE_CACHE or force_regen:
                     texture = font.render(
-                        text, True, text_color, background_color)
+                        text,
+                        True,
+                        text_color,
+                        background_color)
                     size = texture.get_size()
 
                     if use_alpha:
                         texture = texture.convert_alpha()
 
-                    HudDataCache.TEXT_TEXTURE_CACHE[text] = texture, size
+                    HudDataCache.TEXT_TEXTURE_CACHE[text_key] = texture, size
 
                 HudDataCache.__CACHE_ENTRY_LAST_USED__[
-                    text] = datetime.utcnow()
-                result = HudDataCache.TEXT_TEXTURE_CACHE[text]
+                    text_key] = datetime.utcnow()
+                result = HudDataCache.TEXT_TEXTURE_CACHE[text_key]
             finally:
                 HudDataCache.__LOCK__.release()
 

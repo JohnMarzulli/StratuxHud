@@ -1,6 +1,7 @@
 from numbers import Number
 
 import pygame
+from common_utils import fast_math
 from data_sources.ahrs_data import AhrsData
 
 from views.compass_and_heading_top_element import CompassAndHeadingTopElement
@@ -79,8 +80,9 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
         heading = orientation.get_onscreen_projection_heading()
 
         if isinstance(heading, Number):
-            heading = wrap_angle(heading)
+            heading = fast_math.wrap_degrees(heading)
 
+            # pylint:disable=expression-not-assigned
             [self.__render_heading_mark__(
                 framebuffer,
                 heading_mark_to_render[0],

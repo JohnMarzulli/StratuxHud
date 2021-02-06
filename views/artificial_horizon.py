@@ -1,4 +1,5 @@
 import pygame
+from common_utils import fast_math
 from data_sources.ahrs_data import AhrsData
 
 from views.ahrs_element import AhrsElement
@@ -145,6 +146,7 @@ class ArtificialHorizon(AhrsElement):
             lambda center:
             center[1][1] >= 0 and center[1][1] <= self.__height__, lines_centers_and_angles))
 
+        # pylint: disable=expression-not-assigned
         [self.__render_reference_line__(framebuffer, line_info, roll)
             for line_info in lines_centers_and_angles]
 
@@ -177,15 +179,15 @@ class ArtificialHorizon(AhrsElement):
         roll_delta = 90 - roll_int
 
         center_x = ahrs_center_x - \
-            (pitch_offset * COS_RADIANS_BY_DEGREES[roll_delta]) + 0.5
+            (pitch_offset * fast_math.cos(roll_delta)) + 0.5
         center_y = ahrs_center_y - \
-            (pitch_offset * SIN_RADIANS_BY_DEGREES[roll_delta]) + 0.5
+            (pitch_offset * fast_math.sin(roll_delta)) + 0.5
 
         center_x = int(center_x)
         center_y = int(center_y)
 
-        x_len = int(length * COS_RADIANS_BY_DEGREES[roll_int] + 0.5)
-        y_len = int(length * SIN_RADIANS_BY_DEGREES[roll_int] + 0.5)
+        x_len = int(length * fast_math.cos(roll_int) + 0.5)
+        y_len = int(length * fast_math.sin(roll_int) + 0.5)
 
         half_x_len = x_len >> 1
         half_y_len = y_len >> 1
