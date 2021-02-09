@@ -139,12 +139,14 @@ class HeadsUpDisplay(object):
                 colors.BLACK,
                 False)
 
-            left_border = 0
-            top_border = 0
-            position = (left_border, top_border)
+            scaled_size = [int(size[0] >> 1), int(size[1] >> 1)]
 
-            surface.blit(texture, position)
-        except Exception:
+            texture = pygame.transform.scale(
+                texture,
+                scaled_size)
+
+            surface.blit(texture, [0, 0])
+        except Exception as e:
             pass
 
     def __is_ahrs_view__(
@@ -237,8 +239,7 @@ class HeadsUpDisplay(object):
                 self.__render_text__(
                     render_perf_text,
                     colors.BLACK,
-                    debug_status_left,
-                    debug_status_top,
+                    [debug_status_left, debug_status_top],
                     colors.YELLOW)
 
             self.__render_perf_task__.run()
@@ -278,8 +279,7 @@ class HeadsUpDisplay(object):
         self,
         text: str,
         color: list,
-        position_x: int,
-        position_y: int,
+        position: list,
         background_color: list = None
     ) -> list:
         """
@@ -294,7 +294,7 @@ class HeadsUpDisplay(object):
 
         surface.blit(
             rendered_text,
-            (position_x - (text_width >> 1), position_y - (text_height >> 1)))
+            (position[0] - (text_width >> 1), position[1] - (text_height >> 1)))
 
         return text_width, text_height
 
