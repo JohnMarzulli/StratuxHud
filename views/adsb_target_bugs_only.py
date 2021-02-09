@@ -6,7 +6,7 @@ from rendering import colors
 
 from views.adsb_element import AdsbElement, apply_declination
 from views.hud_elements import (get_heading_bug_x, get_reticle_size,
-                                max_target_bugs)
+                                MAX_TARGET_BUGS)
 
 
 class AdsbTargetBugsOnly(AdsbElement):
@@ -85,7 +85,7 @@ class AdsbTargetBugsOnly(AdsbElement):
         if traffic_reports is None:
             return
 
-        reports_to_show = traffic_reports[:max_target_bugs]
+        reports_to_show = traffic_reports[:MAX_TARGET_BUGS]
 
         if not isinstance(heading, str):
             [self.__render_traffic_heading_bug__(

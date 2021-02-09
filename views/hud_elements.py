@@ -10,10 +10,10 @@ from rendering import colors, display
 
 DEFAULT_FONT = "./assets/fonts/LiberationMono-Bold.ttf"
 
-max_target_bugs = 25
-imperial_occlude = units.yards_to_sm * 10
-imperial_faraway = units.yards_to_sm * 5
-imperial_superclose = units.yards_to_sm / 8.0
+MAX_TARGET_BUGS = 25
+
+IMPERIAL_FARAWAY = units.yards_to_sm * 5
+IMPERIAL_SUPERCLOSE = units.yards_to_sm / 8.0
 
 
 def apply_declination(
@@ -60,13 +60,13 @@ def get_reticle_size(
         float -- The size of the reticle (in proportion to the screen size.)
     """
 
-    if distance <= imperial_superclose:
+    if distance <= IMPERIAL_SUPERCLOSE:
         on_screen_reticle_scale = max_reticle_size
-    elif distance >= imperial_faraway:
+    elif distance >= IMPERIAL_FARAWAY:
         on_screen_reticle_scale = min_reticle_size
     else:
-        delta = distance - imperial_superclose
-        scale_distance = imperial_faraway - imperial_superclose
+        delta = distance - IMPERIAL_SUPERCLOSE
+        scale_distance = IMPERIAL_FARAWAY - IMPERIAL_SUPERCLOSE
         ratio = delta / scale_distance
         reticle_range = max_reticle_size - min_reticle_size
 

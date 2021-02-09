@@ -90,7 +90,7 @@ class AdsbOnScreenReticles(AdsbElement):
         traffic_reports = list(filter(
             lambda x: not x.is_on_ground(),
             traffic_reports))
-        traffic_reports = traffic_reports[:hud_elements.max_target_bugs]
+        traffic_reports = traffic_reports[:hud_elements.MAX_TARGET_BUGS]
 
         [self.__render_on_screen_reticle__(
             framebuffer, orientation, traffic) for traffic in traffic_reports]

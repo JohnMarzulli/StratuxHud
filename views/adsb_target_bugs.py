@@ -2,7 +2,7 @@ from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 
 from views.adsb_element import AdsbElement, apply_declination
-from views.hud_elements import get_heading_bug_x, max_target_bugs
+from views.hud_elements import get_heading_bug_x, MAX_TARGET_BUGS
 
 
 class AdsbTargetBugs(AdsbElement):
@@ -82,7 +82,7 @@ class AdsbTargetBugs(AdsbElement):
             reverse=True)
 
         # Make sure only the closest bugs are rendered.
-        traffic_reports = traffic_reports[:max_target_bugs]
+        traffic_reports = traffic_reports[:MAX_TARGET_BUGS]
 
         [self.__render_traffic_heading_bug__(
             traffic_report,
