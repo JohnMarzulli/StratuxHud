@@ -1,3 +1,7 @@
+"""
+View element for a g-meter
+"""
+
 from numbers import Number
 
 from data_sources.ahrs_data import AhrsData
@@ -7,6 +11,11 @@ from views.ahrs_element import AhrsElement
 
 
 class SkidAndGs(AhrsElement):
+    """
+    View element for a g-meter
+    """
+
+    # pylint:disable=unused-argument
     def __init__(
         self,
         degrees_of_pitch: float,
@@ -25,6 +34,13 @@ class SkidAndGs(AhrsElement):
         framebuffer,
         orientation: AhrsData
     ):
+        """
+        Renders the current G load, minimum, and maximum
+
+        Args:
+            framebuffer: The surface to draw to.
+            orientation (AhrsData): The current flight data
+        """
         is_valid = isinstance(orientation.g_load, Number)
         g_load_text = "{0:.1f}G".format(
             orientation.g_load) if is_valid else orientation.g_load

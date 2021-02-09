@@ -134,11 +134,18 @@ class AhrsStratux(logging_object.LoggingObject):
             'GPSTime',
             system_utc_time)
 
-        if new_ahrs_data.g_load > self.__max_gs__:
-            self.__max_gs__ = new_ahrs_data.g_load
+        new_ahrs_data.slip_skid = self.__get_value__(
+            ahrs_json,
+            'AHRSSlipSkid',
+            None
+        )
 
-        if new_ahrs_data.g_load < self.__min_gs__:
-            self.__min_gs__ = new_ahrs_data.g_load
+        if new_ahrs_data.g_load is not ahrs_data.NOT_AVAILABLE:
+            if new_ahrs_data.g_load > self.__max_gs__:
+                self.__max_gs__ = new_ahrs_data.g_load
+
+            if new_ahrs_data.g_load < self.__min_gs__:
+                self.__min_gs__ = new_ahrs_data.g_load
 
         new_ahrs_data.min_g = self.__min_gs__
         new_ahrs_data.max_g = self.__max_gs__
