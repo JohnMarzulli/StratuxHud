@@ -4,6 +4,7 @@ View element for a g-meter
 
 from numbers import Number
 
+import pygame
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
 
@@ -28,6 +29,9 @@ class SkidAndGs(AhrsElement):
 
         self.__text_y_pos__ = (self.__font_half_height__ << 2) + \
             g_y_pos - self.__font_half_height__
+
+        self.__skid_y_center__ = self.__center_y__ + (self.__center_y__ >> 2)
+        self.__skid_range__ = self.__width__ >> 4
 
     def __render_g_loading__(
         self,
@@ -58,6 +62,55 @@ class SkidAndGs(AhrsElement):
             [self.__right_border__, self.__text_y_pos__],
             text_package)
 
+    def __render_skid_ball__(
+        self,
+        framebuffer,
+        orientation: AhrsData
+    ):
+        if orientation.slip_skid is None \
+                or isinstance(orientation.slip_skid, str):
+            return
+
+        ball_radius = self.__height__ * 0.03
+        line_length = int(ball_radius * 1.3)
+
+        top_edge = self.__skid_y_center__ - line_length
+        bottom_edge = self.__skid_y_center__ + line_length
+        left_edge = self.__center_x__ - ball_radius - self.__skid_range__
+        right_edge = self.__center_x__ + ball_radius + self.__skid_range__
+
+        # Draw a centering line.
+        pygame.draw.line(
+            framebuffer,
+            colors.WHITE,
+            [self.__center_x__, top_edge],
+            [self.__center_x__, bottom_edge],
+            self.__line_width__)
+
+        # Draw the edges
+        pygame.draw.line(
+            framebuffer,
+            colors.WHITE,
+            [left_edge, top_edge],
+            [left_edge, bottom_edge],
+            self.__line_width__)
+
+        pygame.draw.line(
+            framebuffer,
+            colors.WHITE,
+            [right_edge, top_edge],
+            [right_edge, bottom_edge],
+            self.__line_width__)
+
+        screen_x = self.__center_x__ + \
+            int(self.__skid_range__ * orientation.slip_skid)
+
+        pygame.draw.circle(
+            framebuffer,
+            colors.YELLOW,
+            (screen_x, self.__skid_y_center__),
+            int(ball_radius))
+
     def render(
         self,
         framebuffer,
@@ -71,6 +124,7 @@ class SkidAndGs(AhrsElement):
             orientation (AhrsData): The current flight data
         """
         self.__render_g_loading__(framebuffer, orientation)
+        self.__render_skid_ball__(framebuffer, orientation)
 
 
 if __name__ == '__main__':
