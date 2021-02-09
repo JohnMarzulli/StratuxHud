@@ -134,6 +134,15 @@ class AhrsStratux(logging_object.LoggingObject):
             'GPSTime',
             system_utc_time)
 
+        if new_ahrs_data.g_load > self.__max_gs__:
+            self.__max_gs__ = new_ahrs_data.g_load
+
+        if new_ahrs_data.g_load < self.__min_gs__:
+            self.__min_gs__ = new_ahrs_data.g_load
+
+        new_ahrs_data.min_g = self.__min_gs__
+        new_ahrs_data.max_g = self.__max_gs__
+
         return new_ahrs_data
 
         # SAMPLE FULL JSON
@@ -260,3 +269,6 @@ class AhrsStratux(logging_object.LoggingObject):
                 configuration.CONFIGURATION.avionics_address()),
             MAX_AVIONICS_AGE,
             AVIONICS_TIMEOUT)
+
+        self.__max_gs__ = 1.0
+        self.__min_gs__ = 1.0

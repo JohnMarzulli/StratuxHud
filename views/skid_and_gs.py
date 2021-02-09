@@ -26,18 +26,21 @@ class SkidAndGs(AhrsElement):
         orientation: AhrsData
     ):
         is_valid = isinstance(orientation.g_load, Number)
-        g_load_text = "{0:.1f} Gs".format(
+        g_load_text = "{0:.1f}G".format(
             orientation.g_load) if is_valid else orientation.g_load
-        texture = self.__font__.render(
-            g_load_text,
-            True,
-            colors.WHITE if is_valid else colors.RED,
-            colors.BLACK)
-        text_width, text_height = texture.get_size()
 
-        framebuffer.blit(
-            texture,
-            (self.__right_border__ - text_width, self.__text_y_pos__))
+        min_g_text = "{0:.1f}".format(orientation.min_g)
+        max_g_text = "{0:.1f}".format(orientation.max_g)
+
+        text_package = [
+            [1.0, g_load_text, colors.WHITE if is_valid else colors.RED],
+            [0.5, min_g_text, colors.WHITE],
+            [0.5, max_g_text, colors.WHITE]]
+
+        self.__render_text_with_stacked_annotations_right_justified__(
+            framebuffer,
+            [self.__right_border__, self.__text_y_pos__],
+            text_package)
 
 
 if __name__ == '__main__':

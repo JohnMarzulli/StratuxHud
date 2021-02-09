@@ -74,6 +74,8 @@ class AhrsData(object):
         self.airspeed = 0
         self.vertical_speed = 0
         self.g_load = 1.0
+        self.min_g = 1.0
+        self.max_g = 1.0
         self.utc_time = None
         self.gps_online = True
         self.is_avionics_source = False
