@@ -29,7 +29,7 @@ class SkidAndGs(AhrsElement):
         self.__text_y_pos__ = (self.__font_half_height__ << 2) + \
             g_y_pos - self.__font_half_height__
 
-    def render(
+    def __render_g_loading__(
         self,
         framebuffer,
         orientation: AhrsData
@@ -57,6 +57,20 @@ class SkidAndGs(AhrsElement):
             framebuffer,
             [self.__right_border__, self.__text_y_pos__],
             text_package)
+
+    def render(
+        self,
+        framebuffer,
+        orientation: AhrsData
+    ):
+        """
+        Renders the current G load, minimum, and maximum
+
+        Args:
+            framebuffer: The surface to draw to.
+            orientation (AhrsData): The current flight data
+        """
+        self.__render_g_loading__(framebuffer, orientation)
 
 
 if __name__ == '__main__':
