@@ -5,6 +5,7 @@ View element for a g-meter
 from numbers import Number
 
 import pygame
+import pygame.gfxdraw
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
 
@@ -105,11 +106,27 @@ class SkidAndGs(AhrsElement):
         screen_x = self.__center_x__ + \
             int(self.__skid_range__ * orientation.slip_skid)
 
-        pygame.draw.circle(
+        # We need top draw the filled circle
+        # THEN the AA circle due to the filled
+        # circle being a traditional (thus aliased)
+        # polygon.
+        #
+        # Doing the aacircle ONLY draws the outline.
+        # Drawing both in this order allows for
+        # the appearence of a filled, anti-aliased circle.
+        pygame.gfxdraw.filled_circle(
             framebuffer,
-            colors.YELLOW,
-            (screen_x, self.__skid_y_center__),
-            int(ball_radius))
+            screen_x,
+            self.__skid_y_center__,
+            int(ball_radius),
+            colors.YELLOW)
+
+        pygame.gfxdraw.aacircle(
+            framebuffer,
+            screen_x,
+            self.__skid_y_center__,
+            int(ball_radius),
+            colors.YELLOW)
 
     def render(
         self,
