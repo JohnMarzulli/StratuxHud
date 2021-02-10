@@ -21,6 +21,7 @@ class AhrsSimulation(object):
         self.ahrs_data.airspeed = self.speed_simulator.simulate()
         self.ahrs_data.groundspeed = self.ahrs_data.airspeed
         self.ahrs_data.alt = self.alt_simulator.simulate()
+        self.ahrs_data.slip_skid = self.skid_simulator.simulate()
 
     def update(
         self
@@ -58,3 +59,7 @@ class AhrsSimulation(object):
             -1,
             0,
             200)
+        self.skid_simulator = simulated_values.SimulatedValue(
+            0.5,
+            1.5,
+            1)
