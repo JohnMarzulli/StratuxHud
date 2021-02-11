@@ -4,10 +4,8 @@ View element for a g-meter
 
 from numbers import Number
 
-import pygame
-import pygame.gfxdraw
 from data_sources.ahrs_data import AhrsData
-from rendering import colors
+from rendering import colors, drawing
 
 from views.ahrs_element import AhrsElement
 
@@ -81,7 +79,7 @@ class SkidAndGs(AhrsElement):
         right_edge = self.__center_x__ + ball_radius + self.__skid_range__
 
         # Draw a centering line.
-        pygame.draw.line(
+        drawing.segment(
             framebuffer,
             colors.WHITE,
             [self.__center_x__, top_edge],
@@ -89,14 +87,14 @@ class SkidAndGs(AhrsElement):
             self.__line_width__)
 
         # Draw the edges
-        pygame.draw.line(
+        drawing.segment(
             framebuffer,
             colors.WHITE,
             [left_edge, top_edge],
             [left_edge, bottom_edge],
             self.__line_width__)
 
-        pygame.draw.line(
+        drawing.segment(
             framebuffer,
             colors.WHITE,
             [right_edge, top_edge],
@@ -106,27 +104,11 @@ class SkidAndGs(AhrsElement):
         screen_x = self.__center_x__ + \
             int(self.__skid_range__ * orientation.slip_skid)
 
-        # We need top draw the filled circle
-        # THEN the AA circle due to the filled
-        # circle being a traditional (thus aliased)
-        # polygon.
-        #
-        # Doing the aacircle ONLY draws the outline.
-        # Drawing both in this order allows for
-        # the appearence of a filled, anti-aliased circle.
-        pygame.gfxdraw.filled_circle(
+        drawing.filled_circle(
             framebuffer,
-            screen_x,
-            self.__skid_y_center__,
-            int(ball_radius),
-            colors.YELLOW)
-
-        pygame.gfxdraw.aacircle(
-            framebuffer,
-            screen_x,
-            self.__skid_y_center__,
-            int(ball_radius),
-            colors.YELLOW)
+            colors.YELLOW,
+            [screen_x, self.__skid_y_center__],
+            int(ball_radius))
 
     def render(
         self,
