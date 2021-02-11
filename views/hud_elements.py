@@ -15,6 +15,8 @@ MAX_TARGET_BUGS = 25
 IMPERIAL_FARAWAY = units.yards_to_sm * 5
 IMPERIAL_SUPERCLOSE = units.yards_to_sm / 8.0
 
+# pylint:disable=bare-except
+
 
 def apply_declination(
     heading
@@ -143,7 +145,6 @@ def run_ahrs_hud_element(
     """
 
     from datetime import datetime
-
     from data_sources import ahrs_simulation
 
     clock = pygame.time.Clock()

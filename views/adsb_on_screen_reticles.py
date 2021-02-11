@@ -91,6 +91,7 @@ class AdsbOnScreenReticles(AdsbElement):
             traffic_reports))
         traffic_reports = traffic_reports[:hud_elements.MAX_TARGET_BUGS]
 
+        # pylint:disable=expression-not-assigned
         [self.__render_on_screen_reticle__(
             framebuffer, orientation, traffic) for traffic in traffic_reports]
 
