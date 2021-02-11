@@ -36,7 +36,7 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
         border_vertical_size = (text_height >> 1) + (text_height >> 2)
         vertical_alignment_offset = int((border_vertical_size >> 1) + 0.5) \
             + self.__border_width__
-        half_width = int(self.__heading_text__[360][1][0] * 3.5)
+        half_width = int(self.__heading_text__[359][1][0] * 3.5)
         self.__heading_text_box_lines__ = [
             [self.__center_x__ - half_width, self._heading_box_y_ -
                 border_vertical_size + vertical_alignment_offset],

@@ -4,6 +4,8 @@ Data store to standardize AHRS data.
 
 from typing import Union
 
+from common_utils import fast_math
+
 NOT_AVAILABLE = '---'
 
 
@@ -35,10 +37,10 @@ class AhrsData:
             Union[int, str]: The heading to display.
         """
         if self.__is_compass_heading_valid__():
-            return int(self.compass_heading)
+            return int(fast_math.wrap_degrees(self.compass_heading))
 
         if self.gps_online:
-            return int(self.gps_heading)
+            return int(fast_math.wrap_degrees(self.gps_heading))
 
         return NOT_AVAILABLE
 
@@ -51,7 +53,7 @@ class AhrsData:
         Returns:
             Union[int, str]: The compass heading to display.
         """
-        return int(self.compass_heading) if self.__is_compass_heading_valid__() else NOT_AVAILABLE
+        return int(fast_math.wrap_degrees(self.compass_heading)) if self.__is_compass_heading_valid__() else NOT_AVAILABLE
 
     def get_onscreen_gps_heading(
         self
@@ -62,7 +64,7 @@ class AhrsData:
         Returns:
             Union[int, str]: The gps track to display.
         """
-        return int(self.gps_heading) if self.gps_online else NOT_AVAILABLE
+        return int(fast_math.wrap_degrees(self.gps_heading)) if self.gps_online else NOT_AVAILABLE
 
     def get_compass_heading(
         self
@@ -73,7 +75,7 @@ class AhrsData:
         Returns:
             Union[int, str]: The compass heading, or indication it is not available.
         """
-        return int(self.compass_heading) if self.__is_compass_heading_valid__() else NOT_AVAILABLE
+        return int(fast_math.wrap_degrees(self.compass_heading)) if self.__is_compass_heading_valid__() else NOT_AVAILABLE
 
     def __init__(
         self

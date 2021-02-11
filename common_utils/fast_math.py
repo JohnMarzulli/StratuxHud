@@ -42,7 +42,7 @@ def wrap_degrees(
     if angle < 0.0:
         return wrap_degrees(angle + 360.0)
 
-    if angle > 360.0:
+    if angle >= 360.0:
         return wrap_degrees(angle - 360.0)
 
     return angle

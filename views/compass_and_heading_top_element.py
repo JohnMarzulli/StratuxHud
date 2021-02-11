@@ -32,7 +32,7 @@ class CompassAndHeadingTopElement(AhrsElement):
 
         self.__heading_text__ = {}
 
-        for heading in range(-1, 361):
+        for heading in range(-1, 360):
             texture = self.__font__.render(
                 str(heading),
                 True,
@@ -43,7 +43,7 @@ class CompassAndHeadingTopElement(AhrsElement):
 
         border_vertical_size = self.__font_half_height__ + \
             (self.__font_height__ >> 2)
-        half_width = int(self.__heading_text__[360][1][0] * 3.5)
+        half_width = int(self.__heading_text__[359][1][0] * 3.5)
 
         self.__center_x__ = self.__center__[0]
 

@@ -1,9 +1,21 @@
+"""
+Draws a horizontal set of segments that work with the attitude indicator
+to help create a level reference during flight.
+"""
+
 from rendering import colors, drawing
 
 from views.ahrs_element import AhrsElement
 
+# pylint:disable=unused-argument
+
 
 class LevelReference(AhrsElement):
+    """
+    Creates a set of horizontal segments to help define
+    what is level flight.
+    """
+
     def __init__(
         self,
         degrees_of_pitch: float,
@@ -23,8 +35,9 @@ class LevelReference(AhrsElement):
                                     [int(width * 0.6),  self.__center__[1]]]
         left_hash = [[0, self.__center_y__], [
             edge_proportion, self.__center_y__]]
-        right_hash = [[width - edge_proportion,
-                       self.__center_y__], [width, self.__center_y__]]
+        right_hash = [
+            [width - edge_proportion, self.__center_y__],
+            [width, self.__center_y__]]
 
         self.level_reference_lines.append(artificial_horizon_level)
         self.level_reference_lines.append(left_hash)
@@ -39,6 +52,7 @@ class LevelReference(AhrsElement):
         Renders a "straight and level" line to the HUD.
         """
 
+        # pylint:disable=expression-not-assigned
         [drawing.segments(
             framebuffer,
             colors.WHITE,
