@@ -73,7 +73,7 @@ class AhrsData:
         Returns:
             Union[int, str]: The compass heading, or indication it is not available.
         """
-        return self.compass_heading if self.__is_compass_heading_valid__() else NOT_AVAILABLE
+        return int(self.compass_heading) if self.__is_compass_heading_valid__() else NOT_AVAILABLE
 
     def __init__(
         self
