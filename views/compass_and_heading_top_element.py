@@ -1,8 +1,8 @@
 from numbers import Number
 
-import pygame
 from common_utils import fast_math
 from data_sources.ahrs_data import AhrsData
+from rendering import drawing
 
 from views.ahrs_element import AhrsElement
 from views.hud_elements import apply_declination, colors, run_ahrs_hud_element
@@ -41,7 +41,8 @@ class CompassAndHeadingTopElement(AhrsElement):
             width, height = texture.get_size()
             self.__heading_text__[heading] = texture, (width >> 1, height >> 1)
 
-        border_vertical_size = self.__font_half_height__ + (self.__font_height__ >> 2)
+        border_vertical_size = self.__font_half_height__ + \
+            (self.__font_height__ >> 2)
         half_width = int(self.__heading_text__[360][1][0] * 3.5)
 
         self.__center_x__ = self.__center__[0]
@@ -104,7 +105,7 @@ class CompassAndHeadingTopElement(AhrsElement):
         x_pos: int,
         heading: int
     ):
-        pygame.draw.line(
+        drawing.segment(
             framebuffer,
             colors.GREEN,
             [x_pos, self.line_height],
@@ -166,7 +167,7 @@ class CompassAndHeadingTopElement(AhrsElement):
             rendered_text,
             (self.__center_x__ - (text_width >> 1), heading_y_pos))
 
-        pygame.draw.lines(
+        drawing.segments(
             framebuffer,
             colors.GREEN,
             True,

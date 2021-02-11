@@ -2,11 +2,10 @@
 View to render heading targets.
 """
 
-import pygame
 from common_utils import units
 from data_sources import norden, targets
 from data_sources.ahrs_data import AhrsData
-from rendering import colors
+from rendering import colors, drawing
 
 from views.adsb_target_bugs import AdsbTargetBugs
 from views.hud_elements import (apply_declination, get_heading_bug_x,
@@ -158,7 +157,7 @@ class HeadingTargetBugs(AdsbTargetBugs):
                 heading_bug_x,
                 target_bug_scale)
 
-            pygame.draw.polygon(
+            drawing.polygon(
                 framebuffer,
                 colors.BLUE,
                 reticle)

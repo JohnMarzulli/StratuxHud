@@ -13,7 +13,7 @@ from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
-from rendering import colors
+from rendering import colors, drawing
 
 from views.adsb_element import AdsbElement
 
@@ -242,6 +242,7 @@ class AdsbTopViewScope(AdsbElement):
         size = self.__framebuffer_size__[1] * 0.04
         half_size = int((size / 2.0) + 0.5)
         quarter_size = int((size / 4.0) + 0.5)
+        self.__no_direction_target_size__ = quarter_size
 
         self.__sin_half_pi__ = fast_math.SIN_BY_DEGREES[30]
         self.__cos_half_pi__ = fast_math.COS_BY_DEGREES[30]
@@ -394,14 +395,13 @@ class AdsbTopViewScope(AdsbElement):
                 [screen_x, screen_y],
                 orientation.get_compass_heading(),
                 traffic.track)
-            pygame.draw.polygon(framebuffer, target_color, points)
+            drawing.polygon(framebuffer, target_color, points)
         else:
-            pygame.draw.circle(
+            drawing.filled_circle(
                 framebuffer,
                 target_color,
-                (screen_x, screen_y),
-                4,
-                4 >> 1)
+                [screen_x, screen_y],
+                self.__no_direction_target_size__)
 
         # Do not draw identifier text for any targets further than
         # the first scope ring.
@@ -466,7 +466,7 @@ class AdsbTopViewScope(AdsbElement):
         heading_text_box_lines = [[left, top], [
             right, top], [right, bottom], [left, bottom]]
 
-        pygame.draw.lines(
+        drawing.segments(
             framebuffer,
             colors.GREEN,
             True,
@@ -490,7 +490,7 @@ class AdsbTopViewScope(AdsbElement):
             0,
             0)
 
-        pygame.draw.polygon(framebuffer, colors.GREEN, points)
+        drawing.polygon(framebuffer, colors.GREEN, points)
 
     def __draw_distance_rings__(
         self,
@@ -528,7 +528,7 @@ class AdsbTopViewScope(AdsbElement):
 
         for distance in ring_distances:
             radius_pixels = self.__get_pixel_distance__(distance, max_distance)
-            pygame.draw.circle(
+            drawing.circle(
                 framebuffer,
                 colors.GREEN,
                 self.__scope_center__,

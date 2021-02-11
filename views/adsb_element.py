@@ -1,5 +1,4 @@
 import math
-from views.ahrs_element import HudElement
 
 import pygame
 from common_utils import units
@@ -7,8 +6,9 @@ from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
-from rendering import colors
+from rendering import colors, drawing
 
+from views.ahrs_element import HudElement
 from views.hud_elements import apply_declination
 
 
@@ -268,10 +268,13 @@ class AdsbElement(HudElement):
                              int((len(additional_info_text) + 1) * info_spacing * text_height)]
         fill_bottom_left = [fill_top_left[0], fill_bottom_right[1]]
 
-        pygame.draw.polygon(framebuffer, card_color,
-                            [fill_top_left, fill_top_right, fill_bottom_right, fill_bottom_left])
+        drawing.polygon(
+            framebuffer,
+            card_color,
+            [fill_top_left, fill_top_right, fill_bottom_right, fill_bottom_left],
+            False)
 
-        pygame.draw.lines(
+        drawing.segments(
             framebuffer,
             colors.BLACK,
             True,
@@ -279,7 +282,11 @@ class AdsbElement(HudElement):
             int(self.__line_width__ * 1.5))
 
         self.__render_info_text__(
-            all_textures_and_sizes, center_x, framebuffer, info_position_y, info_spacing)
+            all_textures_and_sizes,
+            center_x,
+            framebuffer,
+            info_position_y,
+            info_spacing)
 
     def __get_card_color__(
         self,
@@ -360,7 +367,7 @@ class AdsbElement(HudElement):
         if center_y > (self.__height__ - border_space):
             center_y = int(self.__height__ - border_space)
 
-        pygame.draw.aalines(
+        drawing.segments(
             framebuffer,
             colors.RED,
             True,

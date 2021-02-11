@@ -1,11 +1,11 @@
 from numbers import Number
 
-import pygame
 from common_utils import fast_math
 from data_sources.ahrs_data import AhrsData
+from rendering import drawing
 
 from views.compass_and_heading_top_element import CompassAndHeadingTopElement
-from views.hud_elements import *
+from views.hud_elements import colors, run_ahrs_hud_element
 
 
 class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
@@ -52,7 +52,7 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
         x_pos: int,
         heading: int
     ):
-        pygame.draw.line(
+        drawing.segment(
             framebuffer,
             colors.GREEN,
             [x_pos, self.__line_top__],
