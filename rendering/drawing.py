@@ -51,6 +51,51 @@ def filled_circle(
             color)
 
 
+def segments(
+    framebuffer: pygame.Surface,
+    color: list,
+    is_closed: bool,
+    points: list,
+    width: int = 1,
+    is_antialiased: bool = True
+):
+    """
+    Draws segements using the given points.
+    The first point is the start, and each point is then
+    connected together using the given colors and width.
+
+    Can optionally draw the line anti-aliased
+
+    Args:
+        framebuffer (pygame.Surface): The target surface to draw the line segment onto
+        color (list): The color of the line segment
+        is_closed (bool): Should the first and last points be joined to close a polygon?
+        points (list): A list of tuples (x,y) of each position to connect together with segments.
+        width (int, optional): The width (in pixels) of the line segment. The theoretical single pixel line is defined by the points, with the additional pixels drawn above and below. Defaults to 1.
+        is_antialiased (bool, optional): Should the line segment be drawn anti aliased. Defaults to False.
+    """
+
+    points_count = len(points)
+
+    for point_index in range(1, points_count):
+        segment(
+            framebuffer,
+            color,
+            points[point_index - 1],
+            points[point_index],
+            width,
+            is_antialiased)
+
+    if is_closed:
+        segment(
+            framebuffer,
+            color,
+            points[points_count - 1],
+            points[0],
+            width,
+            is_antialiased)
+
+
 def segment(
     framebuffer: pygame.Surface,
     color: list,
