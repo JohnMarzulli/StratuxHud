@@ -369,7 +369,7 @@ class AdsbTopViewScope(AdsbElement):
             display_distance,
             scope_range)
 
-        delta_angle = orientation.get_heading()
+        delta_angle = orientation.get_compass_heading()
         delta_angle = traffic.bearing - delta_angle
         # We need to rotate by 270 to make sure that
         # the orientation is correct AND to correct the phase.
@@ -392,7 +392,7 @@ class AdsbTopViewScope(AdsbElement):
         if traffic.track is not None:
             points = self.__get_traffic_indicator__(
                 [screen_x, screen_y],
-                orientation.get_heading(),
+                orientation.get_compass_heading(),
                 traffic.track)
             pygame.draw.polygon(framebuffer, target_color, points)
         else:
@@ -442,7 +442,7 @@ class AdsbTopViewScope(AdsbElement):
             orientation (AhrsData): Our current AHRS data.
         """
         rendered_text, size = HudDataCache.get_cached_text_texture(
-            '{0:03}'.format(orientation.get_heading()),
+            '{0:03}'.format(orientation.get_compass_heading()),
             self.__font__,
             colors.GREEN,
             colors.BLACK,
@@ -598,7 +598,7 @@ class AdsbTopViewScope(AdsbElement):
             framebuffer (pygame.Surface): [description]
             orientation (AhrsData): [description]
         """
-        our_heading = int(orientation.get_heading())
+        our_heading = int(orientation.get_compass_heading())
 
         for heading_to_draw in [0, 90, 180, 270]:
             self.__draw_compass_text__(

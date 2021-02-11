@@ -152,7 +152,7 @@ class CompassAndHeadingTopElement(AhrsElement):
     ):
         heading_text = "{0} | {1}".format(
             str(apply_declination(
-                orientation.get_onscreen_projection_display_heading())).rjust(3),
+                orientation.get_onscreen_compass_heading())).rjust(3),
             str(apply_declination(
                 orientation.get_onscreen_gps_heading())).rjust(3))
 

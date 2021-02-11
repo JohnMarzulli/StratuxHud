@@ -1,9 +1,18 @@
-import pygame
+"""
+Element to show that the AHRS data is not available from any source.
+"""
+
 from data_sources.ahrs_data import AhrsData
-from rendering import colors
+from rendering import colors, drawing
 
 
-class AhrsNotAvailable(object):
+class AhrsNotAvailable:
+    """
+    Element to show that the AHRS data is not available from any source.
+    """
+
+    # pylint:disable=unused-argument
+
     def __init__(
         self,
         degrees_of_pitch: float,
@@ -30,13 +39,13 @@ class AhrsNotAvailable(object):
         available.
         """
 
-        pygame.draw.line(
+        drawing.segment(
             framebuffer,
             self.__na_color__,
             self.__not_available_lines__[0][0],
             self.__not_available_lines__[0][1],
             self.__na_line_width__)
-        pygame.draw.line(
+        drawing.segment(
             framebuffer,
             self.__na_color__,
             self.__not_available_lines__[1][0],
