@@ -9,6 +9,86 @@ import pygame.gfxdraw
 from common_utils import fast_math
 
 
+def polygon(
+    framebuffer: pygame.Surface,
+    color: list,
+    points: list,
+    is_antialiased: bool = True
+):
+    """
+    Draws a filled polygon from the given points with the given color to the given surface.
+
+    Args:
+        framebuffer (pygame.Surface): The surface to render to.
+        color (list): The color to draw the polygon.
+        points (list): The points that make up the polygon.
+        is_antialiased (bool, optional): Should an anti-aliased outline but drawn?. Defaults to True.
+    """
+
+    pygame.draw.polygon(
+        framebuffer,
+        color,
+        points,
+        0)  # Make filled
+
+    if is_antialiased:
+        segments(
+            framebuffer,
+            color,
+            True,
+            points,
+            1)
+
+
+def circle(
+    framebuffer: pygame.Surface,
+    color: list,
+    position: list,
+    radius: int,
+    width: int = 1,
+    is_antialiased: bool = True
+):
+    """
+    Draws an outline of a cicle at the given position with the given radius and given width
+
+    Args:
+        framebuffer (pygame.Surface): The target surface to draw the line segment onto
+        color (list): The color of the line segment
+        position (list): The center of the circle
+        radius (int): How many pixels wide the circle is
+        width (int): How wide the line is. Defaults to 1
+        is_antialiased (bool, optional): Should the circle be drawn anti aliased. Defaults to False.
+    """
+
+    pygame.draw.circle(
+        framebuffer,
+        color,
+        position,
+        radius,
+        width)
+
+    if is_antialiased:
+        half_width = width / 2.0
+
+        # for any thickness, we need to draw
+        # around the outside and inside
+        # of the outline to make sure it is smoothe
+
+        pygame.gfxdraw.aacircle(
+            framebuffer,
+            position[0],
+            position[1],
+            int(radius + half_width - 0.5),
+            color)
+
+        pygame.gfxdraw.aacircle(
+            framebuffer,
+            position[0],
+            position[1],
+            int(radius - half_width - 0.5),
+            color)
+
+
 def filled_circle(
     framebuffer: pygame.Surface,
     color: list,
@@ -37,17 +117,17 @@ def filled_circle(
     # the appearence of a filled, anti-aliased circle.
     pygame.gfxdraw.filled_circle(
         framebuffer,
-        position[0],
-        position[1],
-        radius,
+        int(position[0]),
+        int(position[1]),
+        int(radius),
         color)
 
     if is_antialiased:
         pygame.gfxdraw.aacircle(
             framebuffer,
-            position[0],
-            position[1],
-            radius,
+            int(position[0]),
+            int(position[1]),
+            int(radius),
             color)
 
 
@@ -154,8 +234,8 @@ def segment(
             [end[0] + rotated_endpoints[0][0], end[1] + rotated_endpoints[0][1]],
             [end[0] + rotated_endpoints[1][0], end[1] + rotated_endpoints[1][1]]]
 
-        segments = [starting_points[0], ending_points[0],
-                    ending_points[1], starting_points[1]]
+        segments_to_draw = [starting_points[0], ending_points[0],
+                            ending_points[1], starting_points[1]]
 
         # We need to draw the filled polygon
         # THEN draw an anti-aliased outline around it
@@ -163,9 +243,9 @@ def segment(
         pygame.draw.polygon(
             framebuffer,
             color,
-            segments)
+            segments_to_draw)
 
         pygame.gfxdraw.aapolygon(
             framebuffer,
-            segments,
+            segments_to_draw,
             color)
