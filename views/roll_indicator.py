@@ -1,12 +1,21 @@
+"""
+Indicates to the pilot the current roll angle.
+"""
+
 import pygame
 from common_utils.fast_math import cos, rotate_points, sin, translate_points
 from data_sources.ahrs_data import AhrsData
-from rendering import colors
+from rendering import colors, drawing
 
 from views.ahrs_element import AhrsElement
 
 
 class RollIndicator(AhrsElement):
+    """
+    Element to indicate the current roll from AHRS.
+    """
+
+    # pylint:disable=unused-argument
     def __init__(
         self,
         degrees_of_pitch: float,
@@ -219,7 +228,7 @@ class RollIndicator(AhrsElement):
         framebuffer,
         orientation: AhrsData
     ):
-        pygame.draw.lines(
+        drawing.segments(
             framebuffer,
             colors.WHITE,
             False,
@@ -235,12 +244,13 @@ class RollIndicator(AhrsElement):
 
         # Draw the important angle/roll step marks
         for segment_start, segment_end in self.__roll_angle_marks__:
-            pygame.draw.line(
+            drawing.segment(
                 framebuffer,
                 colors.WHITE,
                 segment_start,
                 segment_end,
-                self.__line_width__)
+                self.__line_width__,
+                True)
 
         # Draws the current roll
         pygame.draw.polygon(

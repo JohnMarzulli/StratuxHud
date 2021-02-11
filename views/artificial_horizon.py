@@ -1,6 +1,7 @@
 import pygame
 from common_utils import fast_math
 from data_sources.ahrs_data import AhrsData
+from rendering import drawing
 
 from views.ahrs_element import AhrsElement
 from views.hud_elements import *
@@ -95,7 +96,7 @@ class ArtificialHorizon(AhrsElement):
         """
 
         line_coords, line_center, reference_angle = line_info
-        pygame.draw.lines(
+        drawing.segments(
             framebuffer,
             colors.GREEN,
             False,

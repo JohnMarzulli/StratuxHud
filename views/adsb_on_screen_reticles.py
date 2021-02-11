@@ -1,9 +1,8 @@
-import pygame
 from common_utils import fast_math
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
-from rendering import colors
+from rendering import colors, drawing
 
 from views import hud_elements
 from views.adsb_element import AdsbElement
@@ -116,13 +115,13 @@ class AdsbOnScreenReticles(AdsbElement):
         center_y = int(self.__height__ - border_space) \
             if center_y > (self.__height__ - border_space) else center_y
 
-        pygame.draw.lines(
+        drawing.segments(
             framebuffer,
             colors.BLACK,
             True,
             reticle_lines,
             self.__line_width__ * 5)
-        pygame.draw.lines(
+        drawing.segments(
             framebuffer,
             colors.RED,
             True,

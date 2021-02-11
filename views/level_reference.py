@@ -1,5 +1,4 @@
-import pygame
-from rendering import colors
+from rendering import colors, drawing
 
 from views.ahrs_element import AhrsElement
 
@@ -22,8 +21,10 @@ class LevelReference(AhrsElement):
 
         artificial_horizon_level = [[int(width * 0.4),  self.__center__[1]],
                                     [int(width * 0.6),  self.__center__[1]]]
-        left_hash = [[0, self.__center_y__], [edge_proportion, self.__center_y__]]
-        right_hash = [[width - edge_proportion, self.__center_y__], [width, self.__center_y__]]
+        left_hash = [[0, self.__center_y__], [
+            edge_proportion, self.__center_y__]]
+        right_hash = [[width - edge_proportion,
+                       self.__center_y__], [width, self.__center_y__]]
 
         self.level_reference_lines.append(artificial_horizon_level)
         self.level_reference_lines.append(left_hash)
@@ -38,7 +39,7 @@ class LevelReference(AhrsElement):
         Renders a "straight and level" line to the HUD.
         """
 
-        [pygame.draw.lines(
+        [drawing.segments(
             framebuffer,
             colors.WHITE,
             False,

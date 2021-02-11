@@ -1,5 +1,4 @@
 import math
-from views.ahrs_element import HudElement
 
 import pygame
 from common_utils import units
@@ -7,8 +6,9 @@ from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
-from rendering import colors
+from rendering import colors, drawing
 
+from views.ahrs_element import HudElement
 from views.hud_elements import apply_declination
 
 
@@ -271,7 +271,7 @@ class AdsbElement(HudElement):
         pygame.draw.polygon(framebuffer, card_color,
                             [fill_top_left, fill_top_right, fill_bottom_right, fill_bottom_left])
 
-        pygame.draw.lines(
+        drawing.segments(
             framebuffer,
             colors.BLACK,
             True,
@@ -360,7 +360,7 @@ class AdsbElement(HudElement):
         if center_y > (self.__height__ - border_space):
             center_y = int(self.__height__ - border_space)
 
-        pygame.draw.aalines(
+        drawing.segments(
             framebuffer,
             colors.RED,
             True,

@@ -13,7 +13,7 @@ from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
-from rendering import colors
+from rendering import colors, drawing
 
 from views.adsb_element import AdsbElement
 
@@ -466,7 +466,7 @@ class AdsbTopViewScope(AdsbElement):
         heading_text_box_lines = [[left, top], [
             right, top], [right, bottom], [left, bottom]]
 
-        pygame.draw.lines(
+        drawing.segments(
             framebuffer,
             colors.GREEN,
             True,
