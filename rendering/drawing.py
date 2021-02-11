@@ -89,14 +89,14 @@ def segment(
             width)
     else:
         slope = rise / float(run)
-        degrees = math.atan(slope)
+        degrees = math.degrees(math.atan(slope))
         half_thickness = width / 2.0
 
         # start with the assumption of a veritcal
         # line. Calculate the points to the left
         # and right
         end_points_to_rotate = [[-half_thickness, 0], [half_thickness, 0]]
-        amount_to_rotate = degrees + 90
+        amount_to_rotate = degrees + 90.0
         rotated_endpoints = fast_math.rotate_points(
             end_points_to_rotate,
             [0, 0],
@@ -119,6 +119,7 @@ def segment(
             framebuffer,
             color,
             segments)
+
         pygame.gfxdraw.aapolygon(
             framebuffer,
             segments,
