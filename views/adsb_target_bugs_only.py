@@ -1,12 +1,11 @@
-import pygame
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
-from rendering import colors
+from rendering import colors, drawing
 
 from views.adsb_element import AdsbElement, apply_declination
-from views.hud_elements import (get_heading_bug_x, get_reticle_size,
-                                MAX_TARGET_BUGS)
+from views.hud_elements import (MAX_TARGET_BUGS, get_heading_bug_x,
+                                get_reticle_size)
 
 
 class AdsbTargetBugsOnly(AdsbElement):
@@ -64,9 +63,9 @@ class AdsbTargetBugsOnly(AdsbElement):
             reticle, reticle_edge_position_y = self.get_below_reticle(
                 heading_bug_x, target_bug_scale) if is_below else self.get_above_reticle(heading_bug_x, target_bug_scale)
 
-            bug_color = colors.BLUE if traffic_report.is_on_ground() == True else colors.RED
+            bug_color = colors.BLUE if traffic_report.is_on_ground() else colors.RED
 
-            pygame.draw.polygon(framebuffer, bug_color, reticle)
+            drawing.polygon(framebuffer, bug_color, reticle)
         except Exception:
             pass
 

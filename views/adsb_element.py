@@ -268,8 +268,11 @@ class AdsbElement(HudElement):
                              int((len(additional_info_text) + 1) * info_spacing * text_height)]
         fill_bottom_left = [fill_top_left[0], fill_bottom_right[1]]
 
-        pygame.draw.polygon(framebuffer, card_color,
-                            [fill_top_left, fill_top_right, fill_bottom_right, fill_bottom_left])
+        drawing.polygon(
+            framebuffer,
+            card_color,
+            [fill_top_left, fill_top_right, fill_bottom_right, fill_bottom_left],
+            False)
 
         drawing.segments(
             framebuffer,
@@ -279,7 +282,11 @@ class AdsbElement(HudElement):
             int(self.__line_width__ * 1.5))
 
         self.__render_info_text__(
-            all_textures_and_sizes, center_x, framebuffer, info_position_y, info_spacing)
+            all_textures_and_sizes,
+            center_x,
+            framebuffer,
+            info_position_y,
+            info_spacing)
 
     def __get_card_color__(
         self,

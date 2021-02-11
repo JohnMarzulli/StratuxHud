@@ -4,7 +4,7 @@ from data_sources.ahrs_data import AhrsData
 from rendering import drawing
 
 from views.ahrs_element import AhrsElement
-from views.hud_elements import *
+from views.hud_elements import colors, run_ahrs_hud_element
 
 
 class ArtificialHorizon(AhrsElement):
