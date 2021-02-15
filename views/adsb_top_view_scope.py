@@ -547,6 +547,16 @@ class AdsbTopViewScope(AdsbElement):
             framebuffer,
             str(heading_to_draw),
             (screen_x, screen_y),
+            colors.BLACK,
+            None,
+            1.3,
+            heading_text_rotation,
+            True)
+
+        self.__render_centered_text__(
+            framebuffer,
+            str(heading_to_draw),
+            (screen_x, screen_y),
             colors.YELLOW,
             None,
             1.0,
