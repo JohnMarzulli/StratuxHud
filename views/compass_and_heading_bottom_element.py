@@ -29,7 +29,7 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
     def __get_heading_text_y_position__(
         self
     ) -> int:
-        return self.__get_mark_line_end__()
+        return self.__get_compass_y_position__()
 
     def __init__(
         self,
