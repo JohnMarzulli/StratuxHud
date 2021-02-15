@@ -25,7 +25,7 @@ class CompassAndHeadingTopElement(AhrsElement):
     def __get_mark_line_end__(
         self
     ) -> int:
-        return self.__top_border__ + self.__font_height__
+        return self.__top_border__ + int(self.__font_height__ * 1.5)
 
     def __get_compass_y_position__(
         self
@@ -35,7 +35,7 @@ class CompassAndHeadingTopElement(AhrsElement):
     def __get_heading_text_y_position__(
         self
     ) -> int:
-        return self.__get_mark_line_end__()
+        return self.__get_compass_y_position__()
 
     def __init__(
         self,
@@ -223,7 +223,10 @@ class CompassAndHeadingTopElement(AhrsElement):
                 framebuffer,
                 str(heading),
                 [position_x, position_y],
-                colors.YELLOW)
+                colors.YELLOW,
+                colors.BLACK,
+                1.0,
+                False)
 
 
 if __name__ == '__main__':
