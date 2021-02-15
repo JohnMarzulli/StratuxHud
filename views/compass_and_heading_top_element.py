@@ -186,12 +186,6 @@ class CompassAndHeadingTopElement(AhrsElement):
             str(apply_declination(
                 orientation.get_onscreen_gps_heading())).rjust(3))
 
-        rendered_text = self.__font__.render(
-            heading_text,
-            True,
-            colors.GREEN)
-        text_width, text_height = rendered_text.get_size()
-
         drawing.polygon(
             framebuffer,
             colors.BLACK,
@@ -205,9 +199,11 @@ class CompassAndHeadingTopElement(AhrsElement):
             self.__heading_text_box_lines__,
             self.__line_width__ >> 1)
 
-        framebuffer.blit(
-            rendered_text,
-            (self.__center_x__ - (text_width >> 1), self.__compass_box_y_position__))
+        self.__render_horizontal_centered_text__(
+            framebuffer,
+            heading_text,
+            [self.__center_x__, self.__compass_box_y_position__],
+            colors.GREEN)
 
     def __render_heading_text__(
         self,
@@ -222,10 +218,12 @@ class CompassAndHeadingTopElement(AhrsElement):
         """
         if isinstance(heading, Number):
             heading = int(heading)
-            rendered_text, half_size = self.__heading_text__[heading]
 
-            framebuffer.blit(
-                rendered_text, (position_x - half_size[0], position_y - half_size[1]))
+            self.__render_horizontal_centered_text__(
+                framebuffer,
+                str(heading),
+                [position_x, position_y],
+                colors.YELLOW)
 
 
 if __name__ == '__main__':
