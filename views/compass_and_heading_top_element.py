@@ -1,3 +1,7 @@
+"""
+Module to draw a compass and heading strip at the top of the screen.
+"""
+
 from numbers import Number
 
 from common_utils import fast_math
@@ -9,6 +13,30 @@ from views.hud_elements import apply_declination, colors, run_ahrs_hud_element
 
 
 class CompassAndHeadingTopElement(AhrsElement):
+    """
+    Element to draw a compass and heading strip at the top of the screen.
+    """
+
+    def __get_mark_line_start__(
+        self
+    ) -> int:
+        return 0
+
+    def __get_mark_line_end__(
+        self
+    ) -> int:
+        return self.__top_border__ + self.__font_height__
+
+    def __get_compass_y_position__(
+        self
+    ) -> int:
+        return self.__top_border__ + int(self.__font_height__ >> 4)
+
+    def __get_heading_text_y_position__(
+        self
+    ) -> int:
+        return self.__get_mark_line_end__()
+
     def __init__(
         self,
         degrees_of_pitch: float,
@@ -18,44 +46,14 @@ class CompassAndHeadingTopElement(AhrsElement):
     ):
         super().__init__(font, framebuffer_size)
 
-        self.__long_line_width__ = self.__framebuffer_size__[0] * 0.2
-        self.__short_line_width__ = self.__framebuffer_size__[0] * 0.1
-        self.__pixels_per_degree_y__ = pixels_per_degree_y
-
-        self.heading_text_y = self.__font_height__
-        self.compass_text_y = self.__font_height__
+        self.__compass_box_y_position__ = self.__get_compass_y_position__()
 
         self.pixels_per_degree_x = framebuffer_size[0] / 360.0
-        cardinal_direction_line_proportion = 0.2
-        self.line_height = int(
-            framebuffer_size[1] * cardinal_direction_line_proportion)
 
-        self.__heading_text__ = {}
+        self.__heading_text__ = self.__generate_heading_text__()
 
-        for heading in range(-1, 360):
-            texture = self.__font__.render(
-                str(heading),
-                True,
-                colors.BLACK,
-                colors.YELLOW).convert()
-            width, height = texture.get_size()
-            self.__heading_text__[heading] = texture, (width >> 1, height >> 1)
-
-        border_vertical_size = self.__font_half_height__ + \
-            (self.__font_height__ >> 2)
-        half_width = int(self.__heading_text__[359][1][0] * 3.5)
-
-        self.__center_x__ = self.__center__[0]
-
-        self.__heading_text_box_lines__ = [
-            [self.__center_x__ - half_width,
-             self.compass_text_y + (1.5 * self.__font_height__) - border_vertical_size],
-            [self.__center_x__ + half_width,
-             self.compass_text_y + (1.5 * self.__font_height__) - border_vertical_size],
-            [self.__center_x__ + half_width,
-             self.compass_text_y + (1.5 * self.__font_height__) + border_vertical_size],
-            [self.__center_x__ - half_width,
-             self.compass_text_y + (1.5 * self.__font_height__) + border_vertical_size]]
+        self.__heading_text_box_lines__ = self.__get_heading_box_points__(
+            self.__compass_box_y_position__)
 
         self.__heading_strip_offset__ = {}
 
@@ -68,6 +66,40 @@ class CompassAndHeadingTopElement(AhrsElement):
         for heading in range(0, 361):
             self.__heading_strip__[
                 heading] = self.__generate_heading_strip__(heading)
+
+    def __generate_heading_text__(
+        self
+    ) -> dict:
+        heading_text = {}
+
+        for heading in range(-1, 360):
+            texture = self.__font__.render(
+                str(heading),
+                True,
+                colors.BLACK,
+                colors.YELLOW).convert()
+            width, height = texture.get_size()
+            heading_text[heading] = texture, (width >> 1, height >> 1)
+
+        return heading_text
+
+    def __get_heading_box_points__(
+        self,
+        text_vertical_position: int
+    ) -> list:
+        border_vertical_size = self.__font_half_height__ >> 2
+        half_width = int(self.__heading_text__[359][1][0] * 3.5)
+
+        left = self.__center_x__ - half_width
+        right = self.__center_x__ + half_width
+        top = text_vertical_position - border_vertical_size
+        bottom = text_vertical_position + self.__font_height__ + border_vertical_size
+
+        return [
+            [left, top],
+            [right, top],
+            [right, bottom],
+            [left, bottom]]
 
     def __generate_heading_strip__(
         self,
@@ -108,15 +140,15 @@ class CompassAndHeadingTopElement(AhrsElement):
         drawing.segment(
             framebuffer,
             colors.GREEN,
-            [x_pos, self.line_height],
-            [x_pos, 0],
-            4)
+            [x_pos, self.__get_mark_line_start__()],
+            [x_pos, self.__get_mark_line_end__()],
+            self.__line_width__)
 
         self.__render_heading_text__(
             framebuffer,
             apply_declination(heading),
             x_pos,
-            self.compass_text_y)
+            self.__get_heading_text_y_position__())
 
     def render(
         self,
@@ -139,17 +171,14 @@ class CompassAndHeadingTopElement(AhrsElement):
             for heading_mark_to_render in self.__heading_strip__[heading]]
 
         # Render the text that is showing our AHRS and GPS headings
-        heading_y_pos = self.__font__.get_height() << 1
         self.__render_hollow_heading_box__(
             orientation,
-            framebuffer,
-            heading_y_pos)
+            framebuffer)
 
     def __render_hollow_heading_box__(
         self,
         orientation: AhrsData,
-        framebuffer,
-        heading_y_pos: int
+        framebuffer
     ):
         heading_text = "{0} | {1}".format(
             str(apply_declination(
@@ -163,9 +192,11 @@ class CompassAndHeadingTopElement(AhrsElement):
             colors.GREEN)
         text_width, text_height = rendered_text.get_size()
 
-        framebuffer.blit(
-            rendered_text,
-            (self.__center_x__ - (text_width >> 1), heading_y_pos))
+        drawing.polygon(
+            framebuffer,
+            colors.BLACK,
+            self.__heading_text_box_lines__,
+            False)
 
         drawing.segments(
             framebuffer,
@@ -173,6 +204,10 @@ class CompassAndHeadingTopElement(AhrsElement):
             True,
             self.__heading_text_box_lines__,
             self.__line_width__ >> 1)
+
+        framebuffer.blit(
+            rendered_text,
+            (self.__center_x__ - (text_width >> 1), self.__compass_box_y_position__))
 
     def __render_heading_text__(
         self,
