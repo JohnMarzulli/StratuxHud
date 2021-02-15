@@ -93,6 +93,50 @@ class HudElement(object):
 
         return scaled_size
 
+    def __render_horizontal_centered_text__(
+        self,
+        framebuffer,
+        text: str,
+        position: list,
+        color: list,
+        scale: float = 1.0
+    ) -> list:
+        """
+        Renders the given text so that the given X position is at the center, with
+        the given color, and scale given.
+
+        Args:
+            framebuffer: The surface to render to.
+            text (str): The text to render.
+            position (list): The center-X and starting Y position to render the text at
+            color (list): The foreground color of the text.
+            scale (float): Any size adjustment (proportion) to adjust the render by.
+
+        Returns:
+            list: The size of the rendered text.
+        """
+        texture, size = HudDataCache.get_cached_text_texture(
+            text,
+            self.__font__,
+            color,
+            colors.BLACK,
+            True,
+            False)
+
+        scaled_size = [int(size[0] * scale), int(size[1] * scale)]
+
+        x_adjustment = scaled_size[0] >> 1
+
+        texture = pygame.transform.smoothscale(
+            texture,
+            scaled_size)
+
+        framebuffer.blit(
+            texture,
+            [position[0] - x_adjustment, position[1]])
+
+        return scaled_size
+
     def __render_text_right_justified__(
         self,
         framebuffer,
