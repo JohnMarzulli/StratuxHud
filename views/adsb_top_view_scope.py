@@ -411,23 +411,15 @@ class AdsbTopViewScope(AdsbElement):
         if self.__draw_identifiers__:
             identifier = traffic.get_display_name()
 
-            rendered_text, size = HudDataCache.get_cached_text_texture(
+            self.__render_centered_text__(
+                framebuffer,
                 identifier,
-                self.__font__,
+                [screen_x, screen_y],
                 colors.YELLOW,
-                colors.BLACK,
-                True,
-                False)
-
-            # Half size to reduce text clutter
-            rendered_text = pygame.transform.smoothscale(
-                rendered_text,
-                [size[0] >> 1, size[1] >> 1])
-
-            framebuffer.blit(
-                rendered_text,
-                (screen_x, screen_y),
-                special_flags=pygame.BLEND_RGBA_ADD)
+                None,
+                0.5,
+                0,
+                True)
 
     def __render_ownship__(
         self,
