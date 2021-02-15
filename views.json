@@ -19,6 +19,7 @@
     },
     {
       "elements": [
+        "Top Compass",
         "Groundspeed",
         "Altitude",
         "ADSB Scope",
