@@ -25,10 +25,10 @@ class RollIndicator(AhrsElement):
         super().__init__(font, framebuffer_size)
 
         self.__text_y_pos__ = self.__center_y__ - self.__font_half_height__
-        self.arc_radius = int(self.__width__ / 3)
+        self.arc_radius = int(self.__height__ * .4)
         self.__indicator_arc_center__ = [
             self.__center__[0],
-            self.__center__[1] + (self.arc_radius >> 2)]
+            self.__center__[1]]
         self.__indicator_arc__ = self.__get_points_on_arc__(range(-60, 61, 5))
 
         self.__zero_angle_triangle__ = self.__get_zero_angle_reference_shape__()
@@ -72,7 +72,8 @@ class RollIndicator(AhrsElement):
             list: The list of points on the indicator arc.
         """
         segments = [self.__get_point_on_arc__(
-            self.arc_radius, start_angle - 180) for start_angle in angles]
+            self.arc_radius,
+            start_angle - 180) for start_angle in angles]
 
         return translate_points(segments, self.__indicator_arc_center__)
 
