@@ -1,4 +1,7 @@
-import pygame
+"""
+Module to display the artificial horizon.
+"""
+
 from common_utils import fast_math
 from data_sources.ahrs_data import AhrsData
 from rendering import drawing
@@ -8,55 +11,9 @@ from views.hud_elements import colors, run_ahrs_hud_element
 
 
 class ArtificialHorizon(AhrsElement):
-    def __generate_reference_angle__(
-        self,
-        reference_angle: int
-    ):
-        """
-        Renders the text for the reference angle.
-
-        Arguments:
-            reference_angle {int} -- The angle that we are going to produce text for.
-
-        Returns:
-            (Surface, (int, int)) -- Tuple of the texture and the half size x & y.
-        """
-
-        text = self.__font__.render(
-            str(reference_angle),
-            False,
-            colors.WHITE,
-            colors.BLACK).convert()
-        size_x, size_y = text.get_size()
-
-        return (text, (size_x >> 1, size_y >> 1))
-
-    def __generate_rotated_reference_angle__(
-        self,
-        reference_angle: float
-    ):
-        """
-        Returns the text for the reference angle rotated.
-
-        Arguments:
-            reference_angle {int} -- The angle marking to generate the textures for.
-
-        Returns:
-            ({int, Surface}, (int, int)) -- A map of the textures keyed by roll angle and the half size of the texture.
-        """
-
-        rotate = pygame.transform.rotate
-        reference_angle, half_size = self.__generate_reference_angle__(
-            reference_angle)
-        rotated_angles = {roll: rotate(reference_angle, roll)
-                          for roll in range(-45, 46, 1)}
-
-        # Make sure that the un-rolled version is the original
-        # so as to not have any artifacts for later rotations
-        # that get added.
-        rotated_angles[0] = reference_angle
-
-        return rotated_angles, half_size
+    """
+    Element to display the artificial horizon.
+    """
 
     def __init__(
         self,
@@ -76,8 +33,6 @@ class ArtificialHorizon(AhrsElement):
             -degrees_of_pitch,
             degrees_of_pitch + 1,
             10)
-        self.__pitch_elements__ = {reference_angle: self.__generate_rotated_reference_angle__(reference_angle)
-                                   for reference_angle in self.__reference_angles__}
 
     def __render_reference_line__(
         self,
@@ -103,22 +58,17 @@ class ArtificialHorizon(AhrsElement):
             line_coords,
             self.__line_width__)
 
-        text, half_size = self.__pitch_elements__[reference_angle]
         roll = int(roll)
-        # Since we will start with a limited number of pre-cached
-        # pre-rotated textures (to improve boot time),
-        # add any missing rotated textures using the upright
-        # as the base.
-        if roll not in text:
-            rotated_surface = pygame.transform.rotate(text[0], roll)
-            self.__pitch_elements__[reference_angle][0][roll] = rotated_surface
-            text[roll] = rotated_surface
 
-        text = text[roll]
-        half_x, half_y = half_size
-        center_x, center_y = line_center
-
-        framebuffer.blit(text, (center_x - half_x, center_y - half_y))
+        self.__render_centered_text__(
+            framebuffer,
+            str(reference_angle),
+            (line_center[0], line_center[1]),
+            colors.WHITE,
+            None,
+            1.0,
+            roll,
+            True)
 
     def render(
         self,
