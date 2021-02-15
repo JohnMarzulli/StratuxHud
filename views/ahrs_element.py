@@ -281,15 +281,12 @@ class HudElement(object):
 
 
 class AhrsElement(HudElement):
+    """
+    Common definition for view elements that use AHRS.
+    """
+
     GPS_UNAVAILABLE_TEXT = "NO GPS"
     INOPERATIVE_TEXT = "INOP"
-
-    def __init__(
-        self,
-        font,
-        framebuffer_size
-    ) -> None:
-        super().__init__(font, framebuffer_size)
 
     def uses_ahrs(
         self
