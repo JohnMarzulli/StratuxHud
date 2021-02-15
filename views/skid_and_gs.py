@@ -29,7 +29,7 @@ class SkidAndGs(AhrsElement):
         self.__text_y_pos__ = (self.__font_half_height__ << 2) + \
             g_y_pos - self.__font_half_height__
 
-        self.__skid_y_center__ = self.__center_y__ + (self.__center_y__ >> 2)
+        self.__skid_y_center__ = int(self.__height__ * .7)
         self.__skid_range__ = self.__width__ >> 4
 
     def __render_g_loading__(

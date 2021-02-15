@@ -2,12 +2,12 @@
   "views": [
     {
       "elements": [
-        "Level Reference",
-        "Artificial Horizon",
         "Compass",
         "Altitude",
         "G Load",
+        "Level Reference",
         "Roll Indicator",
+        "Artificial Horizon",
         "Groundspeed",
         "Aithre",
         "Illyrian",
@@ -19,6 +19,7 @@
     },
     {
       "elements": [
+        "Top Compass",
         "Groundspeed",
         "Altitude",
         "ADSB Scope",

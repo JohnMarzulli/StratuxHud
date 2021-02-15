@@ -429,50 +429,6 @@ class AdsbTopViewScope(AdsbElement):
                 (screen_x, screen_y),
                 special_flags=pygame.BLEND_RGBA_ADD)
 
-    def __render_heading_text__(
-        self,
-        framebuffer,
-        orientation: AhrsData
-    ):
-        """
-        Renders your current heading at the top of the scope.
-
-        Args:
-            framebuffer: The framebuffer to render to.
-            orientation (AhrsData): Our current AHRS data.
-        """
-        rendered_text, size = HudDataCache.get_cached_text_texture(
-            '{0:03}'.format(orientation.get_compass_heading()),
-            self.__font__,
-            colors.GREEN,
-            colors.BLACK,
-            True,
-            False)
-
-        half_width = size[0] >> 1
-        text_height = size[1]
-        border_size = text_height >> 3
-
-        framebuffer.blit(
-            rendered_text,
-            ((self.__center__[0] - half_width), self.__top_border__),
-            special_flags=pygame.BLEND_RGBA_ADD)
-
-        left = self.__center__[0] - half_width - border_size
-        right = self.__center__[0] + half_width + border_size
-        top = self.__top_border__ - border_size
-        bottom = self.__top_border__ + text_height + border_size
-
-        heading_text_box_lines = [[left, top], [
-            right, top], [right, bottom], [left, bottom]]
-
-        drawing.segments(
-            framebuffer,
-            colors.GREEN,
-            True,
-            heading_text_box_lines,
-            self.__line_width__ >> 1)
-
     def __render_ownship__(
         self,
         framebuffer: pygame.Surface
@@ -684,7 +640,6 @@ class AdsbTopViewScope(AdsbElement):
         self.__render_ownship__(framebuffer)
 
         with TaskProfiler('AdsbTopViewScopeRings'):
-            self.__render_heading_text__(framebuffer, orientation)
             first_ring_pixel_radius = self.__draw_distance_rings__(
                 framebuffer, scope_range)
             self.__draw_all_compass_headings__(
