@@ -64,6 +64,16 @@ class ArtificialHorizon(AhrsElement):
             framebuffer,
             str(reference_angle),
             (line_center[0], line_center[1]),
+            colors.BLACK,
+            None,
+            1.2,
+            roll,
+            True)
+
+        self.__render_centered_text__(
+            framebuffer,
+            str(reference_angle),
+            (line_center[0], line_center[1]),
             colors.WHITE,
             None,
             1.0,
