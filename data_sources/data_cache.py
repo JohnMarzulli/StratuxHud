@@ -1,3 +1,8 @@
+"""
+Class and module to handle caching, and invalidation, of textures
+and other data.
+"""
+
 import threading
 from datetime import datetime
 
@@ -9,6 +14,10 @@ from data_sources import traffic
 
 
 class HudDataCache(object):
+    """
+    handle caching, and invalidation, of textures and other data.
+    """
+
     TEXT_TEXTURE_CACHE = {}
     __CACHE_ENTRY_LAST_USED__ = {}
     __CACHE_INVALIDATION_TIME__ = 60 * 5
@@ -23,6 +32,9 @@ class HudDataCache(object):
 
     @staticmethod
     def update_traffic_reports():
+        """
+        Updates the intermediary traffic store with the currently known reliable data.
+        """
         with TaskProfiler("HudDataCache::update_traffic_reports"):
             HudDataCache.__LOCK__.acquire()
 
@@ -38,8 +50,9 @@ class HudDataCache(object):
         Returns a thread safe copy of the currently known reliable traffic.
 
         Returns:
-            list -- A list of the reliable traffic.
+            list: A list of the reliable traffic stored in Traffic objects.
         """
+
         with TaskProfiler("HudDataCache::get_reliable_traffic"):
             traffic_clone = None
             HudDataCache.__LOCK__.acquire()
@@ -65,7 +78,7 @@ class HudDataCache(object):
             del HudDataCache.TEXT_TEXTURE_CACHE[texture_to_purge]
             del HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_to_purge]
         finally:
-            return True
+            pass
 
     @staticmethod
     def __get_purge_key__(
