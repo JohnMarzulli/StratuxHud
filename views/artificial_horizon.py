@@ -24,15 +24,19 @@ class ArtificialHorizon(AhrsElement):
     ):
         super().__init__(font, framebuffer_size)
 
-        self.__long_segment_length__ = int(self.__framebuffer_size__[0] * 0.4)
-        self.__short_segment_length__ = int(self.__framebuffer_size__[0] * 0.2)
-        self.__inner_blank_area_length__ = int((self.__short_segment_length__ / 2) * 1.5)
+        self.__long_segment_length__ = int(self.__width__ * 0.4)
+        self.__short_segment_length__ = int(self.__width__ * 0.2)
+        self.__inner_blank_area_length__ = int((self.__short_segment_length__ / 2)
+                                               * 1.5)
         self.__pixels_per_degree_y__ = int(pixels_per_degree_y)
 
         self.__reference_angles__ = range(
             -degrees_of_pitch,
             degrees_of_pitch + 1,
             10)
+
+        self.__upper_cull__ = -self.__font_height__
+        self.__lower_cull__ = self.__height__ + self.__font_height__
 
     def __render_horizon_reference__(
         self,
@@ -50,7 +54,7 @@ class ArtificialHorizon(AhrsElement):
             roll {float} -- How much the plane is rolled.
         """
 
-        segments, line_center, reference_angle = segments_info
+        segments, (center_x, center_y), reference_angle = segments_info
 
         for segment in segments:
             drawing.segment(
@@ -62,17 +66,16 @@ class ArtificialHorizon(AhrsElement):
 
         roll = int(roll)
 
-        is_not_visible_x = line_center[0] < 0 or line_center[0] > self.__width__
-        is_not_visible_y = (line_center[1] + self.__font_height__ < 0) \
-            or (line_center[1] - self.__font_height__ > self.__height__)
+        is_not_visible_y = (center_y < self.__upper_cull__) \
+            or (center_y > self.__lower_cull__)
 
-        if is_not_visible_x or is_not_visible_y:
+        if is_not_visible_y:
             return
 
         self.__render_centered_text__(
             framebuffer,
             str(reference_angle),
-            (line_center[0], line_center[1]),
+            [center_x, center_y],
             colors.BLACK,
             None,
             1.2,
@@ -82,7 +85,7 @@ class ArtificialHorizon(AhrsElement):
         self.__render_centered_text__(
             framebuffer,
             str(reference_angle),
-            (line_center[0], line_center[1]),
+            [center_x, center_y],
             colors.WHITE,
             None,
             1.0,
@@ -102,14 +105,16 @@ class ArtificialHorizon(AhrsElement):
             orientation {orientation} -- The airplane's orientation (roll & pitch)
         """
 
-        segment_generation = task_timer.TaskProfiler("views.artificial_horizon.ArtificialHorizon.segement_generation")
+        segment_generation = task_timer.TaskProfiler(
+            "views.artificial_horizon.ArtificialHorizon.segment_generation")
         segment_generation.start()
 
         pitch_range = int(self.__center_x__ / self.__pixels_per_degree_y__)
         smallest_pitch = (orientation.pitch - pitch_range)
         largest_pitch = (orientation.pitch + pitch_range)
 
-        angles_to_render = list(filter(lambda pitch: pitch < largest_pitch and pitch > smallest_pitch, self.__reference_angles__))
+        angles_to_render = list(filter(
+            lambda pitch: pitch < largest_pitch and pitch > smallest_pitch, self.__reference_angles__))
 
         # Calculating the coordinates ahead of time...
         segments_centers_and_angles = [self.__get_segment__(
@@ -118,7 +123,8 @@ class ArtificialHorizon(AhrsElement):
             reference_angle) for reference_angle in angles_to_render]
         segment_generation.stop()
 
-        segment_render = task_timer.TaskProfiler("views.artificial_horizon.ArtificialHorizon.segement_render")
+        segment_render = task_timer.TaskProfiler(
+            "views.artificial_horizon.ArtificialHorizon.segment_render")
         segment_render.start()
         # pylint: disable=expression-not-assigned
         [self.__render_horizon_reference__(
