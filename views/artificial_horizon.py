@@ -2,7 +2,7 @@
 Module to display the artificial horizon.
 """
 
-from common_utils import fast_math
+from common_utils import fast_math, task_timer
 from data_sources.ahrs_data import AhrsData
 from rendering import drawing
 
@@ -26,7 +26,7 @@ class ArtificialHorizon(AhrsElement):
 
         self.__long_segment_length__ = int(self.__framebuffer_size__[0] * 0.4)
         self.__short_segment_length__ = int(self.__framebuffer_size__[0] * 0.2)
-        self.__inner_blank_area_length__ = self.__short_segment_length__ / 2
+        self.__inner_blank_area_length__ = int((self.__short_segment_length__ / 2) * 1.5)
         self.__pixels_per_degree_y__ = int(pixels_per_degree_y)
 
         self.__reference_angles__ = range(
@@ -53,11 +53,11 @@ class ArtificialHorizon(AhrsElement):
         segments, line_center, reference_angle = segments_info
 
         for segment in segments:
-            drawing.segments(
+            drawing.segment(
                 framebuffer,
                 colors.GREEN,
-                False,
-                segment,
+                segment[0],
+                segment[1],
                 self.__line_width__)
 
         roll = int(roll)
@@ -102,17 +102,30 @@ class ArtificialHorizon(AhrsElement):
             orientation {orientation} -- The airplane's orientation (roll & pitch)
         """
 
+        segment_generation = task_timer.TaskProfiler("views.artificial_horizon.ArtificialHorizon.segement_generation")
+        segment_generation.start()
+
+        pitch_range = int(self.__center_x__ / self.__pixels_per_degree_y__)
+        smallest_pitch = (orientation.pitch - pitch_range)
+        largest_pitch = (orientation.pitch + pitch_range)
+
+        angles_to_render = list(filter(lambda pitch: pitch < largest_pitch and pitch > smallest_pitch, self.__reference_angles__))
+
         # Calculating the coordinates ahead of time...
         segments_centers_and_angles = [self.__get_segment__(
             orientation.pitch,
             orientation.roll,
-            reference_angle) for reference_angle in self.__reference_angles__]
+            reference_angle) for reference_angle in angles_to_render]
+        segment_generation.stop()
 
+        segment_render = task_timer.TaskProfiler("views.artificial_horizon.ArtificialHorizon.segement_render")
+        segment_render.start()
         # pylint: disable=expression-not-assigned
         [self.__render_horizon_reference__(
             framebuffer,
             segments,
             orientation.roll) for segments in segments_centers_and_angles]
+        segment_render.stop()
 
     def __get_segment_endpoints__(
         self,
