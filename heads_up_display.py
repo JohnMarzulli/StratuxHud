@@ -288,7 +288,10 @@ class HeadsUpDisplay(object):
         """
 
         rendered_text = self.__detail_font__.render(
-            text, True, color, background_color)
+            text,
+            True,
+            color,
+            background_color)
         (text_width, text_height) = rendered_text.get_size()
         surface = pygame.display.get_surface()
 

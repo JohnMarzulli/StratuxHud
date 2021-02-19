@@ -66,7 +66,7 @@ class AdsbTargetBugsOnly(AdsbElement):
             bug_color = colors.BLUE if traffic_report.is_on_ground() else colors.RED
 
             drawing.polygon(framebuffer, bug_color, reticle)
-        except Exception:
+        finally:
             pass
 
     def render(

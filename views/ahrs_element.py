@@ -99,7 +99,9 @@ class HudElement(object):
         text: str,
         position: list,
         color: list,
-        scale: float = 1.0
+        bg_color: list = None,
+        scale: float = 1.0,
+        use_alpha: bool = True
     ) -> list:
         """
         Renders the given text so that the given X position is at the center, with
@@ -119,8 +121,8 @@ class HudElement(object):
             text,
             self.__font__,
             color,
-            colors.BLACK,
-            True,
+            bg_color,
+            use_alpha,
             False)
 
         scaled_size = [int(size[0] * scale), int(size[1] * scale)]
@@ -136,6 +138,60 @@ class HudElement(object):
             [position[0] - x_adjustment, position[1]])
 
         return scaled_size
+
+    def __render_centered_text__(
+        self,
+        framebuffer,
+        text: str,
+        position: list,
+        color: list,
+        bg_color: list = colors.BLACK,
+        scale: float = 1.0,
+        rotation: float = 0.0,
+        use_alpha: bool = True
+    ) -> list:
+        """
+        Renders the given text so that the given X position is at the center, with
+        the given color, and scale given.
+
+        Args:
+            framebuffer: The surface to render to.
+            text (str): The text to render.
+            position (list): The center-X and starting Y position to render the text at
+            color (list): The foreground color of the text.
+            color (list): Any background color of the text. May be null for Alpha
+            scale (float): Any size adjustment (proportion) to adjust the render by.
+            scale (float): Any rotation adjustment (proportion) to adjust the text by.
+
+        Returns:
+            list: The size of the rendered text.
+        """
+        texture, _ = HudDataCache.get_cached_text_texture(
+            text,
+            self.__font__,
+            color,
+            bg_color,
+            use_alpha,
+            True)
+
+        texture = pygame.transform.rotozoom(
+            texture,
+            rotation,
+            scale)
+
+        # if use_alpha:
+        #     texture = texture.convert_alpha()
+
+        (size_x, size_y) = texture.get_size()
+
+        new_x = position[0] - (size_x >> 1)
+        new_y = position[1] - (size_y >> 1)
+
+        framebuffer.blit(
+            texture,
+            [new_x, new_y])
+
+        return (size_x, size_y)
 
     def __render_text_right_justified__(
         self,

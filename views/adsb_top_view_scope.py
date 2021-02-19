@@ -370,7 +370,7 @@ class AdsbTopViewScope(AdsbElement):
             display_distance,
             scope_range)
 
-        delta_angle = orientation.get_compass_heading()
+        delta_angle = orientation.get_onscreen_projection_heading()
         delta_angle = traffic.bearing - delta_angle
         # We need to rotate by 270 to make sure that
         # the orientation is correct AND to correct the phase.
@@ -393,7 +393,7 @@ class AdsbTopViewScope(AdsbElement):
         if traffic.track is not None:
             points = self.__get_traffic_indicator__(
                 [screen_x, screen_y],
-                orientation.get_compass_heading(),
+                orientation.get_onscreen_projection_heading(),
                 traffic.track)
             drawing.polygon(framebuffer, target_color, points)
         else:
@@ -411,23 +411,15 @@ class AdsbTopViewScope(AdsbElement):
         if self.__draw_identifiers__:
             identifier = traffic.get_display_name()
 
-            rendered_text, size = HudDataCache.get_cached_text_texture(
+            self.__render_centered_text__(
+                framebuffer,
                 identifier,
-                self.__font__,
+                [screen_x, screen_y],
                 colors.YELLOW,
-                colors.BLACK,
-                True,
-                False)
-
-            # Half size to reduce text clutter
-            rendered_text = pygame.transform.smoothscale(
-                rendered_text,
-                [size[0] >> 1, size[1] >> 1])
-
-            framebuffer.blit(
-                rendered_text,
-                (screen_x, screen_y),
-                special_flags=pygame.BLEND_RGBA_ADD)
+                None,
+                0.5,
+                0,
+                True)
 
     def __render_ownship__(
         self,
@@ -489,7 +481,8 @@ class AdsbTopViewScope(AdsbElement):
                 colors.GREEN,
                 self.__scope_center__,
                 radius_pixels,
-                self.__line_width__ >> 1)
+                self.__line_width__ >> 1,
+                False) # AA circle costs a BUNCH on the Pi
             ring_pixel_distances.append(radius_pixels)
 
             text_x = self.__scope_center__[0] \
@@ -524,20 +517,49 @@ class AdsbTopViewScope(AdsbElement):
             delta_angle,
             pixels_from_center)
 
-        heading_text, size = HudDataCache.get_cached_text_texture(
-            str(heading_to_draw),
-            self.__font__,
-            colors.YELLOW,
-            colors.BLACK,
-            True,
-            False)
-        half_width = size[0] >> 1
-        half_height = size[1] >> 1
+        heading_text_rotation = -(heading_to_draw - our_heading)
 
-        framebuffer.blit(
-            heading_text,
-            (screen_x - half_width, screen_y - half_height),
-            special_flags=pygame.BLEND_RGBA_ADD)
+        indicator_mark_ends = fast_math.rotate_points(
+            [[0, int(self.__line_width__ * -5)]],
+            [0, 0],
+            -heading_text_rotation + 180)
+
+        indicator_mark_ends = fast_math.translate_points(
+            indicator_mark_ends,
+            [screen_x, screen_y])
+
+        drawing.segment(
+            framebuffer,
+            colors.GREEN,
+            [screen_x, screen_y],
+            indicator_mark_ends[0],
+            self.__line_width__,
+            True)
+
+        draw_text = (heading_to_draw % 90) == 0
+
+        if not draw_text:
+            return
+
+        self.__render_centered_text__(
+            framebuffer,
+            str(heading_to_draw),
+            (screen_x, screen_y),
+            colors.BLACK,
+            None,
+            1.3,
+            heading_text_rotation,
+            True)
+
+        self.__render_centered_text__(
+            framebuffer,
+            str(heading_to_draw),
+            (screen_x, screen_y),
+            colors.YELLOW,
+            None,
+            1.0,
+            heading_text_rotation,
+            True)
 
     def __draw_all_compass_headings__(
         self,
@@ -554,9 +576,9 @@ class AdsbTopViewScope(AdsbElement):
             framebuffer (pygame.Surface): [description]
             orientation (AhrsData): [description]
         """
-        our_heading = int(orientation.get_compass_heading())
+        our_heading = int(orientation.get_onscreen_projection_heading())
 
-        for heading_to_draw in [0, 90, 180, 270]:
+        for heading_to_draw in range(0, 360, 45):
             self.__draw_compass_text__(
                 framebuffer,
                 our_heading,

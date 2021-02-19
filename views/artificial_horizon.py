@@ -1,5 +1,8 @@
-import pygame
-from common_utils import fast_math
+"""
+Module to display the artificial horizon.
+"""
+
+from common_utils import fast_math, local_debug, task_timer
 from data_sources.ahrs_data import AhrsData
 from rendering import drawing
 
@@ -8,55 +11,9 @@ from views.hud_elements import colors, run_ahrs_hud_element
 
 
 class ArtificialHorizon(AhrsElement):
-    def __generate_reference_angle__(
-        self,
-        reference_angle: int
-    ):
-        """
-        Renders the text for the reference angle.
-
-        Arguments:
-            reference_angle {int} -- The angle that we are going to produce text for.
-
-        Returns:
-            (Surface, (int, int)) -- Tuple of the texture and the half size x & y.
-        """
-
-        text = self.__font__.render(
-            str(reference_angle),
-            False,
-            colors.WHITE,
-            colors.BLACK).convert()
-        size_x, size_y = text.get_size()
-
-        return (text, (size_x >> 1, size_y >> 1))
-
-    def __generate_rotated_reference_angle__(
-        self,
-        reference_angle: float
-    ):
-        """
-        Returns the text for the reference angle rotated.
-
-        Arguments:
-            reference_angle {int} -- The angle marking to generate the textures for.
-
-        Returns:
-            ({int, Surface}, (int, int)) -- A map of the textures keyed by roll angle and the half size of the texture.
-        """
-
-        rotate = pygame.transform.rotate
-        reference_angle, half_size = self.__generate_reference_angle__(
-            reference_angle)
-        rotated_angles = {roll: rotate(reference_angle, roll)
-                          for roll in range(-45, 46, 1)}
-
-        # Make sure that the un-rolled version is the original
-        # so as to not have any artifacts for later rotations
-        # that get added.
-        rotated_angles[0] = reference_angle
-
-        return rotated_angles, half_size
+    """
+    Element to display the artificial horizon.
+    """
 
     def __init__(
         self,
@@ -67,22 +24,24 @@ class ArtificialHorizon(AhrsElement):
     ):
         super().__init__(font, framebuffer_size)
 
-        self.__long_line_width__ = self.__framebuffer_size__[0] * 0.4
-        self.__short_line_width__ = self.__framebuffer_size__[0] * 0.2
+        self.__long_segment_length__ = int(self.__width__ * 0.4)
+        self.__short_segment_length__ = int(self.__width__ * 0.2)
+        self.__inner_blank_area_length__ = int((self.__short_segment_length__ / 2)
+                                               * 1.5)
         self.__pixels_per_degree_y__ = int(pixels_per_degree_y)
-        self.__height__ = framebuffer_size[1]
 
         self.__reference_angles__ = range(
             -degrees_of_pitch,
             degrees_of_pitch + 1,
             10)
-        self.__pitch_elements__ = {reference_angle: self.__generate_rotated_reference_angle__(reference_angle)
-                                   for reference_angle in self.__reference_angles__}
 
-    def __render_reference_line__(
+        self.__upper_cull__ = -self.__font_height__
+        self.__lower_cull__ = self.__height__ + self.__font_height__
+
+    def __render_horizon_reference__(
         self,
         framebuffer,
-        line_info,
+        segments_info,
         roll: float
     ):
         """
@@ -95,30 +54,48 @@ class ArtificialHorizon(AhrsElement):
             roll {float} -- How much the plane is rolled.
         """
 
-        line_coords, line_center, reference_angle = line_info
-        drawing.segments(
-            framebuffer,
-            colors.GREEN,
-            False,
-            line_coords,
-            self.__line_width__)
+        segments, (center_x, center_y), reference_angle = segments_info
 
-        text, half_size = self.__pitch_elements__[reference_angle]
+        for segment in segments:
+            drawing.segment(
+                framebuffer,
+                colors.GREEN,
+                segment[0],
+                segment[1],
+                self.__line_width__,
+                not local_debug.IS_PI)
+
         roll = int(roll)
-        # Since we will start with a limited number of pre-cached
-        # pre-rotated textures (to improve boot time),
-        # add any missing rotated textures using the upright
-        # as the base.
-        if roll not in text:
-            rotated_surface = pygame.transform.rotate(text[0], roll)
-            self.__pitch_elements__[reference_angle][0][roll] = rotated_surface
-            text[roll] = rotated_surface
 
-        text = text[roll]
-        half_x, half_y = half_size
-        center_x, center_y = line_center
+        is_not_visible_y = (center_y < self.__upper_cull__) \
+            or (center_y > self.__lower_cull__)
 
-        framebuffer.blit(text, (center_x - half_x, center_y - half_y))
+        if is_not_visible_y:
+            return
+
+        # For running on the PI (at the moment)
+        # we need to reduce visual quality on some
+        # items to favor frame rate
+        if not local_debug.IS_PI:
+            self.__render_centered_text__(
+                framebuffer,
+                str(reference_angle),
+                [center_x, center_y],
+                colors.BLACK,
+                None,
+                1.2,
+                roll,
+                True)
+
+        self.__render_centered_text__(
+            framebuffer,
+            str(reference_angle),
+            [center_x, center_y],
+            colors.WHITE,
+            None,
+            1.0,
+            roll,
+            True)
 
     def render(
         self,
@@ -133,28 +110,64 @@ class ArtificialHorizon(AhrsElement):
             orientation {orientation} -- The airplane's orientation (roll & pitch)
         """
 
-        # Creating aliases to the functions saves time...
-        pitch = orientation.pitch
-        roll = orientation.roll
+        segment_generation = task_timer.TaskProfiler(
+            "views.artificial_horizon.ArtificialHorizon.segment_generation")
+        segment_generation.start()
+
+        pitch_range = int(self.__center_x__ / self.__pixels_per_degree_y__)
+        smallest_pitch = (orientation.pitch - pitch_range)
+        largest_pitch = (orientation.pitch + pitch_range)
+
+        angles_to_render = list(filter(
+            lambda pitch: pitch < largest_pitch and pitch > smallest_pitch, self.__reference_angles__))
 
         # Calculating the coordinates ahead of time...
-        lines_centers_and_angles = [self.__get_line_coords__(
-            pitch, roll, reference_angle) for reference_angle in self.__reference_angles__]
-        # ... only to use filter to throw them out saves time.
-        # This allows for the cores to be used and removes the conditionals
-        # from the actual render function.
-        lines_centers_and_angles = list(filter(
-            lambda center:
-            center[1][1] >= 0 and center[1][1] <= self.__height__, lines_centers_and_angles))
+        segments_centers_and_angles = [self.__get_segment__(
+            orientation.pitch,
+            orientation.roll,
+            reference_angle) for reference_angle in angles_to_render]
+        segment_generation.stop()
 
+        segment_render = task_timer.TaskProfiler(
+            "views.artificial_horizon.ArtificialHorizon.segment_render")
+        segment_render.start()
         # pylint: disable=expression-not-assigned
-        [self.__render_reference_line__(framebuffer, line_info, roll)
-            for line_info in lines_centers_and_angles]
+        [self.__render_horizon_reference__(
+            framebuffer,
+            segments,
+            orientation.roll) for segments in segments_centers_and_angles]
+        segment_render.stop()
 
-    def __get_line_coords__(
+    def __get_segment_endpoints__(
         self,
-        pitch: float,
-        roll: float,
+        length: int,
+        pitch_offset: float,
+        roll: float
+    ) -> list:
+        roll_delta = 90 - roll
+
+        center_x = self.__center_x__ - \
+            (pitch_offset * fast_math.cos(roll_delta)) + 0.5
+        center_y = self.__center_y__ - \
+            (pitch_offset * fast_math.sin(roll_delta)) + 0.5
+
+        x_len = length * fast_math.cos(roll) + 0.5
+        y_len = length * fast_math.sin(roll) + 0.5
+
+        half_x_len = x_len / 2.0
+        half_y_len = y_len / 2.0
+
+        start_x = int(center_x - half_x_len)
+        end_x = int(center_x + half_x_len)
+        start_y = int(center_y + half_y_len)
+        end_y = int(center_y - half_y_len)
+
+        return [[start_x, start_y], [end_x, end_y]], (center_x, center_y)
+
+    def __get_segment__(
+        self,
+        pitch: int,
+        roll: int,
         reference_angle: int
     ):
         """
@@ -169,36 +182,24 @@ class ArtificialHorizon(AhrsElement):
             [tuple] -- An array[4] of the X/Y line coords.
         """
 
-        length = self.__long_line_width__ if reference_angle == 0 else self.__short_line_width__
-
-        roll_int = int(roll)
-
-        ahrs_center_x, ahrs_center_y = self.__center__
+        length = self.__long_segment_length__ if reference_angle == 0 else self.__short_segment_length__
         pitch_offset = self.__pixels_per_degree_y__ * \
             (-pitch + reference_angle)
 
-        roll_delta = 90 - roll_int
+        outter_endpoints, center = self.__get_segment_endpoints__(
+            length,
+            pitch_offset,
+            roll)
 
-        center_x = ahrs_center_x - \
-            (pitch_offset * fast_math.cos(roll_delta)) + 0.5
-        center_y = ahrs_center_y - \
-            (pitch_offset * fast_math.sin(roll_delta)) + 0.5
+        inner_endpoints, _ = self.__get_segment_endpoints__(
+            self.__inner_blank_area_length__,
+            pitch_offset,
+            roll)
 
-        center_x = int(center_x)
-        center_y = int(center_y)
+        left_segment = [outter_endpoints[0], inner_endpoints[0]]
+        right_segment = [outter_endpoints[1], inner_endpoints[1]]
 
-        x_len = int(length * fast_math.cos(roll_int) + 0.5)
-        y_len = int(length * fast_math.sin(roll_int) + 0.5)
-
-        half_x_len = x_len >> 1
-        half_y_len = y_len >> 1
-
-        start_x = center_x - half_x_len
-        end_x = center_x + half_x_len
-        start_y = center_y + half_y_len
-        end_y = center_y - half_y_len
-
-        return [[start_x, start_y], [end_x, end_y]], (center_x, center_y), reference_angle
+        return [left_segment, right_segment], center, reference_angle
 
 
 if __name__ == '__main__':
