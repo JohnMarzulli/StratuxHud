@@ -77,7 +77,7 @@ class CompassAndHeadingTopElement(AhrsElement):
                 str(heading),
                 True,
                 colors.BLACK,
-                colors.YELLOW).convert()
+                colors.YELLOW).convert_alpha()
             width, height = texture.get_size()
             heading_text[heading] = texture, (width >> 1, height >> 1)
 
