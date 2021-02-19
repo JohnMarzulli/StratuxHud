@@ -570,7 +570,7 @@ class AdsbTopViewScope(AdsbElement):
             framebuffer (pygame.Surface): [description]
             orientation (AhrsData): [description]
         """
-        our_heading = int(orientation.get_compass_heading())
+        our_heading = int(orientation.get_onscreen_projection_heading())
 
         for heading_to_draw in range(0, 360, 45):
             self.__draw_compass_text__(
