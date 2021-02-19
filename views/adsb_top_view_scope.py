@@ -370,7 +370,7 @@ class AdsbTopViewScope(AdsbElement):
             display_distance,
             scope_range)
 
-        delta_angle = orientation.get_compass_heading()
+        delta_angle = orientation.get_onscreen_projection_heading()
         delta_angle = traffic.bearing - delta_angle
         # We need to rotate by 270 to make sure that
         # the orientation is correct AND to correct the phase.
@@ -393,7 +393,7 @@ class AdsbTopViewScope(AdsbElement):
         if traffic.track is not None:
             points = self.__get_traffic_indicator__(
                 [screen_x, screen_y],
-                orientation.get_compass_heading(),
+                orientation.get_onscreen_projection_heading(),
                 traffic.track)
             drawing.polygon(framebuffer, target_color, points)
         else:
@@ -481,7 +481,8 @@ class AdsbTopViewScope(AdsbElement):
                 colors.GREEN,
                 self.__scope_center__,
                 radius_pixels,
-                self.__line_width__ >> 1)
+                self.__line_width__ >> 1,
+                False) # AA circle costs a BUNCH on the Pi
             ring_pixel_distances.append(radius_pixels)
 
             text_x = self.__scope_center__[0] \
@@ -534,6 +535,11 @@ class AdsbTopViewScope(AdsbElement):
             indicator_mark_ends[0],
             self.__line_width__,
             True)
+
+        draw_text = (heading_to_draw % 90) == 0
+
+        if not draw_text:
+            return
 
         self.__render_centered_text__(
             framebuffer,

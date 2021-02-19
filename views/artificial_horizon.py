@@ -2,7 +2,7 @@
 Module to display the artificial horizon.
 """
 
-from common_utils import fast_math, task_timer
+from common_utils import fast_math, local_debug, task_timer
 from data_sources.ahrs_data import AhrsData
 from rendering import drawing
 
@@ -62,7 +62,8 @@ class ArtificialHorizon(AhrsElement):
                 colors.GREEN,
                 segment[0],
                 segment[1],
-                self.__line_width__)
+                self.__line_width__,
+                not local_debug.IS_PI)
 
         roll = int(roll)
 
@@ -72,15 +73,19 @@ class ArtificialHorizon(AhrsElement):
         if is_not_visible_y:
             return
 
-        self.__render_centered_text__(
-            framebuffer,
-            str(reference_angle),
-            [center_x, center_y],
-            colors.BLACK,
-            None,
-            1.2,
-            roll,
-            True)
+        # For running on the PI (at the moment)
+        # we need to reduce visual quality on some
+        # items to favor frame rate
+        if not local_debug.IS_PI:
+            self.__render_centered_text__(
+                framebuffer,
+                str(reference_angle),
+                [center_x, center_y],
+                colors.BLACK,
+                None,
+                1.2,
+                roll,
+                True)
 
         self.__render_centered_text__(
             framebuffer,
