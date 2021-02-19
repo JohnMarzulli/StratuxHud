@@ -2,6 +2,7 @@
 Indicates to the pilot the current roll angle.
 """
 
+from common_utils import local_debug
 from common_utils.fast_math import cos, rotate_points, sin, translate_points
 from data_sources.ahrs_data import AhrsData
 from rendering import colors, drawing
@@ -228,18 +229,24 @@ class RollIndicator(AhrsElement):
         framebuffer,
         orientation: AhrsData
     ):
+        # Use jagged lines at the moment on the
+        # Pi given the cost of anti-aliasing
+        is_antialiased = not local_debug.IS_PI
+
         drawing.segments(
             framebuffer,
             colors.WHITE,
             False,
             self.__indicator_arc__,
-            self.__arc_width__)
+            self.__arc_width__,
+            is_antialiased)
 
         # Render the Zero line
         drawing.polygon(
             framebuffer,
             colors.WHITE,
-            self.__zero_angle_triangle__)
+            self.__zero_angle_triangle__,
+            is_antialiased)
 
         # Draw the important angle/roll step marks
         for segment_start, segment_end in self.__roll_angle_marks__:
@@ -249,13 +256,14 @@ class RollIndicator(AhrsElement):
                 segment_start,
                 segment_end,
                 self.__line_width__,
-                True)
+                is_antialiased)
 
-            drawing.filled_circle(
-                framebuffer,
-                colors.WHITE,
-                segment_start,
-                self.__line_width__ >> 1)
+            if not local_debug.IS_PI:
+                drawing.filled_circle(
+                    framebuffer,
+                    colors.WHITE,
+                    segment_start,
+                    self.__line_width__ >> 1)
 
         # Draws the current roll
         drawing.polygon(
@@ -264,7 +272,8 @@ class RollIndicator(AhrsElement):
             rotate_points(
                 self.__current_angle_triangle__,
                 self.__indicator_arc_center__,
-                orientation.roll))
+                orientation.roll),
+            is_antialiased)
 
         drawing.polygon(
             framebuffer,
@@ -272,7 +281,8 @@ class RollIndicator(AhrsElement):
             rotate_points(
                 self.__current_angle_box__,
                 self.__indicator_arc_center__,
-                orientation.roll))
+                orientation.roll),
+            is_antialiased)
 
 
 if __name__ == '__main__':
