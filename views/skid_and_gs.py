@@ -45,14 +45,11 @@ class SkidAndGs(AhrsElement):
         self.__skid_right_edge__ = self.__center_x__ + \
             self.__skid_ball_radius__ + self.__skid_range__
 
-        self.__skid_range_box__ = [[self.__skid_left_edge__,
-                                    self.__skid_top_edge__],
-                                   [self.__skid_right_edge__,
-                                    self.__skid_top_edge__],
-                                   [self.__skid_right_edge__,
-                                    self.__skid_bottom_edge__],
-                                   [self.__skid_left_edge__,
-                                    self.__skid_bottom_edge__]]
+        self.__skid_range_box__ = [
+            [self.__skid_left_edge__, self.__skid_top_edge__],
+            [self.__skid_right_edge__, self.__skid_top_edge__],
+            [self.__skid_right_edge__, self.__skid_bottom_edge__],
+            [self.__skid_left_edge__, self.__skid_bottom_edge__]]
 
         self.__ball_center_range__ = int(self.__skid_ball_radius__ + 0.5) + 1
 
