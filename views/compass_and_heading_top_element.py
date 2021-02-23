@@ -179,7 +179,7 @@ class CompassAndHeadingTopElement(AhrsElement):
             colors.GREEN,
             True,
             self.__heading_text_box_lines__,
-            self.__line_width__ >> 1)
+            self.__thin_line_width__)
 
         self.__render_horizontal_centered_text__(
             framebuffer,
