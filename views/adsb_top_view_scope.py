@@ -493,7 +493,7 @@ class AdsbTopViewScope(AdsbElement):
                 self.__scope_center__,
                 radius_pixels,
                 self.__thin_line_width__,
-                False) # AA circle costs a BUNCH on the Pi
+                False)  # AA circle costs a BUNCH on the Pi
             ring_pixel_distances.append(radius_pixels)
 
             text_x = self.__scope_center__[0] \
@@ -674,7 +674,9 @@ class AdsbTopViewScope(AdsbElement):
 
         with TaskProfiler('AdsbTopViewScopeRings'):
             first_ring_pixel_radius = self.__draw_distance_rings__(
-                framebuffer, scope_range)
+                framebuffer,
+                scope_range)
+
             self.__draw_all_compass_headings__(
                 framebuffer,
                 orientation,
@@ -689,7 +691,11 @@ class AdsbTopViewScope(AdsbElement):
 
             # pylint: disable=expression-not-assigned
             [self.__render_on_screen_target__(
-                framebuffer, orientation, traffic, scope_range[0], first_ring_pixel_radius) for traffic in traffic_reports]
+                framebuffer,
+                orientation,
+                traffic,
+                scope_range[0],
+                first_ring_pixel_radius) for traffic in traffic_reports]
 
 
 if __name__ == '__main__':
