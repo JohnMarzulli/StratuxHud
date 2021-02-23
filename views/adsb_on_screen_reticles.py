@@ -23,9 +23,24 @@ class AdsbOnScreenReticles(AdsbElement):
             framebuffer_size)
 
         self.__listing_text_start_y__ = int(self.__font__.get_height() * 4)
-        self.__listing_text_start_x__ = int(
-            self.__framebuffer_size__[0] * 0.01)
+        self.__listing_text_start_x__ = int(self.__framebuffer_size__[0] * 0.01)
         self.__next_line_distance__ = int(font.get_height() * 1.5)
+
+    def __get_onscreen_reticle__(
+        self,
+        center_x: int,
+        center_y: int,
+        scale: float
+    ):
+        size = int(self.__height__ * scale)
+
+        on_screen_reticle = [
+            [center_x, center_y - size],
+            [center_x + size, center_y],
+            [center_x, center_y + size],
+            [center_x - size, center_y]]
+
+        return on_screen_reticle, size
 
     def __render_on_screen_reticle__(
         self,
@@ -42,8 +57,6 @@ class AdsbOnScreenReticles(AdsbElement):
             traffic {Traffic} -- The traffic to draw the reticle for.
         """
 
-        identifier = traffic.get_display_name()
-
         # Find where to draw the reticle....
         reticle_x, reticle_y = self.__get_traffic_projection__(
             orientation,
@@ -53,10 +66,11 @@ class AdsbOnScreenReticles(AdsbElement):
             return
 
         # Render using the Above us bug
-        on_screen_reticle_scale = hud_elements.get_reticle_size(
-            traffic.distance)
-        reticle, reticle_size_px = self.get_onscreen_reticle(
-            reticle_x, reticle_y, on_screen_reticle_scale)
+        on_screen_reticle_scale = hud_elements.get_reticle_size(traffic.distance)
+        reticle, reticle_size_px = self.__get_onscreen_reticle__(
+            reticle_x,
+            reticle_y,
+            on_screen_reticle_scale)
 
         reticle_x, reticle_y = self.__rotate_reticle__(
             [[reticle_x, reticle_y]],
@@ -64,11 +78,7 @@ class AdsbOnScreenReticles(AdsbElement):
 
         self.__render_target_reticle__(
             framebuffer,
-            identifier,
-            (reticle_x, reticle_y),
-            reticle,
-            orientation.roll,
-            reticle_size_px)
+            reticle)
 
     def render(
         self,
@@ -86,48 +96,34 @@ class AdsbOnScreenReticles(AdsbElement):
         # Get the traffic, and bail out of we have none
         traffic_reports = HudDataCache.get_reliable_traffic()
 
-        traffic_reports = list(filter(
-            lambda x: not x.is_on_ground(),
-            traffic_reports))
+        traffic_reports = list(
+            filter(
+                lambda x: not x.is_on_ground(),
+                traffic_reports))
         traffic_reports = traffic_reports[:hud_elements.MAX_TARGET_BUGS]
 
         # pylint:disable=expression-not-assigned
         [self.__render_on_screen_reticle__(
-            framebuffer, orientation, traffic) for traffic in traffic_reports]
+            framebuffer,
+            orientation,
+            traffic) for traffic in traffic_reports]
 
     def __render_target_reticle__(
         self,
         framebuffer,
-        identifier: str,
-        pos,
-        reticle_lines,
-        roll: float,
-        reticle_size_px: int
+        reticle_lines
     ):
         """
         Renders a targetting reticle on the screen.
         Assumes the X/Y projection has already been performed.
         """
 
-        center_x, center_y = pos
-        border_space = int(reticle_size_px * 1.2)
-
-        center_y = border_space if center_y < border_space else center_y
-        center_y = int(self.__height__ - border_space) \
-            if center_y > (self.__height__ - border_space) else center_y
-
-        drawing.segments(
-            framebuffer,
-            colors.BLACK,
-            True,
-            reticle_lines,
-            self.__line_width__ * 5)
         drawing.segments(
             framebuffer,
             colors.RED,
             True,
             reticle_lines,
-            int(self.__line_width__ * 2.5))
+            self.__line_width__)
 
     def __rotate_reticle__(
         self,
