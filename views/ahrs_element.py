@@ -38,7 +38,9 @@ class HudElement(object):
         self.__font_height__ = int(font.get_height())
         self.__font_half_height__ = int(self.__font_height__ >> 1)
 
-        self.__line_width__ = int((self.__height__ / 120) + 0.5)
+        self.__line_width__ = max(1, int((self.__width__ * 0.005) + 0.5))
+        self.__thin_line_width__ = self.__line_width__ >> 1
+        self.__thick_line_width__ = self.__line_width__ >> 1
 
     def uses_ahrs(
         self
