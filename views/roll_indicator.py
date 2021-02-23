@@ -126,10 +126,10 @@ class RollIndicator(AhrsElement):
         zero_angle_triangle_size = int(self.__width__ * 0.01)
         bottom_point = self.__get_arc_center__()[1]
 
-        bottom = bottom_point - (self.__line_width__ << 1)
+        bottom = bottom_point - self.__thick_line_width__
         left = self.__center_x__ - zero_angle_triangle_size
         right = self.__center_x__ + zero_angle_triangle_size
-        top = bottom - int(self.arc_radius / 8) + (self.__line_width__ << 1)
+        top = bottom - int(self.arc_radius / 8) + self.__thick_line_width__
 
         return [[self.__center_x__, bottom], [left, top], [right, top]]
 
@@ -149,7 +149,7 @@ class RollIndicator(AhrsElement):
         zero_angle_triangle_size = int(self.__width__ * 0.01)
 
         top_point = self.__get_arc_center__()[1]
-        top = top_point + (self.__line_width__ << 1) + 1
+        top = top_point + self.__thick_line_width__ + 1
 
         bottom = top + (zero_angle_triangle_size << 1) + 1
         left = self.__center_x__ - zero_angle_triangle_size
@@ -171,7 +171,7 @@ class RollIndicator(AhrsElement):
         zero_angle_triangle_size = int(self.__width__ * 0.01)
 
         top_point = self.__get_arc_center__()[1]
-        top = top_point + (self.__line_width__ << 1) + 1
+        top = top_point + self.__thin_line_width__ + 1
 
         top = top + (zero_angle_triangle_size << 1) + \
             int(self.__line_width__ * 1.5)
@@ -261,7 +261,7 @@ class RollIndicator(AhrsElement):
                     framebuffer,
                     colors.WHITE,
                     segment_start,
-                    self.__line_width__ >> 1)
+                    self.__thin_line_width__)
 
         # Draws the current roll
         drawing.polygon(
