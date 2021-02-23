@@ -233,8 +233,9 @@ class AdsbTopViewScope(AdsbElement):
         # Make the center of the scope towards the bottome of the screen
         # such that we can see aircraft sneeking up behind us, but not so much
         # that we loose to much fidelity in front of us.
-        self.__scope_center__ = [self.__center_x__,
-                                 self.__center_y__ + int(self.__center_y__ >> 1)]
+        self.__scope_center__ = [
+            self.__center_x__,
+            self.__center_y__ + int(self.__center_y__ >> 1)]
 
         self.__zoom_tracker__ = ZoomTracker(
             AdsbTopViewScope.DEFAULT_SCOPE_RANGE)
@@ -359,6 +360,16 @@ class AdsbTopViewScope(AdsbElement):
             first_ring_pixel_distance {int} -- The distance (in pixels) from the ownship to the first scope ring. Used for clutter control.
         """
 
+        # TODO - Make a pass to determine which targets
+        # AND text top draw. Save both to lists.
+        # THEN draw the text first, finally
+        # drawing the targets over top.
+
+        # TODO - Move the text to below the target indicator
+
+        # TODO - Consider tail numbers to the side, with lines
+        # that connect the number to the target.
+
         display_distance = units.get_converted_units(
             configuration.CONFIGURATION.get_units(),
             traffic.distance)
@@ -414,7 +425,7 @@ class AdsbTopViewScope(AdsbElement):
             self.__render_centered_text__(
                 framebuffer,
                 identifier,
-                [screen_x, screen_y],
+                [screen_x, screen_y + (self.__no_direction_target_size__ << 2)],
                 colors.YELLOW,
                 None,
                 0.5,
@@ -481,7 +492,7 @@ class AdsbTopViewScope(AdsbElement):
                 colors.GREEN,
                 self.__scope_center__,
                 radius_pixels,
-                self.__line_width__ >> 1,
+                self.__thin_line_width__,
                 False) # AA circle costs a BUNCH on the Pi
             ring_pixel_distances.append(radius_pixels)
 
