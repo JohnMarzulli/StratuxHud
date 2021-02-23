@@ -145,6 +145,7 @@ def run_ahrs_hud_element(
     """
 
     from datetime import datetime
+
     from data_sources import ahrs_simulation
 
     clock = pygame.time.Clock()
@@ -204,10 +205,7 @@ def run_adsb_hud_element(
     from data_sources import ahrs_simulation, traffic
     from data_sources.data_cache import HudDataCache
 
-    simulated_traffic = [
-        traffic.SimulatedTraffic(),
-        traffic.SimulatedTraffic(),
-        traffic.SimulatedTraffic()]
+    simulated_traffic = [traffic.SimulatedTraffic(max_distance) for max_distance in range(100, 100000, 1000)]
 
     clock = pygame.time.Clock()
 
@@ -248,6 +246,7 @@ def run_adsb_hud_element(
 
         HudDataCache.purge_old_textures()
         orientation = __aircraft__.get_ahrs()
+        HudDataCache.update_traffic_reports()
         __aircraft__.simulate()
         __backpage_framebuffer__.fill(colors.BLACK)
         hud_element.render(__backpage_framebuffer__, orientation)
