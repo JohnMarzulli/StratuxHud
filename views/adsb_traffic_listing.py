@@ -111,7 +111,7 @@ class AdsbTrafficListing(AdsbElement):
         # Since the bearing length should never be any more the 3 digits
         max_bearing_length = 4
         # len(max(pre_padded_text, key = lambda x: len(x[2]))[2]) + 1
-        max_distance_length = 8
+        max_distance_length = 10
         # We really should never get anything more than 35k above, but same some room
         # len(max(pre_padded_text, key = lambda x: len(x[3]))[3])
         max_altitude_length = 5
