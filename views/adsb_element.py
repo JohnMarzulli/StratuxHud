@@ -66,7 +66,7 @@ class AdsbElement(HudElement):
 
     def __get_distance_string__(
         self,
-        distance,
+        distance: float,
         decimal_places: bool = True
     ) -> str:
         """
@@ -86,7 +86,7 @@ class AdsbElement(HudElement):
 
         return units.get_converted_units_string(
             display_units,
-            distance,
+            math.fabs(distance),
             decimal_places=decimal_places)
 
     def __get_traffic_projection__(
