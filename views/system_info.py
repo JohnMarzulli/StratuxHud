@@ -393,19 +393,17 @@ class Illyrian(AhrsElement):
                 spo2_text = str(int(spo2_level)) + "% SPO"
                 self.__has_been_connected__ = True
 
-            spo2_ppm_texture = self.__font__.render(
-                spo2_text, True, spo2_color, colors.BLACK)
+            self.__render_text__(
+                framebuffer,
+                spo2_text,
+                [self.__left_border__, self.__text_y_pos__],
+                spo2_color)
 
-            heartbeat_texture = self.__font__.render(
-                heartbeat_text, True, colors.GREEN, colors.BLACK)
-
-            framebuffer.blit(
-                spo2_ppm_texture,
-                (self.__left_border__, self.__text_y_pos__))
-
-            framebuffer.blit(
-                heartbeat_texture,
-                (self.__left_border__, self.__pulse_y_pos__))
+            self.__render_text__(
+                framebuffer,
+                heartbeat_text,
+                [self.__left_border__, self.__pulse_y_pos__],
+                colors.GREEN)
 
 
 if __name__ == '__main__':
