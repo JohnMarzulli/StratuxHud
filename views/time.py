@@ -32,4 +32,4 @@ class Time(AhrsElement):
 
 
 if __name__ == '__main__':
-    hud_elements.run_ahrs_hud_element(Time, True)
+    hud_elements.run_hud_element(Time, True)

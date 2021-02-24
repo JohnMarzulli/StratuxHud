@@ -1,3 +1,7 @@
+"""
+Element to show targetting reticles for where traffic is.
+"""
+
 from common_utils import fast_math
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
@@ -9,6 +13,10 @@ from views.adsb_element import AdsbElement
 
 
 class AdsbOnScreenReticles(AdsbElement):
+    """
+    Element to show targetting reticles for where traffic is.
+    """
+
     def __init__(
         self,
         degrees_of_pitch: float,
@@ -28,19 +36,28 @@ class AdsbOnScreenReticles(AdsbElement):
 
     def __get_onscreen_reticle__(
         self,
-        center_x: int,
-        center_y: int,
-        scale: float
-    ):
+        scale: float,
+        roll: float,
+        reticle_center: list
+    ) -> list:
         size = int(self.__height__ * scale)
 
         on_screen_reticle = [
-            [center_x, center_y - size],
-            [center_x + size, center_y],
-            [center_x, center_y + size],
-            [center_x - size, center_y]]
+            [0, -size],
+            [size, 0],
+            [0, size],
+            [-size, 0]]
 
-        return on_screen_reticle, size
+        on_screen_reticle = fast_math.translate_points(
+            on_screen_reticle,
+            reticle_center)
+
+        on_screen_reticle = fast_math.rotate_points(
+            on_screen_reticle,
+            [self.__center_x__, self.__height__],
+            roll)
+
+        return on_screen_reticle
 
     def __render_on_screen_reticle__(
         self,
@@ -67,14 +84,10 @@ class AdsbOnScreenReticles(AdsbElement):
 
         # Render using the Above us bug
         on_screen_reticle_scale = hud_elements.get_reticle_size(traffic.distance)
-        reticle, reticle_size_px = self.__get_onscreen_reticle__(
-            reticle_x,
-            reticle_y,
-            on_screen_reticle_scale)
-
-        reticle_x, reticle_y = self.__rotate_reticle__(
-            [[reticle_x, reticle_y]],
-            orientation.roll)[0]
+        reticle = self.__get_onscreen_reticle__(
+            on_screen_reticle_scale,
+            orientation.roll,
+            [reticle_x, reticle_y])
 
         self.__render_target_reticle__(
             framebuffer,
@@ -125,46 +138,7 @@ class AdsbOnScreenReticles(AdsbElement):
             reticle_lines,
             self.__line_width__)
 
-    def __rotate_reticle__(
-        self,
-        reticle,
-        roll: float
-    ) -> list:
-        """
-        Takes a series of line segments and rotates them (roll) about
-        the screen's center
-
-        Arguments:
-            reticle {list of tuples} -- The line segments
-            roll {float} -- The amount to rotate about the center by.
-
-        Returns:
-            list of lists -- The new list of line segments
-        """
-
-        # Takes the roll in degrees
-        # Example input..
-        # [
-        #     [center_x, center_y - size],
-        #     [center_x + size, center_y],
-        #     [center_x, center_y + size],
-        #     [center_x - size, center_y]
-        # ]
-
-        translated_points = []
-
-        int_roll = int(-roll)
-        cos_roll = fast_math.cos(int_roll)
-        sin_roll = fast_math.sin(int_roll)
-        ox, oy = self.__center__
-
-        translated_points = [[(ox + cos_roll * (x_y[0] - ox) - sin_roll * (x_y[1] - oy)),
-                              (oy + sin_roll * (x_y[0] - ox) + cos_roll * (x_y[1] - oy))]
-                             for x_y in reticle]
-
-        return translated_points
-
 
 if __name__ == '__main__':
-    from views.hud_elements import run_adsb_hud_element
-    run_adsb_hud_element(AdsbOnScreenReticles)
+    from views.hud_elements import run_hud_element
+    run_hud_element(AdsbOnScreenReticles)

@@ -407,15 +407,15 @@ class Illyrian(AhrsElement):
 
 
 if __name__ == '__main__':
-    from views.hud_elements import run_ahrs_hud_element
+    from views.hud_elements import run_hud_element
 
-    run_ahrs_hud_element(Aithre)
+    run_hud_element(Aithre)
 
 if __name__ == '__main__':
-    from views.hud_elements import run_ahrs_hud_element
+    from views.hud_elements import run_hud_element
 
     # for temp in range(45, 95, 5):
     #     color = get_cpu_temp_text_color(temp)
     #     print("{3} => {0},{1},{2}".format(color[0], color[1], color[2], temp))
 
-    run_ahrs_hud_element(SystemInfo, True)
+    run_hud_element(SystemInfo, True)

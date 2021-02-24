@@ -158,5 +158,5 @@ class AdsbTrafficListing(AdsbElement):
 
 
 if __name__ == '__main__':
-    from views.hud_elements import run_adsb_hud_element
-    run_adsb_hud_element(AdsbTrafficListing)
+    from views.hud_elements import run_hud_element
+    run_hud_element(AdsbTrafficListing)

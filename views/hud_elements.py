@@ -130,7 +130,7 @@ def get_onscreen_traffic_projection__(
     return screen_x, screen_y
 
 
-def run_ahrs_hud_element(
+def run_hud_element(
     element_type,
     use_detail_font: bool = True
 ):
@@ -145,8 +145,10 @@ def run_ahrs_hud_element(
     """
 
     from datetime import datetime
+    from data_sources import ahrs_simulation, traffic
+    from data_sources.data_cache import HudDataCache
 
-    from data_sources import ahrs_simulation
+    simulated_traffic = [traffic.SimulatedTraffic(max_distance) for max_distance in range(100, 100000, 5000)]
 
     clock = pygame.time.Clock()
 
@@ -179,74 +181,16 @@ def run_ahrs_hud_element(
         (__width__, __height__))
 
     while True:
-        orientation = __aircraft__.get_ahrs()
-        orientation.utc_time = str(datetime.utcnow())
-        __aircraft__.simulate()
-        __backpage_framebuffer__.fill(colors.BLACK)
-        hud_element.render(__backpage_framebuffer__, orientation)
-        pygame.display.flip()
-        clock.tick(60)
-
-
-def run_adsb_hud_element(
-    element_type,
-    use_detail_font: bool = True
-):
-    """
-    Runs a ADSB based HUD element alone for testing purposes
-
-    Arguments:
-        element_type {type} -- The class to create.
-
-    Keyword Arguments:
-        use_detail_font {bool} -- Should the detail font be used. (default: {True})
-    """
-
-    from data_sources import ahrs_simulation, traffic
-    from data_sources.data_cache import HudDataCache
-
-    simulated_traffic = [traffic.SimulatedTraffic(max_distance) for max_distance in range(100, 100000, 1000)]
-
-    clock = pygame.time.Clock()
-
-    __backpage_framebuffer__, screen_size = display.display_init()  # args.debug)
-    __width__, __height__ = screen_size
-    pygame.mouse.set_visible(False)
-
-    pygame.font.init()
-
-    font_size_std = int(__height__ / 10.0)
-    font_size_detail = int(__height__ / 12.0)
-
-    __font__ = pygame.font.Font(DEFAULT_FONT, font_size_std)
-    __detail_font__ = pygame.font.Font(DEFAULT_FONT, font_size_detail)
-
-    if use_detail_font:
-        font = __detail_font__
-    else:
-        font = __font__
-
-    __aircraft__ = ahrs_simulation.AhrsSimulation()
-
-    __pixels_per_degree_y__ = (__height__ / configuration.CONFIGURATION.get_degrees_of_pitch()) * \
-        configuration.CONFIGURATION.get_pitch_degrees_display_scaler()
-
-    hud_element = element_type(
-        configuration.CONFIGURATION.get_degrees_of_pitch(),
-        __pixels_per_degree_y__,
-        font,
-        (__width__, __height__))
-
-    while True:
         for test_data in simulated_traffic:
             test_data.simulate()
             traffic.AdsbTrafficClient.TRAFFIC_MANAGER.handle_traffic_report(
                 test_data.icao_address,
                 test_data.to_json())
 
-        HudDataCache.purge_old_textures()
-        orientation = __aircraft__.get_ahrs()
         HudDataCache.update_traffic_reports()
+
+        orientation = __aircraft__.get_ahrs()
+        orientation.utc_time = str(datetime.utcnow())
         __aircraft__.simulate()
         __backpage_framebuffer__.fill(colors.BLACK)
         hud_element.render(__backpage_framebuffer__, orientation)

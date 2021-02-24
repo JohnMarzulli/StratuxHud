@@ -9,7 +9,7 @@ from data_sources.ahrs_data import AhrsData
 from rendering import drawing
 
 from views.ahrs_element import AhrsElement
-from views.hud_elements import apply_declination, colors, run_ahrs_hud_element
+from views.hud_elements import apply_declination, colors, run_hud_element
 
 
 class CompassAndHeadingTopElement(AhrsElement):
@@ -215,4 +215,4 @@ class CompassAndHeadingTopElement(AhrsElement):
 
 
 if __name__ == '__main__':
-    run_ahrs_hud_element(CompassAndHeadingTopElement)
+    run_hud_element(CompassAndHeadingTopElement)
