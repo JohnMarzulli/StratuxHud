@@ -1,11 +1,14 @@
 """
 Common code for HUD view elements.
 """
-import math
+
+from datetime import datetime
 
 import pygame
 from common_utils import fast_math, units
 from configuration import configuration
+from data_sources import ahrs_simulation, traffic
+from data_sources.data_cache import HudDataCache
 from rendering import colors, display
 
 DEFAULT_FONT = "./assets/fonts/LiberationMono-Bold.ttf"
@@ -101,35 +104,6 @@ def get_heading_bug_x(
     return int(delta * degrees_per_pixel)
 
 
-def get_onscreen_traffic_projection__(
-    heading: float,
-    pitch: float,
-    roll: float,
-    bearing: float,
-    distance: float,
-    altitude_delta: float,
-    pixels_per_degree: float
-):
-    """
-    Attempts to figure out where the traffic reticle should be rendered.
-    Returns value RELATIVE to the screen center.
-    """
-
-    # Assumes traffic.position_valid
-    # TODO - Account for aircraft roll...
-    slope = altitude_delta / distance
-    vertical_degrees_to_target = math.degrees(math.atan(slope))
-    vertical_degrees_to_target -= pitch
-
-    # TODO - Double check ALL of this math...
-    horizontal_degrees_to_target = bearing - heading
-
-    screen_y = -vertical_degrees_to_target * pixels_per_degree
-    screen_x = horizontal_degrees_to_target * pixels_per_degree
-
-    return screen_x, screen_y
-
-
 def run_hud_element(
     element_type,
     use_detail_font: bool = True
@@ -143,10 +117,6 @@ def run_hud_element(
     Keyword Arguments:
         use_detail_font {bool} -- Should the detail font be used. (default: {True})
     """
-
-    from datetime import datetime
-    from data_sources import ahrs_simulation, traffic
-    from data_sources.data_cache import HudDataCache
 
     simulated_traffic = [traffic.SimulatedTraffic(max_distance) for max_distance in range(100, 100000, 5000)]
 
@@ -196,37 +166,3 @@ def run_hud_element(
         hud_element.render(__backpage_framebuffer__, orientation)
         pygame.display.flip()
         clock.tick(60)
-
-
-if __name__ == '__main__':
-    for __distance__ in range(
-            0,
-            int(2.5 * units.yards_to_sm),
-            int(units.yards_to_sm / 10.0)):
-        print("{0}' -> {1}".format(__distance__, get_reticle_size(__distance__)))
-
-    __heading__ = 327
-    __pitch__ = 0
-    __roll__ = 0
-    __distance__ = 1000
-    __altitude_delta__ = 1000
-    __pixels_per_degree__ = 10
-    for __bearing__ in range(0, 360, 10):
-        print("Bearing {0} -> {1}px".format(
-            __bearing__,
-            get_heading_bug_x(
-                __heading__,
-                __bearing__,
-                2.2222222)))
-        x, y = get_onscreen_traffic_projection__(
-            __heading__,
-            __pitch__,
-            __roll__,
-            __bearing__,
-            __distance__,
-            __altitude_delta__,
-            __pixels_per_degree__)
-        print("    {0}, {1}".format(x + 400, y + 240))
-        print("TRUE: {0} -> {1} MAG".format(
-            __bearing__,
-            apply_declination(__bearing__)))
