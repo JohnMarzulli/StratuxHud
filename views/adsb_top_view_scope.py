@@ -245,9 +245,6 @@ class AdsbTopViewScope(AdsbElement):
         quarter_size = int((size / 4.0) + 0.5)
         self.__no_direction_target_size__ = quarter_size
 
-        self.__sin_half_pi__ = fast_math.SIN_BY_DEGREES[30]
-        self.__cos_half_pi__ = fast_math.COS_BY_DEGREES[30]
-
         # 1 - Come up with the 0,0 based line coordinates
         self.__target_indicator__ = [
             [-quarter_size, half_size],
@@ -284,8 +281,9 @@ class AdsbTopViewScope(AdsbElement):
         # 2 - determine the angle of rotation compared to our "up"
         rotation = 360.0 - our_heading
         rotation = rotation + traffic_heading
-        roation_degrees = int(fast_math.wrap_degrees(
-            rotation + self.__adjustment__))
+        roation_degrees = int(
+            fast_math.wrap_degrees(
+                rotation + self.__adjustment__))
 
         # 3 - Rotate the zero-based points
         rotation_sin = fast_math.SIN_BY_DEGREES[roation_degrees]
@@ -294,8 +292,8 @@ class AdsbTopViewScope(AdsbElement):
                            point[0] * rotation_sin + point[1] * rotation_cos] for point in self.__target_indicator__]
 
         # 4 - Translate to the bug center point
-        translated_points = [(point[0] + indicator_position[0],
-                              point[1] + indicator_position[1]) for point in rotated_points]
+        translated_points = [[point[0] + indicator_position[0],
+                              point[1] + indicator_position[1]] for point in rotated_points]
 
         return translated_points
 
@@ -485,6 +483,9 @@ class AdsbTopViewScope(AdsbElement):
             # since range() does not include the last item.
             ring_distances.append(max_distance)
 
+        sin_text_placement = fast_math.SIN_BY_DEGREES[30]
+        cos_text_placement = fast_math.COS_BY_DEGREES[30]
+
         for distance in ring_distances:
             radius_pixels = self.__get_pixel_distance__(distance, max_distance)
             drawing.circle(
@@ -496,15 +497,12 @@ class AdsbTopViewScope(AdsbElement):
                 False)  # AA circle costs a BUNCH on the Pi
             ring_pixel_distances.append(radius_pixels)
 
-            text_x = self.__scope_center__[0] \
-                + int(self.__sin_half_pi__ * radius_pixels)
-            text_y = self.__scope_center__[1] \
-                - int(self.__cos_half_pi__ * radius_pixels)
-            text_pos = [text_x, text_y]
+            text_x = self.__scope_center__[0] + int(sin_text_placement * radius_pixels)
+            text_y = self.__scope_center__[1] - int(cos_text_placement * radius_pixels)
 
             self.__render_text_with_stacked_annotations__(
                 framebuffer,
-                text_pos,
+                [text_x, text_y],
                 [[1.0, str(int(distance)), colors.GREEN], [0.5, units_suffix, colors.GREEN]])
 
         return ring_pixel_distances[0]
