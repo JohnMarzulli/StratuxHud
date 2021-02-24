@@ -331,12 +331,15 @@ class SimulatedTraffic(object):
             360,
             -1,
             random.randint(0, 360))
+        
+        max_altitude = 5000
+        starting_relative_altitude = random.randrange(-max_altitude, max_altitude) 
         self.altitude = simulated_values.SimulatedValue(
             10,
-            100,
-            -1,
-            0,
-            500)
+            max_altitude,
+            1 if (random.randint(0, 100) % 2) == 0 else -1,
+            starting_relative_altitude,
+            0)
         self.speed = simulated_values.SimulatedValue(
             5,
             10,
