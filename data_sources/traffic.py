@@ -470,8 +470,7 @@ class TrafficManager(object):
         finally:
             self.__lock__.release()
 
-        actionable_traffic = [self.traffic[identifier]
-                              for identifier in traffic_with_position]
+        actionable_traffic = [self.traffic[identifier] for identifier in traffic_with_position]
 
         sorted_traffic = sorted(
             actionable_traffic,
