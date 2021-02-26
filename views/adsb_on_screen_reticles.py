@@ -38,6 +38,7 @@ class AdsbOnScreenReticles(AdsbElement):
         self,
         scale: float,
         roll: float,
+        rotation_center: list,
         reticle_center: list
     ) -> list:
         size = int(self.__height__ * scale)
@@ -52,10 +53,12 @@ class AdsbOnScreenReticles(AdsbElement):
             on_screen_reticle,
             reticle_center)
 
-        on_screen_reticle = fast_math.rotate_points(
-            on_screen_reticle,
-            [self.__center_x__, self.__height__],
-            roll)
+        # TODO - Figure out retical rotation better
+        # TODO - Figure out true POV and offset
+        # on_screen_reticle = fast_math.rotate_points(
+        #     on_screen_reticle,
+        #     rotation_center,
+        #     roll)
 
         return on_screen_reticle
 
@@ -63,6 +66,7 @@ class AdsbOnScreenReticles(AdsbElement):
         self,
         framebuffer,
         orientation: AhrsData,
+        rotation_center: list,
         traffic: Traffic
     ):
         """
@@ -87,11 +91,37 @@ class AdsbOnScreenReticles(AdsbElement):
         reticle = self.__get_onscreen_reticle__(
             on_screen_reticle_scale,
             orientation.roll,
+            rotation_center,
             [reticle_x, reticle_y])
 
         self.__render_target_reticle__(
             framebuffer,
             reticle)
+
+    def __get_rotation_point__(
+        self,
+        orientation: AhrsData
+    ) -> list:
+        """
+        Get the coordinate for the lines for a given pitch and roll.
+
+        Arguments:
+            pitch {float} -- The pitch of the plane.
+            roll {float} -- The roll of the plane.
+            reference_angle {int} -- The pitch angle to be marked on the AH.
+
+        Returns:
+            [tuple] -- An array[4] of the X/Y line coords.
+        """
+
+        pitch_offset = self.__pixels_per_degree_y__ * -orientation.pitch
+
+        roll_delta = 90 - orientation.roll
+
+        center_x = self.__center_x__ - (pitch_offset * fast_math.cos(roll_delta)) + 0.5
+        center_y = self.__center_y__ - (pitch_offset * fast_math.sin(roll_delta)) + 0.5
+
+        return [center_x, center_y]
 
     def render(
         self,
@@ -115,10 +145,14 @@ class AdsbOnScreenReticles(AdsbElement):
                 traffic_reports))
         traffic_reports = traffic_reports[:hud_elements.MAX_TARGET_BUGS]
 
+        # find the position of the center of the 0 pitch indicator
+        rotation_center = self.__get_rotation_point__(orientation)
+
         # pylint:disable=expression-not-assigned
         [self.__render_on_screen_reticle__(
             framebuffer,
             orientation,
+            rotation_center,
             traffic) for traffic in traffic_reports]
 
     def __render_target_reticle__(
