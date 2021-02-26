@@ -118,8 +118,9 @@ class ArtificialHorizon(AhrsElement):
         smallest_pitch = (orientation.pitch - pitch_range)
         largest_pitch = (orientation.pitch + pitch_range)
 
-        angles_to_render = list(filter(
-            lambda pitch: pitch < largest_pitch and pitch > smallest_pitch, self.__reference_angles__))
+        angles_to_render = list(
+            filter(
+                lambda pitch: pitch < largest_pitch and pitch > smallest_pitch, self.__reference_angles__))
 
         # Calculating the coordinates ahead of time...
         segments_centers_and_angles = [self.__get_segment__(
