@@ -32,7 +32,7 @@ class SkidAndGs(AhrsElement):
         self.__skid_y_center__ = int(self.__height__ * .7)
         self.__skid_range__ = self.__width__ >> 4
 
-        self.__skid_ball_radius__ = self.__height__ * 0.03
+        self.__skid_ball_radius__ = self.__height__ * 0.04
         self.__skid_centering_line_length__ = int(
             self.__skid_ball_radius__ * 1.3)
 
@@ -98,23 +98,7 @@ class SkidAndGs(AhrsElement):
             self.__skid_range_box__,
             False)
 
-        # Draw edges that define center
-        drawing.segment(
-            framebuffer,
-            colors.WHITE,
-            [self.__center_x__ - self.__ball_center_range__, self.__skid_top_edge__],
-            [self.__center_x__ - self.__ball_center_range__,
-                self.__skid_bottom_edge__],
-            self.__line_width__)
-
-        drawing.segment(
-            framebuffer,
-            colors.WHITE,
-            [self.__center_x__ + self.__ball_center_range__, self.__skid_top_edge__],
-            [self.__center_x__ + self.__ball_center_range__,
-                self.__skid_bottom_edge__],
-            self.__line_width__)
-
+        # Draw the skid ball
         screen_x = self.__center_x__ + \
             int(self.__skid_range__ * orientation.slip_skid * 3.0)
 
@@ -122,13 +106,33 @@ class SkidAndGs(AhrsElement):
             framebuffer,
             colors.BLACK,
             [screen_x, self.__skid_y_center__],
-            int(self.__skid_ball_radius__))
+            int(self.__skid_ball_radius__ + self.__thin_line_width__))
 
         drawing.filled_circle(
             framebuffer,
             colors.YELLOW,
             [screen_x, self.__skid_y_center__],
-            int(self.__skid_ball_radius__) - self.__line_width__)
+            int(self.__skid_ball_radius__))
+
+        # Draw edges that define center last
+        # so it looks like the ball passes behind them
+        left_x = self.__center_x__ - self.__ball_center_range__
+        right_x = self.__center_x__ + self.__ball_center_range__
+
+        for x_pos in [left_x, right_x]:
+            drawing.segment(
+                framebuffer,
+                colors.BLACK,
+                [x_pos, self.__skid_top_edge__],
+                [x_pos, self.__skid_bottom_edge__],
+                self.__thick_line_width__ << 2)
+
+            drawing.segment(
+                framebuffer,
+                colors.WHITE,
+                [x_pos, self.__skid_top_edge__],
+                [x_pos, self.__skid_bottom_edge__],
+                self.__line_width__)
 
     def render(
         self,
