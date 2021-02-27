@@ -110,10 +110,6 @@ class ArtificialHorizon(AhrsElement):
             orientation {orientation} -- The airplane's orientation (roll & pitch)
         """
 
-        segment_generation = task_timer.TaskProfiler(
-            "views.artificial_horizon.ArtificialHorizon.segment_generation")
-        segment_generation.start()
-
         pitch_range = int(self.__center_x__ / self.__pixels_per_degree_y__)
         smallest_pitch = (orientation.pitch - pitch_range)
         largest_pitch = (orientation.pitch + pitch_range)
@@ -127,17 +123,12 @@ class ArtificialHorizon(AhrsElement):
             orientation.pitch,
             orientation.roll,
             reference_angle) for reference_angle in angles_to_render]
-        segment_generation.stop()
 
-        segment_render = task_timer.TaskProfiler(
-            "views.artificial_horizon.ArtificialHorizon.segment_render")
-        segment_render.start()
         # pylint: disable=expression-not-assigned
         [self.__render_horizon_reference__(
             framebuffer,
             segments,
             orientation.roll) for segments in segments_centers_and_angles]
-        segment_render.stop()
 
     def __get_segment_endpoints__(
         self,
