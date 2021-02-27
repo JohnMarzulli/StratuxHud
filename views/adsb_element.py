@@ -152,7 +152,7 @@ class AdsbElement(HudElement):
     ):
         """
         Generates the coordinates for a reticle indicating
-        traffic is below use.
+        traffic is below us.
 
         Arguments:
             center_x {int} -- Center X screen position
@@ -162,11 +162,10 @@ class AdsbElement(HudElement):
 
         size = int(self.__height__ * scale)
         quarter_size = size >> 2
-        bug_vertical_offset = self.__font__.get_height() << 1  # int(self.__height__ * 0.25)
         left = center_x - quarter_size
         right = center_x + quarter_size
-        top = self.__height__ - size - bug_vertical_offset
-        bottom = self.__height__ - bug_vertical_offset
+        bottom = self.__bottom_border__ - self.__font_height__ - self.__font_half_height__
+        top = bottom - size
 
         below_reticle = [
             [left, top],
