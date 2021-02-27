@@ -93,6 +93,7 @@ class AdsbTargetBugsOnly(AdsbElement):
 
 
 if __name__ == '__main__':
-    from views.hud_elements import run_hud_element
+    from views.hud_elements import run_hud_elements
+    from views.roll_indicator import RollIndicator
 
-    run_hud_element(AdsbTargetBugsOnly)
+    run_hud_elements([RollIndicator, AdsbTargetBugsOnly])

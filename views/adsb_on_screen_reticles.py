@@ -49,16 +49,28 @@ class AdsbOnScreenReticles(AdsbElement):
             [0, size],
             [-size, 0]]
 
+        # This rotation keeps the diamond points
+        # vertical compared to the horizon
+        on_screen_reticle = fast_math.rotate_points(
+            on_screen_reticle,
+            [0, 0],
+            -2 * roll)
+
+        # This moves it to where it would be in
+        # screen space WITHOUT taking into account
+        # aircraft roll
         on_screen_reticle = fast_math.translate_points(
             on_screen_reticle,
             reticle_center)
 
         # TODO - Figure out retical rotation better
         # TODO - Figure out true POV and offset
-        # on_screen_reticle = fast_math.rotate_points(
-        #     on_screen_reticle,
-        #     rotation_center,
-        #     roll)
+        # This moves it into position to account
+        # for the roll of the aircraft.
+        on_screen_reticle = fast_math.rotate_points(
+            on_screen_reticle,
+            rotation_center,
+            roll)
 
         return on_screen_reticle
 
@@ -93,6 +105,19 @@ class AdsbOnScreenReticles(AdsbElement):
             orientation.roll,
             rotation_center,
             [reticle_x, reticle_y])
+
+        # Used for debugging reticle rotation
+        # drawing.segment(
+        #     framebuffer,
+        #     colors.YELLOW,
+        #     [reticle_x, reticle_y],
+        #     reticle[0])
+
+        # drawing.segment(
+        #     framebuffer,
+        #     colors.YELLOW,
+        #     [reticle_x, reticle_y],
+        #     rotation_center)
 
         self.__render_target_reticle__(
             framebuffer,
@@ -174,5 +199,7 @@ class AdsbOnScreenReticles(AdsbElement):
 
 
 if __name__ == '__main__':
-    from views.hud_elements import run_hud_element
-    run_hud_element(AdsbOnScreenReticles)
+    from views.artificial_horizon import ArtificialHorizon
+    from views.hud_elements import run_hud_elements
+    from views.roll_indicator import RollIndicator
+    run_hud_elements([RollIndicator, ArtificialHorizon, AdsbOnScreenReticles])
