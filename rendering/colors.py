@@ -3,7 +3,7 @@ Module to define common colors, and the math to work with them.
 """
 
 BLACK = (0,   0,   0)
-DARK_GRAY = (32, 32, 32)
+DARK_GRAY = (64, 64, 64)
 GRAY = (128, 128, 128)
 WHITE = (255, 255, 255)
 BLUE = (0,   0, 255)
