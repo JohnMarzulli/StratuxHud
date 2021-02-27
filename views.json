@@ -2,6 +2,8 @@
   "views": [
     {
       "elements": [
+        "ADSB Reticles",
+        "ADSB Target Bugs Only",
         "Compass",
         "Altitude",
         "G Load",
@@ -11,8 +13,6 @@
         "Groundspeed",
         "Aithre",
         "Illyrian",
-        "ADSB Reticles",
-        "ADSB Target Bugs Only",
         "Traffic Not Available"
       ],
       "name": "AHRS + ADS-B"
