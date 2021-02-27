@@ -1,11 +1,14 @@
 """
 Common code for HUD view elements.
 """
-import math
+
+from datetime import datetime
 
 import pygame
 from common_utils import fast_math, units
 from configuration import configuration
+from data_sources import ahrs_simulation, traffic
+from data_sources.data_cache import HudDataCache
 from rendering import colors, display
 
 DEFAULT_FONT = "./assets/fonts/LiberationMono-Bold.ttf"
@@ -101,36 +104,7 @@ def get_heading_bug_x(
     return int(delta * degrees_per_pixel)
 
 
-def get_onscreen_traffic_projection__(
-    heading: float,
-    pitch: float,
-    roll: float,
-    bearing: float,
-    distance: float,
-    altitude_delta: float,
-    pixels_per_degree: float
-):
-    """
-    Attempts to figure out where the traffic reticle should be rendered.
-    Returns value RELATIVE to the screen center.
-    """
-
-    # Assumes traffic.position_valid
-    # TODO - Account for aircraft roll...
-    slope = altitude_delta / distance
-    vertical_degrees_to_target = math.degrees(math.atan(slope))
-    vertical_degrees_to_target -= pitch
-
-    # TODO - Double check ALL of this math...
-    horizontal_degrees_to_target = bearing - heading
-
-    screen_y = -vertical_degrees_to_target * pixels_per_degree
-    screen_x = horizontal_degrees_to_target * pixels_per_degree
-
-    return screen_x, screen_y
-
-
-def run_ahrs_hud_element(
+def run_hud_element(
     element_type,
     use_detail_font: bool = True
 ):
@@ -144,8 +118,7 @@ def run_ahrs_hud_element(
         use_detail_font {bool} -- Should the detail font be used. (default: {True})
     """
 
-    from datetime import datetime
-    from data_sources import ahrs_simulation
+    simulated_traffic = [traffic.SimulatedTraffic(max_distance) for max_distance in range(100, 100000, 5000)]
 
     clock = pygame.time.Clock()
 
@@ -178,6 +151,14 @@ def run_ahrs_hud_element(
         (__width__, __height__))
 
     while True:
+        for test_data in simulated_traffic:
+            test_data.simulate()
+            traffic.AdsbTrafficClient.TRAFFIC_MANAGER.handle_traffic_report(
+                test_data.icao_address,
+                test_data.to_json())
+
+        HudDataCache.update_traffic_reports()
+
         orientation = __aircraft__.get_ahrs()
         orientation.utc_time = str(datetime.utcnow())
         __aircraft__.simulate()
@@ -185,105 +166,3 @@ def run_ahrs_hud_element(
         hud_element.render(__backpage_framebuffer__, orientation)
         pygame.display.flip()
         clock.tick(60)
-
-
-def run_adsb_hud_element(
-    element_type,
-    use_detail_font: bool = True
-):
-    """
-    Runs a ADSB based HUD element alone for testing purposes
-
-    Arguments:
-        element_type {type} -- The class to create.
-
-    Keyword Arguments:
-        use_detail_font {bool} -- Should the detail font be used. (default: {True})
-    """
-
-    from data_sources import ahrs_simulation, traffic
-    from data_sources.data_cache import HudDataCache
-
-    simulated_traffic = [
-        traffic.SimulatedTraffic(),
-        traffic.SimulatedTraffic(),
-        traffic.SimulatedTraffic()]
-
-    clock = pygame.time.Clock()
-
-    __backpage_framebuffer__, screen_size = display.display_init()  # args.debug)
-    __width__, __height__ = screen_size
-    pygame.mouse.set_visible(False)
-
-    pygame.font.init()
-
-    font_size_std = int(__height__ / 10.0)
-    font_size_detail = int(__height__ / 12.0)
-
-    __font__ = pygame.font.Font(DEFAULT_FONT, font_size_std)
-    __detail_font__ = pygame.font.Font(DEFAULT_FONT, font_size_detail)
-
-    if use_detail_font:
-        font = __detail_font__
-    else:
-        font = __font__
-
-    __aircraft__ = ahrs_simulation.AhrsSimulation()
-
-    __pixels_per_degree_y__ = (__height__ / configuration.CONFIGURATION.get_degrees_of_pitch()) * \
-        configuration.CONFIGURATION.get_pitch_degrees_display_scaler()
-
-    hud_element = element_type(
-        configuration.CONFIGURATION.get_degrees_of_pitch(),
-        __pixels_per_degree_y__,
-        font,
-        (__width__, __height__))
-
-    while True:
-        for test_data in simulated_traffic:
-            test_data.simulate()
-            traffic.AdsbTrafficClient.TRAFFIC_MANAGER.handle_traffic_report(
-                test_data.icao_address,
-                test_data.to_json())
-
-        HudDataCache.purge_old_textures()
-        orientation = __aircraft__.get_ahrs()
-        __aircraft__.simulate()
-        __backpage_framebuffer__.fill(colors.BLACK)
-        hud_element.render(__backpage_framebuffer__, orientation)
-        pygame.display.flip()
-        clock.tick(60)
-
-
-if __name__ == '__main__':
-    for __distance__ in range(
-            0,
-            int(2.5 * units.yards_to_sm),
-            int(units.yards_to_sm / 10.0)):
-        print("{0}' -> {1}".format(__distance__, get_reticle_size(__distance__)))
-
-    __heading__ = 327
-    __pitch__ = 0
-    __roll__ = 0
-    __distance__ = 1000
-    __altitude_delta__ = 1000
-    __pixels_per_degree__ = 10
-    for __bearing__ in range(0, 360, 10):
-        print("Bearing {0} -> {1}px".format(
-            __bearing__,
-            get_heading_bug_x(
-                __heading__,
-                __bearing__,
-                2.2222222)))
-        x, y = get_onscreen_traffic_projection__(
-            __heading__,
-            __pitch__,
-            __roll__,
-            __bearing__,
-            __distance__,
-            __altitude_delta__,
-            __pixels_per_degree__)
-        print("    {0}, {1}".format(x + 400, y + 240))
-        print("TRUE: {0} -> {1} MAG".format(
-            __bearing__,
-            apply_declination(__bearing__)))

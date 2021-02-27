@@ -32,7 +32,7 @@ class RollIndicator(AhrsElement):
             self.__center__[1]]
         self.__indicator_arc__ = self.__get_points_on_arc__(range(-60, 61, 5))
 
-        self.__zero_angle_triangle__ = self.__get_zero_angle_reference_shape__()
+        self.__zero_angle_triangle__ = self.__get_upper_angle_reference_shape__()
         self.__current_angle_triangle__ = self.__get_current_angle_triangle_shape__()
         self.__current_angle_box__ = self.__get_current_angle_box_shape__()
         self.__arc_width__ = int(self.__line_width__ * 1.5)
@@ -87,7 +87,7 @@ class RollIndicator(AhrsElement):
         Returns:
             dict: A dictionary, keyed by angle, of where the indicator marks start.
         """
-        angles = [-60, -30, 30, 60]
+        angles = [-60, -45, -30, 0, 30, 45, 60]
         mark_start_points = self.__get_points_on_arc__(angles)
 
         angle_and_start_points = {}
@@ -110,7 +110,7 @@ class RollIndicator(AhrsElement):
         """
         return self.__get_points_on_arc__([0])[0]
 
-    def __get_zero_angle_reference_shape__(
+    def __get_upper_angle_reference_shape__(
         self
     ) -> list:
         """
@@ -126,11 +126,10 @@ class RollIndicator(AhrsElement):
         zero_angle_triangle_size = int(self.__width__ * 0.01)
         bottom_point = self.__get_arc_center__()[1]
 
-        bottom = bottom_point - (self.__line_width__ << 1) - 1
+        bottom = bottom_point - self.__thick_line_width__
         left = self.__center_x__ - zero_angle_triangle_size
         right = self.__center_x__ + zero_angle_triangle_size
-        top = bottom - (zero_angle_triangle_size << 1) - \
-            (self.__line_width__ >> 1) - 1
+        top = bottom - int(self.arc_radius / 8) + self.__thick_line_width__
 
         return [[self.__center_x__, bottom], [left, top], [right, top]]
 
@@ -147,10 +146,10 @@ class RollIndicator(AhrsElement):
         Returns:
             list: A list of points that describe a closed shape.
         """
-        zero_angle_triangle_size = int(self.__width__ * 0.015)
+        zero_angle_triangle_size = int(self.__width__ * 0.01)
 
         top_point = self.__get_arc_center__()[1]
-        top = top_point + (self.__line_width__ << 1) + 1
+        top = top_point + self.__thick_line_width__ + 1
 
         bottom = top + (zero_angle_triangle_size << 1) + 1
         left = self.__center_x__ - zero_angle_triangle_size
@@ -169,10 +168,10 @@ class RollIndicator(AhrsElement):
         Returns:
             list: A list of points that describe a closed shape.
         """
-        zero_angle_triangle_size = int(self.__width__ * 0.015)
+        zero_angle_triangle_size = int(self.__width__ * 0.01)
 
         top_point = self.__get_arc_center__()[1]
-        top = top_point + (self.__line_width__ << 1) + 1
+        top = top_point + self.__thin_line_width__ + 1
 
         top = top + (zero_angle_triangle_size << 1) + \
             int(self.__line_width__ * 1.5)
@@ -211,12 +210,18 @@ class RollIndicator(AhrsElement):
 
         roll_angle_marks = []
 
+        major_mark_length = int(self.arc_radius / 8)
+        minor_mark_length = major_mark_length >> 1
+
         for roll_angle in list(angles_and_start_points.keys()):
+            mark_length = major_mark_length if roll_angle % 10 == 0 else minor_mark_length
             angle_mark_start = angles_and_start_points[roll_angle]
-            angle_mark_end = [0, int(self.arc_radius / 10)]
+            angle_mark_end = [0, mark_length]
 
             angle_mark_end = rotate_points(
-                [angle_mark_end], [0, 0], roll_angle)[0]
+                [angle_mark_end],
+                [0, 0],
+                roll_angle)[0]
             angle_mark_end[0] = angle_mark_end[0] + angle_mark_start[0]
             angle_mark_end[1] = angle_mark_start[1] - angle_mark_end[1]
 
@@ -241,13 +246,6 @@ class RollIndicator(AhrsElement):
             self.__arc_width__,
             is_antialiased)
 
-        # Render the Zero line
-        drawing.polygon(
-            framebuffer,
-            colors.WHITE,
-            self.__zero_angle_triangle__,
-            is_antialiased)
-
         # Draw the important angle/roll step marks
         for segment_start, segment_end in self.__roll_angle_marks__:
             drawing.segment(
@@ -256,23 +254,32 @@ class RollIndicator(AhrsElement):
                 segment_start,
                 segment_end,
                 self.__line_width__,
-                is_antialiased)
+                True)
 
             if not local_debug.IS_PI:
                 drawing.filled_circle(
                     framebuffer,
                     colors.WHITE,
                     segment_start,
-                    self.__line_width__ >> 1)
+                    self.__thin_line_width__)
 
         # Draws the current roll
         drawing.polygon(
             framebuffer,
             colors.WHITE,
             rotate_points(
+                self.__zero_angle_triangle__,
+                self.__indicator_arc_center__,
+                -orientation.roll),
+            is_antialiased)
+
+        drawing.polygon(
+            framebuffer,
+            colors.WHITE,
+            rotate_points(
                 self.__current_angle_triangle__,
                 self.__indicator_arc_center__,
-                orientation.roll),
+                -orientation.roll),
             is_antialiased)
 
         drawing.polygon(
@@ -281,10 +288,10 @@ class RollIndicator(AhrsElement):
             rotate_points(
                 self.__current_angle_box__,
                 self.__indicator_arc_center__,
-                orientation.roll),
+                -orientation.roll),
             is_antialiased)
 
 
 if __name__ == '__main__':
-    from views.hud_elements import run_ahrs_hud_element
-    run_ahrs_hud_element(RollIndicator, False)
+    from views.hud_elements import run_hud_element
+    run_hud_element(RollIndicator, False)

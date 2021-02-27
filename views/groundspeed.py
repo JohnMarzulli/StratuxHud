@@ -118,6 +118,6 @@ class Groundspeed(AhrsElement):
 
 
 if __name__ == '__main__':
-    from views.hud_elements import run_ahrs_hud_element
+    from views.hud_elements import run_hud_element
 
-    run_ahrs_hud_element(Groundspeed, True)
+    run_hud_element(Groundspeed, True)

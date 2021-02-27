@@ -22,11 +22,6 @@ class AdsbTargetBugsOnly(AdsbElement):
             font,
             framebuffer_size)
 
-        self.__listing_text_start_y__ = int(self.__font__.get_height() * 4)
-        self.__listing_text_start_x__ = int(
-            self.__framebuffer_size__[0] * 0.01)
-        self.__next_line_distance__ = int(font.get_height() * 1.5)
-
     def __render_traffic_heading_bug__(
         self,
         traffic_report: Traffic,
@@ -61,7 +56,10 @@ class AdsbTargetBugsOnly(AdsbElement):
             # .. or just validate that we are using pressure altitude...
             is_below = (orientation.alt - 100) > traffic_report.altitude
             reticle, reticle_edge_position_y = self.get_below_reticle(
-                heading_bug_x, target_bug_scale) if is_below else self.get_above_reticle(heading_bug_x, target_bug_scale)
+                heading_bug_x,
+                target_bug_scale) if is_below else self.get_above_reticle(
+                    heading_bug_x,
+                    target_bug_scale)
 
             bug_color = colors.BLUE if traffic_report.is_on_ground() else colors.RED
 
@@ -95,6 +93,6 @@ class AdsbTargetBugsOnly(AdsbElement):
 
 
 if __name__ == '__main__':
-    from views.hud_elements import run_adsb_hud_element
+    from views.hud_elements import run_hud_element
 
-    run_adsb_hud_element(AdsbTargetBugsOnly)
+    run_hud_element(AdsbTargetBugsOnly)

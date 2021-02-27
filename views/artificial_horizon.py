@@ -7,7 +7,7 @@ from data_sources.ahrs_data import AhrsData
 from rendering import drawing
 
 from views.ahrs_element import AhrsElement
-from views.hud_elements import colors, run_ahrs_hud_element
+from views.hud_elements import colors, run_hud_element
 
 
 class ArtificialHorizon(AhrsElement):
@@ -118,8 +118,9 @@ class ArtificialHorizon(AhrsElement):
         smallest_pitch = (orientation.pitch - pitch_range)
         largest_pitch = (orientation.pitch + pitch_range)
 
-        angles_to_render = list(filter(
-            lambda pitch: pitch < largest_pitch and pitch > smallest_pitch, self.__reference_angles__))
+        angles_to_render = list(
+            filter(
+                lambda pitch: pitch < largest_pitch and pitch > smallest_pitch, self.__reference_angles__))
 
         # Calculating the coordinates ahead of time...
         segments_centers_and_angles = [self.__get_segment__(
@@ -203,4 +204,4 @@ class ArtificialHorizon(AhrsElement):
 
 
 if __name__ == '__main__':
-    run_ahrs_hud_element(ArtificialHorizon)
+    run_hud_element(ArtificialHorizon)

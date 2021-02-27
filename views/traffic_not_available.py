@@ -45,4 +45,4 @@ class TrafficNotAvailable(AhrsElement):
 
 
 if __name__ == '__main__':
-    hud_elements.run_ahrs_hud_element(TrafficNotAvailable, True)
+    hud_elements.run_hud_element(TrafficNotAvailable, True)

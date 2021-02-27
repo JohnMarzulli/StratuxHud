@@ -3,7 +3,7 @@ Module to draw a compass and heading strip at the bottom of the screen.
 """
 
 from views.compass_and_heading_top_element import CompassAndHeadingTopElement
-from views.hud_elements import run_ahrs_hud_element
+from views.hud_elements import run_hud_element
 
 
 class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
@@ -47,4 +47,4 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
 
 
 if __name__ == '__main__':
-    run_ahrs_hud_element(CompassAndHeadingBottomElement)
+    run_hud_element(CompassAndHeadingBottomElement)

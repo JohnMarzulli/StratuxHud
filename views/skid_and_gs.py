@@ -32,6 +32,27 @@ class SkidAndGs(AhrsElement):
         self.__skid_y_center__ = int(self.__height__ * .7)
         self.__skid_range__ = self.__width__ >> 4
 
+        self.__skid_ball_radius__ = self.__height__ * 0.03
+        self.__skid_centering_line_length__ = int(
+            self.__skid_ball_radius__ * 1.3)
+
+        self.__skid_top_edge__ = self.__skid_y_center__ - \
+            self.__skid_centering_line_length__
+        self.__skid_bottom_edge__ = self.__skid_y_center__ + \
+            self.__skid_centering_line_length__
+        self.__skid_left_edge__ = self.__center_x__ - \
+            self.__skid_ball_radius__ - self.__skid_range__
+        self.__skid_right_edge__ = self.__center_x__ + \
+            self.__skid_ball_radius__ + self.__skid_range__
+
+        self.__skid_range_box__ = [
+            [self.__skid_left_edge__, self.__skid_top_edge__],
+            [self.__skid_right_edge__, self.__skid_top_edge__],
+            [self.__skid_right_edge__, self.__skid_bottom_edge__],
+            [self.__skid_left_edge__, self.__skid_bottom_edge__]]
+
+        self.__ball_center_range__ = int(self.__skid_ball_radius__ + 0.5) + 1
+
     def __render_g_loading__(
         self,
         framebuffer,
@@ -70,45 +91,44 @@ class SkidAndGs(AhrsElement):
                 or isinstance(orientation.slip_skid, str):
             return
 
-        ball_radius = self.__height__ * 0.03
-        line_length = int(ball_radius * 1.3)
+        # Draw a box that shows the range of the ball
+        drawing.polygon(
+            framebuffer,
+            colors.DARK_GRAY,
+            self.__skid_range_box__,
+            False)
 
-        top_edge = self.__skid_y_center__ - line_length
-        bottom_edge = self.__skid_y_center__ + line_length
-        left_edge = self.__center_x__ - ball_radius - self.__skid_range__
-        right_edge = self.__center_x__ + ball_radius + self.__skid_range__
-
-        # Draw a centering line.
+        # Draw edges that define center
         drawing.segment(
             framebuffer,
             colors.WHITE,
-            [self.__center_x__, top_edge],
-            [self.__center_x__, bottom_edge],
-            self.__line_width__)
-
-        # Draw the edges
-        drawing.segment(
-            framebuffer,
-            colors.WHITE,
-            [left_edge, top_edge],
-            [left_edge, bottom_edge],
+            [self.__center_x__ - self.__ball_center_range__, self.__skid_top_edge__],
+            [self.__center_x__ - self.__ball_center_range__,
+                self.__skid_bottom_edge__],
             self.__line_width__)
 
         drawing.segment(
             framebuffer,
             colors.WHITE,
-            [right_edge, top_edge],
-            [right_edge, bottom_edge],
+            [self.__center_x__ + self.__ball_center_range__, self.__skid_top_edge__],
+            [self.__center_x__ + self.__ball_center_range__,
+                self.__skid_bottom_edge__],
             self.__line_width__)
 
         screen_x = self.__center_x__ + \
-            int(self.__skid_range__ * orientation.slip_skid)
+            int(self.__skid_range__ * orientation.slip_skid * 3.0)
+
+        drawing.filled_circle(
+            framebuffer,
+            colors.BLACK,
+            [screen_x, self.__skid_y_center__],
+            int(self.__skid_ball_radius__))
 
         drawing.filled_circle(
             framebuffer,
             colors.YELLOW,
             [screen_x, self.__skid_y_center__],
-            int(ball_radius))
+            int(self.__skid_ball_radius__) - self.__line_width__)
 
     def render(
         self,
@@ -127,5 +147,5 @@ class SkidAndGs(AhrsElement):
 
 
 if __name__ == '__main__':
-    from views.hud_elements import run_ahrs_hud_element
-    run_ahrs_hud_element(SkidAndGs)
+    from views.hud_elements import run_hud_element
+    run_hud_element(SkidAndGs)

@@ -1,6 +1,11 @@
+"""
+Module to define common colors, and the math to work with them.
+"""
+
 BLACK = (0,   0,   0)
-WHITE = (255, 255, 255)
+DARK_GRAY = (32, 32, 32)
 GRAY = (128, 128, 128)
+WHITE = (255, 255, 255)
 BLUE = (0,   0, 255)
 GREEN = (0, 255,   0)
 RED = (255,   0,   0)

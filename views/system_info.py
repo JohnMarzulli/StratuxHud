@@ -271,18 +271,20 @@ class SystemInfo(AhrsElement):
 
         for line in info_lines:
             # Draw the label in a standard color.
-            texture_lhs = self.__font__.render(
-                line[0], True, colors.BLUE, colors.BLACK)
-            framebuffer.blit(texture_lhs, (self.__left_border__, render_y))
-            size = texture_lhs.get_size()
+            size = self.__render_text__(
+                framebuffer,
+                line[0],
+                [self.__left_border__, render_y],
+                colors.BLUE)
 
             # Draw the value in the encoded colors.
-            texture_rhs = self.__font__.render(
-                line[1][0], True, line[1][1], colors.BLACK)
-            framebuffer.blit(texture_rhs, (size[0], render_y))
+            self.__render_text__(
+                framebuffer,
+                line[1][0],
+                [size[0], render_y],
+                line[1][1])
 
-            render_y = render_y - \
-                (self.__font_height__ * self.__line_spacing__)
+            render_y = render_y - (self.__font_height__ * self.__line_spacing__)
 
 
 class Aithre(AhrsElement):
@@ -391,31 +393,29 @@ class Illyrian(AhrsElement):
                 spo2_text = str(int(spo2_level)) + "% SPO"
                 self.__has_been_connected__ = True
 
-            spo2_ppm_texture = self.__font__.render(
-                spo2_text, True, spo2_color, colors.BLACK)
+            self.__render_text__(
+                framebuffer,
+                spo2_text,
+                [self.__left_border__, self.__text_y_pos__],
+                spo2_color)
 
-            heartbeat_texture = self.__font__.render(
-                heartbeat_text, True, colors.GREEN, colors.BLACK)
-
-            framebuffer.blit(
-                spo2_ppm_texture,
-                (self.__left_border__, self.__text_y_pos__))
-
-            framebuffer.blit(
-                heartbeat_texture,
-                (self.__left_border__, self.__pulse_y_pos__))
+            self.__render_text__(
+                framebuffer,
+                heartbeat_text,
+                [self.__left_border__, self.__pulse_y_pos__],
+                colors.GREEN)
 
 
 if __name__ == '__main__':
-    from views.hud_elements import run_ahrs_hud_element
-
-    run_ahrs_hud_element(Aithre)
-
-if __name__ == '__main__':
-    from views.hud_elements import run_ahrs_hud_element
+    from views.hud_elements import run_hud_element
 
     # for temp in range(45, 95, 5):
     #     color = get_cpu_temp_text_color(temp)
     #     print("{3} => {0},{1},{2}".format(color[0], color[1], color[2], temp))
 
-    run_ahrs_hud_element(SystemInfo, True)
+    run_hud_element(SystemInfo, True)
+
+if __name__ == '__main__':
+    from views.hud_elements import run_hud_element
+
+    run_hud_element(Aithre)

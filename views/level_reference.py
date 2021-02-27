@@ -62,5 +62,5 @@ class LevelReference(AhrsElement):
 
 
 if __name__ == '__main__':
-    from views.hud_elements import run_ahrs_hud_element
-    run_ahrs_hud_element(LevelReference)
+    from views.hud_elements import run_hud_element
+    run_hud_element(LevelReference)

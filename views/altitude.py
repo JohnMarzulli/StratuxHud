@@ -95,6 +95,6 @@ class Altitude(AhrsElement):
 
 
 if __name__ == '__main__':
-    from views.hud_elements import run_ahrs_hud_element
+    from views.hud_elements import run_hud_element
 
-    run_ahrs_hud_element(Altitude)
+    run_hud_element(Altitude)
