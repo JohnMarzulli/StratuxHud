@@ -2,6 +2,8 @@
 Element to show targetting reticles for where traffic is.
 """
 
+import math
+
 from common_utils import fast_math
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
@@ -33,6 +35,11 @@ class AdsbOnScreenReticles(AdsbElement):
         self.__listing_text_start_y__ = int(self.__font__.get_height() * 4)
         self.__listing_text_start_x__ = int(self.__framebuffer_size__[0] * 0.01)
         self.__next_line_distance__ = int(font.get_height() * 1.5)
+        reticle_cull_size = self.__width__ / 6
+        self.__min_x__ = -reticle_cull_size
+        self.__max_x__ = self.__width__ + reticle_cull_size
+        self.__min_y__ = -reticle_cull_size
+        self.__max_y__ = self.__height__ + reticle_cull_size
 
     def __get_onscreen_reticle__(
         self,
@@ -106,6 +113,12 @@ class AdsbOnScreenReticles(AdsbElement):
             rotation_center,
             [reticle_x, reticle_y])
 
+        if reticle_x < self.__min_x__ or reticle_x > self.__max_x__:
+            return
+
+        if reticle_y < self.__min_y__ or reticle_y > self.__max_y__:
+            return
+
         # Used for debugging reticle rotation
         # drawing.segment(
         #     framebuffer,
@@ -168,6 +181,14 @@ class AdsbOnScreenReticles(AdsbElement):
             filter(
                 lambda x: not x.is_on_ground(),
                 traffic_reports))
+
+        our_heading = orientation.get_onscreen_projection_heading()
+
+        traffic_reports = list(
+            filter(
+                lambda x: math.fabs(our_heading - x.bearing) < 45,
+                traffic_reports))
+
         traffic_reports = traffic_reports[:hud_elements.MAX_TARGET_BUGS]
 
         # find the position of the center of the 0 pitch indicator
