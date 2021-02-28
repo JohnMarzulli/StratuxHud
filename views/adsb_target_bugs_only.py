@@ -26,7 +26,7 @@ class AdsbTargetBugsOnly(AdsbElement):
         self,
         traffic_report: Traffic,
         heading: float,
-        orientation: AhrsData,
+        ownship_altitude: int,
         framebuffer
     ):
         """
@@ -35,7 +35,7 @@ class AdsbTargetBugsOnly(AdsbElement):
         Arguments:
             traffic_report {Traffic} -- The traffic we want to render a bug for.
             heading {int} -- Our current heading.
-            orientation {Orientation} -- Our plane's current orientation.
+            ownship_altitude {int} -- Our plane's current altitude.
             framebuffer {Framebuffer} -- What we are going to draw to.
         """
 
@@ -54,7 +54,7 @@ class AdsbTargetBugsOnly(AdsbElement):
             # that we are comparing pressure altitude to pressure altitude....
             # .. or use the Pressure Alt if that is available from the avionics.
             # .. or just validate that we are using pressure altitude...
-            is_below = (orientation.alt - 100) > traffic_report.altitude
+            is_below = ownship_altitude > traffic_report.altitude
             reticle, reticle_edge_position_y = self.get_below_reticle(
                 heading_bug_x,
                 target_bug_scale) if is_below else self.get_above_reticle(
@@ -84,11 +84,12 @@ class AdsbTargetBugsOnly(AdsbElement):
             return
 
         reports_to_show = traffic_reports[:MAX_TARGET_BUGS]
+        altitude = orientation.alt
 
         [self.__render_traffic_heading_bug__(
             traffic_report,
             heading,
-            orientation,
+            altitude,
             framebuffer) for traffic_report in reports_to_show]
 
 
