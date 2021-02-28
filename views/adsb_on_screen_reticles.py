@@ -70,7 +70,6 @@ class AdsbOnScreenReticles(AdsbElement):
             on_screen_reticle,
             reticle_center)
 
-        # TODO - Figure out retical rotation better
         # TODO - Figure out true POV and offset
         # This moves it into position to account
         # for the roll of the aircraft.
