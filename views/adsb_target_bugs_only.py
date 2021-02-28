@@ -72,9 +72,10 @@ class AdsbTargetBugsOnly(AdsbElement):
         framebuffer,
         orientation: AhrsData
     ):
-        # Render a heading strip along the top
-
         heading = orientation.get_onscreen_projection_heading()
+
+        if isinstance(heading, str):
+            return
 
         # Get the traffic, and bail out of we have none
         traffic_reports = HudDataCache.get_reliable_traffic()
@@ -84,16 +85,16 @@ class AdsbTargetBugsOnly(AdsbElement):
 
         reports_to_show = traffic_reports[:MAX_TARGET_BUGS]
 
-        if not isinstance(heading, str):
-            [self.__render_traffic_heading_bug__(
-                traffic_report,
-                heading,
-                orientation,
-                framebuffer) for traffic_report in reports_to_show]
+        [self.__render_traffic_heading_bug__(
+            traffic_report,
+            heading,
+            orientation,
+            framebuffer) for traffic_report in reports_to_show]
 
 
 if __name__ == '__main__':
+    from views.compass_and_heading_bottom_element import CompassAndHeadingBottomElement
     from views.hud_elements import run_hud_elements
     from views.roll_indicator import RollIndicator
 
-    run_hud_elements([RollIndicator, AdsbTargetBugsOnly])
+    run_hud_elements([AdsbTargetBugsOnly, CompassAndHeadingBottomElement, RollIndicator])
