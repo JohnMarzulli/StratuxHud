@@ -5,6 +5,7 @@ Element to show targetting reticles for where traffic is.
 import math
 
 from common_utils import fast_math
+from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
@@ -173,32 +174,34 @@ class AdsbOnScreenReticles(AdsbElement):
             orientation {Orientation} -- The orientation of the plane the HUD is in.
         """
 
-        # Get the traffic, and bail out of we have none
-        traffic_reports = HudDataCache.get_reliable_traffic()
+        with TaskProfiler('views.on_screen_reticles.AdsbOnScreenReticles.preperation'):
+            # Get the traffic, and bail out of we have none
+            traffic_reports = HudDataCache.get_reliable_traffic()
 
-        traffic_reports = list(
-            filter(
-                lambda x: not x.is_on_ground(),
-                traffic_reports))
+            traffic_reports = list(
+                filter(
+                    lambda x: not x.is_on_ground(),
+                    traffic_reports))
 
-        our_heading = orientation.get_onscreen_projection_heading()
+            our_heading = orientation.get_onscreen_projection_heading()
 
-        traffic_reports = list(
-            filter(
-                lambda x: math.fabs(our_heading - x.bearing) < 45,
-                traffic_reports))
+            traffic_reports = list(
+                filter(
+                    lambda x: math.fabs(our_heading - x.bearing) < 45,
+                    traffic_reports))
 
-        traffic_reports = traffic_reports[:hud_elements.MAX_TARGET_BUGS]
+            traffic_reports = traffic_reports[:hud_elements.MAX_TARGET_BUGS]
 
-        # find the position of the center of the 0 pitch indicator
-        rotation_center = self.__get_rotation_point__(orientation)
+            # find the position of the center of the 0 pitch indicator
+            rotation_center = self.__get_rotation_point__(orientation)
 
-        # pylint:disable=expression-not-assigned
-        [self.__render_on_screen_reticle__(
-            framebuffer,
-            orientation,
-            rotation_center,
-            traffic) for traffic in traffic_reports]
+        with TaskProfiler('views.on_screen_reticles.AdsbOnScreenReticles.rendering'):
+            # pylint:disable=expression-not-assigned
+            [self.__render_on_screen_reticle__(
+                framebuffer,
+                orientation,
+                rotation_center,
+                traffic) for traffic in traffic_reports]
 
     def __render_target_reticle__(
         self,

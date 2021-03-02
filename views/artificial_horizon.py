@@ -2,7 +2,8 @@
 Module to display the artificial horizon.
 """
 
-from common_utils import fast_math, local_debug, task_timer
+from common_utils import fast_math, local_debug
+from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
 from rendering import drawing
 
@@ -110,25 +111,27 @@ class ArtificialHorizon(AhrsElement):
             orientation {orientation} -- The airplane's orientation (roll & pitch)
         """
 
-        pitch_range = int(self.__center_x__ / self.__pixels_per_degree_y__)
-        smallest_pitch = (orientation.pitch - pitch_range)
-        largest_pitch = (orientation.pitch + pitch_range)
+        with TaskProfiler("views.artificial_horizon.ArtificialHorizon.setup"):
+            pitch_range = int(self.__center_x__ / self.__pixels_per_degree_y__)
+            smallest_pitch = (orientation.pitch - pitch_range)
+            largest_pitch = (orientation.pitch + pitch_range)
 
-        angles_to_render = list(
-            filter(
-                lambda pitch: pitch < largest_pitch and pitch > smallest_pitch, self.__reference_angles__))
+            angles_to_render = list(
+                filter(
+                    lambda pitch: pitch < largest_pitch and pitch > smallest_pitch, self.__reference_angles__))
 
-        # Calculating the coordinates ahead of time...
-        segments_centers_and_angles = [self.__get_segment__(
-            orientation.pitch,
-            orientation.roll,
-            reference_angle) for reference_angle in angles_to_render]
+            # Calculating the coordinates ahead of time...
+            segments_centers_and_angles = [self.__get_segment__(
+                orientation.pitch,
+                orientation.roll,
+                reference_angle) for reference_angle in angles_to_render]
 
-        # pylint: disable=expression-not-assigned
-        [self.__render_horizon_reference__(
-            framebuffer,
-            segments,
-            orientation.roll) for segments in segments_centers_and_angles]
+        with TaskProfiler("views.artificial_horizon.ArtificialHorizon.render"):
+            # pylint: disable=expression-not-assigned
+            [self.__render_horizon_reference__(
+                framebuffer,
+                segments,
+                orientation.roll) for segments in segments_centers_and_angles]
 
     def __get_segment_endpoints__(
         self,

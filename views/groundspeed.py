@@ -1,6 +1,7 @@
 from numbers import Number
 
 from common_utils import units
+from common_utils.task_timer import TaskProfiler
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
@@ -80,41 +81,43 @@ class Groundspeed(AhrsElement):
         framebuffer,
         orientation: AhrsData
     ):
-        is_valid_airspeed = orientation.is_avionics_source and isinstance(
-            orientation.airspeed,
-            Number)
-        is_valid_groundspeed = orientation.groundspeed is not None and isinstance(
-            orientation.groundspeed,
-            Number)
+        with TaskProfiler("views.groundspeed.Groundspeed.setup"):
+            is_valid_airspeed = orientation.is_avionics_source and isinstance(
+                orientation.airspeed,
+                Number)
+            is_valid_groundspeed = orientation.groundspeed is not None and isinstance(
+                orientation.groundspeed,
+                Number)
 
-        gs_display_color = colors.WHITE if is_valid_groundspeed and orientation.gps_online else colors.RED
-        airspeed_color = colors.WHITE if is_valid_airspeed else colors.RED
+            gs_display_color = colors.WHITE if is_valid_groundspeed and orientation.gps_online else colors.RED
+            airspeed_color = colors.WHITE if is_valid_airspeed else colors.RED
 
-        airspeed_text = self.__get_indicated_text__(
-            orientation.airspeed * units.feet_to_nm,
-            "IAS",
-            airspeed_color) if is_valid_airspeed else None
+            airspeed_text = self.__get_indicated_text__(
+                orientation.airspeed * units.feet_to_nm,
+                "IAS",
+                airspeed_color) if is_valid_airspeed else None
 
-        shown_gs = orientation.groundspeed * \
-            units.yards_to_nm if is_valid_groundspeed else orientation.groundspeed
+            shown_gs = orientation.groundspeed * \
+                units.yards_to_nm if is_valid_groundspeed else orientation.groundspeed
 
-        groundspeed_text = self.__get_indicated_text__(
-            shown_gs,
-            "GND",
-            gs_display_color)
+            groundspeed_text = self.__get_indicated_text__(
+                shown_gs,
+                "GND",
+                gs_display_color)
 
-        gs_position_adj = self.__font_height__ if is_valid_airspeed is not None else 0
+            gs_position_adj = self.__font_height__ if is_valid_airspeed is not None else 0
 
-        self.__render_text_with_stacked_annotations__(
-            framebuffer,
-            [self.__left_border__, self.__text_y_pos__ + gs_position_adj],
-            groundspeed_text)
-
-        if airspeed_text is not None:
+        with TaskProfiler("views.groundspeed.Groundspeed.render"):
             self.__render_text_with_stacked_annotations__(
                 framebuffer,
-                [self.__left_border__, self.__text_y_pos__],
-                airspeed_text)
+                [self.__left_border__, self.__text_y_pos__ + gs_position_adj],
+                groundspeed_text)
+
+            if airspeed_text is not None:
+                self.__render_text_with_stacked_annotations__(
+                    framebuffer,
+                    [self.__left_border__, self.__text_y_pos__],
+                    airspeed_text)
 
 
 if __name__ == '__main__':

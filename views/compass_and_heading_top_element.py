@@ -5,6 +5,7 @@ Module to draw a compass and heading strip at the top of the screen.
 from numbers import Number
 
 from common_utils import fast_math
+from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
 from rendering import drawing
 
@@ -62,8 +63,7 @@ class CompassAndHeadingTopElement(AhrsElement):
         self.__heading_strip__ = {}
 
         for heading in range(0, 361):
-            self.__heading_strip__[
-                heading] = self.__generate_heading_strip__(heading)
+            self.__heading_strip__[heading] = self.__generate_heading_strip__(heading)
 
     def __get_heading_box_points__(
         self,
@@ -146,16 +146,17 @@ class CompassAndHeadingTopElement(AhrsElement):
 
         heading = orientation.get_onscreen_projection_heading()
 
-        [self.__render_heading_mark__(
-            framebuffer,
-            heading_mark_to_render[0],
-            heading_mark_to_render[1])
-            for heading_mark_to_render in self.__heading_strip__[heading]]
+        with TaskProfiler("views.compass_and_heading_top_element.CompassAndHeadingTopElement.heading_marks"):
+            [self.__render_heading_mark__(
+                framebuffer,
+                heading_mark_to_render[0],
+                heading_mark_to_render[1]) for heading_mark_to_render in self.__heading_strip__[heading]]
 
-        # Render the text that is showing our AHRS and GPS headings
-        self.__render_hollow_heading_box__(
-            orientation,
-            framebuffer)
+        with TaskProfiler("views.compass_and_heading_top_element.CompassAndHeadingTopElement.heading_box"):
+            # Render the text that is showing our AHRS and GPS headings
+            self.__render_hollow_heading_box__(
+                orientation,
+                framebuffer)
 
     def __render_hollow_heading_box__(
         self,

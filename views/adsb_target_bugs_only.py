@@ -1,3 +1,4 @@
+from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
@@ -72,25 +73,27 @@ class AdsbTargetBugsOnly(AdsbElement):
         framebuffer,
         orientation: AhrsData
     ):
-        heading = orientation.get_onscreen_projection_heading()
+        with TaskProfiler('views.adsb_target_bugs_only.AdsbTargetBugsOnly.preperation'):
+            heading = orientation.get_onscreen_projection_heading()
 
-        if isinstance(heading, str):
-            return
+            if isinstance(heading, str):
+                return
 
-        # Get the traffic, and bail out of we have none
-        traffic_reports = HudDataCache.get_reliable_traffic()
+            # Get the traffic, and bail out of we have none
+            traffic_reports = HudDataCache.get_reliable_traffic()
 
-        if traffic_reports is None:
-            return
+            if traffic_reports is None:
+                return
 
-        reports_to_show = traffic_reports[:MAX_TARGET_BUGS]
-        altitude = orientation.alt
+            reports_to_show = traffic_reports[:MAX_TARGET_BUGS]
+            altitude = orientation.alt
 
-        [self.__render_traffic_heading_bug__(
-            traffic_report,
-            heading,
-            altitude,
-            framebuffer) for traffic_report in reports_to_show]
+        with TaskProfiler('views.adsb_target_bugs_only.AdsbTargetBugsOnly.preperation'):
+            [self.__render_traffic_heading_bug__(
+                traffic_report,
+                heading,
+                altitude,
+                framebuffer) for traffic_report in reports_to_show]
 
 
 if __name__ == '__main__':
