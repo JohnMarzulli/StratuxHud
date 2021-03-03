@@ -52,17 +52,18 @@ for attempt in range(0, 4):
             sin_rant = math.sin(radians)
 
     LOGGER.log_info_message("    trig::cached")
+    # 2nd Slowest on the Pi
     with TaskProfiler("trig::cached"):
         for rand_val in random_angles:
-            int_degs = int(rand_val)
-            cos_rand = fast_math.cos(int_degs)
-            sin_rant = fast_math.sin(int_degs)
+            cos_rand = fast_math.cos(rand_val)
+            sin_rant = fast_math.sin(rand_val)
 
     LOGGER.log_info_message("    degrees_to_radians::calced")
     with TaskProfiler("degrees_to_radians::calced"):
         for rand_val in random_angles:
             radians = math.radians(rand_val)
 
+    # 3rd Slowest on the Pi
     LOGGER.log_info_message("    degrees_to_radians::cached")
     with TaskProfiler("degrees_to_radians::cached"):
         for rand_val in random_angles:
@@ -73,6 +74,7 @@ for attempt in range(0, 4):
         for rand_val in random_radians:
             degrees = math.degrees(rand_val)
 
+    # Slowest on the Pi
     LOGGER.log_info_message("    radians_to_degrees::cached")
     with TaskProfiler("radians_to_degrees::cached"):
         for rand_val in random_angles:
