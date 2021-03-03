@@ -266,7 +266,7 @@ class Traffic(object):
                 self.bearing = float(self.__json__[Traffic.BEARING_KEY])
             else:
                 self.bearing = None
-            
+
             if Traffic.TRACK_KEY in self.__json__:
                 self.track = float(self.__json__[Traffic.TRACK_KEY])
             else:
@@ -331,9 +331,9 @@ class SimulatedTraffic(object):
             360,
             -1,
             random.randint(0, 360))
-        
+
         max_altitude = 5000
-        starting_relative_altitude = random.randrange(-max_altitude, max_altitude) 
+        starting_relative_altitude = random.randrange(-max_altitude, max_altitude)
         self.altitude = simulated_values.SimulatedValue(
             10,
             max_altitude,
