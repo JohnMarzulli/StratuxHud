@@ -9,7 +9,7 @@ from typing import Tuple
 
 import pygame
 from common_utils import fast_math, local_debug, units
-from common_utils.fast_math import clamp, interpolate
+from common_utils.fast_math import interpolate
 from common_utils.task_timer import TaskProfiler
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
@@ -74,7 +74,7 @@ class ZoomTracker:
 
     def get_target_zoom(
         self
-    ):
+    ) -> Tuple[int, int]:
         """
         Get what our ideal, current zoom is.
 
@@ -82,13 +82,13 @@ class ZoomTracker:
         AND the distance between rings.
 
         Returns:
-            [type]: [description]
+            [int, int]: The range and step of the scope rings
         """
         delta_since_last_change = (datetime.utcnow() - self.__last_changed__).total_seconds()
 
         proportion_into_zoom = delta_since_last_change / ZoomTracker.SECONDS_FOR_ZOOM
 
-        if proportion_into_zoom > 1.0:
+        if proportion_into_zoom >= 1.0:
             return self.__target_zoom__
 
         computed_range = interpolate(
@@ -96,10 +96,18 @@ class ZoomTracker:
             self.__target_zoom__[0],
             proportion_into_zoom)
 
-        # Use the minor steps from the previous zoom
-        # so the whole process has visual consistency
+        # Determine the stepping to use based on
+        # the direction of change. This way it looks
+        # like a zoom in or out.
+        #
+        # We choose thie way so the whole process has visual consistency
         # and does not startle the aviator.
-        return [computed_range, self.__last_zoom__[1]]
+        previous_zoom_stepping = self.__last_zoom__[1]
+        new_zoom_stepping = self.__target_zoom__[1]
+
+        target_zoom_step = new_zoom_stepping if self.__last_zoom__[0] > self.__target_zoom__[0] else previous_zoom_stepping
+
+        return [computed_range, target_zoom_step]
 
 
 DEFAULT_SCOPE_RANGE = (10, 5)
@@ -123,7 +131,9 @@ def __get_maximum_scope_range__() -> Tuple[int, int]:
     """
     return SCOPE_RANGES[-1]
 
+
 __DISTANCE_PREDICTION_SCALER__ = 6
+
 
 def __get_ideal_scope_range__(
     groundspeed: float
@@ -194,6 +204,26 @@ def __get_ideal_scope_range__(
             return possible_range
 
     return __get_maximum_scope_range__()
+
+
+def __get_groundspeed__(
+    orientation: AhrsData
+) -> float:
+    is_valid_groundspeed = orientation.groundspeed is not None and isinstance(orientation.groundspeed, Number)
+    is_valid_airspeed = orientation.airspeed is not None and isinstance(orientation.airspeed, Number)
+
+    airspeed = units.get_converted_units(
+        configuration.CONFIGURATION.get_units(),
+        orientation.airspeed * units.feet_to_nm) if is_valid_airspeed else 0.0
+
+    groundspeed = units.get_converted_units(
+        configuration.CONFIGURATION.get_units(),
+        orientation.groundspeed * units.yards_to_nm) if is_valid_groundspeed else 0
+
+    if local_debug.is_debug() and is_valid_airspeed:
+        return airspeed
+
+    return groundspeed
 
 
 class AdsbTopViewScope(AdsbElement):
@@ -585,25 +615,7 @@ class AdsbTopViewScope(AdsbElement):
         self,
         orientation: AhrsData
     ) -> Tuple[float, float]:
-        is_valid_groundspeed = orientation.groundspeed is not None and isinstance(
-            orientation.groundspeed,
-            Number)
-
-        if not is_valid_groundspeed:
-            return DEFAULT_SCOPE_RANGE
-
-        groundspeed = units.get_converted_units(
-            configuration.CONFIGURATION.get_units(),
-            orientation.groundspeed * units.yards_to_nm)
-
-        if local_debug.is_debug() \
-            and orientation.airspeed is not None \
-            and isinstance(
-                orientation.airspeed,
-                Number):
-            groundspeed = units.get_converted_units(
-                configuration.CONFIGURATION.get_units(),
-                orientation.airspeed * units.feet_to_nm)  # For debug only.
+        groundspeed = __get_groundspeed__(orientation)
 
         ideal_range = __get_ideal_scope_range__(groundspeed)
 
