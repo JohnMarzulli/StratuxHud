@@ -16,15 +16,13 @@ python_logger = logging.getLogger("hud_benchmark")
 python_logger.setLevel(logging.DEBUG)
 LOGGER = HudLogger(python_logger)
 
-max_test_calls = 1000000
+MAX_TEST_CALLS = 1000000
 
-random_angles = [random.randrange(
-    0, 360) + ((random.randrange(0, 9) / 10)) for i in range(1, max_test_calls)]
+random_angles = [fast_math.wrap_degrees(random.randrange(0.0, 360.0) + ((random.randrange(0, 9) / 10))) for i in range(1, MAX_TEST_CALLS)]
 
-random_radians = [math.radians(random.randrange(
-    0, 360) + ((random.randrange(0, 9) / 10))) for i in range(1, max_test_calls)]
+random_radians = [math.radians(random.randrange(0.0, 360.0) + ((random.randrange(0, 9) / 10))) for i in range(1, MAX_TEST_CALLS)]
 
-random_ints = [random.randrange(0, 1000) for i in range(1, max_test_calls)]
+random_ints = [random.randrange(0, 1000) for i in range(1, MAX_TEST_CALLS)]
 random_floats = [float(i) for i in random_ints]
 
 
@@ -57,8 +55,8 @@ for attempt in range(0, 4):
     with TaskProfiler("trig::cached"):
         for rand_val in random_angles:
             int_degs = int(rand_val)
-            cos_rand = fast_math. COS_BY_DEGREES[int_degs]
-            sin_rant = fast_math.SIN_BY_DEGREES[int_degs]
+            cos_rand = fast_math.cos(int_degs)
+            sin_rant = fast_math.sin(int_degs)
 
     LOGGER.log_info_message("    degrees_to_radians::calced")
     with TaskProfiler("degrees_to_radians::calced"):
