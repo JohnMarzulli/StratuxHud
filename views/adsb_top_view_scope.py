@@ -2,12 +2,14 @@
 View element for a "radar scope" that looks from the top downwards.
 """
 
+import math
 from datetime import datetime
 from numbers import Number
 from typing import Tuple
 
 import pygame
 from common_utils import fast_math, local_debug, units
+from common_utils.fast_math import clamp, interpolate
 from common_utils.task_timer import TaskProfiler
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
@@ -16,97 +18,6 @@ from data_sources.traffic import Traffic
 from rendering import colors, drawing
 
 from views.adsb_element import AdsbElement
-
-
-def clamp(
-    minimum,
-    value,
-    maximum
-):
-    """
-    Makes sure the given value (middle param) is always between the maximum and minimum.
-
-    Arguments:
-        minimum {number} -- The smallest the value can be (inclusive).
-        value {number} -- The value to clamp.
-        maximum {number} -- The largest the value can be (inclusive).
-
-    Returns:
-        number -- The value within the allowable range.
-    """
-
-    if value < minimum:
-        return minimum
-
-    if value > maximum:
-        return maximum
-
-    return value
-
-
-def interpolate(
-    left_value,
-    right_value,
-    proportion
-):
-    """
-    Finds the spot between the two values.
-
-    Arguments:
-        left_value {number} -- The value on the "left" that 0.0 would return.
-        right_value {number} -- The value on the "right" that 1.0 would return.
-        proportion {float} -- The proportion from the left to the right hand side.
-
-    >>> interpolate(0, 255, 0.5)
-    127
-    >>> interpolate(10, 20, 0.5)
-    15
-    >>> interpolate(0, 255, 0.0)
-    0
-    >>> interpolate(0, 255, 0)
-    0
-    >>> interpolate(0, 255, 1)
-    255
-    >>> interpolate(0, 255, 1.5)
-    255
-    >>> interpolate(0, 255, -0.5)
-    0
-    >>> interpolate(0, 255, 0.1)
-    25
-    >>> interpolate(0, 255, 0.9)
-    229
-    >>> interpolate(255, 0, 0.5)
-    127
-    >>> interpolate(20, 10, 0.5)
-    15
-    >>> interpolate(255, 0, 0.0)
-    255
-    >>> interpolate(255, 0, 0)
-    255
-    >>> interpolate(255, 0, 1)
-    0
-    >>> interpolate(255, 0, 1.5)
-    0
-    >>> interpolate(255, 0, -0.5)
-    255
-    >>> interpolate(255, 0, 0.1)
-    229
-    >>> interpolate(255, 0, 0.9)
-    25
-
-    Returns:
-        float -- The number that is the given amount between the left and right.
-    """
-
-    left_value = clamp(0.0, left_value, 255.0)
-    right_value = clamp(0.0, right_value, 255.0)
-    proportion = clamp(0.0, proportion, 1.0)
-
-    return clamp(
-        0,
-        int(float(left_value) + (float(right_value -
-                                       float(left_value)) * float(proportion))),
-        255)
 
 
 class ZoomTracker:
@@ -149,11 +60,13 @@ class ZoomTracker:
         if new_target_zoom[0] == self.__target_zoom__[0]:
             return
 
-        delta_since_last_change = (
-            datetime.utcnow() - self.__last_changed__).total_seconds()
+        delta_since_last_change = (datetime.utcnow() - self.__last_changed__).total_seconds()
 
         if delta_since_last_change < ZoomTracker.MINIMUM_SECONDS_BETWEEN_ZOOM_CHANGE:
             return
+
+        print("Old target zoom={}".format(self.__target_zoom__))
+        print("Setting new target zoom={}".format(new_target_zoom))
 
         self.__last_zoom__ = self.__target_zoom__
         self.__last_changed__ = datetime.utcnow()
@@ -171,8 +84,7 @@ class ZoomTracker:
         Returns:
             [type]: [description]
         """
-        delta_since_last_change = (
-            datetime.utcnow() - self.__last_changed__).total_seconds()
+        delta_since_last_change = (datetime.utcnow() - self.__last_changed__).total_seconds()
 
         proportion_into_zoom = delta_since_last_change / ZoomTracker.SECONDS_FOR_ZOOM
 
@@ -190,6 +102,100 @@ class ZoomTracker:
         return [computed_range, self.__last_zoom__[1]]
 
 
+DEFAULT_SCOPE_RANGE = (10, 5)
+
+SCOPE_RANGES = [
+    (1, 0),
+    (2, 1),
+    (5, 1),
+    (10, 5),
+    (15, 5),
+    (20, 5),
+    (50, 10)]
+
+
+def __get_maximum_scope_range__() -> Tuple[int, int]:
+    """
+    Get the maximum
+
+    Returns:
+        (int, int): Tuple of the maximum distance for the scope, and the distance between each ring.
+    """
+    return SCOPE_RANGES[-1]
+
+__DISTANCE_PREDICTION_SCALER__ = 6
+
+def __get_ideal_scope_range__(
+    groundspeed: float
+) -> Tuple[int, int]:
+    """
+    Given a ground speed, figure out how far the scope should be.
+    This is done by figuring out how far you will be in 10 minutes
+
+    Args:
+        groundspeed (float): The speed to calculate the ideal scope range from. This is in final units (so MPH, KPH, KNOTS)
+
+    Returns:
+        (int, int): The maximum distance the scope will cover and the distance between each ring.
+
+    >>> __get_ideal_scope_range__(0.0)
+    (1, 0)
+    >>> __get_ideal_scope_range__(0)
+    (1, 0)
+    >>> __get_ideal_scope_range__(-1 * __DISTANCE_PREDICTION_SCALER__)
+    (1, 0)
+    >>> __get_ideal_scope_range__(-1.0 * __DISTANCE_PREDICTION_SCALER__)
+    (1, 0)
+    >>> __get_ideal_scope_range__(0.5 * __DISTANCE_PREDICTION_SCALER__)
+    (1, 0)
+    >>> __get_ideal_scope_range__(1 * __DISTANCE_PREDICTION_SCALER__)
+    (1, 0)
+    >>> __get_ideal_scope_range__(1.0 * __DISTANCE_PREDICTION_SCALER__)
+    (1, 0)
+    >>> __get_ideal_scope_range__(1.1 * __DISTANCE_PREDICTION_SCALER__)
+    (2, 1)
+    >>> __get_ideal_scope_range__(1.5 * __DISTANCE_PREDICTION_SCALER__)
+    (2, 1)
+    >>> __get_ideal_scope_range__(1.9 * __DISTANCE_PREDICTION_SCALER__)
+    (2, 1)
+    >>> __get_ideal_scope_range__(2.0 * __DISTANCE_PREDICTION_SCALER__)
+    (2, 1)
+    >>> __get_ideal_scope_range__(2.1 * __DISTANCE_PREDICTION_SCALER__)
+    (5, 1)
+    >>> __get_ideal_scope_range__(5 * __DISTANCE_PREDICTION_SCALER__)
+    (5, 1)
+    >>> __get_ideal_scope_range__(9.9 * __DISTANCE_PREDICTION_SCALER__)
+    (10, 5)
+    >>> __get_ideal_scope_range__(10 * __DISTANCE_PREDICTION_SCALER__)
+    (10, 5)
+    >>> __get_ideal_scope_range__(14.9 * __DISTANCE_PREDICTION_SCALER__)
+    (15, 5)
+    >>> __get_ideal_scope_range__(15 * __DISTANCE_PREDICTION_SCALER__)
+    (15, 5)
+    >>> __get_ideal_scope_range__(19.9 * __DISTANCE_PREDICTION_SCALER__)
+    (20, 5)
+    >>> __get_ideal_scope_range__(20 * __DISTANCE_PREDICTION_SCALER__)
+    (20, 5)
+    >>> __get_ideal_scope_range__(20.1 * __DISTANCE_PREDICTION_SCALER__)
+    (50, 10)
+    >>> __get_ideal_scope_range__(50 * __DISTANCE_PREDICTION_SCALER__)
+    (50, 10)
+    >>> __get_ideal_scope_range__(100 * __DISTANCE_PREDICTION_SCALER__)
+    (50, 10)
+    """
+
+    predicted_travel_distance = math.fabs(groundspeed) / __DISTANCE_PREDICTION_SCALER__
+
+    # The idea is to return the first range in the set
+    # that is further than you will fly in 10 minutes.
+    for possible_range in SCOPE_RANGES:
+        range_distance = possible_range[0]
+        if range_distance >= predicted_travel_distance:
+            return possible_range
+
+    return __get_maximum_scope_range__()
+
+
 class AdsbTopViewScope(AdsbElement):
     """
     A view element for the HUD that draws a radar style scope
@@ -202,15 +208,6 @@ class AdsbTopViewScope(AdsbElement):
     # (5, 1) is 5 units in range, 1 unit steps
     # (20, 5) is 20 units in range, 5 unit steps
 
-    DEFAULT_SCOPE_RANGE = (10, 5)
-    SCOPE_RANGES = [
-        (1, 0),
-        (2, 1),
-        (5, 1),
-        (10, 5),
-        (15, 5),
-        (20, 5),
-        (50, 10)]
     ROTATION_PHASE_SHIFT = 270
 
     def __init__(
@@ -237,8 +234,7 @@ class AdsbTopViewScope(AdsbElement):
             self.__center_x__,
             self.__center_y__ + int(self.__center_y__ >> 1)]
 
-        self.__zoom_tracker__ = ZoomTracker(
-            AdsbTopViewScope.DEFAULT_SCOPE_RANGE)
+        self.__zoom_tracker__ = ZoomTracker(DEFAULT_SCOPE_RANGE)
 
         size = self.__framebuffer_size__[1] * 0.04
         half_size = int((size / 2.0) + 0.5)
@@ -251,17 +247,6 @@ class AdsbTopViewScope(AdsbElement):
             [0, -half_size],
             [quarter_size, half_size]
         ]
-
-    def __get_maximum_scope_range__(
-        self
-    ) -> Tuple[int, int]:
-        """
-        Get the maximum
-
-        Returns:
-            (int, int): Tuple of the maximum distance for the scope, and the distance between each ring.
-        """
-        return AdsbTopViewScope.SCOPE_RANGES[:1][0]
 
     def __get_traffic_indicator__(
         self,
@@ -288,12 +273,14 @@ class AdsbTopViewScope(AdsbElement):
         # 3 - Rotate the zero-based points
         rotation_sin = fast_math.SIN_BY_DEGREES[roation_degrees]
         rotation_cos = fast_math.COS_BY_DEGREES[roation_degrees]
-        rotated_points = [[point[0] * rotation_cos - point[1] * rotation_sin,
-                           point[0] * rotation_sin + point[1] * rotation_cos] for point in self.__target_indicator__]
+        rotated_points = [
+            [point[0] * rotation_cos - point[1] * rotation_sin,
+             point[0] * rotation_sin + point[1] * rotation_cos] for point in self.__target_indicator__]
 
         # 4 - Translate to the bug center point
-        translated_points = [[point[0] + indicator_position[0],
-                              point[1] + indicator_position[1]] for point in rotated_points]
+        translated_points = [
+            [point[0] + indicator_position[0],
+             point[1] + indicator_position[1]] for point in rotated_points]
 
         return translated_points
 
@@ -594,26 +581,16 @@ class AdsbTopViewScope(AdsbElement):
                 heading_to_draw,
                 scope_range)
 
-    def __get_scope_range__(
+    def __get_scope_zoom__(
         self,
         orientation: AhrsData
-    ) -> Tuple[int, int]:
-        """
-        Given a ground speed, figure out how far the scope should be.
-        This is done by figuring out how far you will be in 10 minutes
-
-        Args:
-            orientation (AhrsData): [description]
-
-        Returns:
-            (int, int): The maximum distance the scope will cover and the distance between each ring.
-        """
+    ) -> Tuple[float, float]:
         is_valid_groundspeed = orientation.groundspeed is not None and isinstance(
             orientation.groundspeed,
             Number)
 
         if not is_valid_groundspeed:
-            return AdsbTopViewScope.DEFAULT_SCOPE_RANGE
+            return DEFAULT_SCOPE_RANGE
 
         groundspeed = units.get_converted_units(
             configuration.CONFIGURATION.get_units(),
@@ -628,22 +605,9 @@ class AdsbTopViewScope(AdsbElement):
                 configuration.CONFIGURATION.get_units(),
                 orientation.airspeed * units.feet_to_nm)  # For debug only.
 
-        distance_in_10_minutes = groundspeed / 6
+        ideal_range = __get_ideal_scope_range__(groundspeed)
 
-        # The idea is to return the first range in the set
-        # that is further than you will fly in 10 minutes.
-        for possible_range in AdsbTopViewScope.SCOPE_RANGES:
-            range_distance = possible_range[0]
-            if range_distance > distance_in_10_minutes:
-                return possible_range
-
-        return self.__get_maximum_scope_range__()
-
-    def __get_scope_zoom__(
-        self,
-        orientation: AhrsData
-    ) -> Tuple[float, float]:
-        ideal_range = self.__get_scope_range__(orientation)
+        # TODO - Make sure that the zoom rings are properly scoping in and out
         self.__zoom_tracker__.set_target_zoom(ideal_range)
 
         return self.__zoom_tracker__.get_target_zoom()
@@ -665,23 +629,24 @@ class AdsbTopViewScope(AdsbElement):
         # TODO: Try listing identifiers on side with lines leading to the aircraft
         # TODO: MORE TESTING!!!
 
-        with TaskProfiler('AdsbTopViewScopeScopeZoomAndRange'):
+        with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.ZoomAndRange'):
             scope_range = self.__get_scope_zoom__(orientation)
 
         self.__render_ownship__(framebuffer)
 
-        with TaskProfiler('AdsbTopViewScopeRings'):
+        with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.Rings'):
             first_ring_pixel_radius = self.__draw_distance_rings__(
                 framebuffer,
                 scope_range)
 
+        with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.CompassHeadings'):
             self.__draw_all_compass_headings__(
                 framebuffer,
                 orientation,
                 scope_range[0])
 
         # Get the traffic, and bail out of we have none
-        with TaskProfiler('AdsbTopViewScopeBugs'):
+        with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.Traaffic'):
             traffic_reports = HudDataCache.get_reliable_traffic()
             traffic_reports.sort(
                 key=lambda traffic: traffic.distance,
@@ -697,5 +662,15 @@ class AdsbTopViewScope(AdsbElement):
 
 
 if __name__ == '__main__':
-    from views.hud_elements import run_hud_element
-    run_hud_element(AdsbTopViewScope)
+    import doctest
+
+    from views.groundspeed import Groundspeed
+    from views.hud_elements import run_hud_elements
+
+    print("Starting tests.")
+
+    doctest.testmod()
+
+    print("Tests finished")
+
+    run_hud_elements([Groundspeed, AdsbTopViewScope])

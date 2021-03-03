@@ -29,6 +29,113 @@ for __indexed_radians__ in range(0, int(TWO_PI * 100)):
         __indexed_radians__] = math.degrees(__actual_radians__)
 
 
+def clamp(
+    minimum,
+    value,
+    maximum
+):
+    """
+    Makes sure the given value (middle param) is always between the maximum and minimum.
+
+    Arguments:
+        minimum {number} -- The smallest the value can be (inclusive).
+        value {number} -- The value to clamp.
+        maximum {number} -- The largest the value can be (inclusive).
+
+    Returns:
+        number -- The value within the allowable range.
+
+    >>> clamp(0, 15, 30)
+    15
+    >>> clamp(0, 0, 30)
+    0
+    >>> clamp(0, 30, 30)
+    30
+    >>> clamp(0, -1, 30)
+    0
+    >>> clamp(0, 31, 30)
+    30
+    """
+
+    if value < minimum:
+        return minimum
+
+    if value > maximum:
+        return maximum
+
+    return value
+
+
+def interpolate(
+    left_value,
+    right_value,
+    proportion
+):
+    """
+    Finds the spot between the two values.
+
+    Arguments:
+        left_value {number} -- The value on the "left" that 0.0 would return.
+        right_value {number} -- The value on the "right" that 1.0 would return.
+        proportion {float} -- The proportion from the left to the right hand side.
+
+    >>> interpolate(0, 255, 0.5)
+    127
+    >>> interpolate(10, 20, 0.5)
+    15
+    >>> interpolate(0, 255, 0.0)
+    0
+    >>> interpolate(0, 255, 0)
+    0
+    >>> interpolate(0, 255, 1)
+    255
+    >>> interpolate(0, 255, 1.5)
+    255
+    >>> interpolate(0, 255, -0.5)
+    0
+    >>> interpolate(0, 255, 0.1)
+    25
+    >>> interpolate(0, 255, 0.9)
+    229
+    >>> interpolate(255, 0, 0.5)
+    127
+    >>> interpolate(20, 10, 0.5)
+    15
+    >>> interpolate(255, 0, 0.0)
+    255
+    >>> interpolate(255, 0, 0)
+    255
+    >>> interpolate(255, 0, 1)
+    0
+    >>> interpolate(255, 0, 1.5)
+    0
+    >>> interpolate(255, 0, -0.5)
+    255
+    >>> interpolate(255, 0, 0.1)
+    229
+    >>> interpolate(255, 0, 0.9)
+    25
+    >>> interpolate(0, 255, 0.9)
+    229
+    >>> interpolate(0, 510, 0.9)
+    255
+    >>> interpolate(510, 0, 0.9)
+    51
+
+    Returns:
+        float -- The number that is the given amount between the left and right.
+    """
+
+    proportion = clamp(0.0, proportion, 1.0)
+
+    calculated_target = int(float(left_value) + (float(right_value - float(left_value)) * float(proportion)))
+
+    return clamp(
+        0,
+        calculated_target,
+        255)
+
+
 def wrap_degrees(
     angle: float
 ) -> float:
@@ -200,3 +307,13 @@ def rotate_points(
     translated_points = translate_points(rotated_points, rotation_center)
 
     return translated_points
+
+
+if __name__ == '__main__':
+    import doctest
+
+    print("Starting tests.")
+
+    doctest.testmod()
+
+    print("Finished tests.")
