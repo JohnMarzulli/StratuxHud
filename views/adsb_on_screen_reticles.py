@@ -156,8 +156,10 @@ class AdsbOnScreenReticles(AdsbElement):
 
         roll_delta = 90 - orientation.roll
 
-        center_x = self.__center_x__ - (pitch_offset * fast_math.cos(roll_delta)) + 0.5
-        center_y = self.__center_y__ - (pitch_offset * fast_math.sin(roll_delta)) + 0.5
+        radians = math.radians(roll_delta)
+
+        center_x = self.__center_x__ - (pitch_offset * math.cos(radians)) + 0.5
+        center_y = self.__center_y__ - (pitch_offset * math.sin(radians)) + 0.5
 
         return [center_x, center_y]
 

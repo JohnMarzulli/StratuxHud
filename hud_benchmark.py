@@ -45,6 +45,7 @@ for attempt in range(0, 4):
 
     LOGGER.log_info_message("    trig::calced")
     # Test trig functions
+    # 4th slowest on the Pi
     with TaskProfiler("trig::calced"):
         for rand_val in random_angles:
             radians = math.radians(rand_val)

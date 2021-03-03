@@ -296,13 +296,14 @@ class AdsbTopViewScope(AdsbElement):
         # 2 - determine the angle of rotation compared to our "up"
         rotation = 360.0 - our_heading
         rotation = rotation + traffic_heading
-        roation_degrees = int(
+        rotation_degrees = int(
             fast_math.wrap_degrees(
                 rotation + self.__adjustment__))
 
         # 3 - Rotate the zero-based points
-        rotation_sin = fast_math.SIN_BY_DEGREES[roation_degrees]
-        rotation_cos = fast_math.COS_BY_DEGREES[roation_degrees]
+        radians = math.radians(rotation_degrees)
+        rotation_sin = math.sin(radians)
+        rotation_cos = math.cos(radians)
         rotated_points = [
             [point[0] * rotation_cos - point[1] * rotation_sin,
              point[0] * rotation_sin + point[1] * rotation_cos] for point in self.__target_indicator__]
@@ -349,13 +350,13 @@ class AdsbTopViewScope(AdsbElement):
         Returns:
             (int, int): The x,y coordinates in screen space.
         """
-        int_degs = int(fast_math.wrap_degrees(angle_degrees))
-        reticle_x = fast_math.COS_BY_DEGREES[int_degs]
-        reticle_y = fast_math.SIN_BY_DEGREES[int_degs]
-        screen_x = (reticle_x * distance_pixels) + self.__scope_center__[0]
-        screen_y = (reticle_y * distance_pixels) + self.__scope_center__[1]
+        radians = math.radians(angle_degrees)
+        reticle_x = math.cos(radians)
+        reticle_y = math.sin(radians)
+        screen_x = int((reticle_x * distance_pixels) + self.__scope_center__[0])
+        screen_y = int((reticle_y * distance_pixels) + self.__scope_center__[1])
 
-        return (int(screen_x), int(screen_y))
+        return (screen_x, screen_y)
 
     def __render_on_screen_target__(
         self,
@@ -500,8 +501,9 @@ class AdsbTopViewScope(AdsbElement):
             # since range() does not include the last item.
             ring_distances.append(max_distance)
 
-        sin_text_placement = fast_math.SIN_BY_DEGREES[30]
-        cos_text_placement = fast_math.COS_BY_DEGREES[30]
+        radians = math.radians(30)
+        sin_text_placement = math.sin(radians)
+        cos_text_placement = math.cos(radians)
 
         for distance in ring_distances:
             radius_pixels = self.__get_pixel_distance__(distance, max_distance)

@@ -2,6 +2,8 @@
 Module to display the artificial horizon.
 """
 
+import math
+
 from common_utils import fast_math, local_debug
 from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
@@ -139,15 +141,17 @@ class ArtificialHorizon(AhrsElement):
         pitch_offset: float,
         roll: float
     ) -> list:
-        roll_delta = 90 - roll
+        roll_delta = math.radians(90 - roll)
 
         center_x = self.__center_x__ - \
-            (pitch_offset * fast_math.cos(roll_delta)) + 0.5
+            (pitch_offset * math.cos(roll_delta)) + 0.5
         center_y = self.__center_y__ - \
-            (pitch_offset * fast_math.sin(roll_delta)) + 0.5
+            (pitch_offset * math.sin(roll_delta)) + 0.5
 
-        x_len = length * fast_math.cos(roll) + 0.5
-        y_len = length * fast_math.sin(roll) + 0.5
+        roll_radians = math.radians(roll)
+
+        x_len = length * math.cos(roll_radians) + 0.5
+        y_len = length * math.sin(roll_radians) + 0.5
 
         half_x_len = x_len / 2.0
         half_y_len = y_len / 2.0
