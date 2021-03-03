@@ -66,11 +66,86 @@ def clamp(
     return value
 
 
+def interpolatef(
+    left_value,
+    right_value,
+    proportion: float
+) -> float:
+    """
+    Finds the spot between the two values.
+
+    Arguments:
+        left_value {number} -- The value on the "left" that 0.0 would return.
+        right_value {number} -- The value on the "right" that 1.0 would return.
+        proportion {float} -- The proportion from the left to the right hand side.
+
+    >>> interpolatef(0, 255, 0.5)
+    127.5
+    >>> interpolatef(10, 20, 0.5)
+    15.0
+    >>> interpolatef(0, 255, 0.0)
+    0.0
+    >>> interpolatef(0, 255, 0)
+    0.0
+    >>> interpolatef(0, 255, 1)
+    255.0
+    >>> interpolatef(0, 255, 1.5)
+    255.0
+    >>> interpolatef(0, 255, -0.5)
+    0.0
+    >>> interpolatef(0, 255, 0.1)
+    25.5
+    >>> interpolatef(0, 255, 0.9)
+    229.5
+    >>> interpolatef(255, 0, 0.5)
+    127.5
+    >>> interpolatef(20, 10, 0.5)
+    15.0
+    >>> interpolatef(255, 0, 0.0)
+    255.0
+    >>> interpolatef(255, 0, 0)
+    255.0
+    >>> interpolatef(255, 0, 1)
+    0.0
+    >>> interpolatef(255, 0, 1.5)
+    0.0
+    >>> interpolatef(255, 0, -0.5)
+    255.0
+    >>> interpolatef(255, 0, 0.1)
+    229.5
+    >>> interpolatef(255, 0, 0.9)
+    25.5
+    >>> interpolatef(0, 255, 0.9)
+    229.5
+    >>> interpolatef(0, 510, 0.9)
+    459.0
+    >>> interpolatef(510, 0, 0.9)
+    51.0
+    >>> interpolatef(510, 0, 0.95)
+    25.5
+
+    Returns:
+        float -- The number that is the given amount between the left and right.
+    """
+
+    true_left_value = left_value if left_value < right_value else right_value
+    true_right_value = right_value if left_value < right_value else left_value
+
+    proportion = clamp(0.0, proportion, 1.0)
+
+    calculated_target = float(float(left_value) + (float(right_value - float(left_value)) * float(proportion)))
+
+    return clamp(
+        true_left_value,
+        calculated_target,
+        true_right_value)
+
+
 def interpolate(
     left_value,
     right_value,
-    proportion
-):
+    proportion: float
+) -> int:
     """
     Finds the spot between the two values.
 
@@ -118,22 +193,14 @@ def interpolate(
     >>> interpolate(0, 255, 0.9)
     229
     >>> interpolate(0, 510, 0.9)
-    255
+    459
     >>> interpolate(510, 0, 0.9)
     51
 
     Returns:
-        float -- The number that is the given amount between the left and right.
+        int -- The number that is the given amount between the left and right.
     """
-
-    proportion = clamp(0.0, proportion, 1.0)
-
-    calculated_target = int(float(left_value) + (float(right_value - float(left_value)) * float(proportion)))
-
-    return clamp(
-        0,
-        calculated_target,
-        255)
+    return int(interpolatef(left_value, right_value, proportion))
 
 
 def wrap_degrees(
