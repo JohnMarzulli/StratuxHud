@@ -9,7 +9,7 @@ from typing import Tuple
 
 import pygame
 from common_utils import fast_math, local_debug, units
-from common_utils.fast_math import interpolate
+from common_utils.fast_math import interpolatef
 from common_utils.task_timer import TaskProfiler
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
@@ -74,7 +74,7 @@ class ZoomTracker:
 
     def get_target_zoom(
         self
-    ) -> Tuple[int, int]:
+    ) -> Tuple[Number, int]:
         """
         Get what our ideal, current zoom is.
 
@@ -82,7 +82,7 @@ class ZoomTracker:
         AND the distance between rings.
 
         Returns:
-            [int, int]: The range and step of the scope rings
+            [Number, int]: The range and step of the scope rings
         """
         delta_since_last_change = (datetime.utcnow() - self.__last_changed__).total_seconds()
 
@@ -91,21 +91,21 @@ class ZoomTracker:
         if proportion_into_zoom >= 1.0:
             return self.__target_zoom__
 
-        computed_range = interpolate(
+        computed_range = interpolatef(
             self.__last_zoom__[0],
             self.__target_zoom__[0],
             proportion_into_zoom)
 
         # Determine the stepping to use based on
-        # the direction of change. This way it looks
-        # like a zoom in or out.
+        # stepping of the rings. We want to always
+        # use the largest stepping.
         #
-        # We choose thie way so the whole process has visual consistency
+        # We choose this way so the whole process has visual consistency
         # and does not startle the aviator.
         previous_zoom_stepping = self.__last_zoom__[1]
         new_zoom_stepping = self.__target_zoom__[1]
 
-        target_zoom_step = new_zoom_stepping if self.__last_zoom__[0] > self.__target_zoom__[0] else previous_zoom_stepping
+        target_zoom_step = max(new_zoom_stepping, previous_zoom_stepping)
 
         return [computed_range, target_zoom_step]
 
@@ -132,7 +132,7 @@ def __get_maximum_scope_range__() -> Tuple[int, int]:
     return SCOPE_RANGES[-1]
 
 
-__DISTANCE_PREDICTION_SCALER__ = 6
+__DISTANCE_PREDICTION_SCALER__ = 12
 
 
 def __get_ideal_scope_range__(
@@ -494,7 +494,7 @@ class AdsbTopViewScope(AdsbElement):
             ring_distances = list(
                 range(
                     step,
-                    scope_range[0],
+                    int(scope_range[0]),
                     step))
             # To make it inclusive to the actual final ring
             # since range() does not include the last item.
@@ -614,7 +614,7 @@ class AdsbTopViewScope(AdsbElement):
     def __get_scope_zoom__(
         self,
         orientation: AhrsData
-    ) -> Tuple[float, float]:
+    ) -> Tuple[Number, float]:
         groundspeed = __get_groundspeed__(orientation)
 
         ideal_range = __get_ideal_scope_range__(groundspeed)
