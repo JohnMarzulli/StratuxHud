@@ -658,7 +658,7 @@ class AdsbTopViewScope(AdsbElement):
                 scope_range[0])
 
         # Get the traffic, and bail out of we have none
-        with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.Traaffic'):
+        with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.Traffic'):
             traffic_reports = HudDataCache.get_reliable_traffic()
             traffic_reports.sort(
                 key=lambda traffic: traffic.distance,
