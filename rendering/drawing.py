@@ -308,6 +308,34 @@ class FilledCircle(object):
             self.__is_antialiased__)
 
 
+class HollowPolygon(object):
+    def __init__(
+        self,
+        points: list,
+        color: list,
+        width: int,
+        is_antialiased: bool = True
+    ) -> None:
+        super().__init__()
+
+        self.__points__ = points
+        self.__color__ = color
+        self.__width__ = width
+        self.__is_anti_aliased__ = is_antialiased
+
+    def render(
+        self,
+        framebuffer
+    ) -> None:
+        segments(
+            framebuffer,
+            self.__color__,
+            True,
+            self.__points__,
+            self.__width__,
+            self.__is_anti_aliased__)
+
+
 class FilledPolygon(object):
     def __init__(
         self,
