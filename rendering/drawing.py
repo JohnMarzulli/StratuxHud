@@ -249,3 +249,84 @@ def segment(
             framebuffer,
             segments_to_draw,
             color)
+
+
+class HollowCircle(object):
+    def __init__(
+        self,
+        center: list,
+        radius: int,
+        width: int,
+        color: list,
+        is_antialiased: bool = True
+    ) -> None:
+        super().__init__()
+
+        self.__center__ = center
+        self.__radius__ = radius
+        self.__width__ = width
+        self.__color__ = color
+        self.__is_antialiased__ = is_antialiased
+
+    def render(
+        self,
+        framebuffer
+    ) -> None:
+        circle(
+            framebuffer,
+            self.__color__,
+            self.__center__,
+            self.__radius__,
+            self.__width__,
+            self.__is_antialiased__)
+
+
+class FilledCircle(object):
+    def __init__(
+        self,
+        center: list,
+        radius: int,
+        color: list,
+        is_antialiased: bool = True
+    ) -> None:
+        super().__init__()
+
+        self.__center__ = center
+        self.__radius__ = radius
+        self.__color__ = color
+        self.__is_antialiased__ = is_antialiased
+
+    def render(
+        self,
+        framebuffer
+    ) -> None:
+        filled_circle(
+            framebuffer,
+            self.__color__,
+            self.__center__,
+            self.__radius__,
+            self.__is_antialiased__)
+
+
+class FilledPolygon(object):
+    def __init__(
+        self,
+        points: list,
+        color: list,
+        is_antialiased: bool = True
+    ) -> None:
+        super().__init__()
+
+        self.__points__ = points
+        self.__color__ = color
+        self.__is_anti_aliased__ = is_antialiased
+
+    def render(
+        self,
+        framebuffer
+    ) -> None:
+        polygon(
+            framebuffer,
+            self.__color__,
+            self.__points__,
+            self.__is_anti_aliased__)
