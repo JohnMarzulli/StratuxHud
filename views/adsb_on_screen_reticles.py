@@ -178,22 +178,14 @@ class AdsbOnScreenReticles(AdsbElement):
         """
 
         with TaskProfiler('views.on_screen_reticles.AdsbOnScreenReticles.preperation'):
+            our_heading = orientation.get_onscreen_projection_heading()
             # Get the traffic, and bail out of we have none
             traffic_reports = HudDataCache.get_reliable_traffic()
 
             traffic_reports = list(
                 filter(
-                    lambda x: not x.is_on_ground(),
-                    traffic_reports))
-
-            our_heading = orientation.get_onscreen_projection_heading()
-
-            traffic_reports = list(
-                filter(
-                    lambda x: math.fabs(our_heading - x.bearing) < 45,
-                    traffic_reports))
-
-            traffic_reports = traffic_reports[:hud_elements.MAX_TARGET_BUGS]
+                    lambda x: not x.is_on_ground() and (math.fabs(our_heading - x.bearing) < 45),
+                    traffic_reports))[:hud_elements.MAX_TARGET_BUGS]
 
             # find the position of the center of the 0 pitch indicator
             rotation_center = self.__get_rotation_point__(orientation)
