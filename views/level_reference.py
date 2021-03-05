@@ -39,9 +39,27 @@ class LevelReference(AhrsElement):
             [width - edge_proportion, self.__center_y__],
             [width, self.__center_y__]]
 
-        self.level_reference_lines.append(artificial_horizon_level)
-        self.level_reference_lines.append(left_hash)
-        self.level_reference_lines.append(right_hash)
+        line_width = int(self.__line_width__ * 1.5)
+
+        self.__reference_segments__ = [
+            drawing.Segment(
+                artificial_horizon_level[0],
+                artificial_horizon_level[1],
+                colors.WHITE,
+                line_width,
+                False),
+            drawing.Segment(
+                left_hash[0],
+                left_hash[1],
+                colors.WHITE,
+                line_width,
+                False),
+            drawing.Segment(
+                right_hash[0],
+                right_hash[1],
+                colors.WHITE,
+                line_width,
+                False)]
 
     def render(
         self,
@@ -53,12 +71,7 @@ class LevelReference(AhrsElement):
         """
 
         # pylint:disable=expression-not-assigned
-        [drawing.segments(
-            framebuffer,
-            colors.WHITE,
-            False,
-            line,
-            int(self.__line_width__ * 1.5)) for line in self.level_reference_lines]
+        [segment.render(framebuffer) for segment in self.__reference_segments__]
 
 
 if __name__ == '__main__':
