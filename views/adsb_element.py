@@ -38,8 +38,8 @@ class AdsbElement(HudElement):
         self.__text_y_pos__ = self.__center_y__ - self.__font_half_height__
         self.__pixels_per_degree_y__ = pixels_per_degree_y
         self.__pixels_per_degree_x__ = self.__framebuffer_size__[0] / 360.0
-        self.start_fade_threshold = (
-            configuration.CONFIGURATION.max_minutes_before_removal * 60) / 2
+        self.start_fade_threshold = (configuration.CONFIGURATION.max_minutes_before_removal * 60) / 2
+        self.__lower_reticle_bottom_y__ = self.__bottom_border__ - self.__font_height__ - self.__font_half_height__ - (self.__thick_line_width__ << 2)
 
     def __get_speed_string__(
         self,
@@ -152,7 +152,7 @@ class AdsbElement(HudElement):
     ):
         """
         Generates the coordinates for a reticle indicating
-        traffic is below use.
+        traffic is below us.
 
         Arguments:
             center_x {int} -- Center X screen position
@@ -162,15 +162,13 @@ class AdsbElement(HudElement):
 
         size = int(self.__height__ * scale)
         quarter_size = size >> 2
-        bug_vertical_offset = self.__font__.get_height() << 1  # int(self.__height__ * 0.25)
         left = center_x - quarter_size
         right = center_x + quarter_size
-        top = self.__height__ - size - bug_vertical_offset
-        bottom = self.__height__ - bug_vertical_offset
+        top = self.__lower_reticle_bottom_y__ - size
 
         below_reticle = [
             [left, top],
-            [center_x, bottom],
+            [center_x, self.__lower_reticle_bottom_y__],
             [right, top]]
 
         # self.__height__ - size - bug_vertical_offset

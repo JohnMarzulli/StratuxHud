@@ -2,7 +2,7 @@ from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 
 from views.adsb_element import AdsbElement, apply_declination
-from views.hud_elements import get_heading_bug_x, MAX_TARGET_BUGS
+from views.hud_elements import MAX_TARGET_BUGS, get_heading_bug_x
 
 
 class AdsbTargetBugs(AdsbElement):

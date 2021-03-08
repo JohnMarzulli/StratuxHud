@@ -111,11 +111,23 @@ def run_hud_element(
     """
     Runs an AHRS based HUD element alone for testing purposes
 
-    Arguments:
-        element_type {type} -- The class to create.
+    Args:
+        element_type (HudElement): The class of element to  run in the debugger
+        use_detail_font (bool, optional): Should the detail font be used.. Defaults to True.
+    """
+    run_hud_elements([element_type], use_detail_font)
 
-    Keyword Arguments:
-        use_detail_font {bool} -- Should the detail font be used. (default: {True})
+
+def run_hud_elements(
+    element_types: list,
+    use_detail_font: bool = True
+):
+    """
+    Runs a set of AHRS based HUD elements for testing purposes
+
+    Args:
+        element_types (list): The classes of elements to  run in the debugger
+        use_detail_font (bool, optional): Should the detail font be used.. Defaults to True.
     """
 
     simulated_traffic = [traffic.SimulatedTraffic(max_distance) for max_distance in range(100, 100000, 5000)]
@@ -144,11 +156,11 @@ def run_hud_element(
     __pixels_per_degree_y__ = (__height__ / configuration.CONFIGURATION.get_degrees_of_pitch()
                                ) * configuration.CONFIGURATION.get_pitch_degrees_display_scaler()
 
-    hud_element = element_type(
+    hud_elements = [element_type(
         configuration.CONFIGURATION.get_degrees_of_pitch(),
         __pixels_per_degree_y__,
         font,
-        (__width__, __height__))
+        (__width__, __height__)) for element_type in element_types]
 
     while True:
         for test_data in simulated_traffic:
@@ -163,6 +175,7 @@ def run_hud_element(
         orientation.utc_time = str(datetime.utcnow())
         __aircraft__.simulate()
         __backpage_framebuffer__.fill(colors.BLACK)
-        hud_element.render(__backpage_framebuffer__, orientation)
+        for hud_element in hud_elements:
+            hud_element.render(__backpage_framebuffer__, orientation)
         pygame.display.flip()
         clock.tick(60)

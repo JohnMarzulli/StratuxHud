@@ -4,6 +4,7 @@ Element to render the Altitude.
 
 from numbers import Number
 
+from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
 
@@ -83,15 +84,18 @@ class Altitude(AhrsElement):
             framebuffer: The framebuffer/texture to render to.
             orientation (AhrsData): The current AHRS information for the aircraft.
         """
-        is_altitude_valid = orientation.alt is not None and isinstance(
-            orientation.alt,
-            Number)
-        color = colors.WHITE if is_altitude_valid else colors.RED
-        annotated_text = __get_indicated_text__(orientation, color)
-        self.__render_text_with_stacked_annotations_right_justified__(
-            framebuffer,
-            [self.__right_border__, self.__text_y_pos__],
-            annotated_text)
+        with TaskProfiler("views.altitude.Altitude.setup"):
+            is_altitude_valid = orientation.alt is not None and isinstance(
+                orientation.alt,
+                Number)
+            color = colors.WHITE if is_altitude_valid else colors.RED
+            annotated_text = __get_indicated_text__(orientation, color)
+
+        with TaskProfiler("views.altitude.Altitude.render"):
+            self.__render_text_with_stacked_annotations_right_justified__(
+                framebuffer,
+                [self.__right_border__, self.__text_y_pos__],
+                annotated_text)
 
 
 if __name__ == '__main__':

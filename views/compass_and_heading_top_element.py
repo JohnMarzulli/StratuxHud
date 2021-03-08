@@ -5,6 +5,7 @@ Module to draw a compass and heading strip at the top of the screen.
 from numbers import Number
 
 from common_utils import fast_math
+from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
 from rendering import drawing
 
@@ -20,7 +21,7 @@ class CompassAndHeadingTopElement(AhrsElement):
     def __get_mark_line_start__(
         self
     ) -> int:
-        return 0
+        return self.__top_border__ + self.__font_height__
 
     def __get_mark_line_end__(
         self
@@ -50,9 +51,6 @@ class CompassAndHeadingTopElement(AhrsElement):
 
         self.pixels_per_degree_x = framebuffer_size[0] / 360.0
 
-        self.__heading_text_box_lines__ = self.__get_heading_box_points__(
-            self.__compass_box_y_position__)
-
         self.__heading_strip_offset__ = {}
 
         for heading in range(0, 181):
@@ -62,8 +60,9 @@ class CompassAndHeadingTopElement(AhrsElement):
         self.__heading_strip__ = {}
 
         for heading in range(0, 361):
-            self.__heading_strip__[
-                heading] = self.__generate_heading_strip__(heading)
+            self.__heading_strip__[heading] = self.__generate_heading_strip__(heading)
+
+        self.__heading_box_elements__ = self.__get_hollow_heading_box_elements__()
 
     def __get_heading_box_points__(
         self,
@@ -146,40 +145,32 @@ class CompassAndHeadingTopElement(AhrsElement):
 
         heading = orientation.get_onscreen_projection_heading()
 
-        [self.__render_heading_mark__(
-            framebuffer,
-            heading_mark_to_render[0],
-            heading_mark_to_render[1])
-            for heading_mark_to_render in self.__heading_strip__[heading]]
+        with TaskProfiler("views.compass_and_heading_top_element.CompassAndHeadingTopElement.heading_marks"):
+            # pylint:disable=expression-not-assigned
+            [self.__render_heading_mark__(
+                framebuffer,
+                heading_mark_to_render[0],
+                heading_mark_to_render[1]) for heading_mark_to_render in self.__heading_strip__[heading]]
 
-        # Render the text that is showing our AHRS and GPS headings
-        self.__render_hollow_heading_box__(
-            orientation,
-            framebuffer)
+            heading_text = "{0} | {1}".format(
+                str(apply_declination(
+                    orientation.get_onscreen_compass_heading())).rjust(3),
+                str(apply_declination(
+                    orientation.get_onscreen_gps_heading())).rjust(3))
+
+        with TaskProfiler("views.compass_and_heading_top_element.CompassAndHeadingTopElement.heading_box"):
+            # Render the text that is showing our AHRS and GPS headings
+            self.__render_hollow_heading_box__(
+                heading_text,
+                framebuffer)
 
     def __render_hollow_heading_box__(
         self,
-        orientation: AhrsData,
+        heading_text: str,
         framebuffer
     ):
-        heading_text = "{0} | {1}".format(
-            str(apply_declination(
-                orientation.get_onscreen_compass_heading())).rjust(3),
-            str(apply_declination(
-                orientation.get_onscreen_gps_heading())).rjust(3))
-
-        drawing.polygon(
-            framebuffer,
-            colors.BLACK,
-            self.__heading_text_box_lines__,
-            False)
-
-        drawing.segments(
-            framebuffer,
-            colors.GREEN,
-            True,
-            self.__heading_text_box_lines__,
-            self.__thin_line_width__)
+        # pylint:disable=expression-not-assigned
+        [box_element.render(framebuffer) for box_element in self.__heading_box_elements__]
 
         self.__render_horizontal_centered_text__(
             framebuffer,
@@ -189,6 +180,21 @@ class CompassAndHeadingTopElement(AhrsElement):
             None,
             1.0,
             True)
+
+    def __get_hollow_heading_box_elements__(
+        self
+    ) -> list:
+        heading_text_box_lines = self.__get_heading_box_points__(self.__compass_box_y_position__)
+
+        return [
+            drawing.FilledPolygon(
+                heading_text_box_lines,
+                colors.BLACK,
+                False),
+            drawing.HollowPolygon(
+                heading_text_box_lines,
+                colors.GREEN,
+                self.__thin_line_width__)]
 
     def __render_heading_text__(
         self,

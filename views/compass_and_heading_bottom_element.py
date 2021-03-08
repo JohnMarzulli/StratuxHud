@@ -19,7 +19,7 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
     def __get_mark_line_end__(
         self
     ) -> int:
-        return self.__bottom_border__ - self.__font_height__
+        return self.__bottom_border__ - self.__font_half_height__
 
     def __get_compass_y_position__(
         self
