@@ -81,13 +81,12 @@ class AdsbOnScreenReticles(AdsbElement):
 
         return on_screen_reticle
 
-    def __render_on_screen_reticle__(
+    def __get_reticle_render_element__(
         self,
-        framebuffer,
         orientation: AhrsData,
         rotation_center: list,
         traffic: Traffic
-    ):
+    ) -> drawing.HollowPolygon:
         """
         Draws a single reticle on the screen.
 
@@ -103,7 +102,7 @@ class AdsbOnScreenReticles(AdsbElement):
             traffic)
 
         if reticle_x is None or reticle_y is None:
-            return
+            return None
 
         # Render using the Above us bug
         on_screen_reticle_scale = hud_elements.get_reticle_size(traffic.distance)
@@ -114,10 +113,10 @@ class AdsbOnScreenReticles(AdsbElement):
             [reticle_x, reticle_y])
 
         if reticle_x < self.__min_x__ or reticle_x > self.__max_x__:
-            return
+            return None
 
         if reticle_y < self.__min_y__ or reticle_y > self.__max_y__:
-            return
+            return None
 
         # Used for debugging reticle rotation
         # drawing.segment(
@@ -132,9 +131,11 @@ class AdsbOnScreenReticles(AdsbElement):
         #     [reticle_x, reticle_y],
         #     rotation_center)
 
-        self.__render_target_reticle__(
-            framebuffer,
-            reticle)
+        return drawing.HollowPolygon(
+            reticle,
+            colors.RED,
+            self.__line_width__,
+            True)
 
     def __get_rotation_point__(
         self,
@@ -177,50 +178,26 @@ class AdsbOnScreenReticles(AdsbElement):
         """
 
         with TaskProfiler('views.on_screen_reticles.AdsbOnScreenReticles.preperation'):
+            our_heading = orientation.get_onscreen_projection_heading()
             # Get the traffic, and bail out of we have none
             traffic_reports = HudDataCache.get_reliable_traffic()
 
             traffic_reports = list(
                 filter(
-                    lambda x: not x.is_on_ground(),
-                    traffic_reports))
-
-            our_heading = orientation.get_onscreen_projection_heading()
-
-            traffic_reports = list(
-                filter(
-                    lambda x: math.fabs(our_heading - x.bearing) < 45,
-                    traffic_reports))
-
-            traffic_reports = traffic_reports[:hud_elements.MAX_TARGET_BUGS]
+                    lambda x: not x.is_on_ground() and (math.fabs(our_heading - x.bearing) < 45),
+                    traffic_reports))[:hud_elements.MAX_TARGET_BUGS]
 
             # find the position of the center of the 0 pitch indicator
             rotation_center = self.__get_rotation_point__(orientation)
 
-        with TaskProfiler('views.on_screen_reticles.AdsbOnScreenReticles.rendering'):
-            # pylint:disable=expression-not-assigned
-            [self.__render_on_screen_reticle__(
-                framebuffer,
+            reticles = [self.__get_reticle_render_element__(
                 orientation,
                 rotation_center,
                 traffic) for traffic in traffic_reports]
 
-    def __render_target_reticle__(
-        self,
-        framebuffer,
-        reticle_lines
-    ):
-        """
-        Renders a targetting reticle on the screen.
-        Assumes the X/Y projection has already been performed.
-        """
-
-        drawing.segments(
-            framebuffer,
-            colors.RED,
-            True,
-            reticle_lines,
-            self.__line_width__)
+        with TaskProfiler('views.on_screen_reticles.AdsbOnScreenReticles.rendering'):
+            # pylint:disable=expression-not-assigned
+            [reticle.render(framebuffer) for reticle in reticles if reticle is not None]
 
 
 if __name__ == '__main__':
