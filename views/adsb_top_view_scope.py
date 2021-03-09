@@ -10,6 +10,7 @@ from typing import Tuple
 import pygame
 from common_utils import fast_math, local_debug, units
 from common_utils.fast_math import interpolatef
+from common_utils.local_debug import IS_SLOW
 from common_utils.task_timer import TaskProfiler
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
@@ -513,7 +514,7 @@ class AdsbTopViewScope(AdsbElement):
                 self.__scope_center__,
                 radius_pixels,
                 self.__thin_line_width__,
-                False)  # AA circle costs a BUNCH on the Pi
+                not local_debug.IS_PI)  # AA circle costs a BUNCH on the Pi
             ring_pixel_distances.append(radius_pixels)
 
             text_x = self.__scope_center__[0] + int(sin_text_placement * radius_pixels)
@@ -569,15 +570,16 @@ class AdsbTopViewScope(AdsbElement):
         if not draw_text:
             return
 
-        self.__render_centered_text__(
-            framebuffer,
-            str(heading_to_draw),
-            (screen_x, screen_y),
-            colors.BLACK,
-            None,
-            1.3,
-            heading_text_rotation,
-            True)
+        if not IS_SLOW:
+            self.__render_centered_text__(
+                framebuffer,
+                str(heading_to_draw),
+                (screen_x, screen_y),
+                colors.BLACK,
+                None,
+                1.3,
+                heading_text_rotation,
+                True)
 
         self.__render_centered_text__(
             framebuffer,
@@ -604,7 +606,12 @@ class AdsbTopViewScope(AdsbElement):
             framebuffer (pygame.Surface): [description]
             orientation (AhrsData): [description]
         """
-        our_heading = int(orientation.get_onscreen_projection_heading())
+        try:
+            our_heading = int(orientation.get_onscreen_projection_heading())
+        except:
+            # Heading is not a string, which means
+            # we do not have GPS lock
+            return
 
         for heading_to_draw in range(0, 360, 45):
             self.__draw_compass_text__(
