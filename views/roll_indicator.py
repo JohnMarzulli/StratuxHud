@@ -262,14 +262,17 @@ class RollIndicator(AhrsElement):
                     self.__indicator_arc_center__,
                     -orientation.roll),
                 colors.WHITE,
-                is_antialiased),
-            drawing.FilledPolygon(
-                rotate_points(
-                    self.__current_angle_box__,
-                    self.__indicator_arc_center__,
-                    -orientation.roll),
-                colors.WHITE,
                 is_antialiased)]
+
+        if not local_debug.IS_SLOW:
+            indicator_objects.append(
+                drawing.FilledPolygon(
+                    rotate_points(
+                        self.__current_angle_box__,
+                        self.__indicator_arc_center__,
+                        -orientation.roll),
+                    colors.WHITE,
+                    is_antialiased))
 
         # pylint:disable=expression-not-assigned
         [mark.render(framebuffer) for mark in self.__indicator_elements__]

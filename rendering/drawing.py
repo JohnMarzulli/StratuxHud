@@ -7,13 +7,14 @@ import math
 import pygame
 import pygame.gfxdraw
 from common_utils import fast_math
+from common_utils.local_debug import IS_SLOW
 
 
 def polygon(
     framebuffer: pygame.Surface,
     color: list,
     points: list,
-    is_antialiased: bool = True
+    is_antialiased: bool = not IS_SLOW
 ):
     """
     Draws a filled polygon from the given points with the given color to the given surface.
@@ -46,7 +47,7 @@ def circle(
     position: list,
     radius: int,
     width: int = 1,
-    is_antialiased: bool = True
+    is_antialiased: bool = not IS_SLOW
 ):
     """
     Draws an outline of a cicle at the given position with the given radius and given width
@@ -94,7 +95,7 @@ def filled_circle(
     color: list,
     position: list,
     radius: int,
-    is_antialiased: bool = True
+    is_antialiased: bool = not IS_SLOW
 ):
     """
     Draws a filled cicle at the given position with the given radius.
@@ -137,7 +138,7 @@ def segments(
     is_closed: bool,
     points: list,
     width: int = 1,
-    is_antialiased: bool = True
+    is_antialiased: bool = not IS_SLOW
 ):
     """
     Draws segements using the given points.
@@ -182,7 +183,7 @@ def segment(
     start: list,
     end: list,
     width: int = 1,
-    is_antialiased: bool = True
+    is_antialiased: bool = not IS_SLOW
 ):
     """
     Draws a single line segment of the given color,
@@ -262,7 +263,7 @@ class HollowCircle:
         radius: int,
         color: list,
         width: int = 1,
-        is_antialiased: bool = True
+        is_antialiased: bool = not IS_SLOW
     ) -> None:
         """
         Create the circle to be drawn
@@ -312,7 +313,7 @@ class FilledCircle:
         center: list,
         radius: int,
         color: list,
-        is_antialiased: bool = True
+        is_antialiased: bool = not IS_SLOW
     ) -> None:
         """
         Create the circle to be drawn
@@ -361,7 +362,7 @@ class Segment:
         end: list,
         color: list,
         width: int = 1,
-        is_antialiased: bool = True
+        is_antialiased: bool = not IS_SLOW
     ) -> None:
         """
         Create the segment to be drawn.
@@ -411,7 +412,7 @@ class Segments:
         points: list,
         color: list,
         width: int = 1,
-        is_antialiased: bool = True
+        is_antialiased: bool = not IS_SLOW
     ) -> None:
         """
         Create the segments to be drawn.
@@ -460,7 +461,7 @@ class HollowPolygon:
         points: list,
         color: list,
         width: int,
-        is_antialiased: bool = True
+        is_antialiased: bool = not IS_SLOW
     ) -> None:
         """
         Create the polygon to be drawn. This is unfilled
@@ -507,7 +508,7 @@ class FilledPolygon:
         self,
         points: list,
         color: list,
-        is_antialiased: bool = True
+        is_antialiased: bool = not IS_SLOW
     ) -> None:
         """
         Create the polygon to be drawn. This is solid/filled

@@ -3,6 +3,7 @@ Base class for AHRS view elements.
 """
 
 import pygame
+from common_utils.local_debug import IS_SLOW
 from data_sources.data_cache import HudDataCache
 from rendering import colors
 
@@ -85,9 +86,14 @@ class HudElement(object):
 
         scaled_size = [int(size[0] * scale), int(size[1] * scale)]
 
-        texture = pygame.transform.smoothscale(
-            texture,
-            scaled_size)
+        if IS_SLOW:
+            texture = pygame.transform.scale(
+                texture,
+                scaled_size)
+        else:
+            texture = pygame.transform.smoothscale(
+                texture,
+                scaled_size)
 
         framebuffer.blit(
             texture,
@@ -131,9 +137,14 @@ class HudElement(object):
 
         x_adjustment = scaled_size[0] >> 1
 
-        texture = pygame.transform.smoothscale(
-            texture,
-            scaled_size)
+        if IS_SLOW:
+            texture = pygame.transform.scale(
+                texture,
+                scaled_size)
+        else:
+            texture = pygame.transform.smoothscale(
+                texture,
+                scaled_size)
 
         framebuffer.blit(
             texture,
@@ -226,9 +237,14 @@ class HudElement(object):
 
         scaled_size = [int(size[0] * scale), int(size[1] * scale)]
 
-        texture = pygame.transform.smoothscale(
-            texture,
-            scaled_size)
+        if IS_SLOW:
+            texture = pygame.transform.scale(
+                texture,
+                scaled_size)
+        else:
+            texture = pygame.transform.smoothscale(
+                texture,
+                scaled_size)
 
         framebuffer.blit(
             texture,
