@@ -556,7 +556,11 @@ class HeadsUpDisplay(object):
 
         self.__hud_views__ = self.__build_hud_views__()
 
-        self.web_server = configuration_server.HudServer()
+        try:
+            self.web_server = configuration_server.HudServer()
+        except Exception as ex:
+            logger.get_logger().info("Unable to start the remote control server: {}".format(ex))
+            self.web_server = None
 
         RecurringTask(
             "purge_old_textures",
@@ -564,11 +568,12 @@ class HeadsUpDisplay(object):
             self.__purge_old_textures__,
             logger.get_logger())
 
-        RecurringTask(
-            "rest_host",
-            0.1,
-            self.web_server.run,
-            logger.get_logger())
+        if self.web_server is not None:
+            RecurringTask(
+                "rest_host",
+                0.1,
+                self.web_server.run,
+                logger.get_logger())
 
         RecurringTask(
             "update_traffic",
