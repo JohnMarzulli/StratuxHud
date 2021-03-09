@@ -4,6 +4,7 @@ View element for a g-meter
 
 from numbers import Number
 
+from common_utils.local_debug import IS_SLOW
 from data_sources.ahrs_data import AhrsData
 from rendering import colors, drawing
 
@@ -102,11 +103,15 @@ class SkidAndGs(AhrsElement):
         screen_x = self.__center_x__ + \
             int(self.__skid_range__ * orientation.slip_skid * 3.0)
 
-        drawing.filled_circle(
-            framebuffer,
-            colors.BLACK,
-            [screen_x, self.__skid_y_center__],
-            int(self.__skid_ball_radius__ + self.__thin_line_width__))
+        screen_x = max(screen_x, self.__skid_left_edge__)
+        screen_x = min(self.__skid_right_edge__, screen_x)
+
+        if not IS_SLOW:
+            drawing.filled_circle(
+                framebuffer,
+                colors.BLACK,
+                [screen_x, self.__skid_y_center__],
+                int(self.__skid_ball_radius__ + self.__thin_line_width__))
 
         drawing.filled_circle(
             framebuffer,
@@ -120,12 +125,13 @@ class SkidAndGs(AhrsElement):
         right_x = self.__center_x__ + self.__ball_center_range__
 
         for x_pos in [left_x, right_x]:
-            drawing.segment(
-                framebuffer,
-                colors.BLACK,
-                [x_pos, self.__skid_top_edge__],
-                [x_pos, self.__skid_bottom_edge__],
-                self.__thick_line_width__ << 2)
+            if not IS_SLOW:
+                drawing.segment(
+                    framebuffer,
+                    colors.BLACK,
+                    [x_pos, self.__skid_top_edge__],
+                    [x_pos, self.__skid_bottom_edge__],
+                    self.__thick_line_width__ << 2)
 
             drawing.segment(
                 framebuffer,
