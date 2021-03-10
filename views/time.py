@@ -1,3 +1,4 @@
+from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
 
@@ -22,13 +23,16 @@ class Time(AhrsElement):
         framebuffer,
         orientation: AhrsData
     ):
-        time_text = str(orientation.utc_time).split('.')[0] \
-            + "UTC" if orientation.utc_time is not None else AhrsElement.GPS_UNAVAILABLE_TEXT
-        self.__render_horizontal_centered_text__(
-            framebuffer,
-            time_text,
-            [self.__center_x__, self.__text_y_pos__],
-            colors.YELLOW)
+        with TaskProfiler("views.time.Time.setup"):
+            time_text = str(orientation.utc_time).split('.')[0] \
+                + "UTC" if orientation.utc_time is not None else AhrsElement.GPS_UNAVAILABLE_TEXT
+
+        with TaskProfiler("views.time.Time.render"):
+            self.__render_horizontal_centered_text__(
+                framebuffer,
+                time_text,
+                [self.__center_x__, self.__text_y_pos__],
+                colors.YELLOW)
 
 
 if __name__ == '__main__':

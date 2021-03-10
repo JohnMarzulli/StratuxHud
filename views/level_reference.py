@@ -3,6 +3,7 @@ Draws a horizontal set of segments that work with the attitude indicator
 to help create a level reference during flight.
 """
 
+from common_utils.task_timer import TaskProfiler
 from rendering import colors, drawing
 
 from views.ahrs_element import AhrsElement
@@ -70,8 +71,13 @@ class LevelReference(AhrsElement):
         Renders a "straight and level" line to the HUD.
         """
 
+        no_setup = TaskProfiler("views.level_reference.LevelReference.setup")
+        no_setup.start()
+        no_setup.stop()
+
         # pylint:disable=expression-not-assigned
-        [segment.render(framebuffer) for segment in self.__reference_segments__]
+        with TaskProfiler("views.level_reference.LevelReference.render"):
+            [segment.render(framebuffer) for segment in self.__reference_segments__]
 
 
 if __name__ == '__main__':
