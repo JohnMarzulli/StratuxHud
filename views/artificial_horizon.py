@@ -79,7 +79,7 @@ class ArtificialHorizon(AhrsElement):
         # For running on the PI (at the moment)
         # we need to reduce visual quality on some
         # items to favor frame rate
-        if not local_debug.IS_PI:
+        if not local_debug.IS_SLOW:
             self.__render_centered_text__(
                 framebuffer,
                 str(reference_angle),
@@ -181,7 +181,12 @@ class ArtificialHorizon(AhrsElement):
             [tuple] -- An array[4] of the X/Y line coords.
         """
 
-        length = self.__long_segment_length__ if reference_angle == 0 else self.__short_segment_length__
+        #length = self.__long_segment_length__ if reference_angle == 0 else self.__short_segment_length__
+        proportion = math.fabs(reference_angle) / 45
+        proportion = min(proportion, 1.0)
+
+        length = fast_math.interpolate(self.__long_segment_length__, self.__short_segment_length__, proportion)
+
         pitch_offset = self.__pixels_per_degree_y__ * \
             (-pitch + reference_angle)
 
