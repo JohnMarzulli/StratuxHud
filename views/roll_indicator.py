@@ -46,7 +46,9 @@ class RollIndicator(AhrsElement):
         indicator_elements.extend([drawing.Segment(segment_start, segment_end, colors.WHITE, self.__line_width__, True) for segment_start, segment_end in roll_angle_marks])
         indicator_elements.extend([drawing.FilledCircle(segment_start, self.__thin_line_width__, colors.WHITE, True) for segment_start, segment_end in roll_angle_marks])
 
-        self.__static_indicator__ = drawing.get_surface(self.__width__, self.__height__)
+        lowest_y = int(roll_angle_marks[0][0][1] + self.__thick_line_width__  + 0.5)
+
+        self.__static_indicator__ = drawing.get_surface(self.__width__, lowest_y)
 
         # pylint:disable=expression-not-assigned
         [mark.render(self.__static_indicator__) for mark in indicator_elements]
