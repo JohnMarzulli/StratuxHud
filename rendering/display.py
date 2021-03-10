@@ -17,6 +17,7 @@ def __get_screen_size_and_mode__():
 
     if local_debug.IS_PI:
         screen_mode |= pygame.FULLSCREEN
+        size = pygame.display.Info().current_w, pygame.display.Info().current_h
     else:
         screen_mode |= pygame.RESIZABLE
 
@@ -28,10 +29,12 @@ def display_init():
     Initializes PyGame to run on the current screen.
     """
 
-    size, screen_mode = __get_screen_size_and_mode__()
+    size = DEFAULT_SCREEN_SIZE
     display_number = os.getenv('DISPLAY')
 
     if display_number:
+        screen_mode = pygame.FULLSCREEN if local_debug.IS_PI else pygame.RESIZABLE
+        screen_mode |= pygame.HWACCEL | pygame.constants.RLEACCEL
         print("Running under X{}, flags={}".format(display_number, screen_mode))
         screen = pygame.display.set_mode(size, screen_mode)
 
@@ -62,6 +65,7 @@ def display_init():
     if not found:
         raise Exception('No suitable video driver found!')
 
+    size, screen_mode = __get_screen_size_and_mode__()
     screen = pygame.display.set_mode(size, screen_mode)
 
     return screen, size
