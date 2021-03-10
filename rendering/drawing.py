@@ -23,7 +23,7 @@ def blit(
         destination (pygame.Surface): The surface that we want to draw over
         size (list): The size of the image to blit.
     """
-    destination.blit(source, size, special_flags=pygame.BLEND_ADD)
+    destination.blit(source, size)
 
 
 def get_surface(
