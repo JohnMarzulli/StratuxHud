@@ -195,8 +195,13 @@ class ArtificialHorizon(AhrsElement):
             pitch_offset,
             roll)
 
+        inner_length = self.__inner_blank_area_length__
+
+        if local_debug.IS_SLOW:
+            inner_length = fast_math.interpolate(0.0, inner_length, proportion)
+
         inner_endpoints, _ = self.__get_segment_endpoints__(
-            self.__inner_blank_area_length__,
+            inner_length,
             pitch_offset,
             roll)
 
