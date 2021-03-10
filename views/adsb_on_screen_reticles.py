@@ -179,6 +179,10 @@ class AdsbOnScreenReticles(AdsbElement):
 
         with TaskProfiler('views.on_screen_reticles.AdsbOnScreenReticles.preperation'):
             our_heading = orientation.get_onscreen_projection_heading()
+
+            if isinstance(our_heading, str):
+                return
+
             # Get the traffic, and bail out of we have none
             traffic_reports = HudDataCache.get_reliable_traffic()
 
