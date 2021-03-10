@@ -90,15 +90,15 @@ class ArtificialHorizon(AhrsElement):
                 roll,
                 True)
 
-        self.__render_centered_text__(
-            framebuffer,
-            str(reference_angle),
-            [center_x, center_y],
-            colors.WHITE,
-            None,
-            1.0,
-            roll,
-            True)
+            self.__render_centered_text__(
+                framebuffer,
+                str(reference_angle),
+                [center_x, center_y],
+                colors.WHITE,
+                None,
+                1.0,
+                roll,
+                True)
 
     def render(
         self,
