@@ -650,28 +650,24 @@ class AdsbTopViewScope(AdsbElement):
         # TODO: Try listing identifiers on side with lines leading to the aircraft
         # TODO: MORE TESTING!!!
 
-        with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.ZoomAndRange'):
+        with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.setup'):
             scope_range = self.__get_scope_zoom__(orientation)
-
-        self.__render_ownship__(framebuffer)
-
-        with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.Rings'):
-            first_ring_pixel_radius = self.__draw_distance_rings__(
-                framebuffer,
-                scope_range)
-
-        with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.CompassHeadings'):
-            self.__draw_all_compass_headings__(
-                framebuffer,
-                orientation,
-                scope_range[0])
-
-        # Get the traffic, and bail out of we have none
-        with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.Traffic'):
             traffic_reports = HudDataCache.get_reliable_traffic()
             traffic_reports.sort(
                 key=lambda traffic: traffic.distance,
                 reverse=True)
+
+        with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.render'):
+            self.__render_ownship__(framebuffer)
+
+            first_ring_pixel_radius = self.__draw_distance_rings__(
+                framebuffer,
+                scope_range)
+
+            self.__draw_all_compass_headings__(
+                framebuffer,
+                orientation,
+                scope_range[0])
 
             # pylint: disable=expression-not-assigned
             [self.__render_on_screen_target__(

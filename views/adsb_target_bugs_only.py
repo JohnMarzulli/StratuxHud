@@ -73,7 +73,7 @@ class AdsbTargetBugsOnly(AdsbElement):
         framebuffer,
         orientation: AhrsData
     ):
-        with TaskProfiler('views.adsb_target_bugs_only.AdsbTargetBugsOnly.preperation'):
+        with TaskProfiler('views.adsb_target_bugs_only.AdsbTargetBugsOnly.setup'):
             heading = orientation.get_onscreen_projection_heading()
 
             if isinstance(heading, str):
@@ -86,13 +86,13 @@ class AdsbTargetBugsOnly(AdsbElement):
                 return
 
             reports_to_show = traffic_reports[:MAX_TARGET_BUGS]
-            altitude = orientation.alt
 
-        with TaskProfiler('views.adsb_target_bugs_only.AdsbTargetBugsOnly.preperation'):
+        # pylint:disable=expression-not-assigned
+        with TaskProfiler('views.adsb_target_bugs_only.AdsbTargetBugsOnly.render'):
             [self.__render_traffic_heading_bug__(
                 traffic_report,
                 heading,
-                altitude,
+                orientation.alt,
                 framebuffer) for traffic_report in reports_to_show]
 
 

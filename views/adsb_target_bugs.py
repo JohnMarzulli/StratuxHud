@@ -1,3 +1,4 @@
+from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 
@@ -67,28 +68,31 @@ class AdsbTargetBugs(AdsbElement):
     ):
         # Render a heading strip along the top
 
-        heading = orientation.get_onscreen_projection_heading()
+        with TaskProfiler('views.adsb_target_bugs.AdsbTargetBugs.setup'):
+            heading = orientation.get_onscreen_projection_heading()
 
-        # Get the traffic, and bail out of we have none
-        traffic_reports = HudDataCache.get_reliable_traffic()
+            # Get the traffic, and bail out of we have none
+            traffic_reports = HudDataCache.get_reliable_traffic()
 
-        if traffic_reports is None:
-            return
+            if traffic_reports is None:
+                return
 
-        # Draw the heading bugs in reverse order so the traffic closest to
-        # us will be the most visible
-        traffic_reports.sort(
-            key=lambda traffic: traffic.distance,
-            reverse=True)
+            # Draw the heading bugs in reverse order so the traffic closest to
+            # us will be the most visible
+            traffic_reports.sort(
+                key=lambda traffic: traffic.distance,
+                reverse=True)
 
-        # Make sure only the closest bugs are rendered.
-        traffic_reports = traffic_reports[:MAX_TARGET_BUGS]
+            # Make sure only the closest bugs are rendered.
+            traffic_reports = traffic_reports[:MAX_TARGET_BUGS]
 
-        [self.__render_traffic_heading_bug__(
-            traffic_report,
-            heading,
-            orientation,
-            framebuffer) for traffic_report in traffic_reports]
+        with TaskProfiler('views.adsb_target_bugs.AdsbTargetBugs.render'):
+            # pylint:disable=expression-not-assigned
+            [self.__render_traffic_heading_bug__(
+                traffic_report,
+                heading,
+                orientation,
+                framebuffer) for traffic_report in traffic_reports]
 
 
 if __name__ == '__main__':

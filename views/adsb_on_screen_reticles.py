@@ -177,7 +177,7 @@ class AdsbOnScreenReticles(AdsbElement):
             orientation {Orientation} -- The orientation of the plane the HUD is in.
         """
 
-        with TaskProfiler('views.on_screen_reticles.AdsbOnScreenReticles.preperation'):
+        with TaskProfiler('views.on_screen_reticles.AdsbOnScreenReticles.setup'):
             our_heading = orientation.get_onscreen_projection_heading()
 
             if isinstance(our_heading, str):

@@ -143,15 +143,8 @@ class CompassAndHeadingTopElement(AhrsElement):
         # Render a crude compass
         # Render a heading strip along the top
 
-        heading = orientation.get_onscreen_projection_heading()
-
-        with TaskProfiler("views.compass_and_heading_top_element.CompassAndHeadingTopElement.heading_marks"):
-            # pylint:disable=expression-not-assigned
-            if not isinstance(heading, str):
-                [self.__render_heading_mark__(
-                    framebuffer,
-                    heading_mark_to_render[0],
-                    heading_mark_to_render[1]) for heading_mark_to_render in self.__heading_strip__[heading]]
+        with TaskProfiler("views.compass_and_heading_top_element.CompassAndHeadingTopElement.setup"):
+            heading = orientation.get_onscreen_projection_heading()
 
             heading_text = "{0} | {1}".format(
                 str(apply_declination(
@@ -159,7 +152,14 @@ class CompassAndHeadingTopElement(AhrsElement):
                 str(apply_declination(
                     orientation.get_onscreen_gps_heading())).rjust(3))
 
-        with TaskProfiler("views.compass_and_heading_top_element.CompassAndHeadingTopElement.heading_box"):
+        with TaskProfiler("views.compass_and_heading_top_element.CompassAndHeadingTopElement.render"):
+            # pylint:disable=expression-not-assigned
+            if not isinstance(heading, str):
+                [self.__render_heading_mark__(
+                    framebuffer,
+                    heading_mark_to_render[0],
+                    heading_mark_to_render[1]) for heading_mark_to_render in self.__heading_strip__[heading]]
+
             # Render the text that is showing our AHRS and GPS headings
             self.__render_hollow_heading_box__(
                 heading_text,
