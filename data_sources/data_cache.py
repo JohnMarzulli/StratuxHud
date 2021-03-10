@@ -6,11 +6,14 @@ and other data.
 import threading
 from datetime import datetime
 
+from common_utils.local_debug import IS_PI
 from common_utils.task_timer import TaskProfiler
 from configuration import configuration
 from rendering import colors
 
 from data_sources import traffic
+
+__ANTI_ALIAS_TEXT__ = not IS_PI
 
 
 class HudDataCache(object):
@@ -166,7 +169,7 @@ class HudDataCache(object):
                 if text_key not in HudDataCache.TEXT_TEXTURE_CACHE or force_regen:
                     texture = font.render(
                         text,
-                        True,
+                        __ANTI_ALIAS_TEXT__,
                         text_color,
                         background_color)
                     size = texture.get_size()

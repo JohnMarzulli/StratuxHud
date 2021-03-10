@@ -329,27 +329,3 @@ class AdsbElement(HudElement):
                 pass
 
             info_position_y += int(width_y * info_spacing)
-
-    def __render_texture__(
-        self,
-        framebuffer,
-        position,
-        texture,
-        texture_size,
-        roll
-    ):
-        """
-        Renders the text with the results centered on the given
-        position.
-        """
-
-        position_x, position_y = position
-        text_width, text_height = texture_size
-
-        text = pygame.transform.rotate(texture, roll)
-
-        framebuffer.blit(
-            text,
-            [position_x - (text_width >> 1), position_y - (text_height >> 1)])
-
-        return text_width, text_height
