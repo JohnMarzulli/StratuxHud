@@ -40,18 +40,15 @@ class RollIndicator(AhrsElement):
 
         roll_angle_marks = self.__get_major_roll_indicator_marks__()
 
-        indicator_elements = [drawing.Segments(self.__indicator_arc__, colors.WHITE, self.__arc_width__)]
+        self.__indicator_elements__ = [drawing.Segments(self.__indicator_arc__, colors.WHITE, self.__arc_width__)]
 
         # Draw the important angle/roll step marks
-        indicator_elements.extend([drawing.Segment(segment_start, segment_end, colors.WHITE, self.__line_width__, True) for segment_start, segment_end in roll_angle_marks])
-        indicator_elements.extend([drawing.FilledCircle(segment_start, self.__thin_line_width__, colors.WHITE, True) for segment_start, segment_end in roll_angle_marks])
+        self.__indicator_elements__.extend([drawing.Segment(segment_start, segment_end, colors.WHITE, self.__line_width__)
+                                            for segment_start, segment_end in roll_angle_marks])
 
-        lowest_y = int(roll_angle_marks[0][0][1] + self.__thick_line_width__  + 0.5)
-
-        self.__static_indicator__ = drawing.get_surface(self.__width__, lowest_y)
-
-        # pylint:disable=expression-not-assigned
-        [mark.render(self.__static_indicator__) for mark in indicator_elements]
+        if not local_debug.IS_SLOW:
+            self.__indicator_elements__.extend([drawing.FilledCircle(segment_start, self.__thin_line_width__, colors.WHITE)
+                                                for segment_start, segment_end in roll_angle_marks])
 
     def __get_point_on_arc__(
         self,
@@ -290,7 +287,7 @@ class RollIndicator(AhrsElement):
 
         with TaskProfiler("views.roll_indicator.RollIndicator.render"):
             # pylint:disable=expression-not-assigned
-            drawing.blit(self.__static_indicator__, framebuffer, [0, 0])
+            [mark.render(framebuffer) for mark in self.__indicator_elements__]
             [indicator.render(framebuffer) for indicator in indicator_objects]
 
 
