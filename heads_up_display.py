@@ -226,10 +226,12 @@ class HeadsUpDisplay(object):
             # and improve readability
             with TaskProfiler("Render::AllElements"):
                 try:
-                    [self.__ahrs_not_available_element__.render(surface, orientation)] if show_unavailable \
-                        else [self.__render_view_element__(hud_element, orientation) for hud_element in view]
+                    [self.__render_view_element__(hud_element, orientation) for hud_element in view]
                 except Exception as e:
                     self.warn("LOOP:" + str(e))
+
+                if show_unavailable:
+                    self.__ahrs_not_available_element__.render(surface, orientation)
 
             if self.__should_render_perf__:
                 debug_status_left = int(self.__width__ * 0.9)
@@ -523,7 +525,7 @@ class HeadsUpDisplay(object):
 
         self.__fps__.push(0)
 
-        self.__backpage_framebuffer__, screen_size = display.display_init()  # args.debug)
+        self.__backpage_framebuffer__, screen_size = display.display_init()
         self.__width__, self.__height__ = screen_size
 
         pygame.mouse.set_visible(False)
