@@ -44,13 +44,15 @@ class AhrsNotAvailable:
             self.__na_color__,
             self.__not_available_lines__[0][0],
             self.__not_available_lines__[0][1],
-            self.__na_line_width__)
+            self.__na_line_width__,
+            True)
         drawing.segment(
             framebuffer,
             self.__na_color__,
             self.__not_available_lines__[1][0],
             self.__not_available_lines__[1][1],
-            self.__na_line_width__)
+            self.__na_line_width__,
+            True)
 
 
 if __name__ == '__main__':
