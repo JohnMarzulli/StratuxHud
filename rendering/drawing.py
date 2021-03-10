@@ -10,6 +10,42 @@ from common_utils import fast_math
 from common_utils.local_debug import IS_SLOW
 
 
+def blit(
+    source: pygame.Surface,
+    destination: pygame.Surface,
+    size: list
+) -> None:
+    """
+    Adds the source surface overtop the destination surface.
+
+    Args:
+        source (pygame.Surface): The image we want to add to the target surface.
+        destination (pygame.Surface): The surface that we want to draw over
+        size (list): The size of the image to blit.
+    """
+    destination.blit(source, size, special_flags=pygame.BLEND_ADD)
+
+
+def get_surface(
+    size_x: int,
+    size_y: int
+) -> pygame.Surface:
+    """
+    Get a new surface to draw onto.
+
+    Args:
+        size_x (int): The width of the surface that we need.
+        size_y (int): The height of the surface that we need.
+
+    Returns:
+        pygame.Surface: The new surface for drawing.
+    """
+    return pygame.Surface(
+        [size_x, size_y],
+        pygame.HWSURFACE | pygame.SRCALPHA,
+        16)
+
+
 def polygon(
     framebuffer: pygame.Surface,
     color: list,

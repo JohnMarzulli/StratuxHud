@@ -2,6 +2,7 @@
 Indicates to the pilot the current roll angle.
 """
 
+from common_utils.task_timer import TaskProfiler
 from common_utils import local_debug
 from common_utils.fast_math import cos, rotate_points, sin, translate_points
 from data_sources.ahrs_data import AhrsData
@@ -39,13 +40,16 @@ class RollIndicator(AhrsElement):
 
         roll_angle_marks = self.__get_major_roll_indicator_marks__()
 
-        self.__indicator_elements__ = [drawing.Segments(self.__indicator_arc__, colors.WHITE, self.__arc_width__)]
+        indicator_elements = [drawing.Segments(self.__indicator_arc__, colors.WHITE, self.__arc_width__)]
 
         # Draw the important angle/roll step marks
-        self.__indicator_elements__.extend([drawing.Segment(segment_start, segment_end, colors.WHITE, self.__line_width__) for segment_start, segment_end in roll_angle_marks])
+        indicator_elements.extend([drawing.Segment(segment_start, segment_end, colors.WHITE, self.__line_width__, True) for segment_start, segment_end in roll_angle_marks])
+        indicator_elements.extend([drawing.FilledCircle(segment_start, self.__thin_line_width__, colors.WHITE, True) for segment_start, segment_end in roll_angle_marks])
 
-        if not local_debug.IS_PI:
-            self.__indicator_elements__.extend([drawing.FilledCircle(segment_start, self.__thin_line_width__, colors.WHITE) for segment_start, segment_end in roll_angle_marks])
+        self.__static_indicator__ = drawing.get_surface(self.__width__, self.__height__)
+
+        # pylint:disable=expression-not-assigned
+        [mark.render(self.__static_indicator__) for mark in indicator_elements]
 
     def __get_point_on_arc__(
         self,
@@ -243,40 +247,49 @@ class RollIndicator(AhrsElement):
         framebuffer,
         orientation: AhrsData
     ):
-        # Use jagged lines at the moment on the
-        # Pi given the cost of anti-aliasing
-        is_antialiased = not local_debug.IS_PI
+        """
+        Draws the roll indicator arc with the current roll indicator
 
-        # Draws the current roll
-        indicator_objects = [
-            drawing.FilledPolygon(
-                rotate_points(
-                    self.__zero_angle_triangle__,
-                    self.__indicator_arc_center__,
-                    -orientation.roll),
-                colors.WHITE,
-                is_antialiased),
-            drawing.FilledPolygon(
-                rotate_points(
-                    self.__current_angle_triangle__,
-                    self.__indicator_arc_center__,
-                    -orientation.roll),
-                colors.WHITE,
-                is_antialiased)]
+        Args:
+            framebuffer: The surface to draw on.
+            orientation (AhrsData): Our current roll.
+        """
+        with TaskProfiler("views.roll_indicator.RollIndicator.setup"):
+            # Use jagged lines at the moment on the
+            # Pi given the cost of anti-aliasing
+            is_antialiased = not local_debug.IS_PI
 
-        if not local_debug.IS_SLOW:
-            indicator_objects.append(
+            # Draws the current roll
+            indicator_objects = [
                 drawing.FilledPolygon(
                     rotate_points(
-                        self.__current_angle_box__,
+                        self.__zero_angle_triangle__,
                         self.__indicator_arc_center__,
                         -orientation.roll),
                     colors.WHITE,
-                    is_antialiased))
+                    is_antialiased),
+                drawing.FilledPolygon(
+                    rotate_points(
+                        self.__current_angle_triangle__,
+                        self.__indicator_arc_center__,
+                        -orientation.roll),
+                    colors.WHITE,
+                    is_antialiased)]
 
-        # pylint:disable=expression-not-assigned
-        [mark.render(framebuffer) for mark in self.__indicator_elements__]
-        [indicator.render(framebuffer) for indicator in indicator_objects]
+            if not local_debug.IS_SLOW:
+                indicator_objects.append(
+                    drawing.FilledPolygon(
+                        rotate_points(
+                            self.__current_angle_box__,
+                            self.__indicator_arc_center__,
+                            -orientation.roll),
+                        colors.WHITE,
+                        is_antialiased))
+
+        with TaskProfiler("views.roll_indicator.RollIndicator.render"):
+            # pylint:disable=expression-not-assigned
+            drawing.blit(self.__static_indicator__, framebuffer, [0, 0])
+            [indicator.render(framebuffer) for indicator in indicator_objects]
 
 
 if __name__ == '__main__':
