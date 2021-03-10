@@ -17,7 +17,6 @@ def __get_screen_size_and_mode__():
 
     if local_debug.IS_PI:
         screen_mode |= pygame.FULLSCREEN
-        size = pygame.display.Info().current_w, pygame.display.Info().current_h
     else:
         screen_mode |= pygame.RESIZABLE
 
