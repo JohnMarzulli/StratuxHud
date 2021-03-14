@@ -526,6 +526,7 @@ class HeadsUpDisplay(object):
         self.__fps__.push(0)
 
         self.__backpage_framebuffer__, screen_size = display.display_init()
+        pygame.display.set_caption("StratuxHUD")
         self.__width__, self.__height__ = screen_size
 
         pygame.mouse.set_visible(False)
