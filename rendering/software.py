@@ -10,6 +10,25 @@ from common_utils import fast_math
 from common_utils.local_debug import IS_SLOW
 
 
+def draw_sprite(
+    framebuffer: pygame.Surface,
+    position: list,
+    texture: pygame.Surface
+):
+    """
+    Renders the sprite to the given positions
+
+    Args:
+        framebuffer (pygame.Surface): [description]
+        position (list): The position to draw the sprite
+        texture (pygame.Surface): The sprite to draw.
+    """
+    if framebuffer is None:
+        return
+
+    framebuffer.blit(texture, position)
+
+
 def polygon(
     framebuffer: pygame.Surface,
     color: list,

@@ -5,7 +5,7 @@ Base class for AHRS view elements.
 import pygame
 from common_utils.local_debug import IS_SLOW
 from data_sources.data_cache import HudDataCache
-from rendering import colors
+from rendering import colors, drawing
 
 
 class HudElement(object):
@@ -77,9 +77,6 @@ class HudElement(object):
             list: The size of the rendered text.
         """
 
-        if framebuffer is None:
-            return
-
         texture, size = HudDataCache.get_cached_text_texture(
             text,
             self.__font__,
@@ -99,9 +96,10 @@ class HudElement(object):
                 texture,
                 scaled_size)
 
-        framebuffer.blit(
-            texture,
-            position)
+        drawing.renderer.draw_sprite(
+            framebuffer,
+            position,
+            texture)
 
         return scaled_size
 
@@ -130,9 +128,6 @@ class HudElement(object):
             list: The size of the rendered text.
         """
 
-        if framebuffer is None:
-            return
-
         texture, size = HudDataCache.get_cached_text_texture(
             text,
             self.__font__,
@@ -154,9 +149,10 @@ class HudElement(object):
                 texture,
                 scaled_size)
 
-        framebuffer.blit(
-            texture,
-            [position[0] - x_adjustment, position[1]])
+        drawing.renderer.draw_sprite(
+            framebuffer,
+            [position[0] - x_adjustment, position[1]],
+            texture)
 
         return scaled_size
 
@@ -188,9 +184,6 @@ class HudElement(object):
             list: The size of the rendered text.
         """
 
-        if framebuffer is None:
-            return
-
         texture, _ = HudDataCache.get_cached_text_texture(
             text,
             self.__font__,
@@ -212,9 +205,10 @@ class HudElement(object):
         new_x = position[0] - (size_x >> 1)
         new_y = position[1] - (size_y >> 1)
 
-        framebuffer.blit(
-            texture,
-            [new_x, new_y])
+        drawing.renderer.draw_sprite(
+            framebuffer,
+            [new_x, new_y],
+            texture)
 
         return (size_x, size_y)
 
@@ -240,9 +234,6 @@ class HudElement(object):
             list: The size of the rendered text.
         """
 
-        if framebuffer is None:
-            return
-
         texture, size = HudDataCache.get_cached_text_texture(
             text,
             self.__font__,
@@ -262,9 +253,10 @@ class HudElement(object):
                 texture,
                 scaled_size)
 
-        framebuffer.blit(
-            texture,
-            [position[0] - scaled_size[0], position[1]])
+        drawing.renderer.draw_sprite(
+            framebuffer,
+            [position[0] - scaled_size[0], position[1]],
+            texture)
 
         return scaled_size
 
@@ -295,9 +287,6 @@ class HudElement(object):
         # Take the main info and render it on the left at the given y
         # then take [1], render at the new X and given y
         # then take[2], render at same X as [1], moved down the split vertical
-
-        if framebuffer is None:
-            return
 
         main_package = scale_text_color_list[0]
         main_size = self.__render_text__(
@@ -348,9 +337,6 @@ class HudElement(object):
         # Take the main info and render it on the left at the given y
         # then take [1], render at the new X and given y
         # then take[2], render at same X as [1], moved down the split vertical
-
-        if framebuffer is None:
-            return
 
         current_position = [starting_position[0], starting_position[1]]
         longest_x = 0

@@ -17,7 +17,7 @@ from data_sources.ahrs_data import AhrsData
 from data_sources.aircraft import Aircraft
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import AdsbTrafficClient
-from rendering import colors, display
+from rendering import colors, display, drawing
 # Due to the way we import the name of the class to be instantiated
 # from the configuration, all of the element class names need
 # to be imported EVEN if the compiler tries to tell you
@@ -145,7 +145,7 @@ class HeadsUpDisplay(object):
                 texture,
                 scaled_size)
 
-            surface.blit(texture, [0, 0])
+            drawing.renderer.draw_sprite(surface, [0, 0], texture)
         except Exception as e:
             pass
 
@@ -299,9 +299,10 @@ class HeadsUpDisplay(object):
         (text_width, text_height) = rendered_text.get_size()
         surface = pygame.display.get_surface()
 
-        surface.blit(
-            rendered_text,
-            (position[0] - (text_width >> 1), position[1] - (text_height >> 1)))
+        drawing.renderer.draw_sprite(
+            surface,
+            [position[0] - (text_width >> 1), position[1] - (text_height >> 1)],
+            rendered_text)
 
         return text_width, text_height
 
@@ -610,17 +611,21 @@ class HeadsUpDisplay(object):
         text_width, text_height = texture.get_size()
 
         surface = pygame.display.get_surface()
-        surface.blit(
-            texture,
-            ((self.__width__ >> 1) - (text_width >> 1), self.__detail_font__.get_height()))
+
+        drawing.renderer.draw_sprite(
+            surface,
+            [(self.__width__ >> 1) - (text_width >> 1), self.__detail_font__.get_height()],
+            texture)
 
         y = (self.__height__ >> 2) + (self.__height__ >> 3)
         for text in disclaimer_text:
             texture = self.__detail_font__.render(text, True, colors.YELLOW)
             text_width, text_height = texture.get_size()
-            surface.blit(
-                texture,
-                ((self.__width__ >> 1) - (text_width >> 1), y))
+
+            drawing.renderer.draw_sprite(
+                surface,
+                [(self.__width__ >> 1) - (text_width >> 1), y],
+                texture)
             y += text_height + (text_height >> 3)
 
         texture = self.__detail_font__.render(
@@ -628,9 +633,11 @@ class HeadsUpDisplay(object):
             True,
             colors.GREEN)
         text_width, text_height = texture.get_size()
-        surface.blit(
-            texture,
-            ((self.__width__ >> 1) - (text_width >> 1), self.__height__ - text_height))
+
+        drawing.renderer.draw_sprite(
+            surface,
+            [(self.__width__ >> 1) - (text_width >> 1), self.__height__ - text_height],
+            texture)
 
         flipped = pygame.transform.flip(
             surface,

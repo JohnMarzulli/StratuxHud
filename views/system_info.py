@@ -2,11 +2,11 @@ import math
 import socket
 import subprocess
 
-from common_utils import local_debug
+from common_utils import fast_math, local_debug
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 from data_sources.aithre import AithreClient
-from rendering import colors
+from rendering import colors, drawing
 
 from views.ahrs_element import AhrsElement
 
@@ -53,7 +53,7 @@ def get_cpu_temp_text_color(
     elif temperature > NORMAL_TEMP:
         delta = float(temperature - NORMAL_TEMP)
         temp_range = float(REDLINE_TEMP - NORMAL_TEMP)
-        delta = colors.clamp(0.0, delta, temp_range)
+        delta = fast_math.clamp(0.0, delta, temp_range)
         proportion = delta / temp_range
         color = colors.get_color_mix(colors.GREEN, colors.RED, proportion)
 
@@ -336,9 +336,10 @@ class Aithre(AhrsElement):
                 co_color,
                 colors.BLACK)
 
-            framebuffer.blit(
-                co_ppm_texture,
-                (self.__left_border__, self.__text_y_pos__))
+            drawing.renderer.draw_sprite(
+                framebuffer,
+                [self.__left_border__, self.__text_y_pos__],
+                co_ppm_texture)
 
 
 class Illyrian(AhrsElement):

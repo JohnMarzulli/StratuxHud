@@ -4,11 +4,12 @@ Rendering routines for OpenGl
 
 import math
 
-from OpenGL import GL
+import pygame
 from common_utils import fast_math
+from OpenGL import GL
 
 
-def set_color(
+def __set_color__(
     color: list
 ) -> None:
     """
@@ -22,6 +23,31 @@ def set_color(
         color[0] / 255,
         color[1] / 255,
         color[2] / 255)
+
+
+def draw_sprite(
+    framebuffer,
+    position: list,
+    texture: pygame.Surface
+):
+    """
+    Renders the sprite to the given positions
+
+    Args:
+        framebuffer: Ignored
+        position (list): The position to draw the sprite
+        texture (pygame.Surface): The sprite to draw.
+    """
+    size_x = texture.get_width()
+    size_y = texture.get_height()
+    rgba_data = pygame.image.tostring(texture, "RGBA", True)
+    GL.glRasterPos2d(position[0], position[1] + size_y)
+    GL.glDrawPixels(
+        size_x,
+        size_y,
+        GL.GL_RGBA,
+        GL.GL_UNSIGNED_BYTE,
+        rgba_data)
 
 
 def polygon(
@@ -40,7 +66,7 @@ def polygon(
         is_antialiased (bool, optional): Should an anti-aliased outline but drawn?. Defaults to True.
     """
 
-    set_color(color)
+    __set_color__(color)
 
     GL.glBegin(GL.GL_POLYGON)
     [GL.glVertex2f(point[0], point[1]) for point in points]
@@ -207,7 +233,7 @@ def segment(
     # THEN draw an anti-aliased outline around it
     # due to the lack of a "aa_filled_polygon"
 
-    set_color(color)
+    __set_color__(color)
 
     GL.glBegin(GL.GL_QUADS)
     GL.glVertex2f(starting_points[0][0], starting_points[0][1])

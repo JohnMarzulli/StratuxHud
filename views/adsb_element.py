@@ -324,7 +324,10 @@ class AdsbElement(HudElement):
                 x_pos = self.__width__ - width_x
 
             try:
-                framebuffer.blit(info_texture, [x_pos, info_position_y])
+                drawing.renderer.draw_sprite(
+                    framebuffer,
+                    [x_pos, info_position_y],
+                    info_texture)
             except:
                 pass
 
