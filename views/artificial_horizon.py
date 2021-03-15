@@ -80,15 +80,15 @@ class ArtificialHorizon(AhrsElement):
         # we need to reduce visual quality on some
         # items to favor frame rate
         if not local_debug.IS_SLOW:
-            self.__render_centered_text__(
-                framebuffer,
-                str(reference_angle),
-                [center_x, center_y],
-                colors.BLACK,
-                None,
-                1.2,
-                roll,
-                True)
+            # self.__render_centered_text__(
+            #     framebuffer,
+            #     str(reference_angle),
+            #     [center_x, center_y],
+            #     colors.BLACK,
+            #     None,
+            #     1.2,
+            #     roll,
+            #     True)
 
             self.__render_centered_text__(
                 framebuffer,

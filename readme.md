@@ -495,6 +495,9 @@ sudo make install
 ```
 
 ```bash
+sudo apt install libsdl-mixer1.2-dev
+sudo apt install libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev libsdl-sound1.2-dev python3-pygame
+
 pip3 install setuptools
 sudo python3 setup.py develop
 pip4 install pygame==1.9.6

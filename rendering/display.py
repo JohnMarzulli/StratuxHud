@@ -70,23 +70,24 @@ class Display:
 
         # List of drivers:
         # https://wiki.libsdl.org/FAQUsingSDL
-        drivers = ['fbcon', 'directfb', 'svgalib', 'directx', 'windib', 'Quartz']
-        found = False
-        for driver in drivers:
-            if not os.getenv('SDL_VIDEODRIVER'):
-                os.putenv('SDL_VIDEODRIVER', driver)
+        if not __is_x_windows__():
+            drivers = ['fbcon', 'directfb', 'svgalib', 'directx', 'windib', 'Quartz']
+            found = False
+            for driver in drivers:
+                if not os.getenv('SDL_VIDEODRIVER'):
+                    os.putenv('SDL_VIDEODRIVER', driver)
 
-            try:
-                pygame.display.init()
-            except pygame.error as ex:
-                print('Driver: {0} failed. EX={1}'.format(driver, ex))
-                continue
+                try:
+                    pygame.display.init()
+                except pygame.error as ex:
+                    print('Driver: {0} failed. EX={1}'.format(driver, ex))
+                    continue
 
-            found = True
-            break
+                found = True
+                break
 
-        if not found:
-            raise Exception('No suitable video driver found!')
+            if not found:
+                raise Exception('No suitable video driver found!')
 
         pygame.display.set_mode(self.size, display_mode)
 
