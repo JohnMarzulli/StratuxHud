@@ -221,7 +221,12 @@ class AdsbElement(HudElement):
         # find which one is the widest.
         all_text = [identifier_text] + additional_info_text
         all_textures_and_sizes = [HudDataCache.get_cached_text_texture(
-            text, self.__font__, colors.BLACK, card_color, False, False) for text in all_text]
+            text,
+            self.__font__,
+            colors.BLACK,
+            card_color,
+            False,
+            False) for text in all_text]
         widest_texture = max(
             all_textures_and_sizes,
             key=lambda x: x[1][0])[1][0]

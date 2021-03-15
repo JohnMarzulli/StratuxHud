@@ -87,14 +87,9 @@ class HudElement(object):
 
         scaled_size = [int(size[0] * scale), int(size[1] * scale)]
 
-        if IS_SLOW:
-            texture = pygame.transform.scale(
-                texture,
-                scaled_size)
-        else:
-            texture = pygame.transform.smoothscale(
-                texture,
-                scaled_size)
+        texture = pygame.transform.scale(
+            texture,
+            scaled_size)
 
         drawing.renderer.draw_sprite(
             framebuffer,
@@ -109,7 +104,7 @@ class HudElement(object):
         text: str,
         position: list,
         color: list,
-        bg_color: list = None,
+        bg_color: list = colors.BLACK,
         scale: float = 1.0,
         use_alpha: bool = True
     ) -> list:
@@ -145,7 +140,7 @@ class HudElement(object):
                 texture,
                 scaled_size)
         else:
-            texture = pygame.transform.smoothscale(
+            texture = pygame.transform.scale(
                 texture,
                 scaled_size)
 
@@ -183,6 +178,8 @@ class HudElement(object):
         Returns:
             list: The size of the rendered text.
         """
+
+        use_alpha |= bg_color is None
 
         texture, _ = HudDataCache.get_cached_text_texture(
             text,
@@ -244,14 +241,9 @@ class HudElement(object):
 
         scaled_size = [int(size[0] * scale), int(size[1] * scale)]
 
-        if IS_SLOW:
-            texture = pygame.transform.scale(
-                texture,
-                scaled_size)
-        else:
-            texture = pygame.transform.smoothscale(
-                texture,
-                scaled_size)
+        texture = pygame.transform.scale(
+            texture,
+            scaled_size)
 
         drawing.renderer.draw_sprite(
             framebuffer,

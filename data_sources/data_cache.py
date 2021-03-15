@@ -157,6 +157,8 @@ class HudDataCache(object):
         """
 
         with TaskProfiler("HudDataCache::get_cached_text_texture"):
+            use_alpha |= background_color is None
+
             result = None
             text_key = "{0}:{1}:{2}:{3}:{4}".format(
                 font,
@@ -165,6 +167,7 @@ class HudDataCache(object):
                 background_color,
                 use_alpha)
             HudDataCache.__LOCK__.acquire()
+
             try:
                 if text_key not in HudDataCache.TEXT_TEXTURE_CACHE or force_regen:
                     texture = font.render(
@@ -175,7 +178,9 @@ class HudDataCache(object):
                     size = texture.get_size()
 
                     if use_alpha:
+                        texture.set_colorkey([0, 0, 0])
                         texture = texture.convert_alpha()
+                        texture.set_colorkey([0, 0, 0])
                     else:
                         texture = texture.convert()
 

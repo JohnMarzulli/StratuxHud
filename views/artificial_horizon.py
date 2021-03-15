@@ -95,7 +95,7 @@ class ArtificialHorizon(AhrsElement):
                 str(reference_angle),
                 [center_x, center_y],
                 colors.WHITE,
-                None,
+                colors.BLACK,
                 1.0,
                 roll,
                 True)

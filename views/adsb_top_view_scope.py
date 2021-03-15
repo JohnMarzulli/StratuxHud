@@ -444,7 +444,7 @@ class AdsbTopViewScope(AdsbElement):
                 identifier,
                 [screen_x, screen_y + (self.__no_direction_target_size__ << 2)],
                 colors.YELLOW,
-                None,
+                colors.BLACK,
                 0.5,
                 0,
                 True)
@@ -586,7 +586,7 @@ class AdsbTopViewScope(AdsbElement):
             str(heading_to_draw),
             (screen_x, screen_y),
             colors.YELLOW,
-            None,
+            colors.BLACK,
             1.0,
             heading_text_rotation,
             True)

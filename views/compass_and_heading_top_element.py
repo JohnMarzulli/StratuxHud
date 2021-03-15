@@ -178,7 +178,7 @@ class CompassAndHeadingTopElement(AhrsElement):
             heading_text,
             [self.__center_x__, self.__compass_box_y_position__],
             colors.GREEN,
-            None,
+            colors.BLACK,
             1.0,
             True)
 
@@ -216,7 +216,7 @@ class CompassAndHeadingTopElement(AhrsElement):
                 str(heading),
                 [position_x, position_y],
                 colors.YELLOW,
-                None,
+                colors.BLACK,
                 1.0,
                 True)
 

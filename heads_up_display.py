@@ -284,23 +284,22 @@ class HeadsUpDisplay(object):
         text: str,
         color: list,
         position: list,
-        background_color: list = None
+        background_color: list = colors.BLACK
     ) -> list:
         """
         Renders the text with the results centered on the given
         position.
         """
 
-        rendered_text = self.__detail_font__.render(
+        rendered_text, size = HudDataCache.get_cached_text_texture(
             text,
-            True,
+            self.__detail_font__,
             color,
             background_color)
-        (text_width, text_height) = rendered_text.get_size()
-        surface = pygame.display.get_surface()
+        text_width, text_height = size
 
         drawing.renderer.draw_sprite(
-            surface,
+            pygame.display.get_surface(),
             [position[0] - (text_width >> 1), position[1] - (text_height >> 1)],
             rendered_text)
 
@@ -607,8 +606,13 @@ class HeadsUpDisplay(object):
             'or flight instrument system.',
             'For advisory only.']
 
-        texture = self.__loading_font__.render("LOADING", True, colors.RED)
-        text_width, text_height = texture.get_size()
+        texture, size = HudDataCache.get_cached_text_texture(
+            "LOADING",
+            self.__loading_font__,
+            colors.RED,
+            colors.BLACK)
+
+        text_width, text_height = size
 
         surface = pygame.display.get_surface()
 
@@ -617,22 +621,27 @@ class HeadsUpDisplay(object):
             [(self.__width__ >> 1) - (text_width >> 1), self.__detail_font__.get_height()],
             texture)
 
-        y = (self.__height__ >> 2) + (self.__height__ >> 3)
+        y_pos = (self.__height__ >> 2) + (self.__height__ >> 3)
         for text in disclaimer_text:
-            texture = self.__detail_font__.render(text, True, colors.YELLOW)
-            text_width, text_height = texture.get_size()
+            texture, size = HudDataCache.get_cached_text_texture(
+                text,
+                self.__detail_font__,
+                colors.YELLOW,
+                colors.BLACK)
+            text_width, text_height = size
 
             drawing.renderer.draw_sprite(
                 surface,
-                [(self.__width__ >> 1) - (text_width >> 1), y],
+                [(self.__width__ >> 1) - (text_width >> 1), y_pos],
                 texture)
-            y += text_height + (text_height >> 3)
+            y_pos += text_height + (text_height >> 3)
 
-        texture = self.__detail_font__.render(
+        texture, size = HudDataCache.get_cached_text_texture(
             'Version {}'.format(configuration.VERSION),
-            True,
-            colors.GREEN)
-        text_width, text_height = texture.get_size()
+            self.__detail_font__,
+            colors.GREEN,
+            colors.BLACK)
+        text_width, text_height = size
 
         drawing.renderer.draw_sprite(
             surface,

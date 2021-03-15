@@ -41,6 +41,11 @@ def draw_sprite(
     size_x = texture.get_width()
     size_y = texture.get_height()
     rgba_data = pygame.image.tostring(texture, "RGBA", True)
+
+    # For some reason, OpenGl appears to "draw up"
+    # starting at the Y position. So be need to adjust downwards
+    # to make sure the sprite is using (X,Y) to be the
+    # upper left cooridinate
     GL.glRasterPos2d(position[0], position[1] + size_y)
     GL.glDrawPixels(
         size_x,
