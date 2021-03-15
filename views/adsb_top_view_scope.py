@@ -423,9 +423,9 @@ class AdsbTopViewScope(AdsbElement):
                 [screen_x, screen_y],
                 orientation.get_onscreen_projection_heading(),
                 traffic.track)
-            drawing.polygon(framebuffer, target_color, points)
+            drawing.renderer.polygon(framebuffer, target_color, points)
         else:
-            drawing.filled_circle(
+            drawing.renderer.filled_circle(
                 framebuffer,
                 target_color,
                 [screen_x, screen_y],
@@ -466,7 +466,7 @@ class AdsbTopViewScope(AdsbElement):
             0,
             0)
 
-        drawing.polygon(framebuffer, colors.GREEN, points)
+        drawing.renderer.polygon(framebuffer, colors.GREEN, points)
 
     def __draw_distance_rings__(
         self,
@@ -508,7 +508,7 @@ class AdsbTopViewScope(AdsbElement):
 
         for distance in ring_distances:
             radius_pixels = self.__get_pixel_distance__(distance, max_distance)
-            drawing.circle(
+            drawing.renderer.circle(
                 framebuffer,
                 colors.GREEN,
                 self.__scope_center__,
@@ -557,7 +557,7 @@ class AdsbTopViewScope(AdsbElement):
             indicator_mark_ends,
             [screen_x, screen_y])
 
-        drawing.segment(
+        drawing.renderer.segment(
             framebuffer,
             colors.GREEN,
             [screen_x, screen_y],

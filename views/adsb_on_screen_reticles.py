@@ -119,13 +119,13 @@ class AdsbOnScreenReticles(AdsbElement):
             return None
 
         # Used for debugging reticle rotation
-        # drawing.segment(
+        # drawing.renderer.segment(
         #     framebuffer,
         #     colors.YELLOW,
         #     [reticle_x, reticle_y],
         #     reticle[0])
 
-        # drawing.segment(
+        # drawing.renderer.segment(
         #     framebuffer,
         #     colors.YELLOW,
         #     [reticle_x, reticle_y],

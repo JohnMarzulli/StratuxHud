@@ -7,10 +7,10 @@ import math
 from common_utils import fast_math, local_debug
 from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
-from rendering import drawing
+from rendering import colors, drawing
 
 from views.ahrs_element import AhrsElement
-from views.hud_elements import colors, run_hud_element
+from views.hud_elements import run_hud_element
 
 
 class ArtificialHorizon(AhrsElement):
@@ -60,7 +60,7 @@ class ArtificialHorizon(AhrsElement):
         segments, (center_x, center_y), reference_angle = segments_info
 
         for segment in segments:
-            drawing.segment(
+            drawing.renderer.segment(
                 framebuffer,
                 colors.GREEN,
                 segment[0],

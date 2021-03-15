@@ -76,6 +76,10 @@ class HudElement(object):
         Returns:
             list: The size of the rendered text.
         """
+
+        if framebuffer is None:
+            return
+
         texture, size = HudDataCache.get_cached_text_texture(
             text,
             self.__font__,
@@ -125,6 +129,10 @@ class HudElement(object):
         Returns:
             list: The size of the rendered text.
         """
+
+        if framebuffer is None:
+            return
+
         texture, size = HudDataCache.get_cached_text_texture(
             text,
             self.__font__,
@@ -179,6 +187,10 @@ class HudElement(object):
         Returns:
             list: The size of the rendered text.
         """
+
+        if framebuffer is None:
+            return
+
         texture, _ = HudDataCache.get_cached_text_texture(
             text,
             self.__font__,
@@ -227,6 +239,10 @@ class HudElement(object):
         Returns:
             list: The size of the rendered text.
         """
+
+        if framebuffer is None:
+            return
+
         texture, size = HudDataCache.get_cached_text_texture(
             text,
             self.__font__,
@@ -280,6 +296,9 @@ class HudElement(object):
         # then take [1], render at the new X and given y
         # then take[2], render at same X as [1], moved down the split vertical
 
+        if framebuffer is None:
+            return
+
         main_package = scale_text_color_list[0]
         main_size = self.__render_text__(
             framebuffer,
@@ -329,6 +348,9 @@ class HudElement(object):
         # Take the main info and render it on the left at the given y
         # then take [1], render at the new X and given y
         # then take[2], render at same X as [1], moved down the split vertical
+
+        if framebuffer is None:
+            return
 
         current_position = [starting_position[0], starting_position[1]]
         longest_x = 0

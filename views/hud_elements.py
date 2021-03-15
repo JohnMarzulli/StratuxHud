@@ -9,7 +9,7 @@ from common_utils import fast_math, units
 from configuration import configuration
 from data_sources import ahrs_simulation, traffic
 from data_sources.data_cache import HudDataCache
-from rendering import colors, display
+from rendering import display
 
 DEFAULT_FONT = "./assets/fonts/LiberationMono-Bold.ttf"
 
@@ -134,8 +134,8 @@ def run_hud_elements(
 
     clock = pygame.time.Clock()
 
-    __backpage_framebuffer__, screen_size = display.display_init()  # args.debug)
-    __width__, __height__ = screen_size
+    screen = display.Display()  # args.debug)
+    __width__, __height__ = screen.size
     pygame.mouse.set_visible(False)
 
     pygame.font.init()
@@ -174,8 +174,8 @@ def run_hud_elements(
         orientation = __aircraft__.get_ahrs()
         orientation.utc_time = str(datetime.utcnow())
         __aircraft__.simulate()
-        __backpage_framebuffer__.fill(colors.BLACK)
+        screen.clear()
         for hud_element in hud_elements:
-            hud_element.render(__backpage_framebuffer__, orientation)
-        pygame.display.flip()
+            hud_element.render(screen.get_framebuffer(), orientation)
+        screen.flip()
         clock.tick(60)

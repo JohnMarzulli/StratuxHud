@@ -93,7 +93,7 @@ class SkidAndGs(AhrsElement):
             return
 
         # Draw a box that shows the range of the ball
-        drawing.polygon(
+        drawing.renderer.polygon(
             framebuffer,
             colors.DARK_GRAY,
             self.__skid_range_box__,
@@ -107,13 +107,13 @@ class SkidAndGs(AhrsElement):
         screen_x = min(self.__skid_right_edge__, screen_x)
 
         if not IS_SLOW:
-            drawing.filled_circle(
+            drawing.renderer.filled_circle(
                 framebuffer,
                 colors.BLACK,
                 [screen_x, self.__skid_y_center__],
                 int(self.__skid_ball_radius__ + self.__thin_line_width__))
 
-        drawing.filled_circle(
+        drawing.renderer.filled_circle(
             framebuffer,
             colors.YELLOW,
             [screen_x, self.__skid_y_center__],
@@ -126,14 +126,14 @@ class SkidAndGs(AhrsElement):
 
         for x_pos in [left_x, right_x]:
             if not IS_SLOW:
-                drawing.segment(
+                drawing.renderer.segment(
                     framebuffer,
                     colors.BLACK,
                     [x_pos, self.__skid_top_edge__],
                     [x_pos, self.__skid_bottom_edge__],
                     self.__thick_line_width__ << 2)
 
-            drawing.segment(
+            drawing.renderer.segment(
                 framebuffer,
                 colors.WHITE,
                 [x_pos, self.__skid_top_edge__],

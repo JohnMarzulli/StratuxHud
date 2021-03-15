@@ -203,6 +203,41 @@ def interpolate(
     return int(interpolatef(left_value, right_value, proportion))
 
 
+def rangef(
+    start: float,
+    stop: float,
+    step: float
+) -> list:
+    while start < stop:
+        yield float(start)
+        start += step
+
+
+def get_circle_points(
+    center: list,
+    radius: float,
+) -> list:
+    """
+    Given a center and a radius, find the points to make a
+    smooth circle. The number of srgments is automatically
+    determined by the radius.
+
+    Args:
+        center (list): The center of the circle.
+        radius (float): The radius of the circle.
+
+    Returns:
+        list: The points that make the circle.
+    """
+    angle_chunks = math.sqrt(radius / 2.0)
+    arc_radians = (angle_chunks / radius)
+    arc_radians = max(0.1, arc_radians)
+
+    points = [[int(center[0] + (radius * math.sin(radian))), int(center[1] + (radius * math.cos(radian)))] for radian in rangef(0, TWO_PI, arc_radians)]
+
+    return points
+
+
 def wrap_degrees(
     angle: float
 ) -> float:

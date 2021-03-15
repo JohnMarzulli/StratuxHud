@@ -211,8 +211,9 @@ class HeadsUpDisplay(object):
             show_unavailable = view_uses_ahrs and not self.__aircraft__.is_ahrs_available()
 
             current_fps = int(clock.get_fps())
-            surface = pygame.display.get_surface()
-            surface.fill(colors.BLACK)
+
+            surface = self.__display__.get_framebuffer()
+            self.__display__.clear()
 
             self.__render_view_title__(view_name, surface)
 
@@ -254,7 +255,8 @@ class HeadsUpDisplay(object):
                     CONFIGURATION.flip_horizontal,
                     CONFIGURATION.flip_vertical)
                 surface.blit(flipped, [0, 0])
-            pygame.display.update()
+
+            self.__display__.flip()
             self.__fps__.push(current_fps)
 
             clock.tick(configuration.MAX_FRAMERATE)
@@ -525,9 +527,10 @@ class HeadsUpDisplay(object):
 
         self.__fps__.push(0)
 
-        self.__backpage_framebuffer__, screen_size = display.display_init()
-        pygame.display.set_caption("StratuxHUD")
-        self.__width__, self.__height__ = screen_size
+        self.__display__ = display.Display()
+        renderer = "OpenGl" if display.is_opengl_target() else "software"
+        pygame.display.set_caption("StratuxHUD ({})".format(renderer))
+        self.__width__, self.__height__ = self.__display__.size
 
         pygame.mouse.set_visible(False)
 

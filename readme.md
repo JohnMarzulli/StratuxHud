@@ -473,7 +473,6 @@ This project is covered by the GPL v3 license.
 - Python 3.9 introduces issues with `isAlive`
 - PyGame 1.9.6 is the last known working version. v2.0 instroduces issues with window creation.
 
-
 ## AIO Jessie Install
 
 ```bash
@@ -500,3 +499,7 @@ pip3 install setuptools
 sudo python3 setup.py develop
 pip4 install pygame==1.9.6
 ```
+
+## OpenGl
+
+pip3 install PyOpenGL PyOpenGL_accelerate

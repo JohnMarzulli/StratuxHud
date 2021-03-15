@@ -252,13 +252,13 @@ class AdsbElement(HudElement):
             info_position_y + self.__line_width__ + int((len(additional_info_text) + 1) * info_spacing * text_height)]
         fill_bottom_left = [fill_top_left[0], fill_bottom_right[1]]
 
-        drawing.polygon(
+        drawing.renderer.polygon(
             framebuffer,
             card_color,
             [fill_top_left, fill_top_right, fill_bottom_right, fill_bottom_left],
             False)
 
-        drawing.segments(
+        drawing.renderer.segments(
             framebuffer,
             colors.BLACK,
             True,

@@ -7,10 +7,10 @@ from numbers import Number
 from common_utils import fast_math
 from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
-from rendering import drawing
+from rendering import colors, drawing
 
 from views.ahrs_element import AhrsElement
-from views.hud_elements import apply_declination, colors, run_hud_element
+from views.hud_elements import apply_declination, run_hud_element
 
 
 class CompassAndHeadingTopElement(AhrsElement):
@@ -118,7 +118,7 @@ class CompassAndHeadingTopElement(AhrsElement):
         x_pos: int,
         heading: int
     ):
-        drawing.segment(
+        drawing.renderer.segment(
             framebuffer,
             colors.GREEN,
             [x_pos, self.__get_mark_line_start__()],
