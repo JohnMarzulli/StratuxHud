@@ -10,6 +10,9 @@ from common_utils import fast_math
 from common_utils.local_debug import IS_SLOW
 
 
+RENDERER_NAME = "Rasterization"
+
+
 def draw_sprite(
     framebuffer: pygame.Surface,
     position: list,

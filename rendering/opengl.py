@@ -8,6 +8,8 @@ import pygame
 from common_utils import fast_math
 from OpenGL import GL
 
+RENDERER_NAME = "OpenGl"
+
 
 def __set_color__(
     color: list

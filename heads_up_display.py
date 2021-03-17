@@ -532,8 +532,7 @@ class HeadsUpDisplay(object):
         self.__fps__.push(0)
 
         self.__display__ = display.Display()
-        renderer = "OpenGl" if display.is_opengl_target() else "software"
-        pygame.display.set_caption("StratuxHUD ({})".format(renderer))
+        pygame.display.set_caption("StratuxHUD ({})".format(drawing.renderer.RENDERER_NAME))
         self.__width__, self.__height__ = self.__display__.size
 
         pygame.mouse.set_visible(False)
@@ -558,8 +557,7 @@ class HeadsUpDisplay(object):
 
         self.__aircraft__ = Aircraft(self.__logger__)
 
-        self.__pixels_per_degree_y__ = int(
-            (self.__height__ / CONFIGURATION.get_degrees_of_pitch()) * CONFIGURATION.get_pitch_degrees_display_scaler())
+        self.__pixels_per_degree_y__ = int((self.__height__ / CONFIGURATION.get_degrees_of_pitch()) * CONFIGURATION.get_pitch_degrees_display_scaler())
 
         self.__ahrs_not_available_element__ = self.__build_ahrs_hud_element__(
             ahrs_not_available.AhrsNotAvailable)
