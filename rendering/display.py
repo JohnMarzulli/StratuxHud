@@ -7,7 +7,14 @@ import os
 import pygame
 import pygame.constants
 from common_utils import local_debug
-from OpenGL import GL, GLU
+
+__OPEN_GL_AVAILABLE__ = False
+try:
+    from OpenGL import GL, GLU
+
+    __OPEN_GL_AVAILABLE__ = True
+except:
+    pass
 
 from rendering import colors
 
@@ -19,7 +26,7 @@ def __is_x_windows__() -> bool:
 
 
 def is_opengl_target() -> bool:
-    return not local_debug.IS_PI or __is_x_windows__()
+    return __OPEN_GL_AVAILABLE__ and (not local_debug.IS_PI or __is_x_windows__())
 
 
 class Display:
@@ -39,7 +46,7 @@ class Display:
     def __get_target_screen_mode__(
         self
     ) -> int:
-        screen_mode = pygame.HWACCEL | pygame.constants.RLEACCEL | pygame.constants.DOUBLEBUF
+        screen_mode = pygame.HWACCEL | pygame.constants.DOUBLEBUF | pygame.constants.RLEACCEL
 
         if self.__is_fullscreen_target__():
             screen_mode |= pygame.FULLSCREEN
