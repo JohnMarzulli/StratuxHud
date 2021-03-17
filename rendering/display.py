@@ -29,6 +29,9 @@ def is_opengl_target() -> bool:
     return __OPEN_GL_AVAILABLE__ and (not local_debug.IS_PI or __is_x_windows__())
 
 
+IS_OPENGL = is_opengl_target()
+
+
 class Display:
     """
     Instance of the current display that is being used for
@@ -71,7 +74,7 @@ class Display:
         Initializes PyGame to run on the current screen.
         """
 
-        self.__is_open_gl__ = is_opengl_target()
+        self.is_open_gl = is_opengl_target()
         self.size = self.__get_target_screen_size__()
         display_mode = self.__get_target_screen_mode__()
 
@@ -98,7 +101,7 @@ class Display:
 
         pygame.display.set_mode(self.size, display_mode)
 
-        if self.__is_open_gl__:
+        if self.is_open_gl:
             GL.glEnable(GL.GL_POLYGON_SMOOTH)
             GL.glEnable(GL.GL_POINT_SMOOTH)
             GL.glEnable(GL.GL_LINE_SMOOTH)
@@ -113,7 +116,7 @@ class Display:
     def clear(
         self
     ):
-        if self.__is_open_gl__:
+        if self.is_open_gl:
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
         else:
             self.get_framebuffer().fill(colors.BLACK)
@@ -121,12 +124,12 @@ class Display:
     def get_framebuffer(
         self
     ):
-        return None if self.__is_open_gl__ else pygame.display.get_surface()
+        return None if self.is_open_gl else pygame.display.get_surface()
 
     def flip(
         self
     ):
-        if self.__is_open_gl__:
+        if self.is_open_gl:
             GL.glFlush()
 
         pygame.display.flip()

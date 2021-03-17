@@ -5,8 +5,10 @@ Base class for AHRS view elements.
 import pygame
 from common_utils.local_debug import IS_SLOW
 from data_sources.data_cache import HudDataCache
-from rendering import colors, drawing
+from rendering import colors, display, drawing
 
+def __get_default_text_background_color__() -> list:
+    return colors.BLACK if display.IS_OPENGL else None
 
 class HudElement(object):
     def __init__(
@@ -81,7 +83,7 @@ class HudElement(object):
             text,
             self.__font__,
             color,
-            colors.BLACK,
+            __get_default_text_background_color__(),
             True,
             False)
 
@@ -104,7 +106,7 @@ class HudElement(object):
         text: str,
         position: list,
         color: list,
-        bg_color: list = colors.BLACK,
+        bg_color: list = __get_default_text_background_color__(),
         scale: float = 1.0,
         use_alpha: bool = True
     ) -> list:
@@ -157,7 +159,7 @@ class HudElement(object):
         text: str,
         position: list,
         color: list,
-        bg_color: list = colors.BLACK,
+        bg_color: list = __get_default_text_background_color__(),
         scale: float = 1.0,
         rotation: float = 0.0,
         use_alpha: bool = True
@@ -235,7 +237,7 @@ class HudElement(object):
             text,
             self.__font__,
             color,
-            colors.BLACK,
+            __get_default_text_background_color__(),
             True,
             False)
 

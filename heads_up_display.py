@@ -69,6 +69,10 @@ def __send_stratux_post__(
         return False
 
 
+def __get_default_text_background_color__() -> list:
+    return colors.BLACK if display.IS_OPENGL else None
+
+
 class HeadsUpDisplay(object):
     """
     Class to handle the HUD work...
@@ -284,7 +288,7 @@ class HeadsUpDisplay(object):
         text: str,
         color: list,
         position: list,
-        background_color: list = colors.BLACK
+        background_color: list = __get_default_text_background_color__()
     ) -> list:
         """
         Renders the text with the results centered on the given
