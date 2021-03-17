@@ -3,6 +3,7 @@ Initializes the display, and holds common color values.
 """
 
 import os
+import sys
 
 import pygame
 import pygame.constants
@@ -18,6 +19,24 @@ except:
 
 from rendering import colors
 
+FORCE_SOFTWARE_FLAG = "software"
+
+
+def is_forced_software_rendering() -> bool:
+    """
+    Should we use software rendering no matter what type of
+    runtime environment we are in.
+
+    Returns:
+        bool: Should the HUD use software rendering?
+    """
+    is_flag_present = False
+
+    for argument in sys.argv:
+        is_flag_present |= FORCE_SOFTWARE_FLAG in argument.lower()
+
+    return is_flag_present
+
 
 def __is_x_windows__() -> bool:
     display = os.getenv('DISPLAY')
@@ -26,7 +45,11 @@ def __is_x_windows__() -> bool:
 
 
 def is_opengl_target() -> bool:
-    return __OPEN_GL_AVAILABLE__ and (not local_debug.IS_PI or __is_x_windows__())
+    use_opengl = not is_forced_software_rendering()
+    use_opengl &= __OPEN_GL_AVAILABLE__
+    use_opengl &= (not local_debug.IS_PI or __is_x_windows__())
+
+    return use_opengl
 
 
 IS_OPENGL = is_opengl_target()
@@ -47,14 +70,25 @@ class Display:
         return local_debug.IS_PI and not __is_x_windows__()
 
     def __get_target_screen_mode__(
-        self
+        self,
+        force_fullscreen: bool,
+        force_software: bool
     ) -> int:
+        """
+        Get our target screen mode
+
+        Args:
+            force_fullscreen (bool, optional): Do we want to force fullscreen mode?. Defaults to False.
+
+        Returns:
+            int: The combined bitflags of all of our screenmodes.
+        """
         screen_mode = pygame.HWACCEL | pygame.constants.DOUBLEBUF | pygame.constants.RLEACCEL
 
-        if self.__is_fullscreen_target__():
+        if self.__is_fullscreen_target__() or force_fullscreen:
             screen_mode |= pygame.FULLSCREEN
 
-        if is_opengl_target():
+        if is_opengl_target() and not force_software:
             screen_mode |= pygame.constants.OPENGL | pygame.constants.OPENGLBLIT
 
         return screen_mode
@@ -68,15 +102,26 @@ class Display:
         return Display.__DEFAULT_SCREEN_SIZE__
 
     def __init__(
-        self
+        self,
+        force_fullscreen: bool = False,
+        force_software: bool = False
     ) -> None:
         """
         Initializes PyGame to run on the current screen.
+
+        Args:
+            force_fullscreen (bool, optional): Do we want to force fullscreen mode?. Defaults to False.
+            force_software (bool, optional): Do we want to force the software renderer to be user? Defaults to False.
+
+        Returns:
+            bool: Should the HUD use fullscreen?
         """
 
-        self.is_open_gl = is_opengl_target()
+        self.is_open_gl = is_opengl_target() and not force_software
         self.size = self.__get_target_screen_size__()
-        display_mode = self.__get_target_screen_mode__()
+        display_mode = self.__get_target_screen_mode__(
+            force_fullscreen,
+            force_software)
 
         # List of drivers:
         # https://wiki.libsdl.org/FAQUsingSDL

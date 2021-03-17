@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from common_utils.logger import HudLogger
 import json
 import sys
 from time import sleep
@@ -505,10 +506,17 @@ class HeadsUpDisplay(object):
 
     def __init__(
         self,
-        logger
+        logger: HudLogger,
+        force_fullscreen: bool = False,
+        force_software: bool = False
     ):
         """
         Initialize and create a new HUD.
+
+        Args:
+            logger (HudLogger): The logger for the HUD
+            force_fullscreen (bool, optional): Do we want to force fullscreen mode?. Defaults to False.
+            force_software (bool, optional): Do we want to force the software renderer to be user? Defaults to False.
         """
 
         self.__render_perf_task__ = IntermittentTask(
@@ -531,7 +539,9 @@ class HeadsUpDisplay(object):
 
         self.__fps__.push(0)
 
-        self.__display__ = display.Display()
+        self.__display__ = display.Display(
+            force_fullscreen,
+            force_software)
         pygame.display.set_caption("StratuxHUD ({})".format(drawing.renderer.RENDERER_NAME))
         self.__width__, self.__height__ = self.__display__.size
 
