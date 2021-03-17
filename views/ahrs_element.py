@@ -7,8 +7,10 @@ from common_utils.local_debug import IS_SLOW
 from data_sources.data_cache import HudDataCache
 from rendering import colors, display, drawing
 
+
 def __get_default_text_background_color__() -> list:
     return colors.BLACK if display.IS_OPENGL else None
+
 
 class HudElement(object):
     def __init__(
@@ -28,8 +30,7 @@ class HudElement(object):
         self.__width__ = framebuffer_size[0]
         self.__height__ = framebuffer_size[1]
 
-        self.__right_border__ = int((1.0 - border_margin)
-                                    * framebuffer_size[0])
+        self.__right_border__ = int((1.0 - border_margin) * framebuffer_size[0])
         self.__left_border__ = int(framebuffer_size[0] * border_margin)
 
         self.__top_border__ = int(self.__height__ * border_margin)
