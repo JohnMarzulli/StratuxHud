@@ -506,3 +506,7 @@ pip4 install pygame==1.9.6
 ## OpenGl
 
 pip3 install PyOpenGL PyOpenGL_accelerate
+
+https://www.raspberrypi.org/forums/viewtopic.php?t=223592
+https://www.raspberrypi.org/forums/viewtopic.php?t=243892
+https://www.raspberrypi.org/forums/viewtopic.php?t=266277
