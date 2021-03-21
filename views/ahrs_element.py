@@ -80,37 +80,15 @@ class HudElement(object):
             list: The size of the rendered text.
         """
 
-        if display.IS_OPENGL:
-            return drawing.renderer.render_text_opengl(
-                None,
-                self.__font__,
-                text,
-                position,
-                color,
-                colors.BLACK,
-                True,
-                scale)
-
-        texture, size = HudDataCache.get_cached_text_texture(
-            text,
-            self.__font__,
-            color,
-            __get_default_text_background_color__(),
-            True,
-            False)
-
-        scaled_size = [int(size[0] * scale), int(size[1] * scale)]
-
-        texture = pygame.transform.scale(
-            texture,
-            scaled_size)
-
-        drawing.renderer.draw_sprite(
+        return drawing.renderer.render_text(
             framebuffer,
+            self.__font__,
+            text,
             position,
-            texture)
-
-        return scaled_size
+            color,
+            colors.BLACK,
+            True,
+            scale)
 
     def __render_horizontal_centered_text__(
         self,

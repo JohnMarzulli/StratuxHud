@@ -100,7 +100,6 @@ class GenericDataCache:
 
         # The second hardest problem in comp-sci...
         with TaskProfiler("GenericDataCache::set_data"):
-
             try:
                 self.__lock__.acquire()
                 self.__data_cache__[data_key] = value
@@ -108,6 +107,22 @@ class GenericDataCache:
                 self.__data_last_used__[data_key] = datetime.utcnow()
             finally:
                 self.__lock__.release()
+
+    def get_data(
+        self,
+        data_key: str
+    ) -> any:
+        with TaskProfiler("GenericDataCache::get_data"):
+            try:
+                self.__lock__.acquire()
+                if data_key in self.__data_cache__:
+                    self.__data_last_used__[data_key] = datetime.utcnow()
+
+                    return self.__data_cache__[data_key]
+            finally:
+                self.__lock__.release()
+
+            return None
 
     def get_or_create_data(
         self,

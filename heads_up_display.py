@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from common_utils.logger import HudLogger
 import json
 import sys
 from time import sleep
@@ -9,6 +8,7 @@ import pygame
 import requests
 
 from common_utils import local_debug, system_tools
+from common_utils.logger import HudLogger
 from common_utils.task_timer import RollingStats, TaskProfiler
 from common_utils.tasks import IntermittentTask, RecurringTask
 from configuration import configuration, configuration_server
@@ -136,23 +136,15 @@ class HeadsUpDisplay(object):
         text: str,
         surface
     ):
-        try:
-            texture, size = HudDataCache.get_cached_text_texture(
-                text,
-                self.__detail_font__,
-                colors.BLUE,
-                colors.BLACK,
-                False)
-
-            scaled_size = [int(size[0] >> 1), int(size[1] >> 1)]
-
-            texture = pygame.transform.scale(
-                texture,
-                scaled_size)
-
-            drawing.renderer.draw_sprite(surface, [0, 0], texture)
-        except Exception as e:
-            pass
+        drawing.renderer.render_text(
+            surface,
+            self.__detail_font__,
+            text,
+            [0, 0],
+            colors.BLUE,
+            colors.BLACK,
+            False,
+            0.5)
 
     def __is_ahrs_view__(
         self,
@@ -295,20 +287,13 @@ class HeadsUpDisplay(object):
         Renders the text with the results centered on the given
         position.
         """
-
-        rendered_text, size = HudDataCache.get_cached_text_texture(
-            text,
+        return drawing.renderer.render_text(
+            pygame.display.get_surface(),
             self.__detail_font__,
+            text,
+            position,
             color,
             background_color)
-        text_width, text_height = size
-
-        drawing.renderer.draw_sprite(
-            pygame.display.get_surface(),
-            [position[0] - (text_width >> 1), position[1] - (text_height >> 1)],
-            rendered_text)
-
-        return text_width, text_height
 
     def log(
         self,
@@ -618,47 +603,48 @@ class HeadsUpDisplay(object):
             'or flight instrument system.',
             'For advisory only.']
 
-        texture, size = HudDataCache.get_cached_text_texture(
-            "LOADING",
+        surface = pygame.display.get_surface()
+
+        key, texture, size = drawing.renderer.get_or_create_text_texture(
             self.__loading_font__,
+            "LOADING",
             colors.RED,
             colors.BLACK)
 
-        text_width, text_height = size
-
-        surface = pygame.display.get_surface()
-
-        drawing.renderer.draw_sprite(
+        drawing.renderer.render_cached_texture(
             surface,
-            [(self.__width__ >> 1) - (text_width >> 1), self.__detail_font__.get_height()],
-            texture)
+            key,
+            [(self.__width__ >> 1) - (size[0] >> 1), self.__detail_font__.get_height()])
 
         y_pos = (self.__height__ >> 2) + (self.__height__ >> 3)
         for text in disclaimer_text:
-            texture, size = HudDataCache.get_cached_text_texture(
-                text,
+            key, texture, size = drawing.renderer.get_or_create_text_texture(
                 self.__detail_font__,
+                text,
                 colors.YELLOW,
                 colors.BLACK)
+
             text_width, text_height = size
 
-            drawing.renderer.draw_sprite(
+            drawing.renderer.render_cached_texture(
                 surface,
-                [(self.__width__ >> 1) - (text_width >> 1), y_pos],
-                texture)
+                key,
+                [(self.__width__ >> 1) - (text_width >> 1), y_pos])
+
             y_pos += text_height + (text_height >> 3)
 
-        texture, size = HudDataCache.get_cached_text_texture(
-            'Version {}'.format(configuration.VERSION),
+        key, texture, size = drawing.renderer.get_or_create_text_texture(
             self.__detail_font__,
+            'Version {}'.format(configuration.VERSION),
             colors.GREEN,
             colors.BLACK)
+
         text_width, text_height = size
 
-        drawing.renderer.draw_sprite(
+        drawing.renderer.render_cached_texture(
             surface,
-            [(self.__width__ >> 1) - (text_width >> 1), self.__height__ - text_height],
-            texture)
+            key,
+            [(self.__width__ >> 1) - (text_width >> 1), self.__height__ - text_height])
 
         flipped = pygame.transform.flip(
             surface,

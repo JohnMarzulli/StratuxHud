@@ -332,17 +332,14 @@ def __get_text_texture__(
     return texture, size
 
 
-def render_text_opengl(
-    framebuffer,
+def get_or_create_text_texture(
     font: pygame.font,
     text: str,
-    position: list,
     color: list,
     bg_color: list = colors.BLACK,
     use_alpha: bool = False,
     scale: float = 1.0
 ) -> list:
-
     key = __get_text_texture_key__(
         font,
         text,
@@ -353,8 +350,42 @@ def render_text_opengl(
 
     texture, size = __TEXT_CACHE__.get_or_create_data(
         key,
-        lambda: __get_text_texture__(font, text, color, bg_color, scale, use_alpha)
-    )
+        lambda: __get_text_texture__(font, text, color, bg_color, scale, use_alpha))
+
+    return key, texture, size
+
+
+def render_cached_texture(
+    framebuffer,
+    cache_key: str,
+    position: list
+) -> None:
+    texture, size = __TEXT_CACHE__.get_data(cache_key)
+
+    if texture is not None:
+        draw_sprite(
+            framebuffer,
+            position,
+            texture)
+
+
+def render_text(
+    framebuffer,
+    font: pygame.font,
+    text: str,
+    position: list,
+    color: list,
+    bg_color: list = colors.BLACK,
+    use_alpha: bool = False,
+    scale: float = 1.0
+) -> list:
+    key, texture, size = get_or_create_text_texture(
+        font,
+        text,
+        color,
+        bg_color,
+        use_alpha,
+        scale)
 
     if texture is not None:
         draw_sprite(
