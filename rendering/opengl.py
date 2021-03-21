@@ -34,8 +34,7 @@ def __set_color__(
 def draw_sprite(
     framebuffer,
     position: list,
-    texture: pygame.Surface,
-    scale=1.0
+    texture: pygame.Surface
 ):
     """
     Renders the sprite to the given positions
@@ -283,18 +282,20 @@ def segment(
 
 #     return texture_id, size_x, size_y
 
-def __key_text_texture_key__(
+def __get_text_texture_key__(
     font: pygame.font,
     text: str,
     color: list,
     bg_color: list = colors.BLACK,
+    scale: float = 1.0,
     use_alpha: bool = False
 ) -> str:
-    return "{}{}{}{}{}".format(
+    return "{}{}{}{}{}{}".format(
         font,
         text,
         color,
         bg_color,
+        scale,
         use_alpha)
 
 
@@ -303,6 +304,7 @@ def __get_text_texture__(
     text: str,
     text_color: list = colors.BLACK,
     background_color: list = colors.YELLOW,
+    scale=1.0,
     use_alpha: bool = False
 ) -> list:
 
@@ -314,6 +316,11 @@ def __get_text_texture__(
         text_color,
         background_color)
     size = texture.get_size()
+
+    scaled_x = int(size[0] * scale)
+    scaled_y = int(size[1] * scale)
+
+    texture = pygame.transform.scale(texture, [scaled_x, scaled_y])
 
     if use_alpha:
         texture.set_colorkey([0, 0, 0])
@@ -336,24 +343,24 @@ def render_text_opengl(
     scale: float = 1.0
 ) -> list:
 
-    key = __key_text_texture_key__(
+    key = __get_text_texture_key__(
         font,
         text,
         color,
         bg_color,
+        scale,
         use_alpha)
 
     texture, size = __TEXT_CACHE__.get_or_create_data(
         key,
-        lambda: __get_text_texture__(font, text, color, bg_color, use_alpha)
+        lambda: __get_text_texture__(font, text, color, bg_color, scale, use_alpha)
     )
 
     if texture is not None:
         draw_sprite(
             framebuffer,
             position,
-            texture,
-            scale)
+            texture)
 
         return size
     # texture_id, size_x, size_y = __get_text_texture__(
