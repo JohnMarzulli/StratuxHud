@@ -1,7 +1,7 @@
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
-from rendering import drawing
+from rendering import colors, drawing
 
 from views.adsb_element import AdsbElement, apply_declination
 
@@ -141,23 +141,14 @@ class AdsbTrafficListing(AdsbElement):
         padded_traffic_reports = self.__get_padded_traffic_reports__(
             traffic_reports)
 
-        if len(padded_traffic_reports) == 0:
-            drawing.renderer.draw_sprite(
-                framebuffer,
-                [x_pos, y_pos],
-                HudDataCache.get_cached_text_texture(
-                    "NO TRAFFIC",
-                    self.__font__)[0])
-
         for identifier, traffic_report in padded_traffic_reports:
-            traffic_text_texture = HudDataCache.get_cached_text_texture(
-                traffic_report,
-                self.__font__)[0]
-
-            drawing.renderer.draw_sprite(
+            drawing.renderer.render_text(
                 framebuffer,
+                self.__font__,
+                traffic_report,
                 [x_pos, y_pos],
-                traffic_text_texture)
+                colors.BLACK,
+                colors.YELLOW)
 
             y_pos += self.__next_line_distance__
 
