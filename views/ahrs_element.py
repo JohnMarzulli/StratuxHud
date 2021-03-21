@@ -86,7 +86,10 @@ class HudElement(object):
                 self.__font__,
                 text,
                 position,
-                color)
+                color,
+                colors.BLACK,
+                True,
+                scale)
 
         texture, size = HudDataCache.get_cached_text_texture(
             text,

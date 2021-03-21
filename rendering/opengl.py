@@ -34,7 +34,8 @@ def __set_color__(
 def draw_sprite(
     framebuffer,
     position: list,
-    texture: pygame.Surface
+    texture: pygame.Surface,
+    scale=1.0
 ):
     """
     Renders the sprite to the given positions
@@ -48,17 +49,22 @@ def draw_sprite(
     size_y = texture.get_height()
     rgba_data = pygame.image.tostring(texture, "RGBA", True)
 
+    # scaled_size_x = int(scale * size_x)
+    # scaled_size_y = int(scale * size_y)
+
     # For some reason, OpenGl appears to "draw up"
     # starting at the Y position. So be need to adjust downwards
     # to make sure the sprite is using (X,Y) to be the
     # upper left cooridinate
     GL.glRasterPos2d(position[0], position[1] + size_y)
+    # GL.glScalef(scale, scale, 1.0)
     GL.glDrawPixels(
         size_x,
         size_y,
         GL.GL_RGBA,
         GL.GL_UNSIGNED_BYTE,
         rgba_data)
+    # GL.glScalef(1.0, 1.0, 1.0)
 
 
 def polygon(
@@ -346,7 +352,8 @@ def render_text_opengl(
         draw_sprite(
             framebuffer,
             position,
-            texture)
+            texture,
+            scale)
 
         return size
     # texture_id, size_x, size_y = __get_text_texture__(
