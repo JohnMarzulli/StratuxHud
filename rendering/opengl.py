@@ -3,13 +3,16 @@ Rendering routines for OpenGl
 """
 
 import math
-from rendering import colors
 
 import pygame
-from common_utils import fast_math
+from common_utils import fast_math, generic_data_cache
 from OpenGL import GL, GLUT
 
+from rendering import colors
+
 RENDERER_NAME = "OpenGl"
+
+__TEXT_CACHE__ = generic_data_cache.GenericDataCache()
 
 
 def __set_color__(
@@ -251,28 +254,69 @@ def segment(
     GL.glEnd()
 
 
-def __get_text_texture__(
+# def __get_text_texture__(
+#     font: pygame.font,
+#     text: str,
+#     color: list,
+#     bg_color: list
+# ):
+#     textSurface = font.render(
+#         text,
+#         True,
+#         color,
+#         bg_color)
+#     size_x, size_y = textSurface.get_width(), textSurface.get_height()
+#     image = pygame.image.tostring(textSurface, "RGBX", True)
+#     GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1)
+#     texture_id = GL.glGenTextures(1)
+#     GL.glBindTexture(GL.GL_TEXTURE_2D, texture_id)
+#     GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, 3, size_x, size_y, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, image)
+#     GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST)
+#     GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST)
+#     GL.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_DECAL)
+
+#     return texture_id, size_x, size_y
+
+def __key_text_texture_key__(
     font: pygame.font,
     text: str,
     color: list,
-    bg_color: list
-):
-    textSurface = font.render(
+    bg_color: list = colors.BLACK,
+    use_alpha: bool = False
+) -> str:
+    return "{}{}{}{}{}".format(
+        font,
+        text,
+        color,
+        bg_color,
+        use_alpha)
+
+
+def __get_text_texture__(
+    font,
+    text: str,
+    text_color: list = colors.BLACK,
+    background_color: list = colors.YELLOW,
+    use_alpha: bool = False
+) -> list:
+
+    use_alpha |= background_color is None
+
+    texture = font.render(
         text,
         True,
-        color,
-        bg_color)
-    size_x, size_y = textSurface.get_width(), textSurface.get_height()
-    image = pygame.image.tostring(textSurface, "RGBX", True)
-    GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1)
-    texture_id = GL.glGenTextures(1)
-    GL.glBindTexture(GL.GL_TEXTURE_2D, texture_id)
-    GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, 3, size_x, size_y, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, image)
-    GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST)
-    GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST)
-    GL.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_DECAL)
+        text_color,
+        background_color)
+    size = texture.get_size()
 
-    return texture_id, size_x, size_y
+    if use_alpha:
+        texture.set_colorkey([0, 0, 0])
+        texture = texture.convert_alpha()
+        texture.set_colorkey([0, 0, 0])
+    else:
+        texture = texture.convert()
+
+    return texture, size
 
 
 def render_text_opengl(
@@ -282,8 +326,29 @@ def render_text_opengl(
     position: list,
     color: list,
     bg_color: list = colors.BLACK,
+    use_alpha: bool = False,
     scale: float = 1.0
 ) -> list:
+
+    key = __key_text_texture_key__(
+        font,
+        text,
+        color,
+        bg_color,
+        use_alpha)
+
+    texture, size = __TEXT_CACHE__.get_or_create_data(
+        key,
+        lambda: __get_text_texture__(font, text, color, bg_color, use_alpha)
+    )
+
+    if texture is not None:
+        draw_sprite(
+            framebuffer,
+            position,
+            texture)
+
+        return size
     # texture_id, size_x, size_y = __get_text_texture__(
     #     font,
     #     text,
@@ -304,4 +369,4 @@ def render_text_opengl(
     # GL.glEnd()
 
     # return size_x, size_y
-    return 0, 0
+    return [0, 0]
