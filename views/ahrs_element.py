@@ -80,6 +80,14 @@ class HudElement(object):
             list: The size of the rendered text.
         """
 
+        if display.IS_OPENGL:
+            return drawing.renderer.render_text_opengl(
+                None,
+                self.__font__,
+                text,
+                position,
+                color)
+
         texture, size = HudDataCache.get_cached_text_texture(
             text,
             self.__font__,

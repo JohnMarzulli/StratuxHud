@@ -7,7 +7,7 @@ import math
 from common_utils import fast_math, local_debug
 from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
-from rendering import colors, drawing
+from rendering import colors, display, drawing
 
 from views.ahrs_element import AhrsElement
 from views.hud_elements import run_hud_element
@@ -40,6 +40,9 @@ class ArtificialHorizon(AhrsElement):
 
         self.__upper_cull__ = -self.__font_height__
         self.__lower_cull__ = self.__height__ + self.__font_height__
+        self.__enable_pitch_text__ = display.IS_OPENGL or not local_debug.IS_SLOW
+        self.__enable_text_shadow__ = display.IS_OPENGL
+        self.__enable_antialiasing__ = display.IS_OPENGL or not local_debug.IS_SLOW
 
     def __render_horizon_reference__(
         self,
@@ -66,7 +69,7 @@ class ArtificialHorizon(AhrsElement):
                 segment[0],
                 segment[1],
                 self.__line_width__,
-                not local_debug.IS_PI)
+                self.__enable_antialiasing__)
 
         roll = int(roll)
 
@@ -79,16 +82,17 @@ class ArtificialHorizon(AhrsElement):
         # For running on the PI (at the moment)
         # we need to reduce visual quality on some
         # items to favor frame rate
-        if not local_debug.IS_SLOW:
-            # self.__render_centered_text__(
-            #     framebuffer,
-            #     str(reference_angle),
-            #     [center_x, center_y],
-            #     colors.BLACK,
-            #     None,
-            #     1.2,
-            #     roll,
-            #     True)
+        if self.__enable_pitch_text__:
+            if self.__enable_text_shadow__:
+                self.__render_centered_text__(
+                    framebuffer,
+                    str(reference_angle),
+                    [center_x, center_y],
+                    colors.BLACK,
+                    None,
+                    1.2,
+                    roll,
+                    True)
 
             self.__render_centered_text__(
                 framebuffer,

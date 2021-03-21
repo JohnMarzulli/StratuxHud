@@ -3,10 +3,11 @@ Rendering routines for OpenGl
 """
 
 import math
+from rendering import colors
 
 import pygame
 from common_utils import fast_math
-from OpenGL import GL
+from OpenGL import GL, GLUT
 
 RENDERER_NAME = "OpenGl"
 
@@ -248,3 +249,59 @@ def segment(
     GL.glVertex2f(ending_points[1][0], ending_points[1][1])
     GL.glVertex2f(starting_points[1][0], starting_points[1][1])
     GL.glEnd()
+
+
+def __get_text_texture__(
+    font: pygame.font,
+    text: str,
+    color: list,
+    bg_color: list
+):
+    textSurface = font.render(
+        text,
+        True,
+        color,
+        bg_color)
+    size_x, size_y = textSurface.get_width(), textSurface.get_height()
+    image = pygame.image.tostring(textSurface, "RGBX", True)
+    GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1)
+    texture_id = GL.glGenTextures(1)
+    GL.glBindTexture(GL.GL_TEXTURE_2D, texture_id)
+    GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, 3, size_x, size_y, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, image)
+    GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST)
+    GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST)
+    GL.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_DECAL)
+
+    return texture_id, size_x, size_y
+
+
+def render_text_opengl(
+    framebuffer,
+    font: pygame.font,
+    text: str,
+    position: list,
+    color: list,
+    bg_color: list = colors.BLACK,
+    scale: float = 1.0
+) -> list:
+    # texture_id, size_x, size_y = __get_text_texture__(
+    #     font,
+    #     text,
+    #     color,
+    #     bg_color)
+
+    # GL.glTranslated(position[0], position[1], 1)
+    # GL.glBindTexture(GL.GL_TEXTURE_2D, texture_id)
+    # GL.glBegin(GL.GL_QUADS)
+    # GL.glTexCoord2f(0.0, 0.0)
+    # GL.glVertex2d(-1.0, -1.0)
+    # GL.glTexCoord2f(1.0, 0.0)
+    # GL.glVertex2d(1.0, -1.0)
+    # GL.glTexCoord2f(1.0, 1.0)
+    # GL.glVertex2d(1.0,  1.0)
+    # GL.glTexCoord2f(0.0, 1.0)
+    # GL.GL.glVertex2d(-1.0,  1.0)
+    # GL.glEnd()
+
+    # return size_x, size_y
+    return 0, 0
