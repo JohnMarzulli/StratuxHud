@@ -21,7 +21,7 @@ def __get_text_texture_key__(
     use_alpha: bool = False
 ) -> str:
     return "{}{}{}{}{}{}{}".format(
-        font,
+        hash(font),
         text,
         color,
         bg_color,
