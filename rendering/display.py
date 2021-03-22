@@ -83,7 +83,8 @@ class Display:
         Returns:
             int: The combined bitflags of all of our screenmodes.
         """
-        screen_mode = pygame.HWACCEL | pygame.constants.DOUBLEBUF | pygame.constants.RLEACCEL
+        # DOUBLEBUF may be causing issues with FBCON and flickering.
+        screen_mode = pygame.HWACCEL | pygame.constants.RLEACCEL  # | pygame.constants.DOUBLEBUF
         is_fullscreen = False
 
         if self.__is_fullscreen_target__() or force_fullscreen:
