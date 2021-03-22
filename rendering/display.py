@@ -153,8 +153,13 @@ class Display:
         # rendering since we do not know the size
         # of the screen until AFTER it has been initialized
         if is_fullscreen:
-            self.size = self.__get_target_screen_size__()
+            if __is_x_windows__():
+                pygame.display.toggle_fullscreen()
 
+            self.size = self.__get_target_screen_size__()
+            print("Detected fullscreen")
+
+        print("Now setting screensize to {}x{}".format(self.size[0], self.size[1]))
         pygame.display.set_mode(self.size, display_mode)
 
         if self.is_open_gl:

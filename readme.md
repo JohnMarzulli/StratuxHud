@@ -297,6 +297,12 @@ Make sure you are using a high-quality power cable if you are using a Pi 3B+
 
 1. Save and quit.
 
+#### Alternative
+
+Use LXDE autostart:
+
+https://www.raspberrypi.org/forums/viewtopic.php?t=275703
+
 #### 7.2.1 Developer Note
 
 To ensure proper operation, if you are a developer the order services are brought online is important.
@@ -504,6 +510,8 @@ pip4 install pygame==1.9.6
 ```
 
 ## OpenGl
+
+sudo apt install freeglut3 freeglut3-dev
 
 pip3 install PyOpenGL PyOpenGL_accelerate
 
