@@ -40,7 +40,6 @@ class ArtificialHorizon(AhrsElement):
 
         self.__upper_cull__ = -self.__font_height__
         self.__lower_cull__ = self.__height__ + self.__font_height__
-        self.__enable_pitch_text__ = display.IS_OPENGL or not local_debug.IS_SLOW
         self.__enable_text_shadow__ = display.IS_OPENGL
         self.__enable_antialiasing__ = display.IS_OPENGL or not local_debug.IS_SLOW
 
@@ -82,27 +81,26 @@ class ArtificialHorizon(AhrsElement):
         # For running on the PI (at the moment)
         # we need to reduce visual quality on some
         # items to favor frame rate
-        if self.__enable_pitch_text__:
-            if self.__enable_text_shadow__:
-                self.__render_centered_text__(
-                    framebuffer,
-                    str(reference_angle),
-                    [center_x, center_y],
-                    colors.BLACK,
-                    None,
-                    1.2,
-                    roll,
-                    True)
-
+        if self.__enable_text_shadow__:
             self.__render_centered_text__(
                 framebuffer,
                 str(reference_angle),
                 [center_x, center_y],
-                colors.WHITE,
                 colors.BLACK,
-                1.0,
+                None,
+                1.2,
                 roll,
                 True)
+
+        self.__render_centered_text__(
+            framebuffer,
+            str(reference_angle),
+            [center_x, center_y],
+            colors.WHITE,
+            colors.BLACK,
+            1.0,
+            roll,
+            True)
 
     def render(
         self,

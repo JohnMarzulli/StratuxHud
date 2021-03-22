@@ -31,7 +31,7 @@ def __get_text_texture_key__(
 
 
 def __get_text_texture__(
-    font,
+    font: pygame.font,
     text: str,
     text_color: list = colors.BLACK,
     background_color: list = colors.YELLOW,
