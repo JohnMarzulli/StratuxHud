@@ -51,30 +51,23 @@ def draw_sprite(
         position (list): The position to draw the sprite
         texture (pygame.Surface): The sprite to draw.
     """
-    key = "{}".format(texture)
+    key = "{}".format(hash(texture))
 
-    # rgba_data, size = __CONVERTED_TEXTURE_CACHE__.get_or_create_data(
-    #     key,
-    #     lambda: __convert_texture__(texture))
-
-    rgba_data, size = __convert_texture__(texture)
-
-    # scaled_size_x = int(scale * size_x)
-    # scaled_size_y = int(scale * size_y)
+    rgba_data, size = __CONVERTED_TEXTURE_CACHE__.get_or_create_data(
+        key,
+        lambda: __convert_texture__(texture))
 
     # For some reason, OpenGl appears to "draw up"
     # starting at the Y position. So be need to adjust downwards
     # to make sure the sprite is using (X,Y) to be the
     # upper left cooridinate
     GL.glRasterPos2d(position[0], position[1] + size[1])
-    # GL.glScalef(scale, scale, 1.0)
     GL.glDrawPixels(
         size[0],
         size[1],
         GL.GL_RGBA,
         GL.GL_UNSIGNED_BYTE,
         rgba_data)
-    # GL.glScalef(1.0, 1.0, 1.0)
 
 
 def polygon(
