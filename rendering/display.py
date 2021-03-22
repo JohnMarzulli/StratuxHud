@@ -155,7 +155,7 @@ class Display:
         if is_fullscreen:
             if __is_x_windows__():
                 pygame.display.init()
-                pygame.display.toggle_fullscreen()
+                # pygame.display.toggle_fullscreen()
 
             self.size = self.__get_target_screen_size__()
             print("Detected fullscreen")
