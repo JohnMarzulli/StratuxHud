@@ -6,13 +6,11 @@ import math
 
 import pygame
 from common_utils import fast_math, generic_data_cache
-from OpenGL import GL, GLUT
-
-from rendering import colors
+from OpenGL import GL
 
 RENDERER_NAME = "OpenGl"
 
-__TEXT_CACHE__ = generic_data_cache.GenericDataCache()
+__CONVERTED_TEXTURE_CACHE__ = generic_data_cache.GenericDataCache()
 
 
 def __set_color__(
@@ -31,6 +29,15 @@ def __set_color__(
         color[2] / 255)
 
 
+def __convert_texture__(
+    texture: pygame.Surface
+) -> list:
+    converted = pygame.image.tostring(texture, "RGBA", True)
+    size = texture.get_size()
+
+    return converted, size
+
+
 def draw_sprite(
     framebuffer,
     position: list,
@@ -44,9 +51,13 @@ def draw_sprite(
         position (list): The position to draw the sprite
         texture (pygame.Surface): The sprite to draw.
     """
-    size_x = texture.get_width()
-    size_y = texture.get_height()
-    rgba_data = pygame.image.tostring(texture, "RGBA", True)
+    key = "{}".format(texture)
+
+    # rgba_data, size = __CONVERTED_TEXTURE_CACHE__.get_or_create_data(
+    #     key,
+    #     lambda: __convert_texture__(texture))
+
+    rgba_data, size = __convert_texture__(texture)
 
     # scaled_size_x = int(scale * size_x)
     # scaled_size_y = int(scale * size_y)
@@ -55,11 +66,11 @@ def draw_sprite(
     # starting at the Y position. So be need to adjust downwards
     # to make sure the sprite is using (X,Y) to be the
     # upper left cooridinate
-    GL.glRasterPos2d(position[0], position[1] + size_y)
+    GL.glRasterPos2d(position[0], position[1] + size[1])
     # GL.glScalef(scale, scale, 1.0)
     GL.glDrawPixels(
-        size_x,
-        size_y,
+        size[0],
+        size[1],
         GL.GL_RGBA,
         GL.GL_UNSIGNED_BYTE,
         rgba_data)
@@ -282,136 +293,24 @@ def segment(
 
 #     return texture_id, size_x, size_y
 
-def __get_text_texture_key__(
-    font: pygame.font,
-    text: str,
-    color: list,
-    bg_color: list = colors.BLACK,
-    scale: float = 1.0,
-    use_alpha: bool = False
-) -> str:
-    return "{}{}{}{}{}{}".format(
-        font,
-        text,
-        color,
-        bg_color,
-        scale,
-        use_alpha)
 
+# texture_id, size_x, size_y = __get_text_texture__(
+#     font,
+#     text,
+#     color,
+#     bg_color)
 
-def __get_text_texture__(
-    font,
-    text: str,
-    text_color: list = colors.BLACK,
-    background_color: list = colors.YELLOW,
-    scale=1.0,
-    use_alpha: bool = False
-) -> list:
+# GL.glTranslated(position[0], position[1], 1)
+# GL.glBindTexture(GL.GL_TEXTURE_2D, texture_id)
+# GL.glBegin(GL.GL_QUADS)
+# GL.glTexCoord2f(0.0, 0.0)
+# GL.glVertex2d(-1.0, -1.0)
+# GL.glTexCoord2f(1.0, 0.0)
+# GL.glVertex2d(1.0, -1.0)
+# GL.glTexCoord2f(1.0, 1.0)
+# GL.glVertex2d(1.0,  1.0)
+# GL.glTexCoord2f(0.0, 1.0)
+# GL.GL.glVertex2d(-1.0,  1.0)
+# GL.glEnd()
 
-    use_alpha |= background_color is None
-
-    texture = font.render(
-        text,
-        True,
-        text_color,
-        background_color)
-    size = texture.get_size()
-
-    scaled_x = int(size[0] * scale)
-    scaled_y = int(size[1] * scale)
-
-    texture = pygame.transform.scale(texture, [scaled_x, scaled_y])
-
-    if use_alpha:
-        texture.set_colorkey([0, 0, 0])
-        texture = texture.convert_alpha()
-        texture.set_colorkey([0, 0, 0])
-    else:
-        texture = texture.convert()
-
-    return texture, size
-
-
-def get_or_create_text_texture(
-    font: pygame.font,
-    text: str,
-    color: list,
-    bg_color: list = colors.BLACK,
-    use_alpha: bool = False,
-    scale: float = 1.0
-) -> list:
-    key = __get_text_texture_key__(
-        font,
-        text,
-        color,
-        bg_color,
-        scale,
-        use_alpha)
-
-    texture, size = __TEXT_CACHE__.get_or_create_data(
-        key,
-        lambda: __get_text_texture__(font, text, color, bg_color, scale, use_alpha))
-
-    return key, texture, size
-
-
-def render_cached_texture(
-    framebuffer,
-    cache_key: str,
-    position: list
-) -> None:
-    texture, size = __TEXT_CACHE__.get_data(cache_key)
-
-    if texture is not None:
-        draw_sprite(
-            framebuffer,
-            position,
-            texture)
-
-
-def render_text(
-    framebuffer,
-    font: pygame.font,
-    text: str,
-    position: list,
-    color: list,
-    bg_color: list = colors.BLACK,
-    use_alpha: bool = False,
-    scale: float = 1.0
-) -> list:
-    key, texture, size = get_or_create_text_texture(
-        font,
-        text,
-        color,
-        bg_color,
-        use_alpha,
-        scale)
-
-    if texture is not None:
-        draw_sprite(
-            framebuffer,
-            position,
-            texture)
-
-        return size
-    # texture_id, size_x, size_y = __get_text_texture__(
-    #     font,
-    #     text,
-    #     color,
-    #     bg_color)
-
-    # GL.glTranslated(position[0], position[1], 1)
-    # GL.glBindTexture(GL.GL_TEXTURE_2D, texture_id)
-    # GL.glBegin(GL.GL_QUADS)
-    # GL.glTexCoord2f(0.0, 0.0)
-    # GL.glVertex2d(-1.0, -1.0)
-    # GL.glTexCoord2f(1.0, 0.0)
-    # GL.glVertex2d(1.0, -1.0)
-    # GL.glTexCoord2f(1.0, 1.0)
-    # GL.glVertex2d(1.0,  1.0)
-    # GL.glTexCoord2f(0.0, 1.0)
-    # GL.GL.glVertex2d(-1.0,  1.0)
-    # GL.glEnd()
-
-    # return size_x, size_y
-    return [0, 0]
+# return size_x, size_y

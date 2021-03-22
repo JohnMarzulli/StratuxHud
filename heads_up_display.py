@@ -18,7 +18,7 @@ from data_sources.ahrs_data import AhrsData
 from data_sources.aircraft import Aircraft
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import AdsbTrafficClient
-from rendering import colors, display, drawing
+from rendering import colors, display, drawing, text_renderer
 # Due to the way we import the name of the class to be instantiated
 # from the configuration, all of the element class names need
 # to be imported EVEN if the compiler tries to tell you
@@ -136,7 +136,7 @@ class HeadsUpDisplay(object):
         text: str,
         surface
     ):
-        drawing.renderer.render_text(
+        text_renderer.render_text(
             surface,
             self.__detail_font__,
             text,
@@ -287,7 +287,7 @@ class HeadsUpDisplay(object):
         Renders the text with the results centered on the given
         position.
         """
-        return drawing.renderer.render_text(
+        return text_renderer.render_text(
             pygame.display.get_surface(),
             self.__detail_font__,
             text,
@@ -461,11 +461,6 @@ class HeadsUpDisplay(object):
         view_elements = self.__load_view_elements__()
         return self.__load_views__(view_elements)
 
-    def __purge_old_textures__(
-        self
-    ):
-        HudDataCache.purge_old_textures()
-
     def __update_traffic_reports__(
         self
     ):
@@ -565,12 +560,6 @@ class HeadsUpDisplay(object):
             logger.get_logger().info("Unable to start the remote control server: {}".format(ex))
             self.web_server = None
 
-        RecurringTask(
-            "purge_old_textures",
-            10.0,
-            self.__purge_old_textures__,
-            logger.get_logger())
-
         if self.web_server is not None:
             RecurringTask(
                 "rest_host",
@@ -605,20 +594,20 @@ class HeadsUpDisplay(object):
 
         surface = pygame.display.get_surface()
 
-        key, texture, size = drawing.renderer.get_or_create_text_texture(
+        key, texture, size = text_renderer.get_or_create_text_texture(
             self.__loading_font__,
             "LOADING",
             colors.RED,
             colors.BLACK)
 
-        drawing.renderer.render_cached_texture(
+        text_renderer.render_cached_texture(
             surface,
             key,
             [(self.__width__ >> 1) - (size[0] >> 1), self.__detail_font__.get_height()])
 
         y_pos = (self.__height__ >> 2) + (self.__height__ >> 3)
         for text in disclaimer_text:
-            key, texture, size = drawing.renderer.get_or_create_text_texture(
+            key, texture, size = text_renderer.get_or_create_text_texture(
                 self.__detail_font__,
                 text,
                 colors.YELLOW,
@@ -626,14 +615,14 @@ class HeadsUpDisplay(object):
 
             text_width, text_height = size
 
-            drawing.renderer.render_cached_texture(
+            text_renderer.render_cached_texture(
                 surface,
                 key,
                 [(self.__width__ >> 1) - (text_width >> 1), y_pos])
 
             y_pos += text_height + (text_height >> 3)
 
-        key, texture, size = drawing.renderer.get_or_create_text_texture(
+        key, texture, size = text_renderer.get_or_create_text_texture(
             self.__detail_font__,
             'Version {}'.format(configuration.VERSION),
             colors.GREEN,
@@ -641,7 +630,7 @@ class HeadsUpDisplay(object):
 
         text_width, text_height = size
 
-        drawing.renderer.render_cached_texture(
+        text_renderer.render_cached_texture(
             surface,
             key,
             [(self.__width__ >> 1) - (text_width >> 1), self.__height__ - text_height])

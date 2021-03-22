@@ -1,7 +1,7 @@
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
-from rendering import colors, drawing
+from rendering import colors, text_renderer
 
 from views.adsb_element import AdsbElement, apply_declination
 
@@ -142,7 +142,7 @@ class AdsbTrafficListing(AdsbElement):
             traffic_reports)
 
         for identifier, traffic_report in padded_traffic_reports:
-            drawing.renderer.render_text(
+            text_renderer.render_text(
                 framebuffer,
                 self.__font__,
                 traffic_report,
