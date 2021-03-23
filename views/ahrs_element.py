@@ -13,7 +13,8 @@ class HudElement(object):
     def __init__(
         self,
         font,
-        framebuffer_size
+        framebuffer_size: list,
+        reduced_visuals: bool = False
     ) -> None:
         super().__init__()
 
@@ -42,6 +43,8 @@ class HudElement(object):
         self.__line_width__ = max(1, int((self.__width__ * 0.005) + 0.5))
         self.__thin_line_width__ = self.__line_width__ >> 1
         self.__thick_line_width__ = self.__line_width__ >> 1
+
+        self.__reduced_visuals__ = reduced_visuals
 
     def uses_ahrs(
         self

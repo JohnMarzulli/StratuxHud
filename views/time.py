@@ -12,9 +12,10 @@ class Time(AhrsElement):
         degrees_of_pitch,
         pixels_per_degree_y,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
-        super().__init__(font, framebuffer_size)
+        super().__init__(font, framebuffer_size, reduced_visuals)
 
         self.__text_y_pos__ = self.__bottom_border__ - self.__font_height__
 

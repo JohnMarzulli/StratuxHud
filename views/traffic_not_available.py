@@ -14,9 +14,10 @@ class TrafficNotAvailable(AhrsElement):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
-        super().__init__(font, framebuffer_size)
+        super().__init__(font, framebuffer_size, reduced_visuals)
 
         text_y_pos = self.__bottom_border__ - (self.__font_height__ << 1)
 

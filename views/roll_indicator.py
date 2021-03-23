@@ -22,9 +22,10 @@ class RollIndicator(AhrsElement):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
-        super().__init__(font, framebuffer_size)
+        super().__init__(font, framebuffer_size, reduced_visuals)
 
         self.__text_y_pos__ = self.__center_y__ - self.__font_half_height__
         self.arc_radius = int(self.__height__ * .4)
@@ -40,14 +41,14 @@ class RollIndicator(AhrsElement):
 
         roll_angle_marks = self.__get_major_roll_indicator_marks__()
 
-        self.__indicator_elements__ = [drawing.Segments(self.__indicator_arc__, colors.WHITE, self.__arc_width__)]
+        self.__indicator_elements__ = [drawing.Segments(self.__indicator_arc__, colors.WHITE, self.__arc_width__, not self.__reduced_visuals__)]
 
         # Draw the important angle/roll step marks
-        self.__indicator_elements__.extend([drawing.Segment(segment_start, segment_end, colors.WHITE, self.__line_width__)
+        self.__indicator_elements__.extend([drawing.Segment(segment_start, segment_end, colors.WHITE, self.__line_width__, not self.__reduced_visuals__)
                                             for segment_start, segment_end in roll_angle_marks])
 
-        if not local_debug.IS_SLOW:
-            self.__indicator_elements__.extend([drawing.FilledCircle(segment_start, self.__thin_line_width__, colors.WHITE)
+        if not self.__reduced_visuals__:
+            self.__indicator_elements__.extend([drawing.FilledCircle(segment_start, self.__thin_line_width__, colors.WHITE, not self.__reduced_visuals__)
                                                 for segment_start, segment_end in roll_angle_marks])
 
     def __get_point_on_arc__(
@@ -256,7 +257,7 @@ class RollIndicator(AhrsElement):
         with TaskProfiler("views.roll_indicator.RollIndicator.setup"):
             # Use jagged lines at the moment on the
             # Pi given the cost of anti-aliasing
-            is_antialiased = not local_debug.IS_PI
+            is_antialiased = not self.__reduced_visuals__
 
             # Draws the current roll
             indicator_objects = [
@@ -275,7 +276,7 @@ class RollIndicator(AhrsElement):
                     colors.WHITE,
                     is_antialiased)]
 
-            if not local_debug.IS_SLOW:
+            if not self.__reduced_visuals__:
                 indicator_objects.append(
                     drawing.FilledPolygon(
                         rotate_points(

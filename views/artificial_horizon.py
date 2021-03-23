@@ -23,9 +23,10 @@ class ArtificialHorizon(AhrsElement):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
-        super().__init__(font, framebuffer_size)
+        super().__init__(font, framebuffer_size, reduced_visuals)
 
         self.__long_segment_length__ = int(self.__width__ * 0.4)
         self.__short_segment_length__ = int(self.__width__ * 0.2)
@@ -41,7 +42,6 @@ class ArtificialHorizon(AhrsElement):
         self.__upper_cull__ = -self.__font_height__
         self.__lower_cull__ = self.__height__ + self.__font_height__
         self.__enable_text_shadow__ = display.IS_OPENGL
-        self.__enable_antialiasing__ = display.IS_OPENGL or not local_debug.IS_SLOW
 
     def __render_horizon_reference__(
         self,
@@ -68,7 +68,7 @@ class ArtificialHorizon(AhrsElement):
                 segment[0],
                 segment[1],
                 self.__line_width__,
-                self.__enable_antialiasing__)
+                not self.__reduced_visuals__)
 
         roll = int(roll)
 
@@ -198,9 +198,6 @@ class ArtificialHorizon(AhrsElement):
             roll)
 
         inner_length = self.__inner_blank_area_length__
-
-        if local_debug.IS_SLOW:
-            inner_length = fast_math.interpolate(0.0, inner_length, proportion)
 
         inner_endpoints, _ = self.__get_segment_endpoints__(
             inner_length,

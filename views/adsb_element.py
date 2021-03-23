@@ -28,9 +28,10 @@ class AdsbElement(HudElement):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
-        super().__init__(font, framebuffer_size)
+        super().__init__(font, framebuffer_size, reduced_visuals)
 
         self.__roll_elements__ = {}
         self.__text_y_pos__ = self.__center_y__ - self.__font_half_height__

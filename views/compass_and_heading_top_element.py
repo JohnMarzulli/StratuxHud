@@ -43,9 +43,10 @@ class CompassAndHeadingTopElement(AhrsElement):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
-        super().__init__(font, framebuffer_size)
+        super().__init__(font, framebuffer_size, reduced_visuals)
 
         self.__compass_box_y_position__ = self.__get_compass_y_position__()
 

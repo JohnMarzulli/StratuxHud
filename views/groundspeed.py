@@ -15,9 +15,10 @@ class Groundspeed(AhrsElement):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
-        super().__init__(font, framebuffer_size)
+        super().__init__(font, framebuffer_size, reduced_visuals)
 
         self.__text_y_pos__ = (self.__center_y__ >> 1) - \
             self.__font_half_height__

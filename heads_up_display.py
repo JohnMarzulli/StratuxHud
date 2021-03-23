@@ -330,7 +330,8 @@ class HeadsUpDisplay(object):
     def __build_ahrs_hud_element__(
         self,
         hud_element_class,
-        use_detail_font: bool = False
+        use_detail_font: bool = False,
+        reduced_visuals: bool = False
     ):
         """
         Builds a generic AHRS HUD element.
@@ -358,10 +359,13 @@ class HeadsUpDisplay(object):
                 CONFIGURATION.get_degrees_of_pitch(),
                 self.__pixels_per_degree_y__,
                 font,
-                (self.__width__, self.__height__))
+                (self.__width__, self.__height__),
+                reduced_visuals)
         except Exception as e:
-            self.warn("Unable to build element {0}:{1}".format(
-                hud_element_class, e))
+            self.warn(
+                "Unable to build element {0}:{1}".format(
+                    hud_element_class,
+                    e))
             return None
 
     def __load_view_elements__(
@@ -386,14 +390,14 @@ class HeadsUpDisplay(object):
                 namespace = json_config[view_element_name]['class'].split('.')
                 file_module = getattr(sys.modules['views'], namespace[0])
                 class_name = getattr(file_module, namespace[1])
-                view_elements[view_element_name] = (
-                    class_name, json_config[view_element_name]['detail_font'])
+                view_elements[view_element_name] = (class_name, json_config[view_element_name]['detail_font'])
 
         return view_elements
 
     def __load_views__(
         self,
-        view_elements: list
+        view_elements: list,
+        reduced_visuals: bool = False
     ) -> list:
         """
         Returns a list of views that can be used by the HUD
@@ -423,33 +427,40 @@ class HeadsUpDisplay(object):
                         elements_requested += 1
                         element_config = view_elements[element_name]
                         element_hash_name = "{}{}".format(
-                            element_config[0], element_config[1])
+                            element_config[0],
+                            element_config[1])
 
                         # Instantiating multiple elements of the same type/font
                         # REALLY chews up memory.. and there is no
                         # good reason to use new instances anyway.
                         if element_hash_name not in existing_elements:
                             new_element = self.__build_ahrs_hud_element__(
-                                element_config[0], element_config[1])
+                                element_config[0],
+                                element_config[1],
+                                reduced_visuals)
                             existing_elements[element_hash_name] = new_element
 
                         new_view_elements.append(
                             existing_elements[element_hash_name])
 
                     is_ahrs_view = self.__is_ahrs_view__(new_view_elements)
-                    hud_views.append(
-                        (view_name, new_view_elements, is_ahrs_view))
+                    hud_views.append((view_name, new_view_elements, is_ahrs_view))
                 except Exception as ex:
                     self.log(
-                        "While attempting to load view={}, EX:{}".format(view, ex))
+                        "While attempting to load view={}, EX:{}".format(
+                            view,
+                            ex))
 
-        self.log("While loading, {} elements were requested, with {} unique being created.".format(
-            elements_requested, len(existing_elements.keys())))
+        self.log(
+            "While loading, {} elements were requested, with {} unique being created.".format(
+                elements_requested,
+                len(existing_elements.keys())))
 
         return hud_views
 
     def __build_hud_views__(
-        self
+        self,
+        reduced_visuals: bool = False
     ) -> list:
         """
         Returns the built object of the views.
@@ -459,7 +470,7 @@ class HeadsUpDisplay(object):
         """
 
         view_elements = self.__load_view_elements__()
-        return self.__load_views__(view_elements)
+        return self.__load_views__(view_elements, reduced_visuals)
 
     def __update_traffic_reports__(
         self
@@ -488,7 +499,8 @@ class HeadsUpDisplay(object):
         self,
         logger: HudLogger,
         force_fullscreen: bool = False,
-        force_software: bool = False
+        force_software: bool = False,
+        reduced_visuals: bool = False
     ):
         """
         Initialize and create a new HUD.
@@ -552,7 +564,7 @@ class HeadsUpDisplay(object):
         self.__ahrs_not_available_element__ = self.__build_ahrs_hud_element__(
             ahrs_not_available.AhrsNotAvailable)
 
-        self.__hud_views__ = self.__build_hud_views__()
+        self.__hud_views__ = self.__build_hud_views__(reduced_visuals)
 
         try:
             self.web_server = configuration_server.HudServer()
