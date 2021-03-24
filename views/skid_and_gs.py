@@ -33,7 +33,7 @@ class SkidAndGs(AhrsElement):
         self.__skid_y_center__ = int(self.__height__ * .7)
         self.__skid_range__ = self.__width__ >> 4
 
-        self.__skid_ball_radius__ = self.__height__ * 0.04
+        self.__skid_ball_radius__ = self.__height__ * 0.03
         self.__skid_centering_line_length__ = int(
             self.__skid_ball_radius__ * 1.3)
 
