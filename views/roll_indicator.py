@@ -81,9 +81,8 @@ class RollIndicator(AhrsElement):
             range(-60, 61, 5),
             self.__indicator_arc_center__)
 
-        self.__zero_angle_triangle__ = self.__get_upper_angle_reference_shape__()
         self.__current_angle_triangle__ = self.__get_current_angle_triangle_shape__()
-        self.__current_angle_box__ = self.__get_current_angle_box_shape__()
+        self.__slip_skid_box__ = self.__get_current_angle_box_shape__()
         self.__arc_width__ = int(self.__line_width__ * 1.5)
 
         roll_angle_marks = self.__get_major_roll_indicator_marks__()
@@ -93,6 +92,13 @@ class RollIndicator(AhrsElement):
         # Draw the important angle/roll step marks
         self.__indicator_elements__.extend([drawing.Segment(segment_start, segment_end, colors.WHITE, self.__line_width__, not self.__reduced_visuals__)
                                             for segment_start, segment_end in roll_angle_marks])
+        
+        # Roll scale zero
+        self.__indicator_elements__.append(
+            drawing.FilledPolygon(
+                self.__get_upper_angle_reference_shape__(),
+                colors.WHITE,
+                not self.__reduced_visuals__))
 
         if not self.__reduced_visuals__:
             self.__indicator_elements__.extend([drawing.FilledCircle(segment_start, self.__thin_line_width__, colors.WHITE, not self.__reduced_visuals__)
@@ -273,39 +279,34 @@ class RollIndicator(AhrsElement):
             # Pi given the cost of anti-aliasing
             is_antialiased = not self.__reduced_visuals__
 
+            skid_rotation = 0 if orientation.slip_skid is None or isinstance(orientation.slip_skid, str) else orientation.slip_skid * 5.0
+
             # Draws the current roll
             indicator_objects = [
-                drawing.FilledPolygon(
-                    rotate_points(
-                        self.__zero_angle_triangle__,
-                        self.__indicator_arc_center__,
-                        -orientation.roll),
-                    colors.WHITE,
-                    is_antialiased),
                 drawing.FilledPolygon(
                     rotate_points(
                         self.__current_angle_triangle__,
                         self.__indicator_arc_center__,
                         -orientation.roll),
                     colors.WHITE,
+                    is_antialiased),
+                drawing.FilledPolygon(
+                    rotate_points(
+                        self.__slip_skid_box__,
+                        self.__indicator_arc_center__,
+                        -orientation.roll + skid_rotation),
+                    colors.WHITE,
                     is_antialiased)]
 
-            if not self.__reduced_visuals__:
-                indicator_objects.append(
-                    drawing.FilledPolygon(
-                        rotate_points(
-                            self.__current_angle_box__,
-                            self.__indicator_arc_center__,
-                            -orientation.roll),
-                        colors.WHITE,
-                        is_antialiased))
-
-        with TaskProfiler("views.roll_indicator.RollIndicator.render"):
+        with TaskProfiler("views.roll_indicator.RollIndicator.render.indicator_elements"):
             # pylint:disable=expression-not-assigned
             [mark.render(framebuffer) for mark in self.__indicator_elements__]
+
+        with TaskProfiler("views.roll_indicator.RollIndicator.render.indicator_objects"):
             [indicator.render(framebuffer) for indicator in indicator_objects]
 
 
 if __name__ == '__main__':
-    from views.hud_elements import run_hud_element
-    run_hud_element(RollIndicator, False)
+    from views.hud_elements import run_hud_elements
+    from views.skid_and_gs import SkidAndGs
+    run_hud_elements([RollIndicator, SkidAndGs], False)
