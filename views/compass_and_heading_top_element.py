@@ -181,7 +181,7 @@ class CompassAndHeadingTopElement(AhrsElement):
             colors.GREEN,
             colors.BLACK,
             1.0,
-            True)
+            not self.__reduced_visuals__)
 
     def __get_hollow_heading_box_elements__(
         self
@@ -219,7 +219,7 @@ class CompassAndHeadingTopElement(AhrsElement):
                 colors.YELLOW,
                 colors.BLACK,
                 1.0,
-                True)
+                not self.__reduced_visuals__)
 
 
 if __name__ == '__main__':

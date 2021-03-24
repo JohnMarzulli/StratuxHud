@@ -2,13 +2,57 @@
 Indicates to the pilot the current roll angle.
 """
 
-from common_utils.task_timer import TaskProfiler
-from common_utils import local_debug
+from functools import lru_cache
+
 from common_utils.fast_math import cos, rotate_points, sin, translate_points
+from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
 from rendering import colors, drawing
 
 from views.ahrs_element import AhrsElement
+
+
+@lru_cache(maxsize=100)
+def __get_point_on_arc__(
+    radius: float,
+    start_angle: float,
+) -> list:
+    """
+    Given an angle and a radius, calculate the x,y for the point on a circle.
+    Assumes a center of 0,0
+
+    Args:
+        radius (float): The radius of the circle/arc
+        start_angle (float): The angle to generate the point for.
+
+    Returns:
+        list: The x,y of the point on the circle.
+    """
+    point = [int(radius * sin(start_angle)), int(radius * cos(start_angle))]
+
+    return point
+
+
+def __get_points_on_arc__(
+    radius: float,
+    angles: list,
+    center: list
+) -> list:
+    """
+    Given a list of angles, generate the points for them
+    on the roll indicator arc.
+
+    Args:
+        angles (list): The list of points to get the circle points for.
+
+    Returns:
+        list: The list of points on the indicator arc.
+    """
+    segments = [__get_point_on_arc__(
+        radius,
+        start_angle - 180) for start_angle in angles]
+
+    return translate_points(segments, center)
 
 
 class RollIndicator(AhrsElement):
@@ -32,7 +76,10 @@ class RollIndicator(AhrsElement):
         self.__indicator_arc_center__ = [
             self.__center__[0],
             self.__center__[1]]
-        self.__indicator_arc__ = self.__get_points_on_arc__(range(-60, 61, 5))
+        self.__indicator_arc__ = __get_points_on_arc__(
+            self.arc_radius,
+            range(-60, 61, 5),
+            self.__indicator_arc_center__)
 
         self.__zero_angle_triangle__ = self.__get_upper_angle_reference_shape__()
         self.__current_angle_triangle__ = self.__get_current_angle_triangle_shape__()
@@ -51,46 +98,6 @@ class RollIndicator(AhrsElement):
             self.__indicator_elements__.extend([drawing.FilledCircle(segment_start, self.__thin_line_width__, colors.WHITE, not self.__reduced_visuals__)
                                                 for segment_start, segment_end in roll_angle_marks])
 
-    def __get_point_on_arc__(
-        self,
-        radius: int,
-        start_angle: int,
-    ) -> list:
-        """
-        Given an angle and a radius, calculate the x,y for the point on a circle.
-        Assumes a center of 0,0
-
-        Args:
-            radius (int): The radius of the circle/arc
-            start_angle (int): The angle to generate the point for.
-
-        Returns:
-            list: The x,y of the point on the circle.
-        """
-        point = [radius * sin(start_angle), radius * cos(start_angle)]
-
-        return point
-
-    def __get_points_on_arc__(
-        self,
-        angles: list
-    ) -> list:
-        """
-        Given a list of angles, generate the points for them
-        on the roll indicator arc.
-
-        Args:
-            angles (list): The list of points to get the circle points for.
-
-        Returns:
-            list: The list of points on the indicator arc.
-        """
-        segments = [self.__get_point_on_arc__(
-            self.arc_radius,
-            start_angle - 180) for start_angle in angles]
-
-        return translate_points(segments, self.__indicator_arc_center__)
-
     def __get_angle_mark_points__(
         self
     ) -> dict:
@@ -101,7 +108,10 @@ class RollIndicator(AhrsElement):
             dict: A dictionary, keyed by angle, of where the indicator marks start.
         """
         angles = [-60, -45, -30, 0, 30, 45, 60]
-        mark_start_points = self.__get_points_on_arc__(angles)
+        mark_start_points = __get_points_on_arc__(
+            self.arc_radius,
+            angles,
+            self.__indicator_arc_center__)
 
         angle_and_start_points = {}
         index = 0
@@ -112,6 +122,7 @@ class RollIndicator(AhrsElement):
 
         return angle_and_start_points
 
+    @lru_cache(maxsize=10)
     def __get_arc_center__(
         self
     ) -> list:
@@ -121,7 +132,10 @@ class RollIndicator(AhrsElement):
         Returns:
             list: The x,y of the arc center/nuetral
         """
-        return self.__get_points_on_arc__([0])[0]
+        return __get_points_on_arc__(
+            self.arc_radius,
+            [0],
+            self.__indicator_arc_center__)[0]
 
     def __get_upper_angle_reference_shape__(
         self

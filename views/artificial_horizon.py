@@ -100,7 +100,7 @@ class ArtificialHorizon(AhrsElement):
             colors.BLACK,
             1.0,
             roll,
-            True)
+            not self.__reduced_visuals__)
 
     def render(
         self,

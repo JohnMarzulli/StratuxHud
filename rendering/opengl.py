@@ -117,7 +117,7 @@ def circle(
         None,
         color,
         True,
-        fast_math.get_circle_points(position, radius),
+        fast_math.get_circle_points(position[0], position[1], radius),
         width,
         is_antialiased)
 
@@ -143,7 +143,7 @@ def filled_circle(
     polygon(
         None,
         color,
-        fast_math.get_circle_points(position, radius),
+        fast_math.get_circle_points(position[0], position[1], radius),
         is_antialiased)
 
 

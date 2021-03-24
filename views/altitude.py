@@ -92,6 +92,9 @@ class Altitude(AhrsElement):
             color = colors.WHITE if is_altitude_valid else colors.RED
             annotated_text = __get_indicated_text__(orientation, color)
 
+            if self.__reduced_visuals__:
+                annotated_text = annotated_text[:1]
+
         with TaskProfiler("views.altitude.Altitude.render"):
             self.__render_text_with_stacked_annotations_right_justified__(
                 framebuffer,

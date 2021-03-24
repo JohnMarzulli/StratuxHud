@@ -73,10 +73,11 @@ class SkidAndGs(AhrsElement):
         min_g_text = "{0:.1f}".format(orientation.min_g)
         max_g_text = "{0:.1f}".format(orientation.max_g)
 
-        text_package = [
-            [1.0, g_load_text, colors.WHITE if is_valid else colors.RED],
-            [0.5, min_g_text, colors.WHITE],
-            [0.5, max_g_text, colors.WHITE]]
+        text_package = [[1.0, g_load_text, colors.WHITE if is_valid else colors.RED]]
+
+        if not self.__reduced_visuals__:
+            text_package.append([0.5, min_g_text, colors.WHITE])
+            text_package.append([0.5, max_g_text, colors.WHITE])
 
         self.__render_text_with_stacked_annotations_right_justified__(
             framebuffer,
