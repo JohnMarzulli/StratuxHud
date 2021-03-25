@@ -5,6 +5,7 @@ Indicates to the pilot the current roll angle.
 from functools import lru_cache
 
 from common_utils.fast_math import cos, rotate_points, sin, translate_points
+from common_utils.local_debug import IS_PI
 from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
 from rendering import colors, drawing
@@ -83,16 +84,18 @@ class RollIndicator(AhrsElement):
 
         self.__current_angle_triangle__ = self.__get_current_angle_triangle_shape__()
         self.__slip_skid_box__ = self.__get_current_angle_box_shape__()
-        self.__arc_width__ = int(self.__line_width__ * 1.5)
+        self.__arc_width__ = self.__line_width__
 
         roll_angle_marks = self.__get_major_roll_indicator_marks__()
 
-        self.__indicator_elements__ = [drawing.Segments(self.__indicator_arc__, colors.WHITE, self.__arc_width__, not self.__reduced_visuals__)]
+        is_antialiased = not IS_PI
+
+        self.__indicator_elements__ = [drawing.Segments(self.__indicator_arc__, colors.WHITE, self.__arc_width__, is_antialiased)]
 
         # Draw the important angle/roll step marks
-        self.__indicator_elements__.extend([drawing.Segment(segment_start, segment_end, colors.WHITE, self.__line_width__, not self.__reduced_visuals__)
+        self.__indicator_elements__.extend([drawing.Segment(segment_start, segment_end, colors.WHITE, self.__line_width__, is_antialiased)
                                             for segment_start, segment_end in roll_angle_marks])
-        
+
         # Roll scale zero
         self.__indicator_elements__.append(
             drawing.FilledPolygon(
@@ -101,7 +104,7 @@ class RollIndicator(AhrsElement):
                 not self.__reduced_visuals__))
 
         if not self.__reduced_visuals__:
-            self.__indicator_elements__.extend([drawing.FilledCircle(segment_start, self.__thin_line_width__, colors.WHITE, not self.__reduced_visuals__)
+            self.__indicator_elements__.extend([drawing.FilledCircle(segment_start, self.__thin_line_width__, colors.WHITE, is_antialiased)
                                                 for segment_start, segment_end in roll_angle_marks])
 
     def __get_angle_mark_points__(
@@ -248,6 +251,7 @@ class RollIndicator(AhrsElement):
 
         for roll_angle in list(angles_and_start_points.keys()):
             mark_length = major_mark_length if roll_angle % 10 == 0 else minor_mark_length
+            mark_length = mark_length if roll_angle != 0 else 0
             angle_mark_start = angles_and_start_points[roll_angle]
             angle_mark_end = [0, mark_length]
 
@@ -277,7 +281,7 @@ class RollIndicator(AhrsElement):
         with TaskProfiler("views.roll_indicator.RollIndicator.setup"):
             # Use jagged lines at the moment on the
             # Pi given the cost of anti-aliasing
-            is_antialiased = not self.__reduced_visuals__
+            is_antialiased = not IS_PI
 
             skid_rotation = 0 if orientation.slip_skid is None or isinstance(orientation.slip_skid, str) else orientation.slip_skid * 5.0
 
