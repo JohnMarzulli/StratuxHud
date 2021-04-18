@@ -15,13 +15,15 @@ class AdsbTargetBugsOnly(AdsbElement):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
         super().__init__(
             degrees_of_pitch,
             pixels_per_degree_y,
             font,
-            framebuffer_size)
+            framebuffer_size,
+            reduced_visuals)
 
     def __render_traffic_heading_bug__(
         self,
@@ -64,7 +66,7 @@ class AdsbTargetBugsOnly(AdsbElement):
 
             bug_color = colors.BLUE if traffic_report.is_on_ground() else colors.RED
 
-            drawing.polygon(framebuffer, bug_color, reticle)
+            drawing.renderer.polygon(framebuffer, bug_color, reticle)
         finally:
             pass
 
@@ -73,7 +75,7 @@ class AdsbTargetBugsOnly(AdsbElement):
         framebuffer,
         orientation: AhrsData
     ):
-        with TaskProfiler('views.adsb_target_bugs_only.AdsbTargetBugsOnly.preperation'):
+        with TaskProfiler('views.adsb_target_bugs_only.AdsbTargetBugsOnly.setup'):
             heading = orientation.get_onscreen_projection_heading()
 
             if isinstance(heading, str):
@@ -86,13 +88,13 @@ class AdsbTargetBugsOnly(AdsbElement):
                 return
 
             reports_to_show = traffic_reports[:MAX_TARGET_BUGS]
-            altitude = orientation.alt
 
-        with TaskProfiler('views.adsb_target_bugs_only.AdsbTargetBugsOnly.preperation'):
+        # pylint:disable=expression-not-assigned
+        with TaskProfiler('views.adsb_target_bugs_only.AdsbTargetBugsOnly.render'):
             [self.__render_traffic_heading_bug__(
                 traffic_report,
                 heading,
-                altitude,
+                orientation.alt,
                 framebuffer) for traffic_report in reports_to_show]
 
 

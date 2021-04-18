@@ -245,13 +245,15 @@ class AdsbTopViewScope(AdsbElement):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
         super().__init__(
             degrees_of_pitch,
             pixels_per_degree_y,
             font,
-            framebuffer_size)
+            framebuffer_size,
+            reduced_visuals)
 
         self.__draw_identifiers__ = True
 
@@ -422,13 +424,14 @@ class AdsbTopViewScope(AdsbElement):
                 [screen_x, screen_y],
                 orientation.get_onscreen_projection_heading(),
                 traffic.track)
-            drawing.polygon(framebuffer, target_color, points)
+            drawing.renderer.polygon(framebuffer, target_color, points, not self.__reduced_visuals__)
         else:
-            drawing.filled_circle(
+            drawing.renderer.filled_circle(
                 framebuffer,
                 target_color,
                 [screen_x, screen_y],
-                self.__no_direction_target_size__)
+                self.__no_direction_target_size__,
+                not self.__reduced_visuals__)
 
         # Do not draw identifier text for any targets further than
         # the first scope ring.
@@ -443,7 +446,7 @@ class AdsbTopViewScope(AdsbElement):
                 identifier,
                 [screen_x, screen_y + (self.__no_direction_target_size__ << 2)],
                 colors.YELLOW,
-                None,
+                colors.BLACK,
                 0.5,
                 0,
                 True)
@@ -465,7 +468,7 @@ class AdsbTopViewScope(AdsbElement):
             0,
             0)
 
-        drawing.polygon(framebuffer, colors.GREEN, points)
+        drawing.renderer.polygon(framebuffer, colors.GREEN, points, not self.__reduced_visuals__)
 
     def __draw_distance_rings__(
         self,
@@ -507,13 +510,13 @@ class AdsbTopViewScope(AdsbElement):
 
         for distance in ring_distances:
             radius_pixels = self.__get_pixel_distance__(distance, max_distance)
-            drawing.circle(
+            drawing.renderer.circle(
                 framebuffer,
                 colors.GREEN,
                 self.__scope_center__,
                 radius_pixels,
                 self.__thin_line_width__,
-                False)  # AA circle costs a BUNCH on the Pi
+                not self.__reduced_visuals__)  # AA circle costs a BUNCH on the Pi
             ring_pixel_distances.append(radius_pixels)
 
             text_x = self.__scope_center__[0] + int(sin_text_placement * radius_pixels)
@@ -556,38 +559,39 @@ class AdsbTopViewScope(AdsbElement):
             indicator_mark_ends,
             [screen_x, screen_y])
 
-        drawing.segment(
+        drawing.renderer.segment(
             framebuffer,
             colors.GREEN,
             [screen_x, screen_y],
             indicator_mark_ends[0],
             self.__line_width__,
-            True)
+            not self.__reduced_visuals__)
 
         draw_text = (heading_to_draw % 90) == 0
 
         if not draw_text:
             return
 
-        self.__render_centered_text__(
-            framebuffer,
-            str(heading_to_draw),
-            (screen_x, screen_y),
-            colors.BLACK,
-            None,
-            1.3,
-            heading_text_rotation,
-            True)
+        if not self.__reduced_visuals__:
+            self.__render_centered_text__(
+                framebuffer,
+                str(heading_to_draw),
+                (screen_x, screen_y),
+                colors.BLACK,
+                None,
+                1.3,
+                heading_text_rotation,
+                True)
 
         self.__render_centered_text__(
             framebuffer,
             str(heading_to_draw),
             (screen_x, screen_y),
             colors.YELLOW,
-            None,
+            colors.BLACK,
             1.0,
             heading_text_rotation,
-            True)
+            not self.__reduced_visuals__)
 
     def __draw_all_compass_headings__(
         self,
@@ -604,7 +608,12 @@ class AdsbTopViewScope(AdsbElement):
             framebuffer (pygame.Surface): [description]
             orientation (AhrsData): [description]
         """
-        our_heading = int(orientation.get_onscreen_projection_heading())
+        try:
+            our_heading = int(orientation.get_onscreen_projection_heading())
+        except:
+            # Heading is not a string, which means
+            # we do not have GPS lock
+            return
 
         for heading_to_draw in range(0, 360, 45):
             self.__draw_compass_text__(
@@ -643,28 +652,24 @@ class AdsbTopViewScope(AdsbElement):
         # TODO: Try listing identifiers on side with lines leading to the aircraft
         # TODO: MORE TESTING!!!
 
-        with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.ZoomAndRange'):
+        with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.setup'):
             scope_range = self.__get_scope_zoom__(orientation)
-
-        self.__render_ownship__(framebuffer)
-
-        with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.Rings'):
-            first_ring_pixel_radius = self.__draw_distance_rings__(
-                framebuffer,
-                scope_range)
-
-        with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.CompassHeadings'):
-            self.__draw_all_compass_headings__(
-                framebuffer,
-                orientation,
-                scope_range[0])
-
-        # Get the traffic, and bail out of we have none
-        with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.Traffic'):
             traffic_reports = HudDataCache.get_reliable_traffic()
             traffic_reports.sort(
                 key=lambda traffic: traffic.distance,
                 reverse=True)
+
+        with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.render'):
+            self.__render_ownship__(framebuffer)
+
+            first_ring_pixel_radius = self.__draw_distance_rings__(
+                framebuffer,
+                scope_range)
+
+            self.__draw_all_compass_headings__(
+                framebuffer,
+                orientation,
+                scope_range[0])
 
             # pylint: disable=expression-not-assigned
             [self.__render_on_screen_target__(

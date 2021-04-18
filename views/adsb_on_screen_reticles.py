@@ -25,13 +25,15 @@ class AdsbOnScreenReticles(AdsbElement):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
         super().__init__(
             degrees_of_pitch,
             pixels_per_degree_y,
             font,
-            framebuffer_size)
+            framebuffer_size,
+            reduced_visuals)
 
         self.__listing_text_start_y__ = int(self.__font__.get_height() * 4)
         self.__listing_text_start_x__ = int(self.__framebuffer_size__[0] * 0.01)
@@ -119,13 +121,13 @@ class AdsbOnScreenReticles(AdsbElement):
             return None
 
         # Used for debugging reticle rotation
-        # drawing.segment(
+        # drawing.renderer.segment(
         #     framebuffer,
         #     colors.YELLOW,
         #     [reticle_x, reticle_y],
         #     reticle[0])
 
-        # drawing.segment(
+        # drawing.renderer.segment(
         #     framebuffer,
         #     colors.YELLOW,
         #     [reticle_x, reticle_y],
@@ -135,7 +137,7 @@ class AdsbOnScreenReticles(AdsbElement):
             reticle,
             colors.RED,
             self.__line_width__,
-            True)
+            not self.__reduced_visuals__)
 
     def __get_rotation_point__(
         self,
@@ -177,8 +179,12 @@ class AdsbOnScreenReticles(AdsbElement):
             orientation {Orientation} -- The orientation of the plane the HUD is in.
         """
 
-        with TaskProfiler('views.on_screen_reticles.AdsbOnScreenReticles.preperation'):
+        with TaskProfiler('views.on_screen_reticles.AdsbOnScreenReticles.setup'):
             our_heading = orientation.get_onscreen_projection_heading()
+
+            if isinstance(our_heading, str):
+                return
+
             # Get the traffic, and bail out of we have none
             traffic_reports = HudDataCache.get_reliable_traffic()
 

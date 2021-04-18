@@ -2,16 +2,19 @@
 Base class for AHRS view elements.
 """
 
-import pygame
-from data_sources.data_cache import HudDataCache
-from rendering import colors
+from rendering import colors, display, text_renderer
+
+
+def __get_default_text_background_color__() -> list:
+    return colors.BLACK if display.IS_OPENGL else None
 
 
 class HudElement(object):
     def __init__(
         self,
         font,
-        framebuffer_size
+        framebuffer_size: list,
+        reduced_visuals: bool = False
     ) -> None:
         super().__init__()
 
@@ -25,8 +28,7 @@ class HudElement(object):
         self.__width__ = framebuffer_size[0]
         self.__height__ = framebuffer_size[1]
 
-        self.__right_border__ = int((1.0 - border_margin)
-                                    * framebuffer_size[0])
+        self.__right_border__ = int((1.0 - border_margin) * framebuffer_size[0])
         self.__left_border__ = int(framebuffer_size[0] * border_margin)
 
         self.__top_border__ = int(self.__height__ * border_margin)
@@ -41,6 +43,8 @@ class HudElement(object):
         self.__line_width__ = max(1, int((self.__width__ * 0.005) + 0.5))
         self.__thin_line_width__ = self.__line_width__ >> 1
         self.__thick_line_width__ = self.__line_width__ >> 1
+
+        self.__reduced_visuals__ = reduced_visuals
 
     def uses_ahrs(
         self
@@ -75,25 +79,16 @@ class HudElement(object):
         Returns:
             list: The size of the rendered text.
         """
-        texture, size = HudDataCache.get_cached_text_texture(
-            text,
+
+        return text_renderer.render_text(
+            framebuffer,
             self.__font__,
+            text,
+            position,
             color,
             colors.BLACK,
-            True,
-            False)
-
-        scaled_size = [int(size[0] * scale), int(size[1] * scale)]
-
-        texture = pygame.transform.smoothscale(
-            texture,
-            scaled_size)
-
-        framebuffer.blit(
-            texture,
-            position)
-
-        return scaled_size
+            not self.__reduced_visuals__,
+            scale)
 
     def __render_horizontal_centered_text__(
         self,
@@ -101,7 +96,7 @@ class HudElement(object):
         text: str,
         position: list,
         color: list,
-        bg_color: list = None,
+        bg_color: list = __get_default_text_background_color__(),
         scale: float = 1.0,
         use_alpha: bool = True
     ) -> list:
@@ -119,27 +114,23 @@ class HudElement(object):
         Returns:
             list: The size of the rendered text.
         """
-        texture, size = HudDataCache.get_cached_text_texture(
-            text,
+
+        key, texture, size = text_renderer.get_or_create_text_texture(
             self.__font__,
+            text,
             color,
             bg_color,
             use_alpha,
-            False)
+            scale)
 
-        scaled_size = [int(size[0] * scale), int(size[1] * scale)]
+        x_adjustment = size[0] >> 1
 
-        x_adjustment = scaled_size[0] >> 1
-
-        texture = pygame.transform.smoothscale(
-            texture,
-            scaled_size)
-
-        framebuffer.blit(
-            texture,
+        text_renderer.render_cached_texture(
+            framebuffer,
+            key,
             [position[0] - x_adjustment, position[1]])
 
-        return scaled_size
+        return size
 
     def __render_centered_text__(
         self,
@@ -147,7 +138,7 @@ class HudElement(object):
         text: str,
         position: list,
         color: list,
-        bg_color: list = colors.BLACK,
+        bg_color: list = __get_default_text_background_color__(),
         scale: float = 1.0,
         rotation: float = 0.0,
         use_alpha: bool = True
@@ -168,32 +159,27 @@ class HudElement(object):
         Returns:
             list: The size of the rendered text.
         """
-        texture, _ = HudDataCache.get_cached_text_texture(
-            text,
+
+        use_alpha |= bg_color is None
+
+        key, texture, size = text_renderer.get_or_create_text_texture(
             self.__font__,
+            text,
             color,
             bg_color,
             use_alpha,
-            True)
+            scale,
+            rotation)
 
-        texture = pygame.transform.rotozoom(
-            texture,
-            rotation,
-            scale)
+        new_x = position[0] - (size[0] >> 1)
+        new_y = position[1] - (size[1] >> 1)
 
-        # if use_alpha:
-        #     texture = texture.convert_alpha()
-
-        (size_x, size_y) = texture.get_size()
-
-        new_x = position[0] - (size_x >> 1)
-        new_y = position[1] - (size_y >> 1)
-
-        framebuffer.blit(
-            texture,
+        text_renderer.render_cached_texture(
+            framebuffer,
+            key,
             [new_x, new_y])
 
-        return (size_x, size_y)
+        return size
 
     def __render_text_right_justified__(
         self,
@@ -216,25 +202,21 @@ class HudElement(object):
         Returns:
             list: The size of the rendered text.
         """
-        texture, size = HudDataCache.get_cached_text_texture(
-            text,
+
+        key, texture, size = text_renderer.get_or_create_text_texture(
             self.__font__,
+            text,
             color,
-            colors.BLACK,
+            __get_default_text_background_color__(),
             True,
-            False)
+            scale)
 
-        scaled_size = [int(size[0] * scale), int(size[1] * scale)]
+        text_renderer.render_cached_texture(
+            framebuffer,
+            key,
+            [position[0] - size[0], position[1]])
 
-        texture = pygame.transform.smoothscale(
-            texture,
-            scaled_size)
-
-        framebuffer.blit(
-            texture,
-            [position[0] - scaled_size[0], position[1]])
-
-        return scaled_size
+        return size
 
     def __render_text_with_stacked_annotations__(
         self,

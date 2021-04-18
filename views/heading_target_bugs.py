@@ -36,14 +36,16 @@ class HeadingTargetBugs(AdsbTargetBugs):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
         AdsbTargetBugs.__init__(
             self,
             degrees_of_pitch,
             pixels_per_degree_y,
             font,
-            framebuffer_size)
+            framebuffer_size,
+            reduced_visuals)
 
         self.__listing_text_start_y__ = int(self.__font__.get_height())
         self.__listing_text_start_x__ = int(
@@ -157,7 +159,7 @@ class HeadingTargetBugs(AdsbTargetBugs):
                 heading_bug_x,
                 target_bug_scale)
 
-            drawing.polygon(
+            drawing.renderer.polygon(
                 framebuffer,
                 colors.BLUE,
                 reticle)

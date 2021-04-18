@@ -1,6 +1,7 @@
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
+from rendering import colors, text_renderer
 
 from views.adsb_element import AdsbElement, apply_declination
 
@@ -23,13 +24,15 @@ class AdsbTrafficListing(AdsbElement):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
         super().__init__(
             degrees_of_pitch,
             pixels_per_degree_y,
             font,
-            framebuffer_size)
+            framebuffer_size,
+            reduced_visuals)
 
         self.__listing_text_start_y__ = int(self.__font__.get_height())
         self.__listing_text_start_x__ = int(
@@ -140,19 +143,14 @@ class AdsbTrafficListing(AdsbElement):
         padded_traffic_reports = self.__get_padded_traffic_reports__(
             traffic_reports)
 
-        if len(padded_traffic_reports) == 0:
-            framebuffer.blit(
-                HudDataCache.get_cached_text_texture(
-                    "NO TRAFFIC",
-                    self.__font__)[0],
-                (x_pos, y_pos))
-
         for identifier, traffic_report in padded_traffic_reports:
-            traffic_text_texture = HudDataCache.get_cached_text_texture(
+            text_renderer.render_text(
+                framebuffer,
+                self.__font__,
                 traffic_report,
-                self.__font__)[0]
-
-            framebuffer.blit(traffic_text_texture, (x_pos, y_pos))
+                [x_pos, y_pos],
+                colors.BLACK,
+                colors.YELLOW)
 
             y_pos += self.__next_line_distance__
 
