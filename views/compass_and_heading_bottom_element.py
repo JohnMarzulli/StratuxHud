@@ -36,14 +36,16 @@ class CompassAndHeadingBottomElement(CompassAndHeadingTopElement):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
         CompassAndHeadingTopElement.__init__(
             self,
             degrees_of_pitch,
             pixels_per_degree_y,
             font,
-            framebuffer_size)
+            framebuffer_size,
+            reduced_visuals)
 
 
 if __name__ == '__main__':

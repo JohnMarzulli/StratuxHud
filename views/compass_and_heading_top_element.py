@@ -7,10 +7,10 @@ from numbers import Number
 from common_utils import fast_math
 from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
-from rendering import drawing
+from rendering import colors, drawing
 
 from views.ahrs_element import AhrsElement
-from views.hud_elements import apply_declination, colors, run_hud_element
+from views.hud_elements import apply_declination, run_hud_element
 
 
 class CompassAndHeadingTopElement(AhrsElement):
@@ -43,9 +43,10 @@ class CompassAndHeadingTopElement(AhrsElement):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
-        super().__init__(font, framebuffer_size)
+        super().__init__(font, framebuffer_size, reduced_visuals)
 
         self.__compass_box_y_position__ = self.__get_compass_y_position__()
 
@@ -118,7 +119,7 @@ class CompassAndHeadingTopElement(AhrsElement):
         x_pos: int,
         heading: int
     ):
-        drawing.segment(
+        drawing.renderer.segment(
             framebuffer,
             colors.GREEN,
             [x_pos, self.__get_mark_line_start__()],
@@ -178,9 +179,9 @@ class CompassAndHeadingTopElement(AhrsElement):
             heading_text,
             [self.__center_x__, self.__compass_box_y_position__],
             colors.GREEN,
-            None,
+            colors.BLACK,
             1.0,
-            True)
+            not self.__reduced_visuals__)
 
     def __get_hollow_heading_box_elements__(
         self
@@ -216,9 +217,9 @@ class CompassAndHeadingTopElement(AhrsElement):
                 str(heading),
                 [position_x, position_y],
                 colors.YELLOW,
-                None,
+                colors.BLACK,
                 1.0,
-                True)
+                not self.__reduced_visuals__)
 
 
 if __name__ == '__main__':

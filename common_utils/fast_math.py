@@ -3,6 +3,7 @@ Shared code to help speed up various math functions.
 """
 
 import math
+from functools import lru_cache
 
 SIN_BY_DEGREES = {}
 COS_BY_DEGREES = {}
@@ -203,6 +204,59 @@ def interpolate(
     return int(interpolatef(left_value, right_value, proportion))
 
 
+def rangef(
+    start: float,
+    stop: float,
+    step: float
+) -> list:
+    """
+    Generate a list of numbers between the starting point
+    and ending point (inclusive)
+
+    Args:
+        start (float): The first number in the range.
+        stop (float): The last number in the range. Only included in the range if it is a factor of Start & step.
+        step (float): How much to increment by.
+
+    Returns:
+        list: [description]
+
+    Yields:
+        Iterator[list]: [description]
+    """
+    while start < stop:
+        yield float(start)
+        start += step
+
+
+@lru_cache(maxsize=500)
+def get_circle_points(
+    x: int,
+    y: int,
+    radius: float,
+) -> list:
+    """
+    Given a center and a radius, find the points to make a
+    smooth circle. The number of srgments is automatically
+    determined by the radius.
+
+    Args:
+        center (list): The center of the circle.
+        radius (float): The radius of the circle.
+
+    Returns:
+        list: The points that make the circle.
+    """
+    angle_chunks = math.sqrt(radius / 2.0)
+    arc_radians = (angle_chunks / radius)
+    arc_radians = max(0.1, arc_radians)
+
+    points = [[int(x + (radius * math.sin(radian))), int(y + (radius * math.cos(radian)))] for radian in rangef(0, TWO_PI, arc_radians)]
+
+    return points
+
+
+@lru_cache(maxsize=360)
 def wrap_degrees(
     angle: float
 ) -> float:
@@ -222,6 +276,7 @@ def wrap_degrees(
     return angle
 
 
+@lru_cache(maxsize=360)
 def wrap_radians(
     radians: float
 ) -> float:
@@ -240,6 +295,7 @@ def wrap_radians(
     return radians
 
 
+@lru_cache(maxsize=1000)
 def get_radians(
     degrees: float
 ) -> float:
@@ -256,6 +312,7 @@ def get_radians(
     return __RADIANS_BY_DEGREES__[clamped_degrees]
 
 
+@lru_cache(maxsize=1000)
 def get_degrees(
     radians: float
 ) -> float:
@@ -274,6 +331,7 @@ def get_degrees(
     return __DEGREES_BY_RADIANS___[indexed_radians]
 
 
+@lru_cache(maxsize=1000)
 def sin(
     degrees: float
 ) -> float:
@@ -290,6 +348,7 @@ def sin(
     return SIN_BY_DEGREES[clamped_degs]
 
 
+@lru_cache(maxsize=1000)
 def cos(
     degrees: float
 ) -> float:
@@ -306,6 +365,7 @@ def cos(
     return COS_BY_DEGREES[clamped_degs]
 
 
+@lru_cache(maxsize=1000)
 def tan(
     degrees: float
 ) -> float:
@@ -359,15 +419,15 @@ def rotate_points(
     """
 
     # 2 - determine the angle of rotation compared to our "up"
-    rotation_degrees = int(wrap_degrees(rotation_degrees))
+    radians = math.radians(rotation_degrees)
 
     detranslated_points = translate_points(
         list_of_points,
         [-rotation_center[0], -rotation_center[1]])
 
     # 3 - Rotate the zero-based points
-    rotation_sin = SIN_BY_DEGREES[rotation_degrees]
-    rotation_cos = COS_BY_DEGREES[rotation_degrees]
+    rotation_sin = math.sin(radians)
+    rotation_cos = math.cos(radians)
     rotated_points = [[point[0] * rotation_cos - point[1] * rotation_sin,
                        point[0] * rotation_sin + point[1] * rotation_cos] for point in detranslated_points]
 

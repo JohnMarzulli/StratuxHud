@@ -10,7 +10,6 @@ from typing import Tuple
 import pygame
 from common_utils import fast_math, local_debug, units
 from common_utils.fast_math import interpolatef
-from common_utils.local_debug import IS_SLOW
 from common_utils.task_timer import TaskProfiler
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
@@ -246,13 +245,15 @@ class AdsbTopViewScope(AdsbElement):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
         super().__init__(
             degrees_of_pitch,
             pixels_per_degree_y,
             font,
-            framebuffer_size)
+            framebuffer_size,
+            reduced_visuals)
 
         self.__draw_identifiers__ = True
 
@@ -423,13 +424,14 @@ class AdsbTopViewScope(AdsbElement):
                 [screen_x, screen_y],
                 orientation.get_onscreen_projection_heading(),
                 traffic.track)
-            drawing.polygon(framebuffer, target_color, points)
+            drawing.renderer.polygon(framebuffer, target_color, points, not self.__reduced_visuals__)
         else:
-            drawing.filled_circle(
+            drawing.renderer.filled_circle(
                 framebuffer,
                 target_color,
                 [screen_x, screen_y],
-                self.__no_direction_target_size__)
+                self.__no_direction_target_size__,
+                not self.__reduced_visuals__)
 
         # Do not draw identifier text for any targets further than
         # the first scope ring.
@@ -444,7 +446,7 @@ class AdsbTopViewScope(AdsbElement):
                 identifier,
                 [screen_x, screen_y + (self.__no_direction_target_size__ << 2)],
                 colors.YELLOW,
-                None,
+                colors.BLACK,
                 0.5,
                 0,
                 True)
@@ -466,7 +468,7 @@ class AdsbTopViewScope(AdsbElement):
             0,
             0)
 
-        drawing.polygon(framebuffer, colors.GREEN, points)
+        drawing.renderer.polygon(framebuffer, colors.GREEN, points, not self.__reduced_visuals__)
 
     def __draw_distance_rings__(
         self,
@@ -508,13 +510,13 @@ class AdsbTopViewScope(AdsbElement):
 
         for distance in ring_distances:
             radius_pixels = self.__get_pixel_distance__(distance, max_distance)
-            drawing.circle(
+            drawing.renderer.circle(
                 framebuffer,
                 colors.GREEN,
                 self.__scope_center__,
                 radius_pixels,
                 self.__thin_line_width__,
-                not local_debug.IS_PI)  # AA circle costs a BUNCH on the Pi
+                not self.__reduced_visuals__)  # AA circle costs a BUNCH on the Pi
             ring_pixel_distances.append(radius_pixels)
 
             text_x = self.__scope_center__[0] + int(sin_text_placement * radius_pixels)
@@ -557,20 +559,20 @@ class AdsbTopViewScope(AdsbElement):
             indicator_mark_ends,
             [screen_x, screen_y])
 
-        drawing.segment(
+        drawing.renderer.segment(
             framebuffer,
             colors.GREEN,
             [screen_x, screen_y],
             indicator_mark_ends[0],
             self.__line_width__,
-            True)
+            not self.__reduced_visuals__)
 
         draw_text = (heading_to_draw % 90) == 0
 
         if not draw_text:
             return
 
-        if not IS_SLOW:
+        if not self.__reduced_visuals__:
             self.__render_centered_text__(
                 framebuffer,
                 str(heading_to_draw),
@@ -586,10 +588,10 @@ class AdsbTopViewScope(AdsbElement):
             str(heading_to_draw),
             (screen_x, screen_y),
             colors.YELLOW,
-            None,
+            colors.BLACK,
             1.0,
             heading_text_rotation,
-            True)
+            not self.__reduced_visuals__)
 
     def __draw_all_compass_headings__(
         self,
