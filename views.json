@@ -51,6 +51,12 @@
     },
     {
       "elements": [
+        "AithreInfo"
+      ],
+      "name": "Aithre"
+    },
+    {
+      "elements": [
         "System Info"
       ],
       "name": "Diagnostics"

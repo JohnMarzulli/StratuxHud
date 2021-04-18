@@ -24,7 +24,17 @@ DISCONNECTED_TEXT = "DISCONNECTED"
 DISABLED_TEXT = "DISABLED"
 
 
-def get_ip_address():
+class InfoText:
+    def __init__(
+        self,
+        text: str,
+        color: list
+    ) -> None:
+        self.text = text
+        self.color = color
+
+
+def get_ip_address() -> InfoText:
     """
     Returns the local IP address of this unit.
 
@@ -35,12 +45,12 @@ def get_ip_address():
     try:
         if local_debug.IS_LINUX and local_debug.IS_PI:
             ip_addr = subprocess.getoutput('hostname -I').strip()
-            return (ip_addr, colors.GREEN)
+            return InfoText(ip_addr, colors.GREEN)
         else:
             host_name = socket.gethostname()
-            return (socket.gethostbyname(host_name), colors.GREEN)
+            return InfoText(socket.gethostbyname(host_name), colors.GREEN)
     except:
-        return ('UNKNOWN', colors.RED)
+        return InfoText('UNKNOWN', colors.RED)
 
 
 def get_cpu_temp_text_color(
@@ -60,7 +70,7 @@ def get_cpu_temp_text_color(
     return color
 
 
-def get_cpu_temp() -> str:
+def get_cpu_temp() -> InfoText:
     """
     Gets the cpu temperature on RasPi (Celsius)
 
@@ -78,11 +88,11 @@ def get_cpu_temp() -> str:
 
             color = get_cpu_temp_text_color(temp)
 
-            return ("{0}C".format(int(math.floor(temp))), color)
+            return InfoText("{0}C".format(int(math.floor(temp))), color)
     except:
-        return ('---', colors.GRAY)
+        return InfoText('---', colors.GRAY)
 
-    return ('---', colors.GRAY)
+    return InfoText('---', colors.GRAY)
 
 
 def get_illyrian_spo2_color(
@@ -159,7 +169,9 @@ def get_aithre_battery_color(
     return color
 
 
-class SystemInfo(AhrsElement):
+class TextInfoView(AhrsElement):
+    ROW_TITLE_COLOR = colors.BLUE
+
     def uses_ahrs(
         self
     ) -> bool:
@@ -189,19 +201,66 @@ class SystemInfo(AhrsElement):
         self.__cpu_temp__ = None
         self.__line_spacing__ = 1.01
 
-    def __get_aithre_text_and_color__(
+    def __get_info_text__(
         self
+    ) -> list:
+        return []
+
+    def render(
+        self,
+        framebuffer,
+        orientation: AhrsData
     ):
-        """
-        Gets the text and text color for the Aithre status.
-        """
+        info_lines = self.__get_info_text__()
 
-        if AithreClient.INSTANCE is None:
-            return (DISCONNECTED_TEXT, colors.RED) if configuration.CONFIGURATION.aithre_enabled else (DISABLED_TEXT, colors.BLUE)
+        if info_lines is None:
+            return
 
-        co_report = AithreClient.INSTANCE.get_co_report()
+        render_y = self.__top_border__ + self.__font_height__
 
-        battery_text = 'UNK'
+        for line in info_lines:
+            # Each line package is expected to be a tuple.
+            # Index 0 is the left hand side
+            # Index 1 is the right hand side
+
+            self.__render_text__(
+                framebuffer,
+                line[0].text,
+                [self.__left_border__, render_y],
+                line[0].color)
+
+            # Draw the value in the encoded colors.
+            self.__render_text__(
+                framebuffer,
+                line[1].text,
+                [self.__center_x__, render_y],
+                line[1].color)
+
+            render_y = render_y + (self.__font_height__ * self.__line_spacing__)
+
+
+class AithreView(TextInfoView):
+    STATUS_TEXT = "Status"
+    CONNECTED_TEXT = "Connected"
+    UNKNOWN_TEXT = "Unknown"
+    BATTERY_TEXT = "Battery"
+    CO_TEXT = "CO"
+
+    def __init__(
+        self,
+        degrees_of_pitch: float,
+        pixels_per_degree_y: float,
+        font,
+        framebuffer_size: list,
+        reduced_visuals: bool
+    ):
+        super().__init__(degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, reduced_visuals=reduced_visuals)
+
+    def __get_aithre_battery_info__(
+        self,
+        co_report
+    ) -> list:
+        battery_text = AithreView.UNKNOWN_TEXT
         battery_color = colors.RED
 
         try:
@@ -211,31 +270,84 @@ class SystemInfo(AhrsElement):
                 battery_suffix = ""
             if battery is not None:
                 battery_color = get_aithre_battery_color(battery)
-                battery_text = "bat:{}{}".format(battery, battery_suffix)
+                battery_text = "{}{}".format(battery, battery_suffix)
         except Exception:
             battery_text = 'ERR'
 
-        co_text = 'UNK'
+        return [
+            InfoText(AithreView.BATTERY_TEXT, TextInfoView.ROW_TITLE_COLOR),
+            InfoText(battery_text, battery_color)]
+
+    def __get_aithre_co_info__(
+        self,
+        co_report
+    ) -> list:
+        co_text = AithreView.UNKNOWN_TEXT
         co_color = colors.RED
 
         try:
             co_ppm = co_report.co
 
             if co_ppm is not None and OFFLINE_TEXT not in co_ppm:
-                co_text = 'co:{}ppm'.format(co_ppm)
+                co_text = '{}ppm'.format(co_ppm)
                 co_color = get_aithre_co_color(co_ppm)
-        except Exception as ex:
+        except:
+            co_color = colors.RED
             co_text = 'ERR'
 
-        color = colors.RED if co_color is colors.RED or battery_color is colors.RED else \
-            (colors.YELLOW if co_color is colors.YELLOW or battery_color is colors.YELLOW else colors.BLUE)
+        return [
+            InfoText(AithreView.CO_TEXT, TextInfoView.ROW_TITLE_COLOR),
+            InfoText(co_text, co_color)]
 
-        return ('{} {}'.format(co_text, battery_text), color)
+    def __get_info_text__(
+        self
+    ) -> list:
+        if AithreClient.INSTANCE is None:
+            current_status = InfoText(DISCONNECTED_TEXT, colors.RED) if configuration.CONFIGURATION.aithre_enabled else InfoText(DISABLED_TEXT, colors.BLUE)
 
-    def render(
+            return [
+                InfoText(AithreView.STATUS_TEXT, colors.BLUE),
+                current_status]
+
+        co_report = AithreClient.INSTANCE.get_co_report()
+
+        return [
+            [InfoText(AithreView.STATUS_TEXT, TextInfoView.ROW_TITLE_COLOR), InfoText(AithreView.CONNECTED_TEXT, colors.GREEN)],
+            self.__get_aithre_battery_info__(co_report),
+            self.__get_aithre_co_info__(co_report)]
+
+
+class SystemInfo(TextInfoView):
+    def uses_ahrs(
+        self
+    ) -> bool:
+        """
+        The diagnostics page does not use AHRS.
+
+        Returns:
+            bool -- Always returns False.
+        """
+
+        return False
+
+    def __init__(
         self,
-        framebuffer,
-        orientation: AhrsData
+        degrees_of_pitch: float,
+        pixels_per_degree_y: float,
+        font,
+        framebuffer_size,
+        reduced_visuals: bool
+    ):
+        super().__init__(degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, reduced_visuals=reduced_visuals)
+
+        self.__update_ip_timer__ = 0
+        self.__update_temp_timer__ = 0
+        self.__ip_address__ = get_ip_address()
+        self.__cpu_temp__ = None
+        self.__line_spacing__ = 1.01
+
+    def __get_info_text__(
+        self
     ):
         self.__update_ip_timer__ -= 1
         if self.__update_ip_timer__ <= 0:
@@ -247,45 +359,20 @@ class SystemInfo(AhrsElement):
             self.__cpu_temp__ = get_cpu_temp()
             self.__update_temp_timer__ = 60
 
+        display_res_text = "{} x {}".format(self.__framebuffer_size__[0], self.__framebuffer_size__[1])
+
         info_lines = [
-            ["VERSION     : ", [configuration.VERSION, colors.YELLOW]],
-            ["DECLINATION : ", [
-                str(configuration.CONFIGURATION.get_declination()), colors.BLUE]],
-            ["TRAFFIC     : ", [configuration.CONFIGURATION.get_traffic_manager_address(), colors.BLUE]]]
+            [InfoText("VERSION", TextInfoView.ROW_TITLE_COLOR), InfoText(configuration.VERSION, colors.GREEN)],
+            [InfoText("DISPLAY RES", TextInfoView.ROW_TITLE_COLOR), InfoText(display_res_text, colors.GREEN)],
+            [InfoText("HUD CPU", TextInfoView.ROW_TITLE_COLOR), self.__cpu_temp__],
+            [InfoText("DECLINATION", TextInfoView.ROW_TITLE_COLOR), InfoText(str(configuration.CONFIGURATION.get_declination()), colors.GREEN)],
+            [InfoText("TRAFFIC", TextInfoView.ROW_TITLE_COLOR), InfoText(configuration.CONFIGURATION.get_traffic_manager_address(), colors.GREEN)]]
 
-        addresses = self.__ip_address__[0].split(' ')
+        addresses = self.__ip_address__.text.split(' ')
         for addr in addresses:
-            info_lines.append(
-                ["IP          : ", (addr, self.__ip_address__[1])])
+            info_lines.append([InfoText("IP", TextInfoView.ROW_TITLE_COLOR), InfoText(addr, self.__ip_address__.color)])
 
-        info_lines.append(
-            ["AITHRE      : ", self.__get_aithre_text_and_color__()])
-
-        # Status lines are pushed in as a stack.
-        # First line in the array is at the bottom.
-        # Last line in the array is towards the top.
-        info_lines.append(["HUD CPU     : ", self.__cpu_temp__])
-        info_lines.append(["DISPLAY RES : ", ["{} x {}".format(
-            self.__framebuffer_size__[0], self.__framebuffer_size__[1]), colors.BLUE]])
-
-        render_y = self.__text_y_pos__
-
-        for line in info_lines:
-            # Draw the label in a standard color.
-            size = self.__render_text__(
-                framebuffer,
-                line[0],
-                [self.__left_border__, render_y],
-                colors.BLUE)
-
-            # Draw the value in the encoded colors.
-            self.__render_text__(
-                framebuffer,
-                line[1][0],
-                [size[0], render_y],
-                line[1][1])
-
-            render_y = render_y - (self.__font_height__ * self.__line_spacing__)
+        return info_lines
 
 
 class Aithre(AhrsElement):
