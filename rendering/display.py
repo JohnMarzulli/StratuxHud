@@ -73,7 +73,7 @@ class Display:
         self,
         force_fullscreen: bool,
         force_software: bool
-    ) -> int:
+    ) -> list:
         """
         Get our target screen mode
 
@@ -83,15 +83,20 @@ class Display:
         Returns:
             int: The combined bitflags of all of our screenmodes.
         """
-        screen_mode = pygame.HWACCEL | pygame.constants.DOUBLEBUF | pygame.constants.RLEACCEL
+        # DOUBLEBUF may be causing issues with FBCON and flickering.
+        screen_mode = pygame.HWACCEL | pygame.constants.RLEACCEL  # | pygame.constants.DOUBLEBUF
+        is_fullscreen = False
 
         if self.__is_fullscreen_target__() or force_fullscreen:
+            print("Detecting or forcing fullscreen")
             screen_mode |= pygame.FULLSCREEN
+            is_fullscreen = True
 
         if is_opengl_target() and not force_software:
+            print("Detecting or forcing software rasterization")
             screen_mode |= pygame.constants.OPENGL | pygame.constants.OPENGLBLIT
 
-        return screen_mode
+        return screen_mode, is_fullscreen
 
     def __get_target_screen_size__(
         self
@@ -119,7 +124,7 @@ class Display:
 
         self.is_open_gl = is_opengl_target() and not force_software
         self.size = self.__get_target_screen_size__()
-        display_mode = self.__get_target_screen_mode__(
+        display_mode, is_fullscreen = self.__get_target_screen_mode__(
             force_fullscreen,
             force_software)
 
@@ -144,6 +149,18 @@ class Display:
             if not found:
                 raise Exception('No suitable video driver found!')
 
+        # We need to do this for Linux FBCON direct
+        # rendering since we do not know the size
+        # of the screen until AFTER it has been initialized
+        if is_fullscreen:
+            if __is_x_windows__():
+                pygame.display.init()
+                # pygame.display.toggle_fullscreen()
+
+            self.size = self.__get_target_screen_size__()
+            print("Detected fullscreen")
+
+        print("Now setting screensize to {}x{}".format(self.size[0], self.size[1]))
         pygame.display.set_mode(self.size, display_mode)
 
         if self.is_open_gl:

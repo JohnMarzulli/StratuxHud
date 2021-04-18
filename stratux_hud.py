@@ -49,6 +49,7 @@ __PYTHON_LOGGGER__.addHandler(__HANDLER__)
 
 
 __USE_FULLSCREEN_FLAG__ = "fullscreen"
+__USE_REDUCED_VISUALS_FLAG__ = "reduced"
 
 
 def __is_flag_present__(
@@ -76,5 +77,6 @@ if __name__ == '__main__':
     hud = heads_up_display.HeadsUpDisplay(
         __LOGGER__,
         __is_flag_present__(__USE_FULLSCREEN_FLAG__),
-        __is_flag_present__(display.FORCE_SOFTWARE_FLAG))
+        __is_flag_present__(display.FORCE_SOFTWARE_FLAG),
+        __is_flag_present__(__USE_REDUCED_VISUALS_FLAG__))
     hud.run()

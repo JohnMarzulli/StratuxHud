@@ -64,9 +64,10 @@ class Altitude(AhrsElement):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
-        super().__init__(font, framebuffer_size)
+        super().__init__(font, framebuffer_size, reduced_visuals)
 
         alt_y_pos = self.__center_y__ >> 1
 
@@ -90,6 +91,9 @@ class Altitude(AhrsElement):
                 Number)
             color = colors.WHITE if is_altitude_valid else colors.RED
             annotated_text = __get_indicated_text__(orientation, color)
+
+            if self.__reduced_visuals__:
+                annotated_text = annotated_text[:1]
 
         with TaskProfiler("views.altitude.Altitude.render"):
             self.__render_text_with_stacked_annotations_right_justified__(

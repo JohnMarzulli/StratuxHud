@@ -43,9 +43,10 @@ class CompassAndHeadingTopElement(AhrsElement):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
-        super().__init__(font, framebuffer_size)
+        super().__init__(font, framebuffer_size, reduced_visuals)
 
         self.__compass_box_y_position__ = self.__get_compass_y_position__()
 
@@ -180,7 +181,7 @@ class CompassAndHeadingTopElement(AhrsElement):
             colors.GREEN,
             colors.BLACK,
             1.0,
-            True)
+            not self.__reduced_visuals__)
 
     def __get_hollow_heading_box_elements__(
         self
@@ -218,7 +219,7 @@ class CompassAndHeadingTopElement(AhrsElement):
                 colors.YELLOW,
                 colors.BLACK,
                 1.0,
-                True)
+                not self.__reduced_visuals__)
 
 
 if __name__ == '__main__':

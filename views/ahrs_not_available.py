@@ -19,7 +19,8 @@ class AhrsNotAvailable:
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
         width, height = framebuffer_size
 

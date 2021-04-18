@@ -6,11 +6,12 @@ import math
 
 import pygame
 import pygame.gfxdraw
-from common_utils import fast_math
-from common_utils.local_debug import IS_SLOW
-
+from common_utils import fast_math, generic_data_cache
+from common_utils.local_debug import IS_PI
 
 RENDERER_NAME = "Rasterization"
+
+__TEXT_CACHE__ = generic_data_cache.GenericDataCache()
 
 
 def draw_sprite(
@@ -36,7 +37,7 @@ def polygon(
     framebuffer: pygame.Surface,
     color: list,
     points: list,
-    is_antialiased: bool = not IS_SLOW
+    is_antialiased: bool = not IS_PI
 ):
     """
     Draws a filled polygon from the given points with the given color to the given surface.
@@ -69,7 +70,7 @@ def circle(
     position: list,
     radius: int,
     width: int = 1,
-    is_antialiased: bool = not IS_SLOW
+    is_antialiased: bool = not IS_PI
 ):
     """
     Draws an outline of a cicle at the given position with the given radius and given width
@@ -83,33 +84,16 @@ def circle(
         is_antialiased (bool, optional): Should the circle be drawn anti aliased. Defaults to False.
     """
 
-    pygame.draw.circle(
+    segments(
         framebuffer,
         color,
-        position,
-        radius,
-        width)
-
-    if is_antialiased:
-        half_width = width / 2.0
-
-        # for any thickness, we need to draw
-        # around the outside and inside
-        # of the outline to make sure it is smoothe
-
-        pygame.gfxdraw.aacircle(
-            framebuffer,
+        True,
+        fast_math.get_circle_points(
             position[0],
             position[1],
-            int(radius + half_width - 0.5),
-            color)
-
-        pygame.gfxdraw.aacircle(
-            framebuffer,
-            position[0],
-            position[1],
-            int(radius - half_width - 0.5),
-            color)
+            radius),
+        width,
+        is_antialiased)
 
 
 def filled_circle(
@@ -117,7 +101,7 @@ def filled_circle(
     color: list,
     position: list,
     radius: int,
-    is_antialiased: bool = not IS_SLOW
+    is_antialiased: bool = not IS_PI
 ):
     """
     Draws a filled cicle at the given position with the given radius.
@@ -130,28 +114,14 @@ def filled_circle(
         is_antialiased (bool, optional): Should the circle be drawn anti aliased. Defaults to False.
     """
 
-    # We need top draw the filled circle
-    # THEN the AA circle due to the filled
-    # circle being a traditional (thus aliased)
-    # polygon.
-    #
-    # Doing the aacircle ONLY draws the outline.
-    # Drawing both in this order allows for
-    # the appearence of a filled, anti-aliased circle.
-    pygame.gfxdraw.filled_circle(
+    polygon(
         framebuffer,
-        int(position[0]),
-        int(position[1]),
-        int(radius),
-        color)
-
-    if is_antialiased:
-        pygame.gfxdraw.aacircle(
-            framebuffer,
-            int(position[0]),
-            int(position[1]),
-            int(radius),
-            color)
+        color,
+        fast_math.get_circle_points(
+            position[0],
+            position[1],
+            radius),
+        is_antialiased)
 
 
 def segments(
@@ -160,7 +130,7 @@ def segments(
     is_closed: bool,
     points: list,
     width: int = 1,
-    is_antialiased: bool = not IS_SLOW
+    is_antialiased: bool = not IS_PI
 ):
     """
     Draws segements using the given points.
@@ -205,7 +175,7 @@ def segment(
     start: list,
     end: list,
     width: int = 1,
-    is_antialiased: bool = not IS_SLOW
+    is_antialiased: bool = not IS_PI
 ):
     """
     Draws a single line segment of the given color,
@@ -228,7 +198,7 @@ def segment(
     # Never divide by zero. Also veritical and
     # horizontal lines can not gain anything
     # from anti-aliasing
-    if not is_antialiased or rise == 0 or run == 0:
+    if rise == 0 or run == 0:
         pygame.draw.line(
             framebuffer,
             color,

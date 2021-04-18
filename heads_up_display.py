@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from common_utils.logger import HudLogger
 import json
 import sys
 from time import sleep
@@ -9,6 +8,7 @@ import pygame
 import requests
 
 from common_utils import local_debug, system_tools
+from common_utils.logger import HudLogger
 from common_utils.task_timer import RollingStats, TaskProfiler
 from common_utils.tasks import IntermittentTask, RecurringTask
 from configuration import configuration, configuration_server
@@ -18,7 +18,7 @@ from data_sources.ahrs_data import AhrsData
 from data_sources.aircraft import Aircraft
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import AdsbTrafficClient
-from rendering import colors, display, drawing
+from rendering import colors, display, drawing, text_renderer
 # Due to the way we import the name of the class to be instantiated
 # from the configuration, all of the element class names need
 # to be imported EVEN if the compiler tries to tell you
@@ -136,23 +136,15 @@ class HeadsUpDisplay(object):
         text: str,
         surface
     ):
-        try:
-            texture, size = HudDataCache.get_cached_text_texture(
-                text,
-                self.__detail_font__,
-                colors.BLUE,
-                colors.BLACK,
-                False)
-
-            scaled_size = [int(size[0] >> 1), int(size[1] >> 1)]
-
-            texture = pygame.transform.scale(
-                texture,
-                scaled_size)
-
-            drawing.renderer.draw_sprite(surface, [0, 0], texture)
-        except Exception as e:
-            pass
+        text_renderer.render_text(
+            surface,
+            self.__detail_font__,
+            text,
+            [0, 0],
+            colors.BLUE,
+            colors.BLACK,
+            False,
+            0.5)
 
     def __is_ahrs_view__(
         self,
@@ -251,7 +243,6 @@ class HeadsUpDisplay(object):
                     colors.YELLOW)
 
             self.__render_perf_task__.run()
-            self.__reset_perf_task__.run()
         finally:
             # Change the frame buffer
             if CONFIGURATION.flip_horizontal or CONFIGURATION.flip_vertical:
@@ -295,20 +286,13 @@ class HeadsUpDisplay(object):
         Renders the text with the results centered on the given
         position.
         """
-
-        rendered_text, size = HudDataCache.get_cached_text_texture(
-            text,
+        return text_renderer.render_text(
+            pygame.display.get_surface(),
             self.__detail_font__,
+            text,
+            position,
             color,
             background_color)
-        text_width, text_height = size
-
-        drawing.renderer.draw_sprite(
-            pygame.display.get_surface(),
-            [position[0] - (text_width >> 1), position[1] - (text_height >> 1)],
-            rendered_text)
-
-        return text_width, text_height
 
     def log(
         self,
@@ -345,7 +329,8 @@ class HeadsUpDisplay(object):
     def __build_ahrs_hud_element__(
         self,
         hud_element_class,
-        use_detail_font: bool = False
+        use_detail_font: bool = False,
+        reduced_visuals: bool = False
     ):
         """
         Builds a generic AHRS HUD element.
@@ -373,10 +358,13 @@ class HeadsUpDisplay(object):
                 CONFIGURATION.get_degrees_of_pitch(),
                 self.__pixels_per_degree_y__,
                 font,
-                (self.__width__, self.__height__))
+                (self.__width__, self.__height__),
+                reduced_visuals)
         except Exception as e:
-            self.warn("Unable to build element {0}:{1}".format(
-                hud_element_class, e))
+            self.warn(
+                "Unable to build element {0}:{1}".format(
+                    hud_element_class,
+                    e))
             return None
 
     def __load_view_elements__(
@@ -401,14 +389,14 @@ class HeadsUpDisplay(object):
                 namespace = json_config[view_element_name]['class'].split('.')
                 file_module = getattr(sys.modules['views'], namespace[0])
                 class_name = getattr(file_module, namespace[1])
-                view_elements[view_element_name] = (
-                    class_name, json_config[view_element_name]['detail_font'])
+                view_elements[view_element_name] = (class_name, json_config[view_element_name]['detail_font'])
 
         return view_elements
 
     def __load_views__(
         self,
-        view_elements: list
+        view_elements: list,
+        reduced_visuals: bool = False
     ) -> list:
         """
         Returns a list of views that can be used by the HUD
@@ -438,33 +426,40 @@ class HeadsUpDisplay(object):
                         elements_requested += 1
                         element_config = view_elements[element_name]
                         element_hash_name = "{}{}".format(
-                            element_config[0], element_config[1])
+                            element_config[0],
+                            element_config[1])
 
                         # Instantiating multiple elements of the same type/font
                         # REALLY chews up memory.. and there is no
                         # good reason to use new instances anyway.
                         if element_hash_name not in existing_elements:
                             new_element = self.__build_ahrs_hud_element__(
-                                element_config[0], element_config[1])
+                                element_config[0],
+                                element_config[1],
+                                reduced_visuals)
                             existing_elements[element_hash_name] = new_element
 
                         new_view_elements.append(
                             existing_elements[element_hash_name])
 
                     is_ahrs_view = self.__is_ahrs_view__(new_view_elements)
-                    hud_views.append(
-                        (view_name, new_view_elements, is_ahrs_view))
+                    hud_views.append((view_name, new_view_elements, is_ahrs_view))
                 except Exception as ex:
                     self.log(
-                        "While attempting to load view={}, EX:{}".format(view, ex))
+                        "While attempting to load view={}, EX:{}".format(
+                            view,
+                            ex))
 
-        self.log("While loading, {} elements were requested, with {} unique being created.".format(
-            elements_requested, len(existing_elements.keys())))
+        self.log(
+            "While loading, {} elements were requested, with {} unique being created.".format(
+                elements_requested,
+                len(existing_elements.keys())))
 
         return hud_views
 
     def __build_hud_views__(
-        self
+        self,
+        reduced_visuals: bool = False
     ) -> list:
         """
         Returns the built object of the views.
@@ -474,12 +469,7 @@ class HeadsUpDisplay(object):
         """
 
         view_elements = self.__load_view_elements__()
-        return self.__load_views__(view_elements)
-
-    def __purge_old_textures__(
-        self
-    ):
-        HudDataCache.purge_old_textures()
+        return self.__load_views__(view_elements, reduced_visuals)
 
     def __update_traffic_reports__(
         self
@@ -503,12 +493,18 @@ class HeadsUpDisplay(object):
         self
     ):
         TaskProfiler.log(self.__logger__)
+        self.__perf_log_count = self.__perf_log_count + 1
+
+        if self.__perf_log_count >= 3:
+            TaskProfiler.reset()
+            self.__perf_log_count = 0
 
     def __init__(
         self,
         logger: HudLogger,
         force_fullscreen: bool = False,
-        force_software: bool = False
+        force_software: bool = False,
+        reduced_visuals: bool = False
     ):
         """
         Initialize and create a new HUD.
@@ -523,12 +519,6 @@ class HeadsUpDisplay(object):
             "Render Performance Data",
             15.0,
             self.__render_perf__,
-            logger)
-
-        self.__reset_perf_task__ = IntermittentTask(
-            "Reset Performance Data",
-            15 * 60,
-            TaskProfiler.reset,
             logger)
 
         self.__logger__ = logger
@@ -572,19 +562,15 @@ class HeadsUpDisplay(object):
         self.__ahrs_not_available_element__ = self.__build_ahrs_hud_element__(
             ahrs_not_available.AhrsNotAvailable)
 
-        self.__hud_views__ = self.__build_hud_views__()
+        self.__hud_views__ = self.__build_hud_views__(reduced_visuals)
+
+        self.__perf_log_count = 0
 
         try:
             self.web_server = configuration_server.HudServer()
         except Exception as ex:
             logger.get_logger().info("Unable to start the remote control server: {}".format(ex))
             self.web_server = None
-
-        RecurringTask(
-            "purge_old_textures",
-            10.0,
-            self.__purge_old_textures__,
-            logger.get_logger())
 
         if self.web_server is not None:
             RecurringTask(
@@ -618,47 +604,48 @@ class HeadsUpDisplay(object):
             'or flight instrument system.',
             'For advisory only.']
 
-        texture, size = HudDataCache.get_cached_text_texture(
-            "LOADING",
+        surface = pygame.display.get_surface()
+
+        key, texture, size = text_renderer.get_or_create_text_texture(
             self.__loading_font__,
+            "LOADING",
             colors.RED,
             colors.BLACK)
 
-        text_width, text_height = size
-
-        surface = pygame.display.get_surface()
-
-        drawing.renderer.draw_sprite(
+        text_renderer.render_cached_texture(
             surface,
-            [(self.__width__ >> 1) - (text_width >> 1), self.__detail_font__.get_height()],
-            texture)
+            key,
+            [(self.__width__ >> 1) - (size[0] >> 1), self.__detail_font__.get_height()])
 
         y_pos = (self.__height__ >> 2) + (self.__height__ >> 3)
         for text in disclaimer_text:
-            texture, size = HudDataCache.get_cached_text_texture(
-                text,
+            key, texture, size = text_renderer.get_or_create_text_texture(
                 self.__detail_font__,
+                text,
                 colors.YELLOW,
                 colors.BLACK)
+
             text_width, text_height = size
 
-            drawing.renderer.draw_sprite(
+            text_renderer.render_cached_texture(
                 surface,
-                [(self.__width__ >> 1) - (text_width >> 1), y_pos],
-                texture)
+                key,
+                [(self.__width__ >> 1) - (text_width >> 1), y_pos])
+
             y_pos += text_height + (text_height >> 3)
 
-        texture, size = HudDataCache.get_cached_text_texture(
-            'Version {}'.format(configuration.VERSION),
+        key, texture, size = text_renderer.get_or_create_text_texture(
             self.__detail_font__,
+            'Version {}'.format(configuration.VERSION),
             colors.GREEN,
             colors.BLACK)
+
         text_width, text_height = size
 
-        drawing.renderer.draw_sprite(
+        text_renderer.render_cached_texture(
             surface,
-            [(self.__width__ >> 1) - (text_width >> 1), self.__height__ - text_height],
-            texture)
+            key,
+            [(self.__width__ >> 1) - (text_width >> 1), self.__height__ - text_height])
 
         flipped = pygame.transform.flip(
             surface,

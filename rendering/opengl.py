@@ -5,10 +5,12 @@ Rendering routines for OpenGl
 import math
 
 import pygame
-from common_utils import fast_math
+from common_utils import fast_math, generic_data_cache
 from OpenGL import GL
 
 RENDERER_NAME = "OpenGl"
+
+__CONVERTED_TEXTURE_CACHE__ = generic_data_cache.GenericDataCache()
 
 
 def __set_color__(
@@ -27,6 +29,15 @@ def __set_color__(
         color[2] / 255)
 
 
+def __convert_texture__(
+    texture: pygame.Surface
+) -> list:
+    converted = pygame.image.tostring(texture, "RGBA", True)
+    size = texture.get_size()
+
+    return converted, size
+
+
 def draw_sprite(
     framebuffer,
     position: list,
@@ -40,18 +51,20 @@ def draw_sprite(
         position (list): The position to draw the sprite
         texture (pygame.Surface): The sprite to draw.
     """
-    size_x = texture.get_width()
-    size_y = texture.get_height()
-    rgba_data = pygame.image.tostring(texture, "RGBA", True)
+    key = "{}".format(hash(texture))
+
+    rgba_data, size = __CONVERTED_TEXTURE_CACHE__.get_or_create_data(
+        key,
+        lambda: __convert_texture__(texture))
 
     # For some reason, OpenGl appears to "draw up"
     # starting at the Y position. So be need to adjust downwards
     # to make sure the sprite is using (X,Y) to be the
     # upper left cooridinate
-    GL.glRasterPos2d(position[0], position[1] + size_y)
+    GL.glRasterPos2d(position[0], position[1] + size[1])
     GL.glDrawPixels(
-        size_x,
-        size_y,
+        size[0],
+        size[1],
         GL.GL_RGBA,
         GL.GL_UNSIGNED_BYTE,
         rgba_data)
@@ -104,7 +117,7 @@ def circle(
         None,
         color,
         True,
-        fast_math.get_circle_points(position, radius),
+        fast_math.get_circle_points(position[0], position[1], radius),
         width,
         is_antialiased)
 
@@ -130,7 +143,7 @@ def filled_circle(
     polygon(
         None,
         color,
-        fast_math.get_circle_points(position, radius),
+        fast_math.get_circle_points(position[0], position[1], radius),
         is_antialiased)
 
 
@@ -248,3 +261,49 @@ def segment(
     GL.glVertex2f(ending_points[1][0], ending_points[1][1])
     GL.glVertex2f(starting_points[1][0], starting_points[1][1])
     GL.glEnd()
+
+
+# def __get_text_texture__(
+#     font: pygame.font,
+#     text: str,
+#     color: list,
+#     bg_color: list
+# ):
+#     textSurface = font.render(
+#         text,
+#         True,
+#         color,
+#         bg_color)
+#     size_x, size_y = textSurface.get_width(), textSurface.get_height()
+#     image = pygame.image.tostring(textSurface, "RGBX", True)
+#     GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1)
+#     texture_id = GL.glGenTextures(1)
+#     GL.glBindTexture(GL.GL_TEXTURE_2D, texture_id)
+#     GL.glTexImage2D(GL.GL_TEXTURE_2D, 0, 3, size_x, size_y, 0, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE, image)
+#     GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST)
+#     GL.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST)
+#     GL.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_DECAL)
+
+#     return texture_id, size_x, size_y
+
+
+# texture_id, size_x, size_y = __get_text_texture__(
+#     font,
+#     text,
+#     color,
+#     bg_color)
+
+# GL.glTranslated(position[0], position[1], 1)
+# GL.glBindTexture(GL.GL_TEXTURE_2D, texture_id)
+# GL.glBegin(GL.GL_QUADS)
+# GL.glTexCoord2f(0.0, 0.0)
+# GL.glVertex2d(-1.0, -1.0)
+# GL.glTexCoord2f(1.0, 0.0)
+# GL.glVertex2d(1.0, -1.0)
+# GL.glTexCoord2f(1.0, 1.0)
+# GL.glVertex2d(1.0,  1.0)
+# GL.glTexCoord2f(0.0, 1.0)
+# GL.GL.glVertex2d(-1.0,  1.0)
+# GL.glEnd()
+
+# return size_x, size_y

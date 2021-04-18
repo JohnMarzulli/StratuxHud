@@ -1,12 +1,10 @@
 import math
 
-import pygame
 from common_utils import units
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
-from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
-from rendering import colors, drawing
+from rendering import colors, drawing, text_renderer
 
 from views.ahrs_element import HudElement
 from views.hud_elements import apply_declination
@@ -30,9 +28,10 @@ class AdsbElement(HudElement):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
-        super().__init__(font, framebuffer_size)
+        super().__init__(font, framebuffer_size, reduced_visuals)
 
         self.__roll_elements__ = {}
         self.__text_y_pos__ = self.__center_y__ - self.__font_half_height__
@@ -220,17 +219,16 @@ class AdsbElement(HudElement):
         # Render all of the textures and then
         # find which one is the widest.
         all_text = [identifier_text] + additional_info_text
-        all_textures_and_sizes = [HudDataCache.get_cached_text_texture(
-            text,
+        all_textures_and_sizes = [text_renderer.get_or_create_text_texture(
             self.__font__,
+            text,
             colors.BLACK,
-            card_color,
-            False,
-            False) for text in all_text]
-        widest_texture = max(
-            all_textures_and_sizes,
-            key=lambda x: x[1][0])[1][0]
-        text_height = all_textures_and_sizes[0][1][1]
+            card_color) for text in all_text]
+
+        texture_widths = [texture[2][0] for texture in all_textures_and_sizes]
+
+        widest_texture = max(texture_widths)
+        text_height = all_textures_and_sizes[0][2][1]
 
         info_spacing = 1.2
         texture_height = int(
@@ -316,8 +314,7 @@ class AdsbElement(HudElement):
         info_position_y: int,
         info_spacing
     ):
-        # TODO - Move this to use the built in text render
-        for info_texture, size in additional_info_textures:
+        for key, info_texture, size in additional_info_textures:
             width_x, width_y = size
             half_width = width_x >> 1
             x_pos = center_x - half_width
@@ -329,10 +326,10 @@ class AdsbElement(HudElement):
                 x_pos = self.__width__ - width_x
 
             try:
-                drawing.renderer.draw_sprite(
+                text_renderer.render_cached_texture(
                     framebuffer,
-                    [x_pos, info_position_y],
-                    info_texture)
+                    key,
+                    [x_pos, info_position_y])
             except:
                 pass
 
