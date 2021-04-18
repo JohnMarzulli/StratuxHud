@@ -591,7 +591,7 @@ class AdsbTopViewScope(AdsbElement):
             colors.BLACK,
             1.0,
             heading_text_rotation,
-            True)
+            not self.__reduced_visuals__)
 
     def __draw_all_compass_headings__(
         self,

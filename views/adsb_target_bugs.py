@@ -1,3 +1,7 @@
+"""
+Shows the "Info Cards" for ADSB information
+"""
+
 from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
@@ -7,6 +11,10 @@ from views.hud_elements import MAX_TARGET_BUGS, get_heading_bug_x
 
 
 class AdsbTargetBugs(AdsbElement):
+    """
+    Shows the "Info Cards" for ADSB information
+    """
+
     def __init__(
         self,
         degrees_of_pitch: float,
@@ -53,15 +61,12 @@ class AdsbTargetBugs(AdsbElement):
             traffic_report,
             orientation)
 
-        try:
-            self.__render_info_card__(
-                framebuffer,
-                str(traffic_report.get_display_name()),
-                additional_info_text,
-                heading_bug_x,
-                traffic_report.get_age())
-        except Exception as ex:
-            print("EX:{}".format(ex))
+        self.__render_info_card__(
+            framebuffer,
+            str(traffic_report.get_display_name()),
+            additional_info_text,
+            heading_bug_x,
+            traffic_report.get_age())
 
     def render(
         self,

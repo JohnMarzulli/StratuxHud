@@ -3,8 +3,9 @@ Module to display the artificial horizon.
 """
 
 import math
+from functools import lru_cache
 
-from common_utils import fast_math, local_debug
+from common_utils import fast_math
 from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
 from rendering import colors, display, drawing
@@ -13,10 +14,33 @@ from views.ahrs_element import AhrsElement
 from views.hud_elements import run_hud_element
 
 
+@lru_cache(maxsize=180)
+def __get_pitch_ladder_range__(
+    current_pitch: int,
+    pitch_range: int
+) -> list:
+    smallest_pitch = (current_pitch - pitch_range)
+    largest_pitch = (current_pitch + pitch_range)
+
+    return (smallest_pitch, largest_pitch)
+
+
+@lru_cache(maxsize=180)
+def __get_angles_to_render__(
+    smallest_pitch: int,
+    largest_pitch: int
+) -> list:
+    return list(
+        filter(
+            lambda pitch: pitch < largest_pitch and pitch > smallest_pitch, ArtificialHorizon.REFERENCE_ANGLES))
+
+
 class ArtificialHorizon(AhrsElement):
     """
     Element to display the artificial horizon.
     """
+
+    REFERENCE_ANGLES = []
 
     def __init__(
         self,
@@ -34,14 +58,16 @@ class ArtificialHorizon(AhrsElement):
                                                * 1.5)
         self.__pixels_per_degree_y__ = int(pixels_per_degree_y)
 
-        self.__reference_angles__ = range(
+        self.__upper_cull__ = -self.__font_height__
+        self.__lower_cull__ = self.__height__ + self.__font_height__
+        self.__enable_text_shadow__ = not display.IS_OPENGL and not reduced_visuals
+
+        self.__pitch_range__ = int(self.__center_x__ / self.__pixels_per_degree_y__)
+
+        ArtificialHorizon.REFERENCE_ANGLES = range(
             -degrees_of_pitch,
             degrees_of_pitch + 1,
             10)
-
-        self.__upper_cull__ = -self.__font_height__
-        self.__lower_cull__ = self.__height__ + self.__font_height__
-        self.__enable_text_shadow__ = display.IS_OPENGL
 
     def __render_horizon_reference__(
         self,
@@ -100,7 +126,7 @@ class ArtificialHorizon(AhrsElement):
             colors.BLACK,
             1.0,
             roll,
-            True)
+            not self.__reduced_visuals__)
 
     def render(
         self,
@@ -116,13 +142,9 @@ class ArtificialHorizon(AhrsElement):
         """
 
         with TaskProfiler("views.artificial_horizon.ArtificialHorizon.setup"):
-            pitch_range = int(self.__center_x__ / self.__pixels_per_degree_y__)
-            smallest_pitch = (orientation.pitch - pitch_range)
-            largest_pitch = (orientation.pitch + pitch_range)
-
-            angles_to_render = list(
-                filter(
-                    lambda pitch: pitch < largest_pitch and pitch > smallest_pitch, self.__reference_angles__))
+            current_pitch = int(orientation.pitch)
+            smallest_pitch, largest_pitch = __get_pitch_ladder_range__(current_pitch,  self.__pitch_range__)
+            angles_to_render = __get_angles_to_render__(smallest_pitch, largest_pitch)
 
             # Calculating the coordinates ahead of time...
             segments_centers_and_angles = [self.__get_segment__(

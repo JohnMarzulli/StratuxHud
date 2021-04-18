@@ -87,7 +87,7 @@ class HudElement(object):
             position,
             color,
             colors.BLACK,
-            True,
+            not self.__reduced_visuals__,
             scale)
 
     def __render_horizontal_centered_text__(

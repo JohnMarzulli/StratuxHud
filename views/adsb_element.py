@@ -224,9 +224,10 @@ class AdsbElement(HudElement):
             text,
             colors.BLACK,
             card_color) for text in all_text]
-        widest_texture = max(
-            all_textures_and_sizes,
-            key=lambda x: x[2][0])[1][0]
+
+        texture_widths = [texture[2][0] for texture in all_textures_and_sizes]
+
+        widest_texture = max(texture_widths)
         text_height = all_textures_and_sizes[0][2][1]
 
         info_spacing = 1.2

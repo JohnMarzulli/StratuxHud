@@ -243,7 +243,6 @@ class HeadsUpDisplay(object):
                     colors.YELLOW)
 
             self.__render_perf_task__.run()
-            self.__reset_perf_task__.run()
         finally:
             # Change the frame buffer
             if CONFIGURATION.flip_horizontal or CONFIGURATION.flip_vertical:
@@ -494,6 +493,11 @@ class HeadsUpDisplay(object):
         self
     ):
         TaskProfiler.log(self.__logger__)
+        self.__perf_log_count = self.__perf_log_count + 1
+
+        if self.__perf_log_count >= 3:
+            TaskProfiler.reset()
+            self.__perf_log_count = 0
 
     def __init__(
         self,
@@ -515,12 +519,6 @@ class HeadsUpDisplay(object):
             "Render Performance Data",
             15.0,
             self.__render_perf__,
-            logger)
-
-        self.__reset_perf_task__ = IntermittentTask(
-            "Reset Performance Data",
-            15 * 60,
-            TaskProfiler.reset,
             logger)
 
         self.__logger__ = logger
@@ -565,6 +563,8 @@ class HeadsUpDisplay(object):
             ahrs_not_available.AhrsNotAvailable)
 
         self.__hud_views__ = self.__build_hud_views__(reduced_visuals)
+
+        self.__perf_log_count = 0
 
         try:
             self.web_server = configuration_server.HudServer()

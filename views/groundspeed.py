@@ -64,6 +64,9 @@ class Groundspeed(AhrsElement):
 
         split_from_units.append(type_of_speed)
 
+        if self.__reduced_visuals__:
+            split_from_units = split_from_units[:1]
+
         is_first = True
         text_with_scale_and_color = []
 
