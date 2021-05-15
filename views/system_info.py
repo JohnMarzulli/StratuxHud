@@ -1,6 +1,7 @@
 import math
 import socket
 import subprocess
+from numbers import Number
 
 from common_utils import fast_math, local_debug
 from configuration import configuration
@@ -288,7 +289,7 @@ class AithreView(TextInfoView):
         try:
             co_ppm = co_report.co
 
-            if co_ppm is not None and OFFLINE_TEXT not in co_ppm:
+            if co_ppm is not None and isinstance(co_ppm, Number):
                 co_text = '{}ppm'.format(co_ppm)
                 co_color = get_aithre_co_color(co_ppm)
         except:
@@ -398,8 +399,7 @@ class Aithre(AhrsElement):
     ):
         super().__init__(font, framebuffer_size, reduced_visuals)
 
-        self.__text_y_pos__ = self.__center_y__ + \
-            (10 * self.__font_half_height__)
+        self.__text_y_pos__ = self.__center_y__ + self.__font_half_height__
 
     def render(
         self,
@@ -416,7 +416,7 @@ class Aithre(AhrsElement):
                 return
             else:
                 co_color = get_aithre_co_color(co_level.co)
-                units_text = "PPM" if co_level.is_connected else ""
+                units_text = "PPM" if isinstance(co_level.co, Number) else ""
                 co_ppm_text = "{}{}".format(co_level.co, units_text)
 
             co_ppm_texture = self.__font__.render(
@@ -458,8 +458,8 @@ class Illyrian(AhrsElement):
     ):
         super().__init__(font, framebuffer_size, reduced_visuals)
 
-        self.__text_y_pos__ = self.__center_y__ + (6 * self.__font_half_height__)
-        self.__pulse_y_pos__ = self.__center_y__ + (8 * self.__font_half_height__)
+        self.__text_y_pos__ = self.__center_y__ + (2 * self.__font_height__)
+        self.__pulse_y_pos__ = self.__text_y_pos__ + self.__font_height__
         self.__has_been_connected__ = False
 
     def render(
