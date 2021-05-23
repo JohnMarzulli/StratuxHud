@@ -312,8 +312,13 @@ class AithreView(TextInfoView):
 
         co_report = AithreClient.INSTANCE.get_co_report()
 
+        is_connected = co_report.has_been_connected and co_report.is_connected
+
+        status_text = AithreView.CONNECTED_TEXT if is_connected else DISCONNECTED_TEXT
+        status_color = colors.GREEN if is_connected else colors.RED
+
         return [
-            [InfoText(AithreView.STATUS_TEXT, TextInfoView.ROW_TITLE_COLOR), InfoText(AithreView.CONNECTED_TEXT, colors.GREEN)],
+            [InfoText(AithreView.STATUS_TEXT, TextInfoView.ROW_TITLE_COLOR), InfoText(status_text, status_color)],
             self.__get_aithre_battery_info__(co_report),
             self.__get_aithre_co_info__(co_report)]
 
