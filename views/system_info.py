@@ -6,7 +6,7 @@ from numbers import Number
 from common_utils import fast_math, local_debug
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
-from data_sources.aithre import AithreClient
+from data_sources.aithre import AithreClient, Spo2Report
 from rendering import colors, drawing
 
 from views.ahrs_element import AhrsElement
@@ -509,43 +509,48 @@ class Illyrian(AhrsElement):
         self.__pulse_y_pos__ = self.__text_y_pos__ + self.__font_height__
         self.__has_been_connected__ = False
 
+    def __get_spo_text_package__(
+        self,
+        report: Spo2Report,
+        device_number: int
+    ) -> list:
+        text_scale = 0.5
+        text_packages = [[text_scale, "SPO2 ({}): ".format(device_number), colors.GREEN]]
+
+        if report is None:
+            if self.__has_been_connected__:
+                text_packages.append([text_scale, "OFFLINE", colors.RED])
+            else:
+                text_packages.append([text_scale, "NOT CONNECTED", colors.YELLOW])
+        else:
+            color = get_illyrian_spo2_color(report.spo2)
+            text_packages.append([text_scale, "●", color])
+
+        return text_packages
+
     def render(
         self,
         framebuffer,
         orientation: AhrsData
     ):
         if AithreClient.INSTANCE is not None and configuration.CONFIGURATION.aithre_enabled:
-            report = AithreClient.INSTANCE.get_spo2_report()
-            spo2_level = report.spo2
-            heartbeat = report.heartrate
-            heartbeat_text = "{}BPM".format(heartbeat)
-            heartbeat_color = colors.GREEN
+            y_pos = self.__text_y_pos__
 
-            if spo2_level is None or isinstance(spo2_level, str):
-                if self.__has_been_connected__:
-                    spo2_color = colors.RED
-                    spo2_text = "OFFLINE"
+            device_number = 1
 
-                    heartbeat_text = spo2_text
-                    heartbeat_color = spo2_color
-                else:
-                    return
-            else:
-                spo2_color = get_illyrian_spo2_color(spo2_level)
-                spo2_text = str(int(spo2_level)) + "% SPO"
-                self.__has_been_connected__ = True
+            for report in AithreClient.INSTANCE.get_spo2_reports():
+                report = AithreClient.INSTANCE.get_spo2_report()
 
-            self.__render_text__(
-                framebuffer,
-                spo2_text,
-                [self.__left_border__, self.__text_y_pos__],
-                spo2_color)
+                text_packages = self.__get_spo_text_package__(report, device_number)
 
-            self.__render_text__(
-                framebuffer,
-                heartbeat_text,
-                [self.__left_border__, self.__pulse_y_pos__],
-                heartbeat_color)
+                self.__render_text_with_stacked_annotations__(
+                    framebuffer,
+                    [self.__left_border__, y_pos],
+                    text_packages)
+
+                y_pos += self.__font_height__
+
+                device_number += 1
 
 
 if __name__ == '__main__':
