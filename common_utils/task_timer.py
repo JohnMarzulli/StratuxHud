@@ -1,5 +1,4 @@
 import datetime
-from logging import log
 import queue
 import threading
 
@@ -343,8 +342,9 @@ class TaskProfiler(object):
 
 
 if __name__ == '__main__':
-    import time
     import logging
+    import time
+
     from common_utils.logger import HudLogger
 
     python_logger = logging.getLogger("task_timer_test")

@@ -220,7 +220,7 @@ def __get_groundspeed__(
         configuration.CONFIGURATION.get_units(),
         orientation.groundspeed * units.yards_to_nm) if is_valid_groundspeed else 0
 
-    if local_debug.is_debug() and is_valid_airspeed:
+    if (local_debug.is_debug() or not is_valid_groundspeed) and is_valid_airspeed:
         return airspeed
 
     return groundspeed
