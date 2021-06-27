@@ -241,7 +241,8 @@ class TextInfoView(AhrsElement):
 
 
 class AithreView(TextInfoView):
-    STATUS_TEXT = "Status"
+    STATUS_TEXT = "Aithre"
+    ILLY_STATUS_TEXT = "Illyrian"
     CONNECTED_TEXT = "Connected"
     UNKNOWN_TEXT = "Unknown"
     BATTERY_TEXT = "Battery"
@@ -300,7 +301,40 @@ class AithreView(TextInfoView):
             InfoText(AithreView.CO_TEXT, TextInfoView.ROW_TITLE_COLOR),
             InfoText(co_text, co_color)]
 
-    def __get_info_text__(
+    def __get_illyrian_text__(
+        self
+    ) -> list:
+        if AithreClient.INSTANCE is None:
+            return [
+                InfoText(AithreView.ILLY_STATUS_TEXT, colors.BLUE),
+                InfoText(DISCONNECTED_TEXT, colors.RED)]
+
+        illy_status = []
+
+        illyrians = AithreClient.INSTANCE.get_spo2_reports()
+
+        if illyrians is None or len(illyrians) == 0:
+            return [[
+                InfoText("Illyrian", colors.BLUE),
+                InfoText("Not Connected", colors.RED)
+            ]]
+
+        for spo2_report in illyrians:
+            # $TODO - Write a subfunction that colors and encodes this.
+            illy_status.append(
+                [
+                    InfoText("Illyrian", colors.BLUE),
+                    InfoText(
+                        "{}% / {}bpm".format(
+                            spo2_report.spo2,
+                            spo2_report.heartrate),
+                        colors.GREEN)
+                ]
+            )
+
+        return illy_status
+
+    def __get_aithre_info_text(
         self
     ) -> list:
         if AithreClient.INSTANCE is None:
@@ -321,6 +355,14 @@ class AithreView(TextInfoView):
             [InfoText(AithreView.STATUS_TEXT, TextInfoView.ROW_TITLE_COLOR), InfoText(status_text, status_color)],
             self.__get_aithre_battery_info__(co_report),
             self.__get_aithre_co_info__(co_report)]
+
+    def __get_info_text__(
+        self
+    ) -> list:
+        aithre_info_text = self.__get_aithre_info_text()
+        illy_info_text = self.__get_illyrian_text__()
+
+        return aithre_info_text + illy_info_text
 
 
 class SystemInfo(TextInfoView):
@@ -477,11 +519,15 @@ class Illyrian(AhrsElement):
             spo2_level = report.spo2
             heartbeat = report.heartrate
             heartbeat_text = "{}BPM".format(heartbeat)
+            heartbeat_color = colors.GREEN
 
             if spo2_level is None or isinstance(spo2_level, str):
                 if self.__has_been_connected__:
                     spo2_color = colors.RED
                     spo2_text = "OFFLINE"
+
+                    heartbeat_text = spo2_text
+                    heartbeat_color = spo2_color
                 else:
                     return
             else:
@@ -499,7 +545,7 @@ class Illyrian(AhrsElement):
                 framebuffer,
                 heartbeat_text,
                 [self.__left_border__, self.__pulse_y_pos__],
-                colors.GREEN)
+                heartbeat_color)
 
 
 if __name__ == '__main__':
