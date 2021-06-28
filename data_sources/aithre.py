@@ -146,7 +146,7 @@ class AithreClient(object):
 
     def get_co_report(
         self
-    ):
+    ) -> CoReport:
         report = self.__aithre_source__.get()
         self.__co_has_been_connected__ = self.__co_has_been_connected__ \
             or (report is not None and CO_LEVEL_KEY in report and report[CO_LEVEL_KEY] is not None)

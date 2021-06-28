@@ -6,7 +6,7 @@ from numbers import Number
 from common_utils import fast_math, local_debug
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
-from data_sources.aithre import AithreClient, Spo2Report
+from data_sources.aithre import AithreClient, CoReport, Spo2Report
 from rendering import colors, drawing
 
 from views.ahrs_element import AhrsElement
@@ -448,6 +448,24 @@ class Aithre(AhrsElement):
 
         self.__text_y_pos__ = self.__center_y__ + self.__font_half_height__
 
+    def __get_co_text_package__(
+        self,
+        report: CoReport
+    ) -> list:
+        levels = "OFFLINE"
+
+        if report is None and not self.__has_been_connected__:
+            return []
+
+        if report.is_connected and not isinstance(report, str) and not isinstance(report.co, str):
+            co_color = get_aithre_co_color(report.co)
+            levels = "{} PPM".format(report.co)
+
+        text_scale = 0.5
+        text_packages = [[text_scale, "CO : {}".format(levels), co_color]]
+
+        return text_packages
+
     def render(
         self,
         framebuffer,
@@ -456,26 +474,12 @@ class Aithre(AhrsElement):
         if AithreClient.INSTANCE is not None and configuration.CONFIGURATION.aithre_enabled:
             co_level = AithreClient.INSTANCE.get_co_report()
 
-            if (co_level.co is None and co_level.has_been_connected) or isinstance(co_level, str):
-                co_color = colors.RED
-                co_ppm_text = "OFFLINE"
-            elif not co_level.has_been_connected:
-                return
-            else:
-                co_color = get_aithre_co_color(co_level.co)
-                units_text = "PPM" if isinstance(co_level.co, Number) else ""
-                co_ppm_text = "{}{}".format(co_level.co, units_text)
+            text = self.__get_co_text_package__(co_level)
 
-            co_ppm_texture = self.__font__.render(
-                co_ppm_text,
-                True,
-                co_color,
-                colors.BLACK)
-
-            drawing.renderer.draw_sprite(
+            self.__render_text_with_stacked_annotations__(
                 framebuffer,
                 [self.__left_border__, self.__text_y_pos__],
-                co_ppm_texture)
+                text)
 
 
 class Illyrian(AhrsElement):
@@ -505,26 +509,25 @@ class Illyrian(AhrsElement):
     ):
         super().__init__(font, framebuffer_size, reduced_visuals)
 
-        self.__text_y_pos__ = self.__center_y__ + (2 * self.__font_height__)
-        self.__pulse_y_pos__ = self.__text_y_pos__ + self.__font_height__
+        self.__text_y_pos__ = self.__center_y__ + self.__font_height__
         self.__has_been_connected__ = False
+        self.__text_scale__ = 0.5
 
     def __get_spo_text_package__(
         self,
         report: Spo2Report,
         device_number: int
     ) -> list:
-        text_scale = 0.5
-        text_packages = [[text_scale, "SPO2 ({}): ".format(device_number), colors.GREEN]]
+        text_packages = [[self.__text_scale__, "SPO2 ({}): ".format(device_number), colors.GREEN]]
 
         if report is None:
             if self.__has_been_connected__:
-                text_packages.append([text_scale, "OFFLINE", colors.RED])
+                text_packages.append([self.__text_scale__, "OFFLINE", colors.RED])
             else:
-                text_packages.append([text_scale, "NOT CONNECTED", colors.YELLOW])
+                text_packages.append([self.__text_scale__, "NOT CONNECTED", colors.YELLOW])
         else:
             color = get_illyrian_spo2_color(report.spo2)
-            text_packages.append([text_scale, "●", color])
+            text_packages.append([self.__text_scale__, "●", color])
 
         return text_packages
 
@@ -548,7 +551,7 @@ class Illyrian(AhrsElement):
                     [self.__left_border__, y_pos],
                     text_packages)
 
-                y_pos += self.__font_height__
+                y_pos += (self.__font_height__ * self.__text_scale__)
 
                 device_number += 1
 
