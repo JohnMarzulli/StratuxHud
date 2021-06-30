@@ -453,8 +453,9 @@ class Aithre(AhrsElement):
         report: CoReport
     ) -> list:
         levels = "OFFLINE"
+        co_color = colors.RED
 
-        if report is None and not self.__has_been_connected__:
+        if report is None or not report.has_been_connected:
             return []
 
         if report.is_connected and not isinstance(report, str) and not isinstance(report.co, str):
@@ -476,10 +477,11 @@ class Aithre(AhrsElement):
 
             text = self.__get_co_text_package__(co_level)
 
-            self.__render_text_with_stacked_annotations__(
-                framebuffer,
-                [self.__left_border__, self.__text_y_pos__],
-                text)
+            if text is not None and len(text) > 0:
+                self.__render_text_with_stacked_annotations__(
+                    framebuffer,
+                    [self.__left_border__, self.__text_y_pos__],
+                    text)
 
 
 class Illyrian(AhrsElement):
