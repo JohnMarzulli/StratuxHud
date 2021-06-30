@@ -9,7 +9,7 @@ from sys import platform as os_platform
 from sys import version_info
 
 REQUIRED_PYTHON_VERSION = 3.5
-MAXIMUM_PYTHON_VERSION = 3.8
+MAXIMUM_PYTHON_VERSION = 3.9
 
 IS_LINUX = 'linux' in os_platform
 DETECTED_CPU = platform.machine()
@@ -40,7 +40,7 @@ def validate_python_version():
             python_version, MAXIMUM_PYTHON_VERSION))
 
         raise Exception(
-            "The HUD code is not yet compatible with Python 3.9 or newer.")
+            "The HUD code is not yet compatible with Python 3.10 or newer.")
 
 
 def is_debug() -> bool:
