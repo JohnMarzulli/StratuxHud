@@ -7,7 +7,8 @@ from common_utils import fast_math, local_debug
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 from data_sources.aithre import AithreClient, CoReport, Spo2Report
-from rendering import colors, drawing
+from data_sources.data_cache import HudDataCache
+from rendering import colors
 
 from views.ahrs_element import AhrsElement
 
@@ -413,7 +414,7 @@ class SystemInfo(TextInfoView):
             [InfoText("VERSION", TextInfoView.ROW_TITLE_COLOR), InfoText(configuration.VERSION, colors.GREEN)],
             [InfoText("DISPLAY RES", TextInfoView.ROW_TITLE_COLOR), InfoText(display_res_text, colors.GREEN)],
             [InfoText("HUD CPU", TextInfoView.ROW_TITLE_COLOR), self.__cpu_temp__],
-            [InfoText("DECLINATION", TextInfoView.ROW_TITLE_COLOR), InfoText(str(configuration.CONFIGURATION.get_declination()), colors.GREEN)],
+            [InfoText("DECLINATION", TextInfoView.ROW_TITLE_COLOR), InfoText("{} / {}".format(configuration.CONFIGURATION.get_declination(), HudDataCache.DECLINATION), colors.GREEN)],
             [InfoText("TRAFFIC", TextInfoView.ROW_TITLE_COLOR), InfoText(configuration.CONFIGURATION.get_traffic_manager_address(), colors.GREEN)]]
 
         addresses = self.__ip_address__.text.split(' ')

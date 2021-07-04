@@ -22,28 +22,28 @@ IMPERIAL_SUPERCLOSE = units.yards_to_sm / 8.0
 
 
 def apply_declination(
-    heading
+    heading: float
 ) -> int:
     """
     Returns a heading to display with the declination adjust to convert from true to magnetic.
 
-    Arguments:
-        heading {float} -- The TRUE heading.
+    Args:
+        heading (float): The TRUE heading that we want to apply declination to.
 
     Returns:
-        float -- The MAGNETIC heading.
+        int: The resulting MAGNETIC heading.
     """
 
-    try:
-        declination_applied = heading - configuration.CONFIGURATION.get_declination()
-        new_heading = int(declination_applied)
-    except:
-        # If the heading is the unknown '---' then the math wil fail.
+    if isinstance(heading, str):
         return heading
 
-    new_heading = fast_math.wrap_degrees(new_heading)
+    gps_declination = HudDataCache.DECLINATION
+    declination_to_apply = gps_declination if gps_declination is not None else configuration.CONFIGURATION.get_declination()
 
-    return new_heading
+    declination_applied = heading - declination_to_apply
+    new_heading = int(declination_applied)
+
+    return fast_math.wrap_degrees(new_heading)
 
 
 def get_reticle_size(
