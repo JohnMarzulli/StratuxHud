@@ -147,11 +147,12 @@ class CompassAndHeadingTopElement(AhrsElement):
         with TaskProfiler("views.compass_and_heading_top_element.CompassAndHeadingTopElement.setup"):
             heading = orientation.get_onscreen_projection_heading()
 
+            compass_heading = orientation.get_onscreen_compass_heading()
+            gps_heading = orientation.get_onscreen_gps_heading()
+
             heading_text = "{0} | {1}".format(
-                str(apply_declination(
-                    orientation.get_onscreen_compass_heading())).rjust(3),
-                str(apply_declination(
-                    orientation.get_onscreen_gps_heading())).rjust(3))
+                str(apply_declination(compass_heading)).rjust(3),
+                str(apply_declination(gps_heading)).rjust(3))
 
         with TaskProfiler("views.compass_and_heading_top_element.CompassAndHeadingTopElement.render"):
             # pylint:disable=expression-not-assigned

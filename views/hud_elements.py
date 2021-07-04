@@ -43,7 +43,7 @@ def apply_declination(
     declination_applied = heading - declination_to_apply
     new_heading = int(declination_applied)
 
-    return fast_math.wrap_degrees(new_heading)
+    return int(fast_math.wrap_degrees(new_heading))
 
 
 def get_reticle_size(
