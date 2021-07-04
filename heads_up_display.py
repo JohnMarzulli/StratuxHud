@@ -31,13 +31,6 @@ from views import (adsb_on_screen_reticles, adsb_target_bugs,
                    level_reference, roll_indicator, skid_and_gs, system_info,
                    time, traffic_not_available)
 
-# TODO - Disable functionality based on the enabled StratuxCapabilities
-# TODO - Check for the key existence anyway... cross update the capabilities
-
-# Traffic description in https://github.com/cyoung/stratux/blob/master/notes/app-vendor-integration.md
-# pip install requests
-
-
 STANDARD_FONT = "../assets/fonts/LiberationMono-Bold.ttf"
 LOADING_FONT = "../assets/fonts/LiberationMono-Regular.ttf"
 
