@@ -6,6 +6,7 @@ import math
 from datetime import datetime
 from numbers import Number
 from typing import Tuple
+from views.hud_elements import apply_declination
 
 import pygame
 from common_utils import fast_math, local_debug, units
@@ -403,8 +404,8 @@ class AdsbTopViewScope(AdsbElement):
         delta_angle = traffic.bearing - delta_angle
         # We need to rotate by 270 to make sure that
         # the orientation is correct AND to correct the phase.
-        delta_angle = fast_math.wrap_degrees(
-            AdsbTopViewScope.ROTATION_PHASE_SHIFT + delta_angle)
+        delta_angle = apply_declination(AdsbTopViewScope.ROTATION_PHASE_SHIFT + delta_angle)
+        delta_angle = fast_math.wrap_degrees(delta_angle)
 
         # Find where to draw the reticle....
         screen_x, screen_y = self.__get_screen_projection_from_center__(
