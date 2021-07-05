@@ -116,11 +116,11 @@ DEFAULT_SCOPE_RANGE = (10, 5)
 SCOPE_RANGES = [
     (1, 0),
     (2, 1),
-    (5, 1),
+    (5, 3),
     (10, 5),
     (15, 5),
-    (20, 5),
-    (50, 10)]
+    (20, 10),
+    (50, 25)]
 
 
 def __get_maximum_scope_range__() -> Tuple[int, int]:
@@ -133,7 +133,11 @@ def __get_maximum_scope_range__() -> Tuple[int, int]:
     return SCOPE_RANGES[-1]
 
 
-__DISTANCE_PREDICTION_SCALER__ = 12
+# A value of "12" is how far you will fly in
+# ten minutes. Making it 12 x 2 will range
+# the scope based on how far you will
+# fly in 5 minutes.
+__DISTANCE_PREDICTION_SCALER__ = 12 * 2
 
 
 def __get_ideal_scope_range__(
@@ -172,9 +176,9 @@ def __get_ideal_scope_range__(
     >>> __get_ideal_scope_range__(2.0 * __DISTANCE_PREDICTION_SCALER__)
     (2, 1)
     >>> __get_ideal_scope_range__(2.1 * __DISTANCE_PREDICTION_SCALER__)
-    (5, 1)
+    (5, 3)
     >>> __get_ideal_scope_range__(5 * __DISTANCE_PREDICTION_SCALER__)
-    (5, 1)
+    (5, 3)
     >>> __get_ideal_scope_range__(9.9 * __DISTANCE_PREDICTION_SCALER__)
     (10, 5)
     >>> __get_ideal_scope_range__(10 * __DISTANCE_PREDICTION_SCALER__)
@@ -184,15 +188,15 @@ def __get_ideal_scope_range__(
     >>> __get_ideal_scope_range__(15 * __DISTANCE_PREDICTION_SCALER__)
     (15, 5)
     >>> __get_ideal_scope_range__(19.9 * __DISTANCE_PREDICTION_SCALER__)
-    (20, 5)
+    (20, 10)
     >>> __get_ideal_scope_range__(20 * __DISTANCE_PREDICTION_SCALER__)
-    (20, 5)
+    (20, 10)
     >>> __get_ideal_scope_range__(20.1 * __DISTANCE_PREDICTION_SCALER__)
-    (50, 10)
+    (50, 25)
     >>> __get_ideal_scope_range__(50 * __DISTANCE_PREDICTION_SCALER__)
-    (50, 10)
+    (50, 25)
     >>> __get_ideal_scope_range__(100 * __DISTANCE_PREDICTION_SCALER__)
-    (50, 10)
+    (50, 25)
     """
 
     predicted_travel_distance = math.fabs(groundspeed) / __DISTANCE_PREDICTION_SCALER__
