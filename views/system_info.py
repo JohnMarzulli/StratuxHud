@@ -86,7 +86,7 @@ def get_cpu_temp() -> InfoText:
         if local_debug.IS_LINUX:
             linux_cpu_temp = open('/sys/class/thermal/thermal_zone0/temp')
             temp = float(linux_cpu_temp.read())
-            temp = temp/1000
+            temp /= 1000
 
             color = get_cpu_temp_text_color(temp)
 
@@ -472,9 +472,7 @@ class Aithre(AhrsElement):
             levels = "{} PPM".format(report.co)
 
         text_scale = 0.5
-        text_packages = [[text_scale, "CO : {}".format(levels), co_color]]
-
-        return text_packages
+        return [[text_scale, "CO : {}".format(levels), co_color]]
 
     def render(
         self,
@@ -575,8 +573,3 @@ if __name__ == '__main__':
     #     print("{3} => {0},{1},{2}".format(color[0], color[1], color[2], temp))
 
     run_hud_element(SystemInfo, True)
-
-if __name__ == '__main__':
-    from views.hud_elements import run_hud_element
-
-    run_hud_element(Aithre)
