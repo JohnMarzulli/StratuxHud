@@ -410,11 +410,19 @@ class SystemInfo(TextInfoView):
 
         display_res_text = "{} x {}".format(self.__framebuffer_size__[0], self.__framebuffer_size__[1])
 
+        declination_color = colors.GREEN if configuration.CONFIGURATION.is_declination_enabled() else colors.YELLOW
+
         info_lines = [
             [InfoText("VERSION", TextInfoView.ROW_TITLE_COLOR), InfoText(configuration.VERSION, colors.GREEN)],
             [InfoText("DISPLAY RES", TextInfoView.ROW_TITLE_COLOR), InfoText(display_res_text, colors.GREEN)],
             [InfoText("HUD CPU", TextInfoView.ROW_TITLE_COLOR), self.__cpu_temp__],
-            [InfoText("DECLINATION", TextInfoView.ROW_TITLE_COLOR), InfoText("{} / {}".format(configuration.CONFIGURATION.get_declination(), HudDataCache.DECLINATION), colors.GREEN)],
+            [
+                InfoText(
+                    "DECLINATION",
+                    TextInfoView.ROW_TITLE_COLOR),
+                InfoText(
+                    "{} / {}".format(configuration.CONFIGURATION.get_declination(), HudDataCache.DECLINATION),
+                    declination_color)],
             [InfoText("TRAFFIC", TextInfoView.ROW_TITLE_COLOR), InfoText(configuration.CONFIGURATION.get_traffic_manager_address(), colors.GREEN)]]
 
         addresses = self.__ip_address__.text.split(' ')

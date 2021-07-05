@@ -37,6 +37,9 @@ def apply_declination(
     if isinstance(heading, str):
         return heading
 
+    if not configuration.CONFIGURATION.is_declination_enabled():
+        return int(heading)
+
     gps_declination = HudDataCache.DECLINATION
     declination_to_apply = gps_declination if gps_declination is not None else configuration.CONFIGURATION.get_declination()
 
@@ -66,19 +69,17 @@ def get_reticle_size(
     """
 
     if distance <= IMPERIAL_SUPERCLOSE:
-        on_screen_reticle_scale = max_reticle_size
+        return max_reticle_size
     elif distance >= IMPERIAL_FARAWAY:
-        on_screen_reticle_scale = min_reticle_size
+        return min_reticle_size
     else:
         delta = distance - IMPERIAL_SUPERCLOSE
         scale_distance = IMPERIAL_FARAWAY - IMPERIAL_SUPERCLOSE
         ratio = delta / scale_distance
         reticle_range = max_reticle_size - min_reticle_size
 
-        on_screen_reticle_scale = min_reticle_size + \
+        return min_reticle_size + \
             (reticle_range * (1.0 - ratio))
-
-    return on_screen_reticle_scale
 
 
 def get_heading_bug_x(
@@ -146,11 +147,7 @@ def run_hud_elements(
     __font__ = pygame.font.Font(DEFAULT_FONT, font_size_std)
     __detail_font__ = pygame.font.Font(DEFAULT_FONT, font_size_detail)
 
-    if use_detail_font:
-        font = __detail_font__
-    else:
-        font = __font__
-
+    font = __detail_font__ if use_detail_font else __font__
     __aircraft__ = ahrs_simulation.AhrsSimulation()
 
     __pixels_per_degree_y__ = (__height__ / configuration.CONFIGURATION.get_degrees_of_pitch()
