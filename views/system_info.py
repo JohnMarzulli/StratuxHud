@@ -7,7 +7,8 @@ from common_utils import fast_math, local_debug
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 from data_sources.aithre import AithreClient, CoReport, Spo2Report
-from rendering import colors, drawing
+from data_sources.data_cache import HudDataCache
+from rendering import colors
 
 from views.ahrs_element import AhrsElement
 
@@ -85,7 +86,7 @@ def get_cpu_temp() -> InfoText:
         if local_debug.IS_LINUX:
             linux_cpu_temp = open('/sys/class/thermal/thermal_zone0/temp')
             temp = float(linux_cpu_temp.read())
-            temp = temp/1000
+            temp /= 1000
 
             color = get_cpu_temp_text_color(temp)
 
@@ -409,11 +410,19 @@ class SystemInfo(TextInfoView):
 
         display_res_text = "{} x {}".format(self.__framebuffer_size__[0], self.__framebuffer_size__[1])
 
+        declination_color = colors.GREEN if configuration.CONFIGURATION.is_declination_enabled() else colors.YELLOW
+
         info_lines = [
             [InfoText("VERSION", TextInfoView.ROW_TITLE_COLOR), InfoText(configuration.VERSION, colors.GREEN)],
             [InfoText("DISPLAY RES", TextInfoView.ROW_TITLE_COLOR), InfoText(display_res_text, colors.GREEN)],
             [InfoText("HUD CPU", TextInfoView.ROW_TITLE_COLOR), self.__cpu_temp__],
-            [InfoText("DECLINATION", TextInfoView.ROW_TITLE_COLOR), InfoText(str(configuration.CONFIGURATION.get_declination()), colors.GREEN)],
+            [
+                InfoText(
+                    "DECLINATION",
+                    TextInfoView.ROW_TITLE_COLOR),
+                InfoText(
+                    "{} / {}".format(configuration.CONFIGURATION.get_declination(), HudDataCache.DECLINATION),
+                    declination_color)],
             [InfoText("TRAFFIC", TextInfoView.ROW_TITLE_COLOR), InfoText(configuration.CONFIGURATION.get_traffic_manager_address(), colors.GREEN)]]
 
         addresses = self.__ip_address__.text.split(' ')
@@ -463,9 +472,7 @@ class Aithre(AhrsElement):
             levels = "{} PPM".format(report.co)
 
         text_scale = 0.5
-        text_packages = [[text_scale, "CO : {}".format(levels), co_color]]
-
-        return text_packages
+        return [[text_scale, "CO : {}".format(levels), co_color]]
 
     def render(
         self,
@@ -566,8 +573,3 @@ if __name__ == '__main__':
     #     print("{3} => {0},{1},{2}".format(color[0], color[1], color[2], temp))
 
     run_hud_element(SystemInfo, True)
-
-if __name__ == '__main__':
-    from views.hud_elements import run_hud_element
-
-    run_hud_element(Aithre)

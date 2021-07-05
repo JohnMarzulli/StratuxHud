@@ -312,11 +312,7 @@ class AdsbTopViewScope(AdsbElement):
              point[0] * rotation_sin + point[1] * rotation_cos] for point in self.__target_indicator__]
 
         # 4 - Translate to the bug center point
-        translated_points = [
-            [point[0] + indicator_position[0],
-             point[1] + indicator_position[1]] for point in rotated_points]
-
-        return translated_points
+        return [[point[0] + indicator_position[0], point[1] + indicator_position[1]] for point in rotated_points]
 
     def __get_pixel_distance__(
         self,

@@ -24,6 +24,8 @@ class HudDataCache(object):
     __CACHE_ENTRY_LAST_USED__ = {}
     __CACHE_INVALIDATION_TIME__ = 60 * 5
 
+    DECLINATION = None
+
     RELIABLE_TRAFFIC = []
     IS_TRAFFIC_AVAILABLE = False
 

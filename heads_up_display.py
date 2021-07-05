@@ -13,7 +13,7 @@ from common_utils.task_timer import RollingStats, TaskProfiler
 from common_utils.tasks import IntermittentTask, RecurringTask
 from configuration import configuration, configuration_server
 from configuration.configuration import CONFIGURATION
-from data_sources import aithre, targets
+from data_sources import aithre, declination, targets
 from data_sources.ahrs_data import AhrsData
 from data_sources.aircraft import Aircraft
 from data_sources.data_cache import HudDataCache
@@ -30,13 +30,6 @@ from views import (adsb_on_screen_reticles, adsb_target_bugs,
                    groundspeed, heading_target_bugs, hud_elements,
                    level_reference, roll_indicator, skid_and_gs, system_info,
                    time, traffic_not_available)
-
-# TODO - Disable functionality based on the enabled StratuxCapabilities
-# TODO - Check for the key existence anyway... cross update the capabilities
-
-# Traffic description in https://github.com/cyoung/stratux/blob/master/notes/app-vendor-integration.md
-# pip install requests
-
 
 STANDARD_FONT = "../assets/fonts/LiberationMono-Bold.ttf"
 LOADING_FONT = "../assets/fonts/LiberationMono-Regular.ttf"
@@ -202,6 +195,7 @@ class HeadsUpDisplay(object):
                 return False
 
             orientation = self.__aircraft__.get_orientation()
+            self.__update_declination_task__.run()
 
             view_name, view, view_uses_ahrs = self.__hud_views__[
                 CONFIGURATION.get_view_index()]
@@ -489,6 +483,24 @@ class HeadsUpDisplay(object):
             except Exception:
                 self.warn("Error attempting to update Aithre sensor values")
 
+    def __update_declination__(
+        self
+    ):
+        updated_declination = None
+        orientation = self.__aircraft__.get_orientation()
+
+        if orientation is not None \
+                and orientation.gps_online \
+                and orientation.position is not None \
+                and orientation.position[0] is not None \
+                and orientation.position[1] is not None:
+
+            updated_declination = declination.Declination.get_declination(
+                orientation.position[0],
+                orientation.position[1])
+
+        HudDataCache.DECLINATION = updated_declination
+
     def __render_perf__(
         self
     ):
@@ -514,6 +526,12 @@ class HeadsUpDisplay(object):
             force_fullscreen (bool, optional): Do we want to force fullscreen mode?. Defaults to False.
             force_software (bool, optional): Do we want to force the software renderer to be user? Defaults to False.
         """
+
+        self.__update_declination_task__ = IntermittentTask(
+            "Update Declination",
+            60.0,
+            self.__update_declination__,
+            logger)
 
         self.__render_perf_task__ = IntermittentTask(
             "Render Performance Data",
@@ -667,10 +685,7 @@ class HeadsUpDisplay(object):
         events = pygame.event.get()
         event_handling_responses = map(self.__handle_key_event__, events)
 
-        if False in event_handling_responses:
-            return False
-
-        return True
+        return False not in event_handling_responses
 
     def __handle_key_event__(
         self,

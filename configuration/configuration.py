@@ -93,6 +93,7 @@ class Configuration(object):
     OWNSHIP_KEY = "ownship"
     MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT_KEY = "traffic_report_removal_minutes"
     DISTANCE_UNITS_KEY = "distance_units"
+    ENABLE_DECLINATION_KEY = "enable_declination"
     DECLINATION_KEY = "declination"
     DEGREES_OF_PITCH_KEY = 'degrees_of_pitch'
     PITCH_DEGREES_DISPLAY_SCALER_KEY = 'pitch_degrees_scaler'
@@ -203,6 +204,7 @@ class Configuration(object):
             Configuration.FLIP_VERTICAL_KEY: self.flip_vertical,
             Configuration.MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT_KEY: self.max_minutes_before_removal,
             Configuration.DISTANCE_UNITS_KEY: self.get_units(),
+            Configuration.ENABLE_DECLINATION_KEY: self.__is_declination_enabled__,
             Configuration.DECLINATION_KEY: self.get_declination(),
             Configuration.DEGREES_OF_PITCH_KEY: self.get_degrees_of_pitch(),
             Configuration.PITCH_DEGREES_DISPLAY_SCALER_KEY: self.get_pitch_degrees_display_scaler(),
@@ -274,6 +276,10 @@ class Configuration(object):
             self.__configuration__[
                 Configuration.DISTANCE_UNITS_KEY] = self.units
 
+        if Configuration.ENABLE_DECLINATION_KEY in json_config:
+            self.__is_declination_enabled__ = bool(json_config[Configuration.ENABLE_DECLINATION_KEY])
+            self.__configuration__[Configuration.ENABLE_DECLINATION_KEY] = self.__is_declination_enabled__
+
         if Configuration.DECLINATION_KEY in json_config:
             self.declination = float(
                 json_config[Configuration.DECLINATION_KEY])
@@ -334,6 +340,32 @@ class Configuration(object):
         """
 
         return self.pitch_degrees_display_scaler
+
+    def is_declination_enabled(
+        self
+    ) -> bool:
+        """
+        Returns TRUE if declination calculations should be enabled
+        to headings and things.
+
+        Returns:
+            bool: True if declination calculations should be enabled.
+        """
+
+        return self.__is_declination_enabled__
+
+    def set_declination_enabled(
+        self,
+        is_enabled: bool
+    ):
+        """
+        Set if declination calculations are enabled or not.
+
+        Args:
+            is_enabled (bool): True if declination calculations are enabled.
+        """
+
+        self.__is_declination_enabled__ = is_enabled
 
     def get_declination(
         self
@@ -523,9 +555,7 @@ class Configuration(object):
         try:
             with open(json_config_file) as json_config_file:
                 json_config_text = json_config_file.read()
-                json_config = json.loads(json_config_text)
-
-                return json_config
+                return json.loads(json_config_text)
         except Exception:
             return {}
 
@@ -584,6 +614,9 @@ class Configuration(object):
         self.flip_vertical = self.__get_config_value__(
             Configuration.FLIP_VERTICAL_KEY,
             False)
+        self.__is_declination_enabled__ = self.__get_config_value__(
+            Configuration.ENABLE_DECLINATION_KEY,
+            True)
         self.declination = self.__get_config_value__(
             Configuration.DECLINATION_KEY,
             0.0)
@@ -619,6 +652,7 @@ class Configuration(object):
         #   "flip_vertical": false,
         #   "ownship": "N701GV",
         #   "data_source": "stratux",
+        #   "declination_enabled": true,
         #   "declination": 0.0
 
 
