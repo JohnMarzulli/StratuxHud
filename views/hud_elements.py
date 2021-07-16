@@ -7,6 +7,7 @@ from datetime import datetime
 import pygame
 from common_utils import fast_math, units
 from configuration import configuration
+from core_services import zoom_tracker
 from data_sources import ahrs_simulation, traffic
 from data_sources.data_cache import HudDataCache
 from rendering import display
@@ -169,6 +170,7 @@ def run_hud_elements(
         HudDataCache.update_traffic_reports()
 
         orientation = __aircraft__.get_ahrs()
+        zoom_tracker.INSTANCE.update(orientation)
         orientation.utc_time = str(datetime.utcnow())
         __aircraft__.simulate()
         screen.clear()

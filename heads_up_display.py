@@ -13,6 +13,7 @@ from common_utils.task_timer import RollingStats, TaskProfiler
 from common_utils.tasks import IntermittentTask, RecurringTask
 from configuration import configuration, configuration_server
 from configuration.configuration import CONFIGURATION
+from core_services import zoom_tracker
 from data_sources import aithre, declination, targets
 from data_sources.ahrs_data import AhrsData
 from data_sources.aircraft import Aircraft
@@ -399,7 +400,7 @@ class HeadsUpDisplay(object):
             view_elements {map} -- Dictionary keyed by element name containing the info to instantiate the element.
 
         Returns:
-            array -- Array of tuples. Each element is a tuple of the name of the view and an array of the elements that make the view. 
+            array -- Array of tuples. Each element is a tuple of the name of the view and an array of the elements that make the view.
         """
 
         hud_views = []
@@ -459,7 +460,7 @@ class HeadsUpDisplay(object):
         Returns the built object of the views.
 
         Returns:
-            array -- Array of tuples. Each element is a tuple of the name of the view and an array of the elements that make the view. 
+            array -- Array of tuples. Each element is a tuple of the name of the view and an array of the elements that make the view.
         """
 
         view_elements = self.__load_view_elements__()
@@ -482,6 +483,13 @@ class HeadsUpDisplay(object):
 
             except Exception:
                 self.warn("Error attempting to update Aithre sensor values")
+
+    def __update_zoom__(
+        self
+    ):
+        orientation = self.__aircraft__.get_orientation()
+        
+        zoom_tracker.INSTANCE.update(orientation)
 
     def __update_declination__(
         self
@@ -607,6 +615,12 @@ class HeadsUpDisplay(object):
             "update_aithre",
             5.0,
             self.__update_aithre__,
+            logger.get_logger())
+
+        RecurringTask(
+            "update_zoom",
+            1.0,
+            self.__update_zoom__,
             logger.get_logger())
 
     def __show_boot_screen__(
