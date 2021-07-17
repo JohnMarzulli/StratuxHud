@@ -19,7 +19,6 @@
 # NOTE - ALL UNITS ARE IN METERS
 
 import math
-from sys import float_info
 
 from common_utils import units
 from configuration import configuration
