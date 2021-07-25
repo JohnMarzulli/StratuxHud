@@ -152,7 +152,7 @@ class HeadingTargetBugs(AdsbTargetBugs):
 
             heading_bug_x = get_heading_bug_x(
                 heading,
-                apply_declination(as_traffic.bearing),
+                as_traffic.bearing,
                 self.__pixels_per_degree_x__)
 
             reticle, reticle_edge_position_y = self.get_below_reticle(

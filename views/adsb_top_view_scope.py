@@ -31,7 +31,9 @@ class AdsbTopViewScope(AdsbElement):
     # (5, 1) is 5 units in range, 1 unit steps
     # (20, 5) is 20 units in range, 5 unit steps
 
-    ROTATION_PHASE_SHIFT = 270
+    ROTATION_PHASE_SHIFT = 90
+    TRAFFIC_PHASE_SHIFT = -90
+    TEXT_PHASE_SHIFT = 180
 
     def __init__(
         self,
@@ -188,7 +190,7 @@ class AdsbTopViewScope(AdsbElement):
         delta_angle = traffic.bearing - delta_angle
         # We need to rotate by 270 to make sure that
         # the orientation is correct AND to correct the phase.
-        delta_angle = apply_declination(AdsbTopViewScope.ROTATION_PHASE_SHIFT + delta_angle)
+        delta_angle = AdsbTopViewScope.TRAFFIC_PHASE_SHIFT + delta_angle
         delta_angle = fast_math.wrap_degrees(delta_angle)
 
         # Find where to draw the reticle....
@@ -208,7 +210,7 @@ class AdsbTopViewScope(AdsbElement):
             points = self.__get_traffic_indicator__(
                 [screen_x, screen_y],
                 orientation.get_onscreen_projection_heading(),
-                apply_declination(traffic.track))
+                traffic.track)
             drawing.renderer.polygon(framebuffer, target_color, points, not self.__reduced_visuals__)
         else:
             drawing.renderer.filled_circle(
@@ -330,15 +332,16 @@ class AdsbTopViewScope(AdsbElement):
             scope_range, scope_range)
 
         screen_x, screen_y = self.__get_screen_projection_from_center__(
-            delta_angle,
+            apply_declination(delta_angle),
             pixels_from_center)
 
         heading_text_rotation = -(heading_to_draw - our_heading)
+        heading_mark_rotation = -heading_text_rotation + 180
 
         indicator_mark_ends = fast_math.rotate_points(
             [[0, int(self.__line_width__ * -5)]],
             [0, 0],
-            -heading_text_rotation + 180)
+            apply_declination(heading_mark_rotation))
 
         indicator_mark_ends = fast_math.translate_points(
             indicator_mark_ends,
@@ -352,7 +355,8 @@ class AdsbTopViewScope(AdsbElement):
             self.__line_width__,
             not self.__reduced_visuals__)
 
-        draw_text = (heading_to_draw % 90) == 0
+        display_text = int(fast_math.wrap_degrees(AdsbTopViewScope.TEXT_PHASE_SHIFT + heading_to_draw))
+        draw_text = (display_text % 90) == 0
 
         if not draw_text:
             return
@@ -360,22 +364,22 @@ class AdsbTopViewScope(AdsbElement):
         if not self.__reduced_visuals__:
             self.__render_centered_text__(
                 framebuffer,
-                str(heading_to_draw),
+                str(display_text),
                 (screen_x, screen_y),
                 colors.BLACK,
                 None,
                 1.3,
-                heading_text_rotation,
+                0,
                 True)
 
         self.__render_centered_text__(
             framebuffer,
-            str(heading_to_draw),
+            str(display_text),
             (screen_x, screen_y),
             colors.YELLOW,
             colors.BLACK,
             1.0,
-            heading_text_rotation,
+            0,
             not self.__reduced_visuals__)
 
     def __draw_all_compass_headings__(

@@ -54,7 +54,7 @@ class AdsbTargetBugsOnly(AdsbElement):
 
         heading_bug_x = get_heading_bug_x(
             heading,
-            apply_declination(traffic_report.bearing),
+            traffic_report.bearing,
             self.__pixels_per_degree_x__)
 
         try:
