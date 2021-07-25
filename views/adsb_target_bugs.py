@@ -7,7 +7,7 @@ from core_services import zoom_tracker
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 
-from views.adsb_element import AdsbElement, apply_declination
+from views.adsb_element import AdsbElement
 from views.hud_elements import MAX_TARGET_BUGS, get_heading_bug_x
 
 
@@ -55,7 +55,7 @@ class AdsbTargetBugs(AdsbElement):
 
         heading_bug_x = get_heading_bug_x(
             heading,
-            apply_declination(traffic_report.bearing),
+            traffic_report.bearing,
             self.__pixels_per_degree_x__)
 
         additional_info_text = self.__get_additional_target_text__(

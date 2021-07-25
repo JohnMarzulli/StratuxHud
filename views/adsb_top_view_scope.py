@@ -341,7 +341,7 @@ class AdsbTopViewScope(AdsbElement):
         indicator_mark_ends = fast_math.rotate_points(
             [[0, int(self.__line_width__ * -5)]],
             [0, 0],
-            heading_mark_rotation)
+            apply_declination(heading_mark_rotation))
 
         indicator_mark_ends = fast_math.translate_points(
             indicator_mark_ends,
@@ -369,7 +369,7 @@ class AdsbTopViewScope(AdsbElement):
                 colors.BLACK,
                 None,
                 1.3,
-                heading_text_rotation,
+                0,
                 True)
 
         self.__render_centered_text__(
@@ -379,7 +379,7 @@ class AdsbTopViewScope(AdsbElement):
             colors.YELLOW,
             colors.BLACK,
             1.0,
-            heading_text_rotation,
+            0,
             not self.__reduced_visuals__)
 
     def __draw_all_compass_headings__(
