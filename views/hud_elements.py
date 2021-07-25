@@ -42,7 +42,7 @@ def apply_declination(
         return int(heading)
 
     gps_declination = HudDataCache.DECLINATION
-    declination_to_apply = gps_declination if gps_declination is not None else configuration.CONFIGURATION.get_declination()
+    declination_to_apply = gps_declination if gps_declination is not None else 0
 
     declination_applied = heading - declination_to_apply
     new_heading = int(declination_applied)

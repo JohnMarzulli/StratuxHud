@@ -416,13 +416,7 @@ class SystemInfo(TextInfoView):
             [InfoText("VERSION", TextInfoView.ROW_TITLE_COLOR), InfoText(configuration.VERSION, colors.GREEN)],
             [InfoText("DISPLAY RES", TextInfoView.ROW_TITLE_COLOR), InfoText(display_res_text, colors.GREEN)],
             [InfoText("HUD CPU", TextInfoView.ROW_TITLE_COLOR), self.__cpu_temp__],
-            [
-                InfoText(
-                    "DECLINATION",
-                    TextInfoView.ROW_TITLE_COLOR),
-                InfoText(
-                    "{} / {}".format(configuration.CONFIGURATION.get_declination(), HudDataCache.DECLINATION),
-                    declination_color)],
+            [InfoText("DECLINATION", TextInfoView.ROW_TITLE_COLOR), InfoText(str(HudDataCache.DECLINATION), declination_color)],
             [InfoText("TRAFFIC", TextInfoView.ROW_TITLE_COLOR), InfoText(configuration.CONFIGURATION.get_traffic_manager_address(), colors.GREEN)]]
 
         addresses = self.__ip_address__.text.split(' ')
