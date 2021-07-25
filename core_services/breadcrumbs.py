@@ -3,15 +3,9 @@ Handles determining how far out we care about traffic.
 """
 
 import queue
-
-import math
 from datetime import datetime
-from numbers import Number
-from typing import List, Tuple
 
-from common_utils import local_debug, units, geo_math
-from common_utils.fast_math import interpolatef
-from configuration import configuration
+from common_utils import geo_math, units
 from data_sources.ahrs_data import AhrsData
 
 BREADCRUMB_LIFESPAN_SECONDS = 2 * 60
@@ -92,14 +86,19 @@ class Breadcrumbs:
 
         avg_pos = [sum_lat / length, sum_long / length]
         middle_index = int(length / 2)
-        mid_pos = self.__breadcrumbs__[middle_index].position
         mid_timestamp = self.__breadcrumbs__[middle_index].timestamp.total_seconds()
         last_report = self.__breadcrumbs__[self.__breadcrumbs__.qsize() - 1]
 
         disance = geo_math.get_distance(avg_pos, last_report.position)
+
+        # This gives us Statue Miles per second
         avg = disance / ((mid_timestamp - last_report.timestamp).total_seconds() / 2)
 
-        return avg / 60
+        statute_miles_per_hour = avg * 3600
+
+        # Distance is always in yards with the Stratux,
+        # we will follow that pattern.
+        return statute_miles_per_hour * units.yards_to_sm
 
     def update(
         self,
