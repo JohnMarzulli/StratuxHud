@@ -632,7 +632,7 @@ class HeadsUpDisplay(object):
 
         RecurringTask(
             "update_groundtrack",
-            15.0,
+            breadcrumbs.DEFAULT_REPORT_PERIOD_SECONDS,
             self.__update_groundtrack__,
             logger.get_logger())
 
