@@ -80,8 +80,6 @@ class Breadcrumbs:
         # the MEDIAN timestamp with the last timestamp.
         # Finally find the distance and average everything out.
 
-        oldest_report_to_process = int(self.__speed_calculation_period_seconds__ / self.__report_period_seconds__)
-
         if self.__breadcrumbs__ is None or len(self.__breadcrumbs__) == 0:
             return 0.0
 
@@ -90,7 +88,10 @@ class Breadcrumbs:
         if current_size < 3:
             return 0.0
 
-        oldest_report_to_process = self.__breadcrumbs__[-min(current_size, oldest_report_to_process)]
+        oldest_report_index_to_process = int(self.__speed_calculation_period_seconds__ / self.__report_period_seconds__)
+        oldest_report_index_to_process = -min(current_size, oldest_report_index_to_process)
+
+        oldest_report_to_process = self.__breadcrumbs__[oldest_report_index_to_process]
         latest_report = self.__breadcrumbs__[-1]
         disance = geo_math.get_distance(oldest_report_to_process.position, latest_report.position)
 
@@ -103,6 +104,38 @@ class Breadcrumbs:
         # Distance is always in yards with the Stratux,
         # we will follow that pattern.
         return statute_miles_per_hour * units.yards_to_sm
+
+    def get_trail(
+        self
+    ) -> list:
+        """
+        Get the list of positions ALONG with their relative age (proportion)
+        compared to the report period.
+
+        A proportion of 1.0 means the position report was just made.
+        A proportion of 0.0 means the report is old and about to be ignored.
+
+        Returns:
+            list: A list of position and relative age.
+        """
+
+        if self.__breadcrumbs__ is None or len(self.__breadcrumbs__) == 0:
+            return []
+
+        current_size = len(self.__breadcrumbs__)
+
+        if current_size < 2:
+            return []
+
+        now = datetime.utcnow()
+        reports_back_to_draw = int(self.__speed_calculation_period_seconds__ / self.__report_period_seconds__)
+        oldest_report_index_to_process = current_size - 1 - reports_back_to_draw
+        oldest_report_index_to_process = max(0, oldest_report_index_to_process)
+
+        reports = [self.__breadcrumbs__[index] for index in range(oldest_report_index_to_process, current_size - 1)]
+
+        return [[report.position, 1.0 - ((now - report.timestamp).total_seconds() / self.__speed_calculation_period_seconds__)]
+                for report in reports]
 
     def update(
         self,

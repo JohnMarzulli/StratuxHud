@@ -6,10 +6,10 @@ import math
 from typing import Tuple
 
 import pygame
-from common_utils import fast_math, units
+from common_utils import fast_math, geo_math, units
 from common_utils.task_timer import TaskProfiler
 from configuration import configuration
-from core_services import zoom_tracker
+from core_services import breadcrumbs, zoom_tracker
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
@@ -257,6 +257,56 @@ class AdsbTopViewScope(AdsbElement):
 
         drawing.renderer.polygon(framebuffer, colors.GREEN, points, not self.__reduced_visuals__)
 
+    def __render_breadcrumbs__(
+        self,
+        framebuffer: pygame.Surface,
+        scope_range: Tuple[int, int],
+        orientation: AhrsData
+    ):
+        max_distance = scope_range[0]
+        breadcrumb_reports = breadcrumbs.INSTANCE.get_trail()
+        breadcrumb_count = len(breadcrumb_reports)
+
+        if orientation.position is None or orientation.position[0] is None or orientation.position[1] is None:
+            return
+
+        if breadcrumb_count < 2:
+            return
+
+        for index in range(breadcrumb_count - 2):
+            proportion = breadcrumb_reports[index + 1][1]
+
+            if proportion <= 0.0:
+                continue
+
+            distance_start = geo_math.get_distance(orientation.position, breadcrumb_reports[index][0])
+            distance_end = geo_math.get_distance(orientation.position, breadcrumb_reports[index + 1][0])
+
+            if distance_start > max_distance or distance_end > max_distance:
+                continue
+
+            current_heading = orientation.get_onscreen_projection_heading()
+
+            delta_start = fast_math.wrap_degrees(geo_math.get_bearing(orientation.position, breadcrumb_reports[index][0]) - current_heading)
+            delta_end = fast_math.wrap_degrees(geo_math.get_bearing(orientation.position, breadcrumb_reports[index + 1][0]) - current_heading)
+            screen_distance_start = self.__get_pixel_distance__(distance_start, max_distance)
+            screen_distance_end = self.__get_pixel_distance__(distance_end, max_distance)
+
+            color = [int(component * proportion) for component in colors.GREEN]
+            start_pos = self.__get_screen_projection_from_center__(
+                delta_start,
+                screen_distance_start)
+
+            end_pos = self.__get_screen_projection_from_center__(
+                delta_end,
+                screen_distance_end)
+
+            drawing.renderer.segment(
+                framebuffer,
+                color,
+                start_pos,
+                end_pos)
+
     def __draw_distance_rings__(
         self,
         framebuffer: pygame.Surface,
@@ -436,6 +486,12 @@ class AdsbTopViewScope(AdsbElement):
                 reverse=True)
 
         near_target_distance = zoom_tracker.INSTANCE.get_target_threshold_distance()
+
+        with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.render_breadcrumbs'):
+            self.__render_breadcrumbs__(
+                framebuffer,
+                scope_range,
+                orientation)
 
         with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.render'):
             self.__render_ownship__(framebuffer)
