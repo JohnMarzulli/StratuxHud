@@ -9,6 +9,10 @@ from common_utils import fast_math, geo_math, units
 from data_sources.ahrs_data import AhrsData
 
 DEFAULT_REPORT_PERIOD_SECONDS = 15
+REPORTS_PER_MINUTE = int(60 / DEFAULT_REPORT_PERIOD_SECONDS)
+REPORTS_PER_HOUR = int(REPORTS_PER_MINUTE * 60)
+
+DEFAULT_MAX_REPORTS = REPORTS_PER_HOUR
 
 
 class BreadcrumbReport:
@@ -27,15 +31,17 @@ class Breadcrumbs:
         self,
         speed_calculation_period_seconds=240,
         report_period_seconds=DEFAULT_REPORT_PERIOD_SECONDS,
-        max_reports=1000,
+        max_reports=DEFAULT_MAX_REPORTS,
     ) -> None:
         super().__init__()
 
         self.__breadcrumbs__ = deque()
         self.speed = 0.0
-        self.__max_reports__ = max_reports
+        self.__max_reports__ = int(max_reports)
         self.__speed_calculation_period_seconds__ = speed_calculation_period_seconds
         self.__report_period_seconds__ = report_period_seconds
+        self.__seconds_of_trail_to_show__ = 15 * 60
+        self.__trail_reports_to_show__ = int(self.__seconds_of_trail_to_show__ / report_period_seconds)
 
     def __report__(
         self,
@@ -128,13 +134,12 @@ class Breadcrumbs:
             return []
 
         now = datetime.utcnow()
-        reports_back_to_draw = int(self.__speed_calculation_period_seconds__ / self.__report_period_seconds__)
-        oldest_report_index_to_process = current_size - 1 - reports_back_to_draw
+        oldest_report_index_to_process = current_size - 1 - self.__trail_reports_to_show__
         oldest_report_index_to_process = max(0, oldest_report_index_to_process)
 
         reports = [self.__breadcrumbs__[index] for index in range(oldest_report_index_to_process, current_size - 1)]
 
-        return [[report.position, 1.0 - ((now - report.timestamp).total_seconds() / self.__speed_calculation_period_seconds__)]
+        return [[report.position, 1.0 - ((now - report.timestamp).total_seconds() / self.__seconds_of_trail_to_show__)]
                 for report in reports]
 
     def update(
