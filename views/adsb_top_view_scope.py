@@ -287,8 +287,8 @@ class AdsbTopViewScope(AdsbElement):
 
             current_heading = orientation.get_onscreen_projection_heading()
 
-            delta_start = fast_math.wrap_degrees(geo_math.get_bearing(orientation.position, breadcrumb_reports[index][0]) - current_heading)
-            delta_end = fast_math.wrap_degrees(geo_math.get_bearing(orientation.position, breadcrumb_reports[index + 1][0]) - current_heading)
+            delta_start = fast_math.wrap_degrees(AdsbTopViewScope.TRAFFIC_PHASE_SHIFT + geo_math.get_bearing(orientation.position, breadcrumb_reports[index][0]) - current_heading)
+            delta_end = fast_math.wrap_degrees(AdsbTopViewScope.TRAFFIC_PHASE_SHIFT + geo_math.get_bearing(orientation.position, breadcrumb_reports[index + 1][0]) - current_heading)
             screen_distance_start = self.__get_pixel_distance__(distance_start, max_distance)
             screen_distance_end = self.__get_pixel_distance__(distance_end, max_distance)
 
