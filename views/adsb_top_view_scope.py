@@ -322,7 +322,7 @@ class AdsbTopViewScope(AdsbElement):
                 framebuffer,
                 colors.GREEN,
                 previous_position,
-                [self.__center_x__, self.__center_y__])
+                self.__scope_center__)
 
     def __draw_distance_rings__(
         self,
@@ -532,15 +532,7 @@ class AdsbTopViewScope(AdsbElement):
 
 
 if __name__ == '__main__':
-    import doctest
-
     from views.groundspeed import Groundspeed
     from views.hud_elements import run_hud_elements
-
-    print("Starting tests.")
-
-    doctest.testmod()
-
-    print("Tests finished")
 
     run_hud_elements([Groundspeed, AdsbTopViewScope])
