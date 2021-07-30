@@ -273,39 +273,56 @@ class AdsbTopViewScope(AdsbElement):
         if breadcrumb_count < 2:
             return
 
+        current_heading = orientation.get_onscreen_projection_heading()
+
+        if current_heading is None or isinstance(current_heading, str):
+            return
+
+        previous_position = None
+
         for index in range(breadcrumb_count - 2):
             proportion = breadcrumb_reports[index + 1][1]
 
+            # if we need to continue due to the line
+            # being off the screen or otherwise
+            # invalid, we need to make sure
+            # to disqualify the previous position
+            # so we do not get any wacky looking completions
             if proportion <= 0.0:
+                previous_position = None
                 continue
 
             distance_start = geo_math.get_distance(orientation.position, breadcrumb_reports[index][0])
-            distance_end = geo_math.get_distance(orientation.position, breadcrumb_reports[index + 1][0])
 
-            if distance_start > max_distance or distance_end > max_distance:
+            if distance_start > max_distance:
+                previous_position = None
                 continue
 
-            current_heading = orientation.get_onscreen_projection_heading()
-
-            delta_start = fast_math.wrap_degrees(AdsbTopViewScope.TRAFFIC_PHASE_SHIFT + geo_math.get_bearing(orientation.position, breadcrumb_reports[index][0]) - current_heading)
-            delta_end = fast_math.wrap_degrees(AdsbTopViewScope.TRAFFIC_PHASE_SHIFT + geo_math.get_bearing(orientation.position, breadcrumb_reports[index + 1][0]) - current_heading)
-            screen_distance_start = self.__get_pixel_distance__(distance_start, max_distance)
-            screen_distance_end = self.__get_pixel_distance__(distance_end, max_distance)
+            delta_angle = fast_math.wrap_degrees(AdsbTopViewScope.TRAFFIC_PHASE_SHIFT + geo_math.get_bearing(orientation.position, breadcrumb_reports[index][0]) - current_heading)
+            pixel_distance = self.__get_pixel_distance__(distance_start, max_distance)
 
             color = [int(component * proportion) for component in colors.GREEN]
-            start_pos = self.__get_screen_projection_from_center__(
-                delta_start,
-                screen_distance_start)
+            screen_coords = self.__get_screen_projection_from_center__(
+                delta_angle,
+                pixel_distance)
 
-            end_pos = self.__get_screen_projection_from_center__(
-                delta_end,
-                screen_distance_end)
+            if previous_position is not None:
+                drawing.renderer.segment(
+                    framebuffer,
+                    color,
+                    previous_position,
+                    screen_coords,
+                    width=self.__line_width__)
 
+            previous_position = screen_coords
+
+        # Complete the loop
+        if previous_position is not None:
             drawing.renderer.segment(
                 framebuffer,
-                color,
-                start_pos,
-                end_pos)
+                colors.GREEN,
+                previous_position,
+                [self.__center_x__, self.__center_y__])
 
     def __draw_distance_rings__(
         self,
