@@ -23,19 +23,23 @@ def get_bearing(
     Returns:
         float -- The bearing to lat2/lon2
     """
+    lat = starting_pos[0]
+    lon = starting_pos[1]
 
-    lat2 = starting_pos[0]
-    lon2 = starting_pos[1]
+    lat2 = ending_pos[0]
+    lon2 = ending_pos[1]
 
-    lat1 = ending_pos[0]
-    lon1 = ending_pos[1]
+    teta1 = math.radians(lat)
+    teta2 = math.radians(lat2)
+    delta2 = math.radians(lon2-lon)
 
-    bearing = math.atan2(math.sin(lon2 - lon1) * math.cos(lat2), math.cos(lat1)
-                         * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(lon2 - lon1))
-    bearing = math.degrees(bearing)
-    bearing = (bearing + 360) % 360
+    y = math.sin(delta2) * math.cos(teta2)
+    x = math.cos(teta1)*math.sin(teta2) - math.sin(teta1)*math.cos(teta2)*math.cos(delta2)
+    brng = math.atan2(y, x)
+    brng = math.degrees(brng)
+    brng = ((int(brng) + 360) % 360)
 
-    return bearing
+    return brng
 
 
 def get_distance(
@@ -72,3 +76,10 @@ def get_distance(
     r = EARTH_RADIUS_STATUTE_MILES
 
     return c * r
+
+
+# Expected is around 85
+#kawo = [47.5, -122.2]
+#kosh = [44.0, -88.5]
+#print(get_bearing_close(kawo, kosh))
+#print(get_bearing(kawo, kosh))
