@@ -186,7 +186,7 @@ class AdsbTopViewScope(AdsbElement):
             display_distance,
             scope_range)
 
-        delta_angle = orientation.get_onscreen_projection_heading()
+        delta_angle = orientation.get_onscreen_gps_heading()
         delta_angle = traffic.bearing - delta_angle
         # We need to rotate by 270 to make sure that
         # the orientation is correct AND to correct the phase.
@@ -209,7 +209,7 @@ class AdsbTopViewScope(AdsbElement):
         if traffic.track is not None:
             points = self.__get_traffic_indicator__(
                 [screen_x, screen_y],
-                orientation.get_onscreen_projection_heading(),
+                orientation.get_onscreen_gps_heading(),
                 traffic.track)
             drawing.renderer.polygon(framebuffer, target_color, points, not self.__reduced_visuals__)
         else:
@@ -273,14 +273,14 @@ class AdsbTopViewScope(AdsbElement):
         if breadcrumb_count < 2:
             return
 
-        current_heading = orientation.get_onscreen_projection_heading()
+        current_heading = orientation.get_onscreen_gps_heading()
 
         if current_heading is None or isinstance(current_heading, str):
             return
 
         previous_position = None
 
-        for index in range(breadcrumb_count - 2):
+        for index in range(breadcrumb_count - 1):
             proportion = breadcrumb_reports[index + 1][1]
 
             # if we need to continue due to the line
@@ -298,7 +298,13 @@ class AdsbTopViewScope(AdsbElement):
                 previous_position = None
                 continue
 
-            delta_angle = fast_math.wrap_degrees(AdsbTopViewScope.TRAFFIC_PHASE_SHIFT + geo_math.get_bearing(orientation.position, breadcrumb_reports[index][0]) - current_heading)
+            bearing = geo_math.get_bearing(orientation.position, breadcrumb_reports[index][0])
+            delta_angle = bearing - current_heading
+            # We need to rotate by 270 to make sure that
+            # the orientation is correct AND to correct the phase.
+            delta_angle = AdsbTopViewScope.TRAFFIC_PHASE_SHIFT + delta_angle
+            delta_angle = fast_math.wrap_degrees(delta_angle)
+
             pixel_distance = self.__get_pixel_distance__(distance_start, max_distance)
 
             color = [int(component * proportion) for component in colors.GREEN]
@@ -465,7 +471,7 @@ class AdsbTopViewScope(AdsbElement):
             orientation (AhrsData): [description]
         """
         try:
-            our_heading = int(orientation.get_onscreen_projection_heading())
+            our_heading = int(orientation.get_onscreen_gps_heading())
         except:
             # Heading is not a string, which means
             # we do not have GPS lock
@@ -534,5 +540,6 @@ class AdsbTopViewScope(AdsbElement):
 if __name__ == '__main__':
     from views.groundspeed import Groundspeed
     from views.hud_elements import run_hud_elements
+    from views.compass_and_heading_top_element import CompassAndHeadingTopElement
 
-    run_hud_elements([Groundspeed, AdsbTopViewScope])
+    run_hud_elements([CompassAndHeadingTopElement, Groundspeed, AdsbTopViewScope])
