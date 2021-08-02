@@ -328,7 +328,8 @@ class AdsbTopViewScope(AdsbElement):
                 framebuffer,
                 colors.GREEN,
                 previous_position,
-                self.__scope_center__)
+                self.__scope_center__,
+                width=self.__line_width__)
 
     def __draw_distance_rings__(
         self,
