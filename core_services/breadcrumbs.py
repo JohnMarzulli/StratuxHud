@@ -6,6 +6,7 @@ from collections import deque
 from datetime import datetime, timedelta
 
 from common_utils import fast_math, geo_math, units
+from data_sources import ahrs_data
 from data_sources.ahrs_data import AhrsData
 
 DEFAULT_REPORT_PERIOD_SECONDS = 15
@@ -91,19 +92,19 @@ class Breadcrumbs:
 
         current_size = len(self.__breadcrumbs__)
 
-        if current_size < 3:
-            return 0.0
+        if current_size < 5:
+            return ahrs_data.NOT_AVAILABLE
 
         oldest_report_index_to_process = int(self.__speed_calculation_period_seconds__ / self.__report_period_seconds__)
         oldest_report_index_to_process = -min(current_size, oldest_report_index_to_process)
 
         oldest_report_to_process = self.__breadcrumbs__[oldest_report_index_to_process]
         latest_report = self.__breadcrumbs__[-1]
-        disance = geo_math.get_distance(oldest_report_to_process.position, latest_report.position)
+        distance = geo_math.get_distance(oldest_report_to_process.position, latest_report.position)
 
         # This gives us Statue Miles per second
         delta_time = (latest_report.timestamp - oldest_report_to_process.timestamp).total_seconds()
-        speed = disance / delta_time if delta_time > 0.0 else 0.0
+        speed = distance / delta_time if delta_time > 0.0 else ahrs_data.NOT_AVAILABLE
 
         statute_miles_per_hour = speed * 3600
 
