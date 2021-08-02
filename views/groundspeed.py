@@ -112,7 +112,7 @@ class Groundspeed(AhrsElement):
 
             crumb_text = self.__get_indicated_text__(
                 breadcrumbs.INSTANCE.speed,
-                "TRK",
+                "BRC",
                 gs_display_color)
 
             gs_position_adj = self.__font_height__ if is_valid_airspeed is not None else 0
