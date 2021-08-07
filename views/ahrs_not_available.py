@@ -1,25 +1,46 @@
-import pygame
-from common_utils.task_timer import TaskTimer
+"""
+Element to show that the AHRS data is not available from any source.
+"""
+
+from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
-from rendering import colors
+from rendering import colors, drawing
 
 
-class AhrsNotAvailable(object):
+class AhrsNotAvailable:
+    """
+    Element to show that the AHRS data is not available from any source.
+    """
+
+    # pylint:disable=unused-argument
+
     def __init__(
         self,
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
-        self.__not_available_lines__ = []
-
         width, height = framebuffer_size
 
-        self.__not_available_lines__.append([[0, 0], [width, height]])
-        self.__not_available_lines__.append([[0, height], [width, 0]])
-        self.__na_color__ = colors.RED
-        self.__na_line_width__ = 20
+        forwardslash = [[0, 0], [width, height]]
+        backslash = [[0, height], [width, 0]]
+        na_line_width = int(width * 0.02)
+
+        self.__na_draw_commands__ = [
+            drawing.Segment(
+                forwardslash[0],
+                forwardslash[1],
+                colors.RED,
+                na_line_width,
+                True),
+            drawing.Segment(
+                backslash[0],
+                backslash[1],
+                colors.RED,
+                na_line_width,
+                True)]
 
     def render(
         self,
@@ -30,22 +51,17 @@ class AhrsNotAvailable(object):
         Render an "X" over the screen to indicate the AHRS is not
         available.
         """
+        # pylint:disable=expression-not-assigned
 
-        pygame.draw.line(
-            framebuffer,
-            self.__na_color__,
-            self.__not_available_lines__[0][0],
-            self.__not_available_lines__[0][1],
-            self.__na_line_width__)
-        pygame.draw.line(
-            framebuffer,
-            self.__na_color__,
-            self.__not_available_lines__[1][0],
-            self.__not_available_lines__[1][1],
-            self.__na_line_width__)
+        no_setup = TaskProfiler("views.ahrs_not_available.AhrsNotAvailable.setup")
+        no_setup.start()
+        no_setup.stop()
+
+        with TaskProfiler("views.ahrs_not_available.AhrsNotAvailable.render"):
+            [element.render(framebuffer) for element in self.__na_draw_commands__]
 
 
 if __name__ == '__main__':
-    from views.hud_elements import run_ahrs_hud_element
+    from views.hud_elements import run_hud_element
 
-    run_ahrs_hud_element(AhrsNotAvailable)
+    run_hud_element(AhrsNotAvailable)

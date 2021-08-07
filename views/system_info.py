@@ -1,12 +1,13 @@
 import math
 import socket
 import subprocess
+from numbers import Number
 
-from common_utils import local_debug
-from common_utils.task_timer import TaskTimer
+from common_utils import fast_math, local_debug
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
-from data_sources.aithre import AithreClient
+from data_sources.aithre import AithreClient, CoReport, Spo2Report
+from data_sources.data_cache import HudDataCache
 from rendering import colors
 
 from views.ahrs_element import AhrsElement
@@ -25,7 +26,17 @@ DISCONNECTED_TEXT = "DISCONNECTED"
 DISABLED_TEXT = "DISABLED"
 
 
-def get_ip_address():
+class InfoText:
+    def __init__(
+        self,
+        text: str,
+        color: list
+    ) -> None:
+        self.text = text
+        self.color = color
+
+
+def get_ip_address() -> InfoText:
     """
     Returns the local IP address of this unit.
 
@@ -36,12 +47,12 @@ def get_ip_address():
     try:
         if local_debug.IS_LINUX and local_debug.IS_PI:
             ip_addr = subprocess.getoutput('hostname -I').strip()
-            return (ip_addr, colors.GREEN)
+            return InfoText(ip_addr, colors.GREEN)
         else:
             host_name = socket.gethostname()
-            return (socket.gethostbyname(host_name), colors.GREEN)
+            return InfoText(socket.gethostbyname(host_name), colors.GREEN)
     except:
-        return ('UNKNOWN', colors.RED)
+        return InfoText('UNKNOWN', colors.RED)
 
 
 def get_cpu_temp_text_color(
@@ -54,14 +65,14 @@ def get_cpu_temp_text_color(
     elif temperature > NORMAL_TEMP:
         delta = float(temperature - NORMAL_TEMP)
         temp_range = float(REDLINE_TEMP - NORMAL_TEMP)
-        delta = colors.clamp(0.0, delta, temp_range)
+        delta = fast_math.clamp(0.0, delta, temp_range)
         proportion = delta / temp_range
         color = colors.get_color_mix(colors.GREEN, colors.RED, proportion)
 
     return color
 
 
-def get_cpu_temp() -> str:
+def get_cpu_temp() -> InfoText:
     """
     Gets the cpu temperature on RasPi (Celsius)
 
@@ -75,15 +86,15 @@ def get_cpu_temp() -> str:
         if local_debug.IS_LINUX:
             linux_cpu_temp = open('/sys/class/thermal/thermal_zone0/temp')
             temp = float(linux_cpu_temp.read())
-            temp = temp/1000
+            temp /= 1000
 
             color = get_cpu_temp_text_color(temp)
 
-            return ("{0}C".format(int(math.floor(temp))), color)
+            return InfoText("{0}C".format(int(math.floor(temp))), color)
     except:
-        return ('---', colors.GRAY)
+        return InfoText('---', colors.GRAY)
 
-    return ('---', colors.GRAY)
+    return InfoText('---', colors.GRAY)
 
 
 def get_illyrian_spo2_color(
@@ -160,7 +171,9 @@ def get_aithre_battery_color(
     return color
 
 
-class SystemInfo(AhrsElement):
+class TextInfoView(AhrsElement):
+    ROW_TITLE_COLOR = colors.BLUE
+
     def uses_ahrs(
         self
     ) -> bool:
@@ -178,35 +191,79 @@ class SystemInfo(AhrsElement):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
-        self.__font__ = font
-        self.font_height = font.get_height()
-        self.__text_y_pos__ = framebuffer_size[1] - self.font_height
-        self.__rhs__ = int(0.9 * framebuffer_size[0])
+        super().__init__(font, framebuffer_size, reduced_visuals)
 
-        self.__left_x__ = int(framebuffer_size[0] * 0.01)
-        self.__center_x__ = framebuffer_size[0] >> 1
+        self.__text_y_pos__ = framebuffer_size[1] - self.__font_height__
         self.__update_ip_timer__ = 0
         self.__update_temp_timer__ = 0
         self.__ip_address__ = get_ip_address()
         self.__cpu_temp__ = None
-        self.__framebuffer_size__ = framebuffer_size
         self.__line_spacing__ = 1.01
 
-    def __get_aithre_text_and_color__(
+    def __get_info_text__(
         self
+    ) -> list:
+        return []
+
+    def render(
+        self,
+        framebuffer,
+        orientation: AhrsData
     ):
-        """
-        Gets the text and text color for the Aithre status.
-        """
+        info_lines = self.__get_info_text__()
 
-        if AithreClient.INSTANCE is None:
-            return (DISCONNECTED_TEXT, colors.RED) if configuration.CONFIGURATION.aithre_enabled else (DISABLED_TEXT, colors.BLUE)
+        if info_lines is None:
+            return
 
-        co_report = AithreClient.INSTANCE.get_co_report()
+        render_y = self.__top_border__ + self.__font_height__
 
-        battery_text = 'UNK'
+        for line in info_lines:
+            # Each line package is expected to be a tuple.
+            # Index 0 is the left hand side
+            # Index 1 is the right hand side
+
+            self.__render_text__(
+                framebuffer,
+                line[0].text,
+                [self.__left_border__, render_y],
+                line[0].color)
+
+            # Draw the value in the encoded colors.
+            self.__render_text__(
+                framebuffer,
+                line[1].text,
+                [self.__center_x__, render_y],
+                line[1].color)
+
+            render_y = render_y + (self.__font_height__ * self.__line_spacing__)
+
+
+class AithreView(TextInfoView):
+    STATUS_TEXT = "Aithre"
+    ILLY_STATUS_TEXT = "Illyrian"
+    CONNECTED_TEXT = "Connected"
+    UNKNOWN_TEXT = "Unknown"
+    BATTERY_TEXT = "Battery"
+    CO_TEXT = "CO"
+
+    def __init__(
+        self,
+        degrees_of_pitch: float,
+        pixels_per_degree_y: float,
+        font,
+        framebuffer_size: list,
+        reduced_visuals: bool
+    ):
+        super().__init__(degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, reduced_visuals=reduced_visuals)
+
+    def __get_aithre_battery_info__(
+        self,
+        co_report
+    ) -> list:
+        battery_text = AithreView.UNKNOWN_TEXT
         battery_color = colors.RED
 
         try:
@@ -216,31 +273,130 @@ class SystemInfo(AhrsElement):
                 battery_suffix = ""
             if battery is not None:
                 battery_color = get_aithre_battery_color(battery)
-                battery_text = "bat:{}{}".format(battery, battery_suffix)
+                battery_text = "{}{}".format(battery, battery_suffix)
         except Exception:
             battery_text = 'ERR'
 
-        co_text = 'UNK'
+        return [
+            InfoText(AithreView.BATTERY_TEXT, TextInfoView.ROW_TITLE_COLOR),
+            InfoText(battery_text, battery_color)]
+
+    def __get_aithre_co_info__(
+        self,
+        co_report
+    ) -> list:
+        co_text = AithreView.UNKNOWN_TEXT
         co_color = colors.RED
 
         try:
             co_ppm = co_report.co
 
-            if co_ppm is not None and OFFLINE_TEXT not in co_ppm:
-                co_text = 'co:{}ppm'.format(co_ppm)
+            if co_ppm is not None and isinstance(co_ppm, Number):
+                co_text = '{}ppm'.format(co_ppm)
                 co_color = get_aithre_co_color(co_ppm)
-        except Exception as ex:
+        except:
+            co_color = colors.RED
             co_text = 'ERR'
 
-        color = colors.RED if co_color is colors.RED or battery_color is colors.RED else \
-            (colors.YELLOW if co_color is colors.YELLOW or battery_color is colors.YELLOW else colors.BLUE)
+        return [
+            InfoText(AithreView.CO_TEXT, TextInfoView.ROW_TITLE_COLOR),
+            InfoText(co_text, co_color)]
 
-        return ('{} {}'.format(co_text, battery_text), color)
+    def __get_illyrian_text__(
+        self
+    ) -> list:
+        if AithreClient.INSTANCE is None:
+            return [
+                InfoText(AithreView.ILLY_STATUS_TEXT, colors.BLUE),
+                InfoText(DISCONNECTED_TEXT, colors.RED)]
 
-    def render(
+        illy_status = []
+
+        illyrians = AithreClient.INSTANCE.get_spo2_reports()
+
+        if illyrians is None or len(illyrians) == 0:
+            return [[
+                InfoText("Illyrian", colors.BLUE),
+                InfoText("Not Connected", colors.RED)
+            ]]
+
+        for spo2_report in illyrians:
+            # $TODO - Write a subfunction that colors and encodes this.
+            illy_status.append(
+                [
+                    InfoText("Illyrian", colors.BLUE),
+                    InfoText(
+                        "{}% / {}bpm".format(
+                            spo2_report.spo2,
+                            spo2_report.heartrate),
+                        colors.GREEN)
+                ]
+            )
+
+        return illy_status
+
+    def __get_aithre_info_text(
+        self
+    ) -> list:
+        if AithreClient.INSTANCE is None:
+            current_status = InfoText(DISCONNECTED_TEXT, colors.RED) if configuration.CONFIGURATION.aithre_enabled else InfoText(DISABLED_TEXT, colors.BLUE)
+
+            return [
+                InfoText(AithreView.STATUS_TEXT, colors.BLUE),
+                current_status]
+
+        co_report = AithreClient.INSTANCE.get_co_report()
+
+        is_connected = co_report.has_been_connected and co_report.is_connected
+
+        status_text = AithreView.CONNECTED_TEXT if is_connected else DISCONNECTED_TEXT
+        status_color = colors.GREEN if is_connected else colors.RED
+
+        return [
+            [InfoText(AithreView.STATUS_TEXT, TextInfoView.ROW_TITLE_COLOR), InfoText(status_text, status_color)],
+            self.__get_aithre_battery_info__(co_report),
+            self.__get_aithre_co_info__(co_report)]
+
+    def __get_info_text__(
+        self
+    ) -> list:
+        aithre_info_text = self.__get_aithre_info_text()
+        illy_info_text = self.__get_illyrian_text__()
+
+        return aithre_info_text + illy_info_text
+
+
+class SystemInfo(TextInfoView):
+    def uses_ahrs(
+        self
+    ) -> bool:
+        """
+        The diagnostics page does not use AHRS.
+
+        Returns:
+            bool -- Always returns False.
+        """
+
+        return False
+
+    def __init__(
         self,
-        framebuffer,
-        orientation: AhrsData
+        degrees_of_pitch: float,
+        pixels_per_degree_y: float,
+        font,
+        framebuffer_size,
+        reduced_visuals: bool
+    ):
+        super().__init__(degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size, reduced_visuals=reduced_visuals)
+
+        self.__update_ip_timer__ = 0
+        self.__update_temp_timer__ = 0
+        self.__ip_address__ = get_ip_address()
+        self.__cpu_temp__ = None
+        self.__line_spacing__ = 1.01
+
+    def __get_info_text__(
+        self
     ):
         self.__update_ip_timer__ -= 1
         if self.__update_ip_timer__ <= 0:
@@ -252,42 +408,22 @@ class SystemInfo(AhrsElement):
             self.__cpu_temp__ = get_cpu_temp()
             self.__update_temp_timer__ = 60
 
+        display_res_text = "{} x {}".format(self.__framebuffer_size__[0], self.__framebuffer_size__[1])
+
+        declination_color = colors.GREEN if configuration.CONFIGURATION.is_declination_enabled() else colors.YELLOW
+
         info_lines = [
-            ["VERSION     : ", [configuration.VERSION, colors.YELLOW]],
-            ["DECLINATION : ", [
-                str(configuration.CONFIGURATION.get_declination()), colors.BLUE]],
-            ["TRAFFIC     : ", [configuration.CONFIGURATION.get_traffic_manager_address(), colors.BLUE]]]
+            [InfoText("VERSION", TextInfoView.ROW_TITLE_COLOR), InfoText(configuration.VERSION, colors.GREEN)],
+            [InfoText("DISPLAY RES", TextInfoView.ROW_TITLE_COLOR), InfoText(display_res_text, colors.GREEN)],
+            [InfoText("HUD CPU", TextInfoView.ROW_TITLE_COLOR), self.__cpu_temp__],
+            [InfoText("DECLINATION", TextInfoView.ROW_TITLE_COLOR), InfoText(str(HudDataCache.DECLINATION), declination_color)],
+            [InfoText("TRAFFIC", TextInfoView.ROW_TITLE_COLOR), InfoText(configuration.CONFIGURATION.get_traffic_manager_address(), colors.GREEN)]]
 
-        addresses = self.__ip_address__[0].split(' ')
+        addresses = self.__ip_address__.text.split(' ')
         for addr in addresses:
-            info_lines.append(
-                ["IP          : ", (addr, self.__ip_address__[1])])
+            info_lines.append([InfoText("IP", TextInfoView.ROW_TITLE_COLOR), InfoText(addr, self.__ip_address__.color)])
 
-        info_lines.append(
-            ["AITHRE      : ", self.__get_aithre_text_and_color__()])
-
-        # Status lines are pushed in as a stack.
-        # First line in the array is at the bottom.
-        # Last line in the array is towards the top.
-        info_lines.append(["HUD CPU     : ", self.__cpu_temp__])
-        info_lines.append(["DISPLAY RES : ", ["{} x {}".format(
-            self.__framebuffer_size__[0], self.__framebuffer_size__[1]), colors.BLUE]])
-
-        render_y = self.__text_y_pos__
-
-        for line in info_lines:
-            # Draw the label in a standard color.
-            texture_lhs = self.__font__.render(
-                line[0], True, colors.BLUE, colors.BLACK)
-            framebuffer.blit(texture_lhs, (0, render_y))
-            size = texture_lhs.get_size()
-
-            # Draw the value in the encoded colors.
-            texture_rhs = self.__font__.render(
-                line[1][0], True, line[1][1], colors.BLACK)
-            framebuffer.blit(texture_rhs, (size[0], render_y))
-
-            render_y = render_y - (self.font_height * self.__line_spacing__)
+        return info_lines
 
 
 class Aithre(AhrsElement):
@@ -308,13 +444,29 @@ class Aithre(AhrsElement):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
-        self.__font__ = font
-        center_y = framebuffer_size[1] >> 2
-        text_half_height = int(font.get_height()) >> 1
-        self.__text_y_pos__ = center_y + (10 * text_half_height)
-        self.__lhs__ = 0
+        super().__init__(font, framebuffer_size, reduced_visuals)
+
+        self.__text_y_pos__ = self.__center_y__ + self.__font_half_height__
+
+    def __get_co_text_package__(
+        self,
+        report: CoReport
+    ) -> list:
+        levels = "OFFLINE"
+        co_color = colors.RED
+
+        if report is None or not report.has_been_connected:
+            return []
+
+        if report.is_connected and not isinstance(report, str) and not isinstance(report.co, str):
+            co_color = get_aithre_co_color(report.co)
+            levels = "{} PPM".format(report.co)
+
+        text_scale = 0.5
+        return [[text_scale, "CO : {}".format(levels), co_color]]
 
     def render(
         self,
@@ -324,21 +476,13 @@ class Aithre(AhrsElement):
         if AithreClient.INSTANCE is not None and configuration.CONFIGURATION.aithre_enabled:
             co_level = AithreClient.INSTANCE.get_co_report()
 
-            if (co_level.co is None and co_level.has_been_connected) or isinstance(co_level, str):
-                co_color = colors.RED
-                co_ppm_text = "OFFLINE"
-            elif not co_level.has_been_connected:
-                return
-            else:
-                co_color = get_aithre_co_color(co_level.co)
-                units_text = "PPM" if co_level.is_connected else ""
-                co_ppm_text = "{}{}".format(co_level.co, units_text)
+            text = self.__get_co_text_package__(co_level)
 
-            co_ppm_texture = self.__font__.render(
-                co_ppm_text, True, co_color, colors.BLACK)
-
-            framebuffer.blit(
-                co_ppm_texture, (self.__lhs__, self.__text_y_pos__))
+            if text is not None and len(text) > 0:
+                self.__render_text_with_stacked_annotations__(
+                    framebuffer,
+                    [self.__left_border__, self.__text_y_pos__],
+                    text)
 
 
 class Illyrian(AhrsElement):
@@ -363,15 +507,32 @@ class Illyrian(AhrsElement):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
-        self.__font__ = font
-        center_y = framebuffer_size[1] >> 2
-        text_half_height = int(font.get_height()) >> 1
-        self.__text_y_pos__ = center_y + (6 * text_half_height)
-        self.__pulse_y_pos__ = center_y + (8 * text_half_height)
-        self.__lhs__ = 0
+        super().__init__(font, framebuffer_size, reduced_visuals)
+
+        self.__text_y_pos__ = self.__center_y__ + self.__font_height__
         self.__has_been_connected__ = False
+        self.__text_scale__ = 0.5
+
+    def __get_spo_text_package__(
+        self,
+        report: Spo2Report,
+        device_number: int
+    ) -> list:
+        text_packages = [[self.__text_scale__, "SPO2 ({}): ".format(device_number), colors.GREEN]]
+
+        if report is None:
+            if self.__has_been_connected__:
+                text_packages.append([self.__text_scale__, "OFFLINE", colors.RED])
+            else:
+                text_packages.append([self.__text_scale__, "NOT CONNECTED", colors.YELLOW])
+        else:
+            color = get_illyrian_spo2_color(report.spo2)
+            text_packages.append([self.__text_scale__, "●", color])
+
+        return text_packages
 
     def render(
         self,
@@ -379,45 +540,30 @@ class Illyrian(AhrsElement):
         orientation: AhrsData
     ):
         if AithreClient.INSTANCE is not None and configuration.CONFIGURATION.aithre_enabled:
-            report = AithreClient.INSTANCE.get_spo2_report()
-            spo2_level = report.spo2
-            heartbeat = report.heartrate
-            heartbeat_text = "{}BPM".format(heartbeat)
+            y_pos = self.__text_y_pos__
 
-            if spo2_level is None or isinstance(spo2_level, str):
-                if self.__has_been_connected__:
-                    spo2_color = colors.RED
-                    spo2_text = "OFFLINE"
-                else:
-                    return
-            else:
-                spo2_color = get_illyrian_spo2_color(spo2_level)
-                spo2_text = str(int(spo2_level)) + "% SPO"
-                self.__has_been_connected__ = True
+            device_number = 1
 
-            spo2_ppm_texture = self.__font__.render(
-                spo2_text, True, spo2_color, colors.BLACK)
+            for report in AithreClient.INSTANCE.get_spo2_reports():
+                report = AithreClient.INSTANCE.get_spo2_report()
 
-            heartbeat_texture = self.__font__.render(
-                heartbeat_text, True, colors.GREEN, colors.BLACK)
+                text_packages = self.__get_spo_text_package__(report, device_number)
 
-            framebuffer.blit(
-                spo2_ppm_texture, (self.__lhs__, self.__text_y_pos__))
+                self.__render_text_with_stacked_annotations__(
+                    framebuffer,
+                    [self.__left_border__, y_pos],
+                    text_packages)
 
-            framebuffer.blit(
-                heartbeat_texture, (self.__lhs__, self.__pulse_y_pos__))
+                y_pos += (self.__font_height__ * self.__text_scale__)
+
+                device_number += 1
 
 
 if __name__ == '__main__':
-    from views.hud_elements import run_ahrs_hud_element
-
-    run_ahrs_hud_element(Aithre)
-
-if __name__ == '__main__':
-    from views.hud_elements import run_ahrs_hud_element
+    from views.hud_elements import run_hud_element
 
     # for temp in range(45, 95, 5):
     #     color = get_cpu_temp_text_color(temp)
     #     print("{3} => {0},{1},{2}".format(color[0], color[1], color[2], temp))
 
-    run_ahrs_hud_element(SystemInfo, True)
+    run_hud_element(SystemInfo, True)

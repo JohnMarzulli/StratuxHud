@@ -14,7 +14,7 @@ MAX_FRAMERATE = 60
 TARGET_AHRS_FRAMERATE = 30
 AHRS_TIMEOUT = 10.0 * (1.0 / float(TARGET_AHRS_FRAMERATE))
 
-VERSION = "2.0"
+VERSION = "2.0 ALPHA 2"
 
 ########################
 # Default Config Files #
@@ -93,6 +93,7 @@ class Configuration(object):
     OWNSHIP_KEY = "ownship"
     MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT_KEY = "traffic_report_removal_minutes"
     DISTANCE_UNITS_KEY = "distance_units"
+    ENABLE_DECLINATION_KEY = "enable_declination"
     DECLINATION_KEY = "declination"
     DEGREES_OF_PITCH_KEY = 'degrees_of_pitch'
     PITCH_DEGREES_DISPLAY_SCALER_KEY = 'pitch_degrees_scaler'
@@ -203,7 +204,7 @@ class Configuration(object):
             Configuration.FLIP_VERTICAL_KEY: self.flip_vertical,
             Configuration.MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT_KEY: self.max_minutes_before_removal,
             Configuration.DISTANCE_UNITS_KEY: self.get_units(),
-            Configuration.DECLINATION_KEY: self.get_declination(),
+            Configuration.ENABLE_DECLINATION_KEY: self.__is_declination_enabled__,
             Configuration.DEGREES_OF_PITCH_KEY: self.get_degrees_of_pitch(),
             Configuration.PITCH_DEGREES_DISPLAY_SCALER_KEY: self.get_pitch_degrees_display_scaler(),
             Configuration.AITHRE_KEY: self.aithre_enabled,
@@ -274,11 +275,9 @@ class Configuration(object):
             self.__configuration__[
                 Configuration.DISTANCE_UNITS_KEY] = self.units
 
-        if Configuration.DECLINATION_KEY in json_config:
-            self.declination = float(
-                json_config[Configuration.DECLINATION_KEY])
-            self.__configuration__[
-                Configuration.DECLINATION_KEY] = self.declination
+        if Configuration.ENABLE_DECLINATION_KEY in json_config:
+            self.__is_declination_enabled__ = bool(json_config[Configuration.ENABLE_DECLINATION_KEY])
+            self.__configuration__[Configuration.ENABLE_DECLINATION_KEY] = self.__is_declination_enabled__
 
         if Configuration.DEGREES_OF_PITCH_KEY in json_config:
             self.degrees_of_pitch = int(
@@ -335,17 +334,31 @@ class Configuration(object):
 
         return self.pitch_degrees_display_scaler
 
-    def get_declination(
+    def is_declination_enabled(
         self
-    ) -> float:
+    ) -> bool:
         """
-        Returns the magnetic variance (true to magnetic)
+        Returns TRUE if declination calculations should be enabled
+        to headings and things.
 
         Returns:
-            float -- The number of degrees to adjust the heading displayed by.
+            bool: True if declination calculations should be enabled.
         """
 
-        return self.declination
+        return self.__is_declination_enabled__
+
+    def set_declination_enabled(
+        self,
+        is_enabled: bool
+    ):
+        """
+        Set if declination calculations are enabled or not.
+
+        Args:
+            is_enabled (bool): True if declination calculations are enabled.
+        """
+
+        self.__is_declination_enabled__ = is_enabled
 
     def get_traffic_manager_address(
         self
@@ -523,9 +536,7 @@ class Configuration(object):
         try:
             with open(json_config_file) as json_config_file:
                 json_config_text = json_config_file.read()
-                json_config = json.loads(json_config_text)
-
-                return json_config
+                return json.loads(json_config_text)
         except Exception:
             return {}
 
@@ -577,10 +588,19 @@ class Configuration(object):
             Configuration.MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT_KEY,
             MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT)
         self.log_filename = "stratux_hud.log"
-        self.flip_horizontal = False
-        self.flip_vertical = False
-        self.declination = 0.0
-        self.aithre_enabled = False
+
+        self.flip_horizontal = self.__get_config_value__(
+            Configuration.FLIP_HORIZONTAL_KEY,
+            False)
+        self.flip_vertical = self.__get_config_value__(
+            Configuration.FLIP_VERTICAL_KEY,
+            False)
+        self.__is_declination_enabled__ = self.__get_config_value__(
+            Configuration.ENABLE_DECLINATION_KEY,
+            True)
+        self.aithre_enabled = self.__get_config_value__(
+            Configuration.AITHRE_KEY,
+            True)
         self.traffic_manager_address = self.__get_config_value__(
             Configuration.TRAFFIC_MANAGER_KEY,
             Configuration.DEFAULT_TRAFFIC_MANAGER_ADDRESS)
@@ -610,37 +630,8 @@ class Configuration(object):
         #   "flip_vertical": false,
         #   "ownship": "N701GV",
         #   "data_source": "stratux",
+        #   "declination_enabled": true,
         #   "declination": 0.0
-
-        try:
-            self.flip_horizontal = self.__configuration__[
-                Configuration.FLIP_HORIZONTAL_KEY]
-        except Exception:
-            pass
-
-        try:
-            self.flip_vertical = self.__configuration__[
-                Configuration.FLIP_VERTICAL_KEY]
-        except Exception:
-            pass
-
-        try:
-            self.declination = float(
-                self.__configuration__[Configuration.DECLINATION_KEY])
-        except Exception:
-            pass
-
-        try:
-            self.aithre_enabled = bool(
-                self.__configuration__[Configuration.AITHRE_KEY])
-        except Exception:
-            pass
-
-        try:
-            self.traffic_manager_address = self.__configuration__[
-                Configuration.TRAFFIC_MANAGER_KEY]
-        except Exception:
-            pass
 
 
 CONFIGURATION = Configuration(DEFAULT_CONFIG_FILE, __user_config_file__)

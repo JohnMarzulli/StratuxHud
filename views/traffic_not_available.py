@@ -1,4 +1,5 @@
-from common_utils.task_timer import TaskTimer
+from datetime import datetime
+
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from rendering import colors
@@ -13,34 +14,36 @@ class TrafficNotAvailable(AhrsElement):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
-        self.__font__ = font
-        font_height = font.get_height()
-        self.__text_y_pos__ = int(font_height * 0.7)
-        self.__rhs__ = int(0.9 * framebuffer_size[0])
+        super().__init__(font, framebuffer_size, reduced_visuals)
 
-        self.__left_x__ = int(framebuffer_size[0] * 0.01)
-        self.__center_x__ = framebuffer_size[0] >> 1
+        text_y_pos = self.__bottom_border__ - (self.__font_height__ << 1)
+
+        self.__position__ = [self.__left_border__, text_y_pos]
 
     def render(
         self,
         framebuffer,
         orientation: AhrsData
     ):
-        if not HudDataCache.IS_TRAFFIC_AVAILABLE:
-            (texture, size) = HudDataCache.get_cached_text_texture(
-                "TRAFFIC UNAVAILABLE",
-                self.__font__,
-                text_color=colors.RED,
-                background_color=colors.BLACK,
-                use_alpha=True)
-            width = size[0]
+        if HudDataCache.IS_TRAFFIC_AVAILABLE:
+            return
 
-            framebuffer.blit(
-                texture,
-                (self.__center_x__ - (width >> 1), self.__text_y_pos__))
+        current_time = datetime.utcnow()
+        is_shown = (current_time.second % 2) == 0
+
+        if not is_shown:
+            return
+
+        self.__render_text__(
+            framebuffer,
+            "ERROR: ADS-B IN",
+            self.__position__,
+            colors.RED,
+            0.5)
 
 
 if __name__ == '__main__':
-    hud_elements.run_ahrs_hud_element(TrafficNotAvailable, True)
+    hud_elements.run_hud_element(TrafficNotAvailable, True)

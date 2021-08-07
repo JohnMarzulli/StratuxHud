@@ -2,17 +2,17 @@
   "views": [
     {
       "elements": [
-        "Level Reference",
-        "Artificial Horizon",
+        "ADSB Reticles",
+        "ADSB Target Bugs Only",
         "Compass",
         "Altitude",
         "G Load",
+        "Level Reference",
         "Roll Indicator",
+        "Artificial Horizon",
         "Groundspeed",
         "Aithre",
         "Illyrian",
-        "ADSB Reticles",
-        "ADSB Target Bugs Only",
         "Traffic Not Available"
       ],
       "name": "AHRS + ADS-B"
@@ -51,6 +51,12 @@
     },
     {
       "elements": [
+        "AithreInfo"
+      ],
+      "name": "Aithre"
+    },
+    {
+      "elements": [
         "System Info"
       ],
       "name": "Diagnostics"
@@ -61,12 +67,12 @@
     },
     {
       "elements": [
-        "Level Reference",
-        "Artificial Horizon",
         "Compass",
         "Altitude",
         "G Load",
+        "Level Reference",
         "Roll Indicator",
+        "Artificial Horizon",
         "Groundspeed",
         "Aithre",
         "Illyrian"

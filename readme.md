@@ -297,6 +297,12 @@ Make sure you are using a high-quality power cable if you are using a Pi 3B+
 
 1. Save and quit.
 
+#### Alternative
+
+Use LXDE autostart:
+
+https://www.raspberrypi.org/forums/viewtopic.php?t=275703
+
 #### 7.2.1 Developer Note
 
 To ensure proper operation, if you are a developer the order services are brought online is important.
@@ -472,3 +478,43 @@ This project is covered by the GPL v3 license.
 
 - Python 3.9 introduces issues with `isAlive`
 - PyGame 1.9.6 is the last known working version. v2.0 instroduces issues with window creation.
+
+## AIO Jessie Install
+
+```bash
+cd ~
+wget https://www.openssl.org/source/openssl-1.1.1g.tar.gz
+tar zxvf openssl-1.1.1g.tar.gz
+cd openssl-1.1.1g
+./config --prefix=/home/pi/openssl --openssldir=/home/pi/openssl no-ssl2
+make
+make install
+
+cd~
+wget https://www.python.org/ftp/python/3.8.8/Python-3.8.8.tgz
+sudo tar zxf Python-3.8.8.tgz
+cd Python-3.8.8
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/home/pi/openssl/lib/
+sudo ./configure --enable-optimizations  --with-openssl=/home/pi/openssl/
+sudo make
+sudo make install
+```
+
+```bash
+sudo apt install libsdl-mixer1.2-dev
+sudo apt install libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev libsdl-sound1.2-dev python3-pygame
+
+pip3 install setuptools
+sudo python3 setup.py develop
+pip4 install pygame==1.9.6
+```
+
+## OpenGl
+
+sudo apt install freeglut3 freeglut3-dev
+
+pip3 install PyOpenGL PyOpenGL_accelerate
+
+https://www.raspberrypi.org/forums/viewtopic.php?t=223592
+https://www.raspberrypi.org/forums/viewtopic.php?t=243892
+https://www.raspberrypi.org/forums/viewtopic.php?t=266277

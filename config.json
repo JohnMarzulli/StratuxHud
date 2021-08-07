@@ -1,7 +1,8 @@
 {
     "aithre": true,
     "data_source": "stratux",
-    "declination": 0.0,
+    "enable_declination": true,
+    "declination": 15.0,
     "degrees_of_pitch": 90,
     "distance_units": "statute",
     "flip_horizontal": false,

@@ -1,4 +1,8 @@
 {
+  "AithreInfo": {
+    "class": "system_info.AithreView",
+    "detail_font": true
+  },
   "Aithre": {
     "class": "system_info.Aithre",
     "detail_font": true
@@ -11,7 +15,7 @@
     "class": "compass_and_heading_bottom_element.CompassAndHeadingBottomElement",
     "detail_font": true
   },
-  "Top Compass" :{
+  "Top Compass": {
     "class": "compass_and_heading_top_element.CompassAndHeadingTopElement",
     "detail_font": true
   },
@@ -53,7 +57,7 @@
   },
   "Traffic Not Available": {
     "class": "traffic_not_available.TrafficNotAvailable",
-    "detail_font": false
+    "detail_font": true
   },
   "Level Reference": {
     "class": "level_reference.LevelReference",

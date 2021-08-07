@@ -1,42 +1,94 @@
-import pygame
-from common_utils.task_timer import TaskTimer
+"""
+Element to show targetting reticles for where traffic is.
+"""
+
+import math
+
+from common_utils import fast_math
+from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
-from rendering import colors
+from rendering import colors, drawing
 
 from views import hud_elements
 from views.adsb_element import AdsbElement
 
 
 class AdsbOnScreenReticles(AdsbElement):
+    """
+    Element to show targetting reticles for where traffic is.
+    """
+
     def __init__(
         self,
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
-        AdsbElement.__init__(
-            self,
+        super().__init__(
             degrees_of_pitch,
             pixels_per_degree_y,
             font,
-            framebuffer_size)
+            framebuffer_size,
+            reduced_visuals)
 
         self.__listing_text_start_y__ = int(self.__font__.get_height() * 4)
-        self.__listing_text_start_x__ = int(
-            self.__framebuffer_size__[0] * 0.01)
+        self.__listing_text_start_x__ = int(self.__framebuffer_size__[0] * 0.01)
         self.__next_line_distance__ = int(font.get_height() * 1.5)
-        self.__top_border__ = int(self.__height__ * 0.1)
-        self.__bottom_border__ = self.__height__ - self.__top_border__
+        reticle_cull_size = self.__width__ / 6
+        self.__min_x__ = -reticle_cull_size
+        self.__max_x__ = self.__width__ + reticle_cull_size
+        self.__min_y__ = -reticle_cull_size
+        self.__max_y__ = self.__height__ + reticle_cull_size
 
-    def __render_on_screen_reticle__(
+    def __get_onscreen_reticle__(
         self,
-        framebuffer,
+        scale: float,
+        roll: float,
+        rotation_center: list,
+        reticle_center: list
+    ) -> list:
+        size = int(self.__height__ * scale)
+
+        on_screen_reticle = [
+            [0, -size],
+            [size, 0],
+            [0, size],
+            [-size, 0]]
+
+        # This rotation keeps the diamond points
+        # vertical compared to the horizon
+        on_screen_reticle = fast_math.rotate_points(
+            on_screen_reticle,
+            [0, 0],
+            -2 * roll)
+
+        # This moves it to where it would be in
+        # screen space WITHOUT taking into account
+        # aircraft roll
+        on_screen_reticle = fast_math.translate_points(
+            on_screen_reticle,
+            reticle_center)
+
+        # TODO - Figure out true POV and offset
+        # This moves it into position to account
+        # for the roll of the aircraft.
+        on_screen_reticle = fast_math.rotate_points(
+            on_screen_reticle,
+            rotation_center,
+            roll)
+
+        return on_screen_reticle
+
+    def __get_reticle_render_element__(
+        self,
         orientation: AhrsData,
+        rotation_center: list,
         traffic: Traffic
-    ):
+    ) -> drawing.HollowPolygon:
         """
         Draws a single reticle on the screen.
 
@@ -46,33 +98,73 @@ class AdsbOnScreenReticles(AdsbElement):
             traffic {Traffic} -- The traffic to draw the reticle for.
         """
 
-        identifier = traffic.get_display_name()
-
         # Find where to draw the reticle....
         reticle_x, reticle_y = self.__get_traffic_projection__(
             orientation,
             traffic)
 
         if reticle_x is None or reticle_y is None:
-            return
+            return None
 
         # Render using the Above us bug
-        on_screen_reticle_scale = hud_elements.get_reticle_size(
-            traffic.distance)
-        reticle, reticle_size_px = self.get_onscreen_reticle(
-            reticle_x, reticle_y, on_screen_reticle_scale)
-
-        reticle_x, reticle_y = self.__rotate_reticle__(
-            [[reticle_x, reticle_y]],
-            orientation.roll)[0]
-
-        self.__render_target_reticle__(
-            framebuffer,
-            identifier,
-            (reticle_x, reticle_y),
-            reticle,
+        on_screen_reticle_scale = hud_elements.get_reticle_size(traffic.distance)
+        reticle = self.__get_onscreen_reticle__(
+            on_screen_reticle_scale,
             orientation.roll,
-            reticle_size_px)
+            rotation_center,
+            [reticle_x, reticle_y])
+
+        if reticle_x < self.__min_x__ or reticle_x > self.__max_x__:
+            return None
+
+        if reticle_y < self.__min_y__ or reticle_y > self.__max_y__:
+            return None
+
+        # Used for debugging reticle rotation
+        # drawing.renderer.segment(
+        #     framebuffer,
+        #     colors.YELLOW,
+        #     [reticle_x, reticle_y],
+        #     reticle[0])
+
+        # drawing.renderer.segment(
+        #     framebuffer,
+        #     colors.YELLOW,
+        #     [reticle_x, reticle_y],
+        #     rotation_center)
+
+        return drawing.HollowPolygon(
+            reticle,
+            colors.RED,
+            self.__line_width__,
+            not self.__reduced_visuals__)
+
+    def __get_rotation_point__(
+        self,
+        orientation: AhrsData
+    ) -> list:
+        """
+        Get the coordinate for the lines for a given pitch and roll.
+
+        Arguments:
+            pitch {float} -- The pitch of the plane.
+            roll {float} -- The roll of the plane.
+            reference_angle {int} -- The pitch angle to be marked on the AH.
+
+        Returns:
+            [tuple] -- An array[4] of the X/Y line coords.
+        """
+
+        pitch_offset = self.__pixels_per_degree_y__ * -orientation.pitch
+
+        roll_delta = 90 - orientation.roll
+
+        radians = math.radians(roll_delta)
+
+        center_x = self.__center_x__ - (pitch_offset * math.cos(radians)) + 0.5
+        center_y = self.__center_y__ - (pitch_offset * math.sin(radians)) + 0.5
+
+        return [center_x, center_y]
 
     def render(
         self,
@@ -87,91 +179,35 @@ class AdsbOnScreenReticles(AdsbElement):
             orientation {Orientation} -- The orientation of the plane the HUD is in.
         """
 
-        # Get the traffic, and bail out of we have none
-        traffic_reports = HudDataCache.get_reliable_traffic()
+        with TaskProfiler('views.on_screen_reticles.AdsbOnScreenReticles.setup'):
+            our_heading = orientation.get_onscreen_projection_heading()
 
-        traffic_reports = list(filter(
-            lambda x: not x.is_on_ground(),
-            traffic_reports))
-        traffic_reports = traffic_reports[:hud_elements.max_target_bugs]
+            if isinstance(our_heading, str):
+                return
 
-        [self.__render_on_screen_reticle__(
-            framebuffer, orientation, traffic) for traffic in traffic_reports]
+            # Get the traffic, and bail out of we have none
+            traffic_reports = HudDataCache.get_reliable_traffic()
 
-    def __render_target_reticle__(
-        self,
-        framebuffer,
-        identifier: str,
-        pos,
-        reticle_lines,
-        roll: float,
-        reticle_size_px: int
-    ):
-        """
-        Renders a targetting reticle on the screen.
-        Assumes the X/Y projection has already been performed.
-        """
+            traffic_reports = list(
+                filter(
+                    lambda x: not x.is_on_ground() and (math.fabs(our_heading - x.bearing) < 45),
+                    traffic_reports))[:hud_elements.MAX_TARGET_BUGS]
 
-        center_x, center_y = pos
-        border_space = int(reticle_size_px * 1.2)
+            # find the position of the center of the 0 pitch indicator
+            rotation_center = self.__get_rotation_point__(orientation)
 
-        center_y = border_space if center_y < border_space else center_y
-        center_y = int(self.__height__ - border_space) \
-            if center_y > (self.__height__ - border_space) else center_y
+            reticles = [self.__get_reticle_render_element__(
+                orientation,
+                rotation_center,
+                traffic) for traffic in traffic_reports]
 
-        pygame.draw.lines(
-            framebuffer,
-            colors.BLACK,
-            True,
-            reticle_lines,
-            20)
-        pygame.draw.lines(
-            framebuffer,
-            colors.RED,
-            True,
-            reticle_lines,
-            10)
-
-    def __rotate_reticle__(
-        self,
-        reticle,
-        roll: float
-    ) -> list:
-        """
-        Takes a series of line segments and rotates them (roll) about
-        the screen's center
-
-        Arguments:
-            reticle {list of tuples} -- The line segments
-            roll {float} -- The amount to rotate about the center by.
-
-        Returns:
-            list of lists -- The new list of line segments
-        """
-
-        # Takes the roll in degrees
-        # Example input..
-        # [
-        #     [center_x, center_y - size],
-        #     [center_x + size, center_y],
-        #     [center_x, center_y + size],
-        #     [center_x - size, center_y]
-        # ]
-
-        translated_points = []
-
-        int_roll = int(-roll)
-        cos_roll = hud_elements.COS_RADIANS_BY_DEGREES[int_roll]
-        sin_roll = hud_elements.SIN_RADIANS_BY_DEGREES[int_roll]
-        ox, oy = self.__center__
-
-        translated_points = [[(ox + cos_roll * (x_y[0] - ox) - sin_roll * (x_y[1] - oy)),
-                              (oy + sin_roll * (x_y[0] - ox) + cos_roll * (x_y[1] - oy))]
-                             for x_y in reticle]
-
-        return translated_points
+        with TaskProfiler('views.on_screen_reticles.AdsbOnScreenReticles.rendering'):
+            # pylint:disable=expression-not-assigned
+            [reticle.render(framebuffer) for reticle in reticles if reticle is not None]
 
 
 if __name__ == '__main__':
-    from views.hud_elements import run_adsb_hud_element
-    run_adsb_hud_element(AdsbOnScreenReticles)
+    from views.artificial_horizon import ArtificialHorizon
+    from views.hud_elements import run_hud_elements
+    from views.roll_indicator import RollIndicator
+    run_hud_elements([RollIndicator, ArtificialHorizon, AdsbOnScreenReticles])

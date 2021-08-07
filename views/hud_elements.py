@@ -1,92 +1,53 @@
 """
 Common code for HUD view elements.
 """
-import math
+
+from datetime import datetime, timedelta
 
 import pygame
-from common_utils import units
+from common_utils import fast_math, geo_math, units
 from configuration import configuration
-from rendering import colors, display
+from core_services import breadcrumbs, zoom_tracker
+from data_sources import ahrs_simulation, traffic
+from data_sources.data_cache import HudDataCache
+from rendering import display
 
 DEFAULT_FONT = "./assets/fonts/LiberationMono-Bold.ttf"
 
-SIN_RADIANS_BY_DEGREES = {}
-COS_RADIANS_BY_DEGREES = {}
+MAX_TARGET_BUGS = 25
 
-TWO_PI = 2.0 * math.pi
+IMPERIAL_FARAWAY = units.yards_to_sm * 5
+IMPERIAL_SUPERCLOSE = units.yards_to_sm / 8.0
 
-max_target_bugs = 25
-imperial_occlude = units.yards_to_sm * 10
-imperial_faraway = units.yards_to_sm * 5
-imperial_superclose = units.yards_to_sm / 8.0
-
-# Fill the quick trig look up tables.
-for degrees in range(-360, 361):
-    radians = math.radians(degrees)
-    SIN_RADIANS_BY_DEGREES[degrees] = math.sin(radians)
-    COS_RADIANS_BY_DEGREES[degrees] = math.cos(radians)
-
-
-def wrap_angle(
-    angle: float
-) -> float:
-    """
-    Wraps an angle (degrees) to be between 0.0 and 360
-    Arguments:
-        angle {float} -- The input angle
-    Returns: and value that is between 0 and 360, inclusive.
-    """
-
-    if angle < 0.0:
-        return wrap_angle(angle + 360.0)
-
-    if angle > 360.0:
-        return wrap_angle(angle - 360.0)
-
-    return angle
-
-
-def wrap_radians(
-    radians: float
-) -> float:
-    """
-    Wraps an angle that is in radians to be between 0.0 and 2Pi
-    Arguments:
-        angle {float} -- The input angle
-    Returns: and value that is between 0 and 2Pi, inclusive.
-    """
-    if radians < 0.0:
-        return wrap_radians(radians + TWO_PI)
-
-    if radians > TWO_PI:
-        return wrap_radians(radians - TWO_PI)
-
-    return radians
+# pylint:disable=bare-except
 
 
 def apply_declination(
-    heading
+    heading: float
 ) -> int:
     """
     Returns a heading to display with the declination adjust to convert from true to magnetic.
 
-    Arguments:
-        heading {float} -- The TRUE heading.
+    Args:
+        heading (float): The TRUE heading that we want to apply declination to.
 
     Returns:
-        float -- The MAGNETIC heading.
+        int: The resulting MAGNETIC heading.
     """
 
-    try:
-        declination_applied = heading - configuration.CONFIGURATION.get_declination()
-        new_heading = int(declination_applied)
-    except:
-        # If the heading is the unknown '---' then the math wil fail.
+    if isinstance(heading, str):
         return heading
 
-    new_heading = wrap_angle(new_heading)
+    if not configuration.CONFIGURATION.is_declination_enabled():
+        return int(heading)
 
-    return new_heading
+    gps_declination = HudDataCache.DECLINATION
+    declination_to_apply = gps_declination if gps_declination is not None else 0
+
+    declination_applied = heading - declination_to_apply
+    new_heading = int(declination_applied)
+
+    return int(fast_math.wrap_degrees(new_heading))
 
 
 def get_reticle_size(
@@ -108,20 +69,18 @@ def get_reticle_size(
         float -- The size of the reticle (in proportion to the screen size.)
     """
 
-    if distance <= imperial_superclose:
-        on_screen_reticle_scale = max_reticle_size
-    elif distance >= imperial_faraway:
-        on_screen_reticle_scale = min_reticle_size
+    if distance <= IMPERIAL_SUPERCLOSE:
+        return max_reticle_size
+    elif distance >= IMPERIAL_FARAWAY:
+        return min_reticle_size
     else:
-        delta = distance - imperial_superclose
-        scale_distance = imperial_faraway - imperial_superclose
+        delta = distance - IMPERIAL_SUPERCLOSE
+        scale_distance = IMPERIAL_FARAWAY - IMPERIAL_SUPERCLOSE
         ratio = delta / scale_distance
         reticle_range = max_reticle_size - min_reticle_size
 
-        on_screen_reticle_scale = min_reticle_size + \
+        return min_reticle_size + \
             (reticle_range * (1.0 - ratio))
-
-    return on_screen_reticle_scale
 
 
 def get_heading_bug_x(
@@ -142,62 +101,43 @@ def get_heading_bug_x(
     """
 
     delta = (bearing - heading + 180)
-    delta = wrap_angle(delta)
+    delta = fast_math.wrap_degrees(delta)
 
     return int(delta * degrees_per_pixel)
 
 
-def get_onscreen_traffic_projection__(
-    heading: float,
-    pitch: float,
-    roll: float,
-    bearing: float,
-    distance: float,
-    altitude_delta: float,
-    pixels_per_degree: float
-):
-    """
-    Attempts to figure out where the traffic reticle should be rendered.
-    Returns value RELATIVE to the screen center.
-    """
-
-    # Assumes traffic.position_valid
-    # TODO - Account for aircraft roll...
-    slope = altitude_delta / distance
-    vertical_degrees_to_target = math.degrees(math.atan(slope))
-    vertical_degrees_to_target -= pitch
-
-    # TODO - Double check ALL of this math...
-    horizontal_degrees_to_target = bearing - heading
-
-    screen_y = -vertical_degrees_to_target * pixels_per_degree
-    screen_x = horizontal_degrees_to_target * pixels_per_degree
-
-    return screen_x, screen_y
-
-
-def run_ahrs_hud_element(
+def run_hud_element(
     element_type,
     use_detail_font: bool = True
 ):
     """
     Runs an AHRS based HUD element alone for testing purposes
 
-    Arguments:
-        element_type {type} -- The class to create.
+    Args:
+        element_type (HudElement): The class of element to  run in the debugger
+        use_detail_font (bool, optional): Should the detail font be used.. Defaults to True.
+    """
+    run_hud_elements([element_type], use_detail_font)
 
-    Keyword Arguments:
-        use_detail_font {bool} -- Should the detail font be used. (default: {True})
+
+def run_hud_elements(
+    element_types: list,
+    use_detail_font: bool = True
+):
+    """
+    Runs a set of AHRS based HUD elements for testing purposes
+
+    Args:
+        element_types (list): The classes of elements to  run in the debugger
+        use_detail_font (bool, optional): Should the detail font be used.. Defaults to True.
     """
 
-    from datetime import datetime
-
-    from data_sources import ahrs_simulation
+    simulated_traffic = [traffic.SimulatedTraffic(max_distance) for max_distance in range(100, 100000, 5000)]
 
     clock = pygame.time.Clock()
 
-    __backpage_framebuffer__, screen_size = display.display_init()  # args.debug)
-    __width__, __height__ = screen_size
+    screen = display.Display()  # args.debug)
+    __width__, __height__ = screen.size
     pygame.mouse.set_visible(False)
 
     pygame.font.init()
@@ -208,82 +148,17 @@ def run_ahrs_hud_element(
     __font__ = pygame.font.Font(DEFAULT_FONT, font_size_std)
     __detail_font__ = pygame.font.Font(DEFAULT_FONT, font_size_detail)
 
-    if use_detail_font:
-        font = __detail_font__
-    else:
-        font = __font__
-
+    font = __detail_font__ if use_detail_font else __font__
     __aircraft__ = ahrs_simulation.AhrsSimulation()
 
     __pixels_per_degree_y__ = (__height__ / configuration.CONFIGURATION.get_degrees_of_pitch()
                                ) * configuration.CONFIGURATION.get_pitch_degrees_display_scaler()
 
-    hud_element = element_type(
+    hud_elements = [element_type(
         configuration.CONFIGURATION.get_degrees_of_pitch(),
         __pixels_per_degree_y__,
         font,
-        (__width__, __height__))
-
-    while True:
-        orientation = __aircraft__.get_ahrs()
-        orientation.utc_time = str(datetime.utcnow())
-        __aircraft__.simulate()
-        __backpage_framebuffer__.fill(colors.BLACK)
-        hud_element.render(__backpage_framebuffer__, orientation)
-        pygame.display.flip()
-        clock.tick(60)
-
-
-def run_adsb_hud_element(
-    element_type,
-    use_detail_font: bool = True
-):
-    """
-    Runs a ADSB based HUD element alone for testing purposes
-
-    Arguments:
-        element_type {type} -- The class to create.
-
-    Keyword Arguments:
-        use_detail_font {bool} -- Should the detail font be used. (default: {True})
-    """
-
-    from data_sources import ahrs_simulation, traffic
-    from data_sources.data_cache import HudDataCache
-
-    simulated_traffic = (traffic.SimulatedTraffic(),
-                         traffic.SimulatedTraffic(),
-                         traffic.SimulatedTraffic())
-
-    clock = pygame.time.Clock()
-
-    __backpage_framebuffer__, screen_size = display.display_init()  # args.debug)
-    __width__, __height__ = screen_size
-    pygame.mouse.set_visible(False)
-
-    pygame.font.init()
-
-    font_size_std = int(__height__ / 10.0)
-    font_size_detail = int(__height__ / 12.0)
-
-    __font__ = pygame.font.Font(DEFAULT_FONT, font_size_std)
-    __detail_font__ = pygame.font.Font(DEFAULT_FONT, font_size_detail)
-
-    if use_detail_font:
-        font = __detail_font__
-    else:
-        font = __font__
-
-    __aircraft__ = ahrs_simulation.AhrsSimulation()
-
-    __pixels_per_degree_y__ = (__height__ / configuration.CONFIGURATION.get_degrees_of_pitch()) * \
-        configuration.CONFIGURATION.get_pitch_degrees_display_scaler()
-
-    hud_element = element_type(
-        configuration.CONFIGURATION.get_degrees_of_pitch(),
-        __pixels_per_degree_y__,
-        font,
-        (__width__, __height__))
+        (__width__, __height__)) for element_type in element_types]
 
     while True:
         for test_data in simulated_traffic:
@@ -292,31 +167,16 @@ def run_adsb_hud_element(
                 test_data.icao_address,
                 test_data.to_json())
 
-        HudDataCache.purge_old_textures()
+        HudDataCache.update_traffic_reports()
+
         orientation = __aircraft__.get_ahrs()
+        breadcrumbs.INSTANCE.update(orientation)
+
+        zoom_tracker.INSTANCE.update(orientation)
+        orientation.utc_time = str(datetime.utcnow())
         __aircraft__.simulate()
-        __backpage_framebuffer__.fill(colors.BLACK)
-        hud_element.render(__backpage_framebuffer__, orientation)
-        pygame.display.flip()
+        screen.clear()
+        for hud_element in hud_elements:
+            hud_element.render(screen.get_framebuffer(), orientation)
+        screen.flip()
         clock.tick(60)
-
-
-if __name__ == '__main__':
-    for distance in range(0, int(2.5 * units.yards_to_sm), int(units.yards_to_sm / 10.0)):
-        print("{0}' -> {1}".format(distance, get_reticle_size(distance)))
-
-    heading = 327
-    pitch = 0
-    roll = 0
-    distance = 1000
-    altitude_delta = 1000
-    pixels_per_degree = 10
-    for bearing in range(0, 360, 10):
-        print("Bearing {0} -> {1}px".format(bearing,
-                                            get_heading_bug_x(heading, bearing, 2.2222222)))
-        x, y = get_onscreen_traffic_projection__(
-            heading, pitch, roll, bearing, distance, altitude_delta, pixels_per_degree)
-        print("    {0}, {1}".format(x + 400, y + 240))
-        print("TRUE: {0} -> {1} MAG".format(
-            bearing,
-            apply_declination(bearing)))

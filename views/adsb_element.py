@@ -1,17 +1,16 @@
 import math
 
-import pygame
 from common_utils import units
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
-from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
-from rendering import colors
+from rendering import colors, drawing, text_renderer
 
+from views.ahrs_element import HudElement
 from views.hud_elements import apply_declination
 
 
-class AdsbElement(object):
+class AdsbElement(HudElement):
     def uses_ahrs(
         self
     ) -> bool:
@@ -29,22 +28,17 @@ class AdsbElement(object):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
+        super().__init__(font, framebuffer_size, reduced_visuals)
+
         self.__roll_elements__ = {}
-        self.__framebuffer_size__ = framebuffer_size
-        self.__center__ = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
-        half_texture_height = int(font.get_height()) >> 1
-        self.__text_y_pos__ = self.__center__[1] - half_texture_height
-        self.__font__ = font
-        self.__top_border__ = int(framebuffer_size[1] * 0.5)
-        self.__bottom_border__ = framebuffer_size[1] - self.__top_border__
+        self.__text_y_pos__ = self.__center_y__ - self.__font_half_height__
         self.__pixels_per_degree_y__ = pixels_per_degree_y
         self.__pixels_per_degree_x__ = self.__framebuffer_size__[0] / 360.0
-        self.__height__ = framebuffer_size[1]
-        self.__width__ = framebuffer_size[0]
-        self.start_fade_threshold = (
-            configuration.CONFIGURATION.max_minutes_before_removal * 60) / 2
+        self.start_fade_threshold = (configuration.CONFIGURATION.max_minutes_before_removal * 60) / 2
+        self.__lower_reticle_bottom_y__ = self.__bottom_border__ - self.__font_height__ - self.__font_half_height__ - (self.__thick_line_width__ << 2)
 
     def __get_speed_string__(
         self,
@@ -71,7 +65,7 @@ class AdsbElement(object):
 
     def __get_distance_string__(
         self,
-        distance,
+        distance: float,
         decimal_places: bool = True
     ) -> str:
         """
@@ -91,7 +85,7 @@ class AdsbElement(object):
 
         return units.get_converted_units_string(
             display_units,
-            distance,
+            math.fabs(distance),
             decimal_places=decimal_places)
 
     def __get_traffic_projection__(
@@ -155,8 +149,9 @@ class AdsbElement(object):
         center_x: int,
         scale: float
     ):
-        """Generates the coordinates for a reticle indicating
-        traffic is above use.
+        """
+        Generates the coordinates for a reticle indicating
+        traffic is below us.
 
         Arguments:
             center_x {int} -- Center X screen position
@@ -165,35 +160,18 @@ class AdsbElement(object):
         """
 
         size = int(self.__height__ * scale)
-        bug_vertical_offset = self.__font__.get_height() << 1  # int(self.__height__ * 0.25)
+        quarter_size = size >> 2
+        left = center_x - quarter_size
+        right = center_x + quarter_size
+        top = self.__lower_reticle_bottom_y__ - size
 
         below_reticle = [
-            [center_x - (size >> 2), self.__height__ -
-             size - bug_vertical_offset],
-            [center_x, self.__height__ - bug_vertical_offset],
-            [center_x + (size >> 2), self.__height__ -
-             size - bug_vertical_offset]
-        ]
+            [left, top],
+            [center_x, self.__lower_reticle_bottom_y__],
+            [right, top]]
 
         # self.__height__ - size - bug_vertical_offset
         return below_reticle, below_reticle[2][1]
-
-    def get_onscreen_reticle(
-        self,
-        center_x: int,
-        center_y: int,
-        scale: float
-    ):
-        size = int(self.__height__ * scale)
-
-        on_screen_reticle = [
-            [center_x, center_y - size],
-            [center_x + size, center_y],
-            [center_x, center_y + size],
-            [center_x - size, center_y]
-        ]
-
-        return on_screen_reticle, size
 
     def __get_additional_target_text__(
         self,
@@ -241,18 +219,22 @@ class AdsbElement(object):
         # Render all of the textures and then
         # find which one is the widest.
         all_text = [identifier_text] + additional_info_text
-        all_textures_and_sizes = [HudDataCache.get_cached_text_texture(
-            text, self.__font__, colors.BLACK, card_color, False, False) for text in all_text]
-        widest_texture = max(all_textures_and_sizes,
-                             key=lambda x: x[1][0])[1][0]
-        text_height = all_textures_and_sizes[0][1][1]
+        all_textures_and_sizes = [text_renderer.get_or_create_text_texture(
+            self.__font__,
+            text,
+            colors.BLACK,
+            card_color) for text in all_text]
+
+        texture_widths = [texture[2][0] for texture in all_textures_and_sizes]
+
+        widest_texture = max(texture_widths)
+        text_height = all_textures_and_sizes[0][2][1]
 
         info_spacing = 1.2
         texture_height = int(
             (len(all_textures_and_sizes) * info_spacing) * text_height)
 
-        info_position_y = ((self.__height__ >> 1) -
-                           (texture_height >> 1) - text_height)
+        info_position_y = ((self.__height__ >> 1) - (texture_height >> 1) - text_height)
 
         edge_left = (center_x - (widest_texture >> 1))
         edge_right = (center_x + (widest_texture >> 1))
@@ -266,26 +248,32 @@ class AdsbElement(object):
             edge_left -= diff
             edge_right = self.__framebuffer_size__[0]
 
-        pixel_border_size = 4
-        fill_top_left = [edge_left - pixel_border_size,
-                         info_position_y - pixel_border_size]
-        fill_top_right = [edge_right + pixel_border_size, fill_top_left[1]]
-        fill_bottom_right = [fill_top_right[0], info_position_y + pixel_border_size +
-                             int((len(additional_info_text) + 1) * info_spacing * text_height)]
+        fill_top_left = [edge_left - self.__line_width__, info_position_y - self.__line_width__]
+        fill_top_right = [edge_right + self.__line_width__, fill_top_left[1]]
+        fill_bottom_right = [
+            fill_top_right[0],
+            info_position_y + self.__line_width__ + int((len(additional_info_text) + 1) * info_spacing * text_height)]
         fill_bottom_left = [fill_top_left[0], fill_bottom_right[1]]
 
-        pygame.draw.polygon(framebuffer, card_color,
-                            [fill_top_left, fill_top_right, fill_bottom_right, fill_bottom_left])
+        drawing.renderer.polygon(
+            framebuffer,
+            card_color,
+            [fill_top_left, fill_top_right, fill_bottom_right, fill_bottom_left],
+            False)
 
-        pygame.draw.lines(
+        drawing.renderer.segments(
             framebuffer,
             colors.BLACK,
             True,
             [fill_top_left, fill_top_right, fill_bottom_right, fill_bottom_left],
-            6)
+            int(self.__line_width__ * 1.5))
 
         self.__render_info_text__(
-            all_textures_and_sizes, center_x, framebuffer, info_position_y, info_spacing)
+            all_textures_and_sizes,
+            center_x,
+            framebuffer,
+            info_position_y,
+            info_spacing)
 
     def __get_card_color__(
         self,
@@ -306,16 +294,16 @@ class AdsbElement(object):
             card_color = colors.YELLOW
 
             if time_since_last_report > self.start_fade_threshold:
-                max_distance = (
-                    configuration.CONFIGURATION.max_minutes_before_removal * 60.0) - self.start_fade_threshold
-                proportion = (time_since_last_report -
-                              self.start_fade_threshold) / max_distance
+                max_distance = (configuration.CONFIGURATION.max_minutes_before_removal * 60.0) - self.start_fade_threshold
+                proportion = (time_since_last_report - self.start_fade_threshold) / max_distance
 
                 card_color = colors.get_color_mix(
-                    colors.YELLOW, colors.BLACK, proportion)
+                    colors.YELLOW,
+                    colors.BLACK,
+                    proportion)
 
             return card_color
-        except Exception:
+        except:
             return colors.YELLOW
 
     def __render_info_text__(
@@ -326,7 +314,7 @@ class AdsbElement(object):
         info_position_y: int,
         info_spacing
     ):
-        for info_texture, size in additional_info_textures:
+        for key, info_texture, size in additional_info_textures:
             width_x, width_y = size
             half_width = width_x >> 1
             x_pos = center_x - half_width
@@ -338,78 +326,11 @@ class AdsbElement(object):
                 x_pos = self.__width__ - width_x
 
             try:
-                framebuffer.blit(info_texture, [x_pos, info_position_y])
-            except Exception:
+                text_renderer.render_cached_texture(
+                    framebuffer,
+                    key,
+                    [x_pos, info_position_y])
+            except:
                 pass
 
             info_position_y += int(width_y * info_spacing)
-
-    def __render_target_reticle__(
-        self,
-        framebuffer,
-        identifier: str,
-        center_x: int,
-        center_y: int,
-        reticle_lines,
-        roll
-    ):
-        """
-        Renders a targetting reticle on the screen.
-        Assumes the X/Y projection has already been performed.
-        """
-
-        border_space = int(self.__font__.get_height() * 3.0)
-
-        if center_y < border_space:
-            center_y = border_space
-
-        if center_y > (self.__height__ - border_space):
-            center_y = int(self.__height__ - border_space)
-
-        pygame.draw.lines(
-            framebuffer,
-            colors.RED,
-            True,
-            reticle_lines,
-            4)
-
-        # Move the identifer text away from the reticle
-        if center_y < self.__center__[1]:
-            text_y = center_y + border_space
-        else:
-            text_y = center_y - border_space
-
-        rendered_text = self.__font__.render(
-            str(identifier),
-            True,
-            colors.YELLOW)
-        text_width, text_height = rendered_text.get_size()
-
-        text = pygame.transform.rotate(rendered_text, roll)
-
-        framebuffer.blit(
-            text, (center_x - (text_width >> 1), text_y - (text_height >> 1)))
-
-    def __render_texture__(
-        self,
-        framebuffer,
-        position,
-        texture,
-        texture_size,
-        roll
-    ):
-        """
-        Renders the text with the results centered on the given
-        position.
-        """
-
-        position_x, position_y = position
-        text_width, text_height = texture_size
-
-        text = pygame.transform.rotate(texture, roll)
-
-        framebuffer.blit(
-            text,
-            (position_x - (text_width >> 1), position_y - (text_height >> 1)))
-
-        return text_width, text_height

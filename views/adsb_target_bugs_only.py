@@ -1,13 +1,18 @@
-import pygame
-from common_utils.task_timer import TaskTimer
+"""
+View element to show target bugs for nearby aircraft.
+"""
+
+from common_utils.task_timer import TaskProfiler
+from configuration import configuration
+from core_services import zoom_tracker
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
-from rendering import colors
+from rendering import colors, drawing
 
 from views.adsb_element import AdsbElement, apply_declination
-from views.hud_elements import (get_heading_bug_x, get_reticle_size,
-                                max_target_bugs)
+from views.hud_elements import (MAX_TARGET_BUGS, get_heading_bug_x,
+                                get_reticle_size)
 
 
 class AdsbTargetBugsOnly(AdsbElement):
@@ -16,23 +21,21 @@ class AdsbTargetBugsOnly(AdsbElement):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
-        AdsbElement.__init__(
-            self, degrees_of_pitch, pixels_per_degree_y, font, framebuffer_size)
-
-        self.__listing_text_start_y__ = int(self.__font__.get_height() * 4)
-        self.__listing_text_start_x__ = int(
-            self.__framebuffer_size__[0] * 0.01)
-        self.__next_line_distance__ = int(font.get_height() * 1.5)
-        self.__top_border__ = 0
-        self.__bottom_border__ = self.__height__ - int(self.__height__ * 0.1)
+        super().__init__(
+            degrees_of_pitch,
+            pixels_per_degree_y,
+            font,
+            framebuffer_size,
+            reduced_visuals)
 
     def __render_traffic_heading_bug__(
         self,
         traffic_report: Traffic,
         heading: float,
-        orientation: AhrsData,
+        ownship_altitude: int,
         framebuffer
     ):
         """
@@ -41,7 +44,7 @@ class AdsbTargetBugsOnly(AdsbElement):
         Arguments:
             traffic_report {Traffic} -- The traffic we want to render a bug for.
             heading {int} -- Our current heading.
-            orientation {Orientation} -- Our plane's current orientation.
+            ownship_altitude {int} -- Our plane's current altitude.
             framebuffer {Framebuffer} -- What we are going to draw to.
         """
 
@@ -51,7 +54,7 @@ class AdsbTargetBugsOnly(AdsbElement):
 
         heading_bug_x = get_heading_bug_x(
             heading,
-            apply_declination(traffic_report.bearing),
+            traffic_report.bearing,
             self.__pixels_per_degree_x__)
 
         try:
@@ -60,14 +63,17 @@ class AdsbTargetBugsOnly(AdsbElement):
             # that we are comparing pressure altitude to pressure altitude....
             # .. or use the Pressure Alt if that is available from the avionics.
             # .. or just validate that we are using pressure altitude...
-            is_below = (orientation.alt - 100) > traffic_report.altitude
+            is_below = ownship_altitude > traffic_report.altitude
             reticle, reticle_edge_position_y = self.get_below_reticle(
-                heading_bug_x, target_bug_scale) if is_below else self.get_above_reticle(heading_bug_x, target_bug_scale)
+                heading_bug_x,
+                target_bug_scale) if is_below else self.get_above_reticle(
+                    heading_bug_x,
+                    target_bug_scale)
 
-            bug_color = colors.BLUE if traffic_report.is_on_ground() == True else colors.RED
+            bug_color = colors.BLUE if traffic_report.is_on_ground() else colors.RED
 
-            pygame.draw.polygon(framebuffer, bug_color, reticle)
-        except Exception:
+            drawing.renderer.polygon(framebuffer, bug_color, reticle)
+        finally:
             pass
 
     def render(
@@ -75,27 +81,38 @@ class AdsbTargetBugsOnly(AdsbElement):
         framebuffer,
         orientation: AhrsData
     ):
-        # Render a heading strip along the top
+        with TaskProfiler('views.adsb_target_bugs_only.AdsbTargetBugsOnly.setup'):
+            heading = orientation.get_onscreen_projection_heading()
 
-        heading = orientation.get_onscreen_projection_heading()
+            if isinstance(heading, str):
+                return
 
-        # Get the traffic, and bail out of we have none
-        traffic_reports = HudDataCache.get_reliable_traffic()
+            # Get the traffic, and bail out of we have none
+            traffic_reports = HudDataCache.get_reliable_traffic()
 
-        if traffic_reports is None:
-            return
+            if traffic_reports is None:
+                return
 
-        reports_to_show = traffic_reports[:max_target_bugs]
+            reports_to_show = list(
+                filter(
+                    lambda x: zoom_tracker.INSTANCE.is_in_inner_range(x.distance)[0],
+                    traffic_reports))
 
-        if not isinstance(heading, str):
+            reports_to_show = reports_to_show[:MAX_TARGET_BUGS]
+
+        # pylint:disable=expression-not-assigned
+        with TaskProfiler('views.adsb_target_bugs_only.AdsbTargetBugsOnly.render'):
             [self.__render_traffic_heading_bug__(
                 traffic_report,
                 heading,
-                orientation,
+                orientation.alt,
                 framebuffer) for traffic_report in reports_to_show]
 
 
 if __name__ == '__main__':
-    from views.hud_elements import run_adsb_hud_element
+    from views.compass_and_heading_bottom_element import \
+        CompassAndHeadingBottomElement
+    from views.hud_elements import run_hud_elements
+    from views.roll_indicator import RollIndicator
 
-    run_adsb_hud_element(AdsbTargetBugsOnly)
+    run_hud_elements([AdsbTargetBugsOnly, CompassAndHeadingBottomElement, RollIndicator])

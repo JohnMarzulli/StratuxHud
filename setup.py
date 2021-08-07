@@ -3,7 +3,7 @@ from setuptools import setup
 from common_utils.local_debug import IS_PI
 
 installs = ['pytest',
-            'pygame==1.9.6',
+            'pygame',
             'requests']
 
 if IS_PI:

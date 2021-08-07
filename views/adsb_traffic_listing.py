@@ -1,7 +1,12 @@
-from common_utils.task_timer import TaskTimer
+"""
+View that shows the list of nearby traffic
+"""
+
+from core_services import zoom_tracker
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
+from rendering import colors, text_renderer
 
 from views.adsb_element import AdsbElement, apply_declination
 
@@ -24,14 +29,15 @@ class AdsbTrafficListing(AdsbElement):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
-        AdsbElement.__init__(
-            self,
+        super().__init__(
             degrees_of_pitch,
             pixels_per_degree_y,
             font,
-            framebuffer_size)
+            framebuffer_size,
+            reduced_visuals)
 
         self.__listing_text_start_y__ = int(self.__font__.get_height())
         self.__listing_text_start_x__ = int(
@@ -39,8 +45,6 @@ class AdsbTrafficListing(AdsbElement):
         self.__next_line_distance__ = int(font.get_height())
         self.__max_reports__ = int(
             (self.__height__ - self.__listing_text_start_y__) / self.__next_line_distance__) - 1
-        self.__top_border__ = int(self.__height__ * 0.2)
-        self.__bottom_border__ = self.__height__ - int(self.__height__ * 0.1)
 
     def __get_listing__(
         self,
@@ -72,11 +76,9 @@ class AdsbTrafficListing(AdsbElement):
         pre_padded_text, max_string_lengths = self.__get_pre_padded_text_reports__(
             traffic_reports)
 
-        out_padded_reports = [self.__get_listing__(
+        return [self.__get_listing__(
             report,
             max_string_lengths) for report in pre_padded_text]
-
-        return out_padded_reports
 
     def __get_report_text__(
         self,
@@ -98,8 +100,17 @@ class AdsbTrafficListing(AdsbElement):
         traffic_reports: list
     ):
         # We do not want to show traffic on the ground.
-        reports_to_show = list(filter(
-            lambda x: not x.is_on_ground(), traffic_reports))
+        reports_to_show = list(
+            filter(
+                lambda x: not x.is_on_ground(),
+                traffic_reports))
+
+        reports_to_show = list(
+            filter(
+                lambda x: zoom_tracker.INSTANCE.is_in_inner_range(
+                    x.distance
+                )[0],
+                traffic_reports))
 
         # The __max_reports__ value is set based on the screen size
         # and how much can fit on the screen
@@ -115,7 +126,7 @@ class AdsbTrafficListing(AdsbElement):
         # Since the bearing length should never be any more the 3 digits
         max_bearing_length = 4
         # len(max(pre_padded_text, key = lambda x: len(x[2]))[2]) + 1
-        max_distance_length = 8
+        max_distance_length = 10
         # We really should never get anything more than 35k above, but same some room
         # len(max(pre_padded_text, key = lambda x: len(x[3]))[3])
         max_altitude_length = 5
@@ -144,23 +155,18 @@ class AdsbTrafficListing(AdsbElement):
         padded_traffic_reports = self.__get_padded_traffic_reports__(
             traffic_reports)
 
-        if len(padded_traffic_reports) == 0:
-            framebuffer.blit(
-                HudDataCache.get_cached_text_texture(
-                    "NO TRAFFIC",
-                    self.__font__)[0],
-                (x_pos, y_pos))
-
         for identifier, traffic_report in padded_traffic_reports:
-            traffic_text_texture = HudDataCache.get_cached_text_texture(
+            text_renderer.render_text(
+                framebuffer,
+                self.__font__,
                 traffic_report,
-                self.__font__)[0]
-
-            framebuffer.blit(traffic_text_texture, (x_pos, y_pos))
+                [x_pos, y_pos],
+                colors.BLACK,
+                colors.YELLOW)
 
             y_pos += self.__next_line_distance__
 
 
 if __name__ == '__main__':
-    from views.hud_elements import run_adsb_hud_element
-    run_adsb_hud_element(AdsbTrafficListing)
+    from views.hud_elements import run_hud_element
+    run_hud_element(AdsbTrafficListing)

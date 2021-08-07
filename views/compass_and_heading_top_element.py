@@ -1,74 +1,87 @@
+"""
+Module to draw a compass and heading strip at the top of the screen.
+"""
+
 from numbers import Number
 
-import pygame
-from common_utils.task_timer import TaskTimer
+from common_utils import fast_math
+from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
+from rendering import colors, drawing
 
 from views.ahrs_element import AhrsElement
-from views.hud_elements import *
+from views.hud_elements import apply_declination, run_hud_element
 
 
 class CompassAndHeadingTopElement(AhrsElement):
+    """
+    Element to draw a compass and heading strip at the top of the screen.
+    """
+
+    def __get_mark_line_start__(
+        self
+    ) -> int:
+        return self.__top_border__ + self.__font_height__
+
+    def __get_mark_line_end__(
+        self
+    ) -> int:
+        return self.__top_border__ + int(self.__font_height__ * 1.5)
+
+    def __get_compass_y_position__(
+        self
+    ) -> int:
+        return self.__top_border__ + int(self.__font_height__ >> 4)
+
+    def __get_heading_text_y_position__(
+        self
+    ) -> int:
+        return self.__get_compass_y_position__()
+
     def __init__(
         self,
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
-        self.__framebuffer_size__ = framebuffer_size
-        self.__center__ = (framebuffer_size[0] >> 1, framebuffer_size[1] >> 1)
-        self.__long_line_width__ = self.__framebuffer_size__[0] * 0.2
-        self.__short_line_width__ = self.__framebuffer_size__[0] * 0.1
-        self.__pixels_per_degree_y__ = pixels_per_degree_y
+        super().__init__(font, framebuffer_size, reduced_visuals)
 
-        self.heading_text_y = int(font.get_height())
-        self.compass_text_y = int(font.get_height())
+        self.__compass_box_y_position__ = self.__get_compass_y_position__()
 
         self.pixels_per_degree_x = framebuffer_size[0] / 360.0
-        cardinal_direction_line_proportion = 0.2
-        self.line_height = int(
-            framebuffer_size[1] * cardinal_direction_line_proportion)
-        self.__font__ = font
-
-        self.__heading_text__ = {}
-
-        for heading in range(-1, 361):
-            texture = self.__font__.render(
-                str(heading),
-                True,
-                colors.BLACK,
-                colors.YELLOW).convert()
-            width, height = texture.get_size()
-            self.__heading_text__[heading] = texture, (width >> 1, height >> 1)
-
-        text_height = font.get_height()
-        border_vertical_size = (text_height >> 1) + (text_height >> 2)
-        half_width = int(self.__heading_text__[360][1][0] * 3.5)
-
-        self.__center_x__ = self.__center__[0]
-
-        self.__heading_text_box_lines__ = [
-            [self.__center_x__ - half_width,
-             self.compass_text_y + (1.5 * text_height) - border_vertical_size],
-            [self.__center_x__ + half_width,
-             self.compass_text_y + (1.5 * text_height) - border_vertical_size],
-            [self.__center_x__ + half_width,
-             self.compass_text_y + (1.5 * text_height) + border_vertical_size],
-            [self.__center_x__ - half_width,
-             self.compass_text_y + (1.5 * text_height) + border_vertical_size]]
 
         self.__heading_strip_offset__ = {}
 
-        for heading in range(0, 181):
+        for heading in range(181):
             self.__heading_strip_offset__[heading] = int(
                 self.pixels_per_degree_x * heading)
 
         self.__heading_strip__ = {}
 
-        for heading in range(0, 361):
-            self.__heading_strip__[
-                heading] = self.__generate_heading_strip__(heading)
+        for heading in range(361):
+            self.__heading_strip__[heading] = self.__generate_heading_strip__(heading)
+
+        self.__heading_box_elements__ = self.__get_hollow_heading_box_elements__()
+
+    def __get_heading_box_points__(
+        self,
+        text_vertical_position: int
+    ) -> list:
+        border_vertical_size = self.__font_half_height__ >> 2
+        half_width = int(self.__font_height__ * 2.5)
+
+        left = self.__center_x__ - half_width
+        right = self.__center_x__ + half_width
+        top = text_vertical_position - border_vertical_size
+        bottom = text_vertical_position + self.__font_height__ + border_vertical_size
+
+        return [
+            [left, top],
+            [right, top],
+            [right, bottom],
+            [left, bottom]]
 
     def __generate_heading_strip__(
         self,
@@ -82,8 +95,8 @@ class CompassAndHeadingTopElement(AhrsElement):
             displayed_left = to_the_left
             displayed_right = to_the_right
 
-            to_the_left = wrap_angle(to_the_left)
-            to_the_right = wrap_angle(to_the_right)
+            to_the_left = fast_math.wrap_degrees(to_the_left)
+            to_the_right = fast_math.wrap_degrees(to_the_right)
 
             if (displayed_left == 0) or ((displayed_left % 90) == 0):
                 line_x_left = self.__center_x__ - \
@@ -106,18 +119,27 @@ class CompassAndHeadingTopElement(AhrsElement):
         x_pos: int,
         heading: int
     ):
-        pygame.draw.line(
+        offset = self.pixels_per_degree_x * apply_declination(1)
+        x_pos += offset
+
+        if x_pos < 0:
+            x_pos = self.__width__ - x_pos
+
+        if x_pos > self.__width__:
+            x_pos -= self.__width__
+
+        drawing.renderer.segment(
             framebuffer,
             colors.GREEN,
-            [x_pos, self.line_height],
-            [x_pos, 0],
-            4)
+            [x_pos, self.__get_mark_line_start__()],
+            [x_pos, self.__get_mark_line_end__()],
+            self.__line_width__)
 
         self.__render_heading_text__(
             framebuffer,
-            apply_declination(heading),
+            heading,
             x_pos,
-            self.compass_text_y)
+            self.__get_heading_text_y_position__())
 
     def render(
         self,
@@ -131,49 +153,71 @@ class CompassAndHeadingTopElement(AhrsElement):
         # Render a crude compass
         # Render a heading strip along the top
 
-        heading = orientation.get_onscreen_projection_heading()
+        with TaskProfiler("views.compass_and_heading_top_element.CompassAndHeadingTopElement.setup"):
+            heading = orientation.get_onscreen_projection_heading()
 
-        [self.__render_heading_mark__(
-            framebuffer,
-            heading_mark_to_render[0],
-            heading_mark_to_render[1])
-            for heading_mark_to_render in self.__heading_strip__[heading]]
+            compass_heading = orientation.get_onscreen_compass_heading()
+            gps_heading = orientation.get_onscreen_gps_heading()
 
-        # Render the text that is showing our AHRS and GPS headings
-        heading_y_pos = self.__font__.get_height() << 1
-        self.__render_hollow_heading_box__(
-            orientation,
-            framebuffer,
-            heading_y_pos)
+            heading_text = "{0} | {1}".format(
+                str(apply_declination(compass_heading)).rjust(3),
+                str(apply_declination(gps_heading)).rjust(3))
+            
+            notation_text = "HDG       TRK"
+
+        with TaskProfiler("views.compass_and_heading_top_element.CompassAndHeadingTopElement.render"):
+            # pylint:disable=expression-not-assigned
+            if not isinstance(heading, str):
+                [self.__render_heading_mark__(
+                    framebuffer,
+                    heading_mark_to_render[0],
+                    heading_mark_to_render[1]) for heading_mark_to_render in self.__heading_strip__[heading]]
+
+            # Render the text that is showing our AHRS and GPS headings
+            self.__render_hollow_heading_box__(
+                [heading_text, notation_text],
+                framebuffer)
 
     def __render_hollow_heading_box__(
         self,
-        orientation: AhrsData,
-        framebuffer,
-        heading_y_pos: int
+        heading_text: list,
+        framebuffer
     ):
-        heading_text = "{0} | {1}".format(
-            str(apply_declination(
-                orientation.get_onscreen_projection_display_heading())).rjust(3),
-            str(apply_declination(
-                orientation.get_onscreen_gps_heading())).rjust(3))
+        # pylint:disable=expression-not-assigned
+        [box_element.render(framebuffer) for box_element in self.__heading_box_elements__]
 
-        rendered_text = self.__font__.render(
-            heading_text,
-            True,
-            colors.GREEN)
-        text_width, text_height = rendered_text.get_size()
-
-        framebuffer.blit(
-            rendered_text,
-            (self.__center_x__ - (text_width >> 1), heading_y_pos))
-
-        pygame.draw.lines(
+        self.__render_horizontal_centered_text__(
             framebuffer,
+            heading_text[0],
+            [self.__center_x__, (self.__compass_box_y_position__ - (self.__font_half_height__ * 0.2))],
             colors.GREEN,
-            True,
-            self.__heading_text_box_lines__,
-            2)
+            colors.BLACK,
+            0.8,
+            not self.__reduced_visuals__)
+        
+        self.__render_horizontal_centered_text__(
+            framebuffer,
+            heading_text[1],
+            [self.__center_x__, self.__compass_box_y_position__ + (self.__font_half_height__ * 1.2)],
+            colors.GREEN,
+            colors.BLACK,
+            0.5,
+            not self.__reduced_visuals__)
+
+    def __get_hollow_heading_box_elements__(
+        self
+    ) -> list:
+        heading_text_box_lines = self.__get_heading_box_points__(self.__compass_box_y_position__)
+
+        return [
+            drawing.FilledPolygon(
+                heading_text_box_lines,
+                colors.BLACK,
+                False),
+            drawing.HollowPolygon(
+                heading_text_box_lines,
+                colors.GREEN,
+                self.__thin_line_width__)]
 
     def __render_heading_text__(
         self,
@@ -188,11 +232,16 @@ class CompassAndHeadingTopElement(AhrsElement):
         """
         if isinstance(heading, Number):
             heading = int(heading)
-            rendered_text, half_size = self.__heading_text__[heading]
 
-            framebuffer.blit(
-                rendered_text, (position_x - half_size[0], position_y - half_size[1]))
+            self.__render_horizontal_centered_text__(
+                framebuffer,
+                str(heading),
+                [position_x, position_y],
+                colors.YELLOW,
+                colors.BLACK,
+                1.0,
+                not self.__reduced_visuals__)
 
 
 if __name__ == '__main__':
-    run_ahrs_hud_element(CompassAndHeadingTopElement)
+    run_hud_element(CompassAndHeadingTopElement)

@@ -1,17 +1,30 @@
+"""
+Class and module to handle caching, and invalidation, of textures
+and other data.
+"""
+
 import threading
 from datetime import datetime
 
+from common_utils.local_debug import IS_PI
 from common_utils.task_timer import TaskProfiler
 from configuration import configuration
-from rendering import colors
 
 from data_sources import traffic
 
+__ANTI_ALIAS_TEXT__ = not IS_PI
+
 
 class HudDataCache(object):
+    """
+    handle caching, and invalidation, of textures and other data.
+    """
+
     TEXT_TEXTURE_CACHE = {}
     __CACHE_ENTRY_LAST_USED__ = {}
     __CACHE_INVALIDATION_TIME__ = 60 * 5
+
+    DECLINATION = None
 
     RELIABLE_TRAFFIC = []
     IS_TRAFFIC_AVAILABLE = False
@@ -23,6 +36,9 @@ class HudDataCache(object):
 
     @staticmethod
     def update_traffic_reports():
+        """
+        Updates the intermediary traffic store with the currently known reliable data.
+        """
         with TaskProfiler("HudDataCache::update_traffic_reports"):
             HudDataCache.__LOCK__.acquire()
 
@@ -38,8 +54,9 @@ class HudDataCache(object):
         Returns a thread safe copy of the currently known reliable traffic.
 
         Returns:
-            list -- A list of the reliable traffic.
+            list: A list of the reliable traffic stored in Traffic objects.
         """
+
         with TaskProfiler("HudDataCache::get_reliable_traffic"):
             traffic_clone = None
             HudDataCache.__LOCK__.acquire()
@@ -65,12 +82,12 @@ class HudDataCache(object):
             del HudDataCache.TEXT_TEXTURE_CACHE[texture_to_purge]
             del HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_to_purge]
         finally:
-            return True
+            pass
 
     @staticmethod
     def __get_purge_key__(
-        now,
-        texture_key
+        now: datetime,
+        texture_key: str
     ):
         """
         Returns the key of the traffic to purge if it should be, otherwise returns None.
@@ -84,77 +101,6 @@ class HudDataCache(object):
         """
 
         lsu = HudDataCache.__CACHE_ENTRY_LAST_USED__[texture_key]
-        time_since_last_use = (datetime.utcnow() - lsu).total_seconds()
+        time_since_last_use = (now - lsu).total_seconds()
 
         return texture_key if time_since_last_use > HudDataCache.__CACHE_INVALIDATION_TIME__ else None
-
-    @staticmethod
-    def purge_old_textures():
-        """
-        Works through the traffic reports and removes any traffic that is
-        old, or the cache has timed out on.
-        """
-
-        # The second hardest problem in comp-sci...
-        with TaskProfiler("HudDataCache::purge_old_textures"):
-            textures_to_purge = []
-            HudDataCache.__LOCK__.acquire()
-            try:
-                now = datetime.utcnow()
-                textures_to_purge = [HudDataCache.__get_purge_key__(now, texture_key)
-                                     for texture_key in HudDataCache.__CACHE_ENTRY_LAST_USED__]
-                textures_to_purge = list(filter(lambda x: x is not None,
-                                                textures_to_purge))
-                [HudDataCache.__purge_texture__(texture_to_purge)
-                 for texture_to_purge in textures_to_purge]
-            finally:
-                HudDataCache.__LOCK__.release()
-
-    @staticmethod
-    def get_cached_text_texture(
-        text: str,
-        font,
-        text_color: list = colors.BLACK,
-        background_color: list = colors.YELLOW,
-        use_alpha: bool = False,
-        force_regen: bool = False
-    ):
-        """
-        Retrieves a cached texture.
-        If the texture with the given text does not already exists, creates it.
-        Uses only the text has the key. If the colors change, the cache is not invalidated or changed.
-
-        Arguments:
-            text {string} -- The text to generate a texture for.
-            font {pygame.font} -- The font to use for the texture.
-
-        Keyword Arguments:
-            text_color {tuple} -- The RGB color for the text. (default: {BLACK})
-            background_color {tuple} -- The RGB color for the BACKGROUND. (default: {YELLOW})
-            use_alpha {bool} -- Should alpha be used? (default: {False})
-
-        Returns:
-            [tuple] -- The texture and the size of the texture
-        """
-
-        with TaskProfiler("HudDataCache::get_cached_text_texture"):
-            result = None
-            HudDataCache.__LOCK__.acquire()
-            try:
-                if text not in HudDataCache.TEXT_TEXTURE_CACHE or force_regen:
-                    texture = font.render(
-                        text, True, text_color, background_color)
-                    size = texture.get_size()
-
-                    if use_alpha:
-                        texture = texture.convert_alpha()
-
-                    HudDataCache.TEXT_TEXTURE_CACHE[text] = texture, size
-
-                HudDataCache.__CACHE_ENTRY_LAST_USED__[
-                    text] = datetime.utcnow()
-                result = HudDataCache.TEXT_TEXTURE_CACHE[text]
-            finally:
-                HudDataCache.__LOCK__.release()
-
-        return result
