@@ -1,3 +1,8 @@
+"""
+View that shows the list of nearby traffic
+"""
+
+from core_services import zoom_tracker
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
@@ -71,11 +76,9 @@ class AdsbTrafficListing(AdsbElement):
         pre_padded_text, max_string_lengths = self.__get_pre_padded_text_reports__(
             traffic_reports)
 
-        out_padded_reports = [self.__get_listing__(
+        return [self.__get_listing__(
             report,
             max_string_lengths) for report in pre_padded_text]
-
-        return out_padded_reports
 
     def __get_report_text__(
         self,
@@ -97,8 +100,17 @@ class AdsbTrafficListing(AdsbElement):
         traffic_reports: list
     ):
         # We do not want to show traffic on the ground.
-        reports_to_show = list(filter(
-            lambda x: not x.is_on_ground(), traffic_reports))
+        reports_to_show = list(
+            filter(
+                lambda x: not x.is_on_ground(),
+                traffic_reports))
+
+        reports_to_show = list(
+            filter(
+                lambda x: zoom_tracker.INSTANCE.is_in_inner_range(
+                    x.distance
+                )[0],
+                traffic_reports))
 
         # The __max_reports__ value is set based on the screen size
         # and how much can fit on the screen

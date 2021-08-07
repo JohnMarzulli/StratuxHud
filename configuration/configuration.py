@@ -205,7 +205,6 @@ class Configuration(object):
             Configuration.MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT_KEY: self.max_minutes_before_removal,
             Configuration.DISTANCE_UNITS_KEY: self.get_units(),
             Configuration.ENABLE_DECLINATION_KEY: self.__is_declination_enabled__,
-            Configuration.DECLINATION_KEY: self.get_declination(),
             Configuration.DEGREES_OF_PITCH_KEY: self.get_degrees_of_pitch(),
             Configuration.PITCH_DEGREES_DISPLAY_SCALER_KEY: self.get_pitch_degrees_display_scaler(),
             Configuration.AITHRE_KEY: self.aithre_enabled,
@@ -279,12 +278,6 @@ class Configuration(object):
         if Configuration.ENABLE_DECLINATION_KEY in json_config:
             self.__is_declination_enabled__ = bool(json_config[Configuration.ENABLE_DECLINATION_KEY])
             self.__configuration__[Configuration.ENABLE_DECLINATION_KEY] = self.__is_declination_enabled__
-
-        if Configuration.DECLINATION_KEY in json_config:
-            self.declination = float(
-                json_config[Configuration.DECLINATION_KEY])
-            self.__configuration__[
-                Configuration.DECLINATION_KEY] = self.declination
 
         if Configuration.DEGREES_OF_PITCH_KEY in json_config:
             self.degrees_of_pitch = int(
@@ -366,18 +359,6 @@ class Configuration(object):
         """
 
         self.__is_declination_enabled__ = is_enabled
-
-    def get_declination(
-        self
-    ) -> float:
-        """
-        Returns the magnetic variance (true to magnetic)
-
-        Returns:
-            float -- The number of degrees to adjust the heading displayed by.
-        """
-
-        return self.declination
 
     def get_traffic_manager_address(
         self
@@ -617,9 +598,6 @@ class Configuration(object):
         self.__is_declination_enabled__ = self.__get_config_value__(
             Configuration.ENABLE_DECLINATION_KEY,
             True)
-        self.declination = self.__get_config_value__(
-            Configuration.DECLINATION_KEY,
-            0.0)
         self.aithre_enabled = self.__get_config_value__(
             Configuration.AITHRE_KEY,
             True)

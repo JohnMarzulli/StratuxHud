@@ -54,13 +54,13 @@ class CompassAndHeadingTopElement(AhrsElement):
 
         self.__heading_strip_offset__ = {}
 
-        for heading in range(0, 181):
+        for heading in range(181):
             self.__heading_strip_offset__[heading] = int(
                 self.pixels_per_degree_x * heading)
 
         self.__heading_strip__ = {}
 
-        for heading in range(0, 361):
+        for heading in range(361):
             self.__heading_strip__[heading] = self.__generate_heading_strip__(heading)
 
         self.__heading_box_elements__ = self.__get_hollow_heading_box_elements__()
@@ -119,6 +119,15 @@ class CompassAndHeadingTopElement(AhrsElement):
         x_pos: int,
         heading: int
     ):
+        offset = self.pixels_per_degree_x * apply_declination(1)
+        x_pos += offset
+
+        if x_pos < 0:
+            x_pos = self.__width__ - x_pos
+
+        if x_pos > self.__width__:
+            x_pos -= self.__width__
+
         drawing.renderer.segment(
             framebuffer,
             colors.GREEN,
@@ -128,7 +137,7 @@ class CompassAndHeadingTopElement(AhrsElement):
 
         self.__render_heading_text__(
             framebuffer,
-            apply_declination(heading),
+            heading,
             x_pos,
             self.__get_heading_text_y_position__())
 
@@ -153,6 +162,8 @@ class CompassAndHeadingTopElement(AhrsElement):
             heading_text = "{0} | {1}".format(
                 str(apply_declination(compass_heading)).rjust(3),
                 str(apply_declination(gps_heading)).rjust(3))
+            
+            notation_text = "HDG       TRK"
 
         with TaskProfiler("views.compass_and_heading_top_element.CompassAndHeadingTopElement.render"):
             # pylint:disable=expression-not-assigned
@@ -164,12 +175,12 @@ class CompassAndHeadingTopElement(AhrsElement):
 
             # Render the text that is showing our AHRS and GPS headings
             self.__render_hollow_heading_box__(
-                heading_text,
+                [heading_text, notation_text],
                 framebuffer)
 
     def __render_hollow_heading_box__(
         self,
-        heading_text: str,
+        heading_text: list,
         framebuffer
     ):
         # pylint:disable=expression-not-assigned
@@ -177,11 +188,20 @@ class CompassAndHeadingTopElement(AhrsElement):
 
         self.__render_horizontal_centered_text__(
             framebuffer,
-            heading_text,
-            [self.__center_x__, self.__compass_box_y_position__],
+            heading_text[0],
+            [self.__center_x__, (self.__compass_box_y_position__ - (self.__font_half_height__ * 0.2))],
             colors.GREEN,
             colors.BLACK,
-            1.0,
+            0.8,
+            not self.__reduced_visuals__)
+        
+        self.__render_horizontal_centered_text__(
+            framebuffer,
+            heading_text[1],
+            [self.__center_x__, self.__compass_box_y_position__ + (self.__font_half_height__ * 1.2)],
+            colors.GREEN,
+            colors.BLACK,
+            0.5,
             not self.__reduced_visuals__)
 
     def __get_hollow_heading_box_elements__(

@@ -1,4 +1,10 @@
+"""
+View element to show target bugs for nearby aircraft.
+"""
+
 from common_utils.task_timer import TaskProfiler
+from configuration import configuration
+from core_services import zoom_tracker
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
@@ -48,7 +54,7 @@ class AdsbTargetBugsOnly(AdsbElement):
 
         heading_bug_x = get_heading_bug_x(
             heading,
-            apply_declination(traffic_report.bearing),
+            traffic_report.bearing,
             self.__pixels_per_degree_x__)
 
         try:
@@ -87,7 +93,12 @@ class AdsbTargetBugsOnly(AdsbElement):
             if traffic_reports is None:
                 return
 
-            reports_to_show = traffic_reports[:MAX_TARGET_BUGS]
+            reports_to_show = list(
+                filter(
+                    lambda x: zoom_tracker.INSTANCE.is_in_inner_range(x.distance)[0],
+                    traffic_reports))
+
+            reports_to_show = reports_to_show[:MAX_TARGET_BUGS]
 
         # pylint:disable=expression-not-assigned
         with TaskProfiler('views.adsb_target_bugs_only.AdsbTargetBugsOnly.render'):
@@ -99,7 +110,8 @@ class AdsbTargetBugsOnly(AdsbElement):
 
 
 if __name__ == '__main__':
-    from views.compass_and_heading_bottom_element import CompassAndHeadingBottomElement
+    from views.compass_and_heading_bottom_element import \
+        CompassAndHeadingBottomElement
     from views.hud_elements import run_hud_elements
     from views.roll_indicator import RollIndicator
 
