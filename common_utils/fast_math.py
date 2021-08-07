@@ -15,7 +15,7 @@ __DEGREES_BY_RADIANS___ = {}
 TWO_PI = 2.0 * math.pi
 
 # Fill the quick trig look up tables.
-for __degrees__ in range(0, 361):
+for __degrees__ in range(361):
     __radians__ = math.radians(__degrees__)
 
     __RADIANS_BY_DEGREES__[__degrees__] = __radians__
@@ -24,7 +24,7 @@ for __degrees__ in range(0, 361):
     COS_BY_DEGREES[__degrees__] = math.cos(__radians__)
     TAN_BY_DEGREES[__degrees__] = math.tan(__radians__)
 
-for __indexed_radians__ in range(0, int(TWO_PI * 100)):
+for __indexed_radians__ in range(int(TWO_PI * 100)):
     __actual_radians__ = __indexed_radians__ / 100.0
     __DEGREES_BY_RADIANS___[
         __indexed_radians__] = math.degrees(__actual_radians__)
@@ -129,8 +129,8 @@ def interpolatef(
         float -- The number that is the given amount between the left and right.
     """
 
-    true_left_value = left_value if left_value < right_value else right_value
-    true_right_value = right_value if left_value < right_value else left_value
+    true_left_value = min(left_value, right_value)
+    true_right_value = max(left_value, right_value)
 
     proportion = clamp(0.0, proportion, 1.0)
 
@@ -251,9 +251,7 @@ def get_circle_points(
     arc_radians = (angle_chunks / radius)
     arc_radians = max(0.1, arc_radians)
 
-    points = [[int(x + (radius * math.sin(radian))), int(y + (radius * math.cos(radian)))] for radian in rangef(0, TWO_PI, arc_radians)]
-
-    return points
+    return [[int(x + (radius * math.sin(radian))), int(y + (radius * math.cos(radian)))] for radian in rangef(0, TWO_PI, arc_radians)]
 
 
 @lru_cache(maxsize=360)
@@ -431,10 +429,30 @@ def rotate_points(
     rotated_points = [[point[0] * rotation_cos - point[1] * rotation_sin,
                        point[0] * rotation_sin + point[1] * rotation_cos] for point in detranslated_points]
 
-    translated_points = translate_points(rotated_points, rotation_center)
+    return translate_points(rotated_points, rotation_center)
 
-    return translated_points
 
+def distance(
+    start: list,
+    end: list
+) -> float:
+    """
+    Returns the distance between a start and ending x,y
+
+    Args:
+        start (list): The starting position
+        end (list): The ending position
+
+    Returns:
+        float: the distance between the two points
+    """
+
+    a = end[0] - start[0]
+    a *= a
+    b = end[1] - start[1]
+    b *= b
+
+    return math.sqrt(a + b)
 
 if __name__ == '__main__':
     import doctest

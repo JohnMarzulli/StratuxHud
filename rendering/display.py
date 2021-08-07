@@ -38,6 +38,10 @@ def is_forced_software_rendering() -> bool:
     return is_flag_present
 
 
+def __is_mac__() -> bool:
+    return local_debug.IS_MAC
+
+
 def __is_x_windows__() -> bool:
     display = os.getenv('DISPLAY')
 
@@ -130,7 +134,7 @@ class Display:
 
         # List of drivers:
         # https://wiki.libsdl.org/FAQUsingSDL
-        if not __is_x_windows__():
+        if not __is_x_windows__() and not __is_mac__():
             drivers = ['fbcon', 'directfb', 'svgalib', 'directx', 'windib', 'Quartz']
             found = False
             for driver in drivers:

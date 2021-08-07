@@ -13,7 +13,7 @@ from common_utils.task_timer import RollingStats, TaskProfiler
 from common_utils.tasks import IntermittentTask, RecurringTask
 from configuration import configuration, configuration_server
 from configuration.configuration import CONFIGURATION
-from core_services import zoom_tracker
+from core_services import breadcrumbs, zoom_tracker
 from data_sources import aithre, declination, targets
 from data_sources.ahrs_data import AhrsData
 from data_sources.aircraft import Aircraft
@@ -488,8 +488,15 @@ class HeadsUpDisplay(object):
         self
     ):
         orientation = self.__aircraft__.get_orientation()
-        
+
         zoom_tracker.INSTANCE.update(orientation)
+
+    def __update_groundtrack__(
+        self
+    ):
+        orientation = self.__aircraft__.get_orientation()
+
+        breadcrumbs.INSTANCE.update(orientation)
 
     def __update_declination__(
         self
@@ -621,6 +628,12 @@ class HeadsUpDisplay(object):
             "update_zoom",
             1.0,
             self.__update_zoom__,
+            logger.get_logger())
+
+        RecurringTask(
+            "update_groundtrack",
+            breadcrumbs.DEFAULT_REPORT_PERIOD_SECONDS,
+            self.__update_groundtrack__,
             logger.get_logger())
 
     def __show_boot_screen__(

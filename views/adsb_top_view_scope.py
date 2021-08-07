@@ -6,10 +6,10 @@ import math
 from typing import Tuple
 
 import pygame
-from common_utils import fast_math, units
+from common_utils import fast_math, geo_math, units
 from common_utils.task_timer import TaskProfiler
 from configuration import configuration
-from core_services import zoom_tracker
+from core_services import breadcrumbs, zoom_tracker
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
@@ -186,7 +186,7 @@ class AdsbTopViewScope(AdsbElement):
             display_distance,
             scope_range)
 
-        delta_angle = orientation.get_onscreen_projection_heading()
+        delta_angle = orientation.get_onscreen_gps_heading()
         delta_angle = traffic.bearing - delta_angle
         # We need to rotate by 270 to make sure that
         # the orientation is correct AND to correct the phase.
@@ -209,7 +209,7 @@ class AdsbTopViewScope(AdsbElement):
         if traffic.track is not None:
             points = self.__get_traffic_indicator__(
                 [screen_x, screen_y],
-                orientation.get_onscreen_projection_heading(),
+                orientation.get_onscreen_gps_heading(),
                 traffic.track)
             drawing.renderer.polygon(framebuffer, target_color, points, not self.__reduced_visuals__)
         else:
@@ -256,6 +256,80 @@ class AdsbTopViewScope(AdsbElement):
             0)
 
         drawing.renderer.polygon(framebuffer, colors.GREEN, points, not self.__reduced_visuals__)
+
+    def __render_breadcrumbs__(
+        self,
+        framebuffer: pygame.Surface,
+        scope_range: Tuple[int, int],
+        orientation: AhrsData
+    ):
+        max_distance = scope_range[0]
+        breadcrumb_reports = breadcrumbs.INSTANCE.get_trail()
+        breadcrumb_count = len(breadcrumb_reports)
+
+        if orientation.position is None or orientation.position[0] is None or orientation.position[1] is None:
+            return
+
+        if breadcrumb_count < 2:
+            return
+
+        current_heading = orientation.get_onscreen_gps_heading()
+
+        if current_heading is None or isinstance(current_heading, str):
+            return
+
+        previous_position = None
+
+        for index in range(breadcrumb_count - 1):
+            proportion = breadcrumb_reports[index + 1][1]
+
+            # if we need to continue due to the line
+            # being off the screen or otherwise
+            # invalid, we need to make sure
+            # to disqualify the previous position
+            # so we do not get any wacky looking completions
+            if proportion <= 0.0:
+                previous_position = None
+                continue
+
+            distance_start = geo_math.get_distance(orientation.position, breadcrumb_reports[index][0])
+
+            if distance_start > max_distance:
+                previous_position = None
+                continue
+
+            bearing = geo_math.get_bearing(orientation.position, breadcrumb_reports[index][0])
+            delta_angle = bearing - current_heading
+            # We need to rotate by 270 to make sure that
+            # the orientation is correct AND to correct the phase.
+            delta_angle = AdsbTopViewScope.TRAFFIC_PHASE_SHIFT + delta_angle
+            delta_angle = fast_math.wrap_degrees(delta_angle)
+
+            pixel_distance = self.__get_pixel_distance__(distance_start, max_distance)
+
+            color = [int(component * proportion) for component in colors.GREEN]
+            screen_coords = self.__get_screen_projection_from_center__(
+                delta_angle,
+                pixel_distance)
+
+            if previous_position is not None:
+                drawing.renderer.segment(
+                    framebuffer,
+                    color,
+                    previous_position,
+                    screen_coords,
+                    width=self.__line_width__)
+
+            previous_position = screen_coords
+
+        # Complete the loop
+        if previous_position is not None:
+            drawing.renderer.segment(
+                framebuffer,
+                colors.GREEN,
+                previous_position,
+                self.__scope_center__,
+                width=self.__line_width__)
 
     def __draw_distance_rings__(
         self,
@@ -398,7 +472,7 @@ class AdsbTopViewScope(AdsbElement):
             orientation (AhrsData): [description]
         """
         try:
-            our_heading = int(orientation.get_onscreen_projection_heading())
+            our_heading = int(orientation.get_onscreen_gps_heading())
         except:
             # Heading is not a string, which means
             # we do not have GPS lock
@@ -437,6 +511,12 @@ class AdsbTopViewScope(AdsbElement):
 
         near_target_distance = zoom_tracker.INSTANCE.get_target_threshold_distance()
 
+        with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.render_breadcrumbs'):
+            self.__render_breadcrumbs__(
+                framebuffer,
+                scope_range,
+                orientation)
+
         with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.render'):
             self.__render_ownship__(framebuffer)
 
@@ -459,15 +539,8 @@ class AdsbTopViewScope(AdsbElement):
 
 
 if __name__ == '__main__':
-    import doctest
-
     from views.groundspeed import Groundspeed
     from views.hud_elements import run_hud_elements
+    from views.compass_and_heading_top_element import CompassAndHeadingTopElement
 
-    print("Starting tests.")
-
-    doctest.testmod()
-
-    print("Tests finished")
-
-    run_hud_elements([Groundspeed, AdsbTopViewScope])
+    run_hud_elements([CompassAndHeadingTopElement, Groundspeed, AdsbTopViewScope])
