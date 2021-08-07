@@ -66,11 +66,11 @@ def get_settings(
     """
     Handles a get-the-settings request.
     """
-    if configuration.CONFIGURATION is not None:
-        print("settings/GET")
-        return configuration.CONFIGURATION.get_json_from_config()
-    else:
+    if configuration.CONFIGURATION is None:
         return ERROR_JSON
+
+    print("settings/GET")
+    return configuration.CONFIGURATION.get_json_from_config()
 
 
 def set_settings(
@@ -80,14 +80,13 @@ def set_settings(
     Handles a set-the-settings request.
     """
 
-    if configuration.CONFIGURATION is not None:
-        payload = handler.get_payload()
-        print("settings/PUT:")
-        print(payload)
-        response = configuration.CONFIGURATION.update_configuration(payload)
-        return response
-    else:
+    if configuration.CONFIGURATION is None:
         return ERROR_JSON
+
+    payload = handler.get_payload()
+    print("settings/PUT:")
+    print(payload)
+    return configuration.CONFIGURATION.update_configuration(payload)
 
 
 def set_views(
@@ -265,11 +264,10 @@ class ConfigurationHost(BaseHTTPRequestHandler):
             if 'media_type' in route:
                 self.send_header('Content-type', route['media_type'])
             self.end_headers()
+        elif 'file' in route:
+            self.__handle_file_request__(route, method)
         else:
-            if 'file' in route:
-                self.__handle_file_request__(route, method)
-            else:
-                self.__finish_request__(route, method)
+            self.__finish_request__(route, method)
 
     def handle_method(
         self,

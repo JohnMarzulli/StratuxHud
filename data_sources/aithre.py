@@ -99,7 +99,7 @@ class AithreClient(object):
         self.__illyrian_source__ = data_cache.RestfulDataCache(
             "Illyrian",
             self.__aithre_session__,
-            "http://{}/illyrian".format(self.rest_address),
+            "http://{}/illyrians".format(self.rest_address),
             MAX_SECONDS_BETWEEN_SPO2_REPORT,
             SERVICE_CALL_TIMEOUT)
 
@@ -108,10 +108,22 @@ class AithreClient(object):
 
         AithreClient.INSTANCE = self
 
+    def __get_spo_reports__(
+        self
+    ) -> list:
+        report = self.__illyrian_source__.get()
+        reports = report["reports"] if report is not None and "reports" in report else None
+
+        self.__spo2_has_been_connected__ = self.__spo2_has_been_connected__ \
+            or (reports is not None and len(reports) > 0)
+
+        return reports
+
     def get_spo2_report(
         self
     ):
-        report = self.__illyrian_source__.get()
+        reports = self.__get_spo_reports__()
+        report = reports[0] if reports is not None else None
         self.__spo2_has_been_connected__ = self.__spo2_has_been_connected__ \
             or (report is not None and SPO2_LEVEL_KEY in report and report[SPO2_LEVEL_KEY] is not None)
 
@@ -119,9 +131,22 @@ class AithreClient(object):
             report,
             self.__spo2_has_been_connected__)
 
+    def get_spo2_reports(
+        self
+    ) -> list:
+        # $TODO - Make this support multiple units
+        reports = self.__get_spo_reports__()
+
+        if (reports is None) or (not self.__spo2_has_been_connected__ and len(reports) < 1):
+            return []
+
+        return [Spo2Report(
+            report,
+            self.__spo2_has_been_connected__) for report in reports]
+
     def get_co_report(
         self
-    ):
+    ) -> CoReport:
         report = self.__aithre_source__.get()
         self.__co_has_been_connected__ = self.__co_has_been_connected__ \
             or (report is not None and CO_LEVEL_KEY in report and report[CO_LEVEL_KEY] is not None)

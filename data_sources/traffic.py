@@ -266,7 +266,7 @@ class Traffic(object):
                 self.bearing = float(self.__json__[Traffic.BEARING_KEY])
             else:
                 self.bearing = None
-            
+
             if Traffic.TRACK_KEY in self.__json__:
                 self.track = float(self.__json__[Traffic.TRACK_KEY])
             else:
@@ -286,7 +286,8 @@ class SimulatedTraffic(object):
     """
 
     def __init__(
-        self
+        self,
+        max_distance: int = 1000
     ):
         """
         Creates a new traffic simulation object.
@@ -316,22 +317,29 @@ class SimulatedTraffic(object):
             starting_points[random.randint(0, 1)][1])
         self.distance = simulated_values.SimulatedValue(
             10,
-            1000,
+            max_distance,
             -1,
-            random.randint(0, 1000),
-            1000)
+            random.randint(0, max_distance),
+            max_distance)
         self.bearing = simulated_values.SimulatedValue(
             0,
-            180,
+            360,
             -1,
-            random.randint(0, 180),
-            180)
+            random.randint(0, 360))
+        self.heading = simulated_values.SimulatedValue(
+            random.random(),
+            360,
+            -1,
+            random.randint(0, 360))
+
+        max_altitude = 5000
+        starting_relative_altitude = random.randrange(-max_altitude, max_altitude)
         self.altitude = simulated_values.SimulatedValue(
             10,
-            100,
-            -1,
-            0,
-            500)
+            max_altitude,
+            1 if (random.randint(0, 100) % 2) == 0 else -1,
+            starting_relative_altitude,
+            0)
         self.speed = simulated_values.SimulatedValue(
             5,
             10,
@@ -350,6 +358,7 @@ class SimulatedTraffic(object):
         self.longitude.simulate()
         self.distance.simulate()
         self.bearing.simulate()
+        self.heading.simulate()
         self.altitude.simulate()
         self.speed.simulate()
 
@@ -374,7 +383,7 @@ class SimulatedTraffic(object):
             'Reg': self.tail_number,
             'Last_seen': str(self.time_decoded),
             'Squawk': 0,
-            'Track': 181,
+            'Track': self.heading.value,
             'Timestamp': str(self.time_decoded),
             'Icao_addr': self.icao_address,
             'ExtrapolatedPosition': False,
@@ -461,8 +470,7 @@ class TrafficManager(object):
         finally:
             self.__lock__.release()
 
-        actionable_traffic = [self.traffic[identifier]
-                              for identifier in traffic_with_position]
+        actionable_traffic = [self.traffic[identifier] for identifier in traffic_with_position]
 
         sorted_traffic = sorted(
             actionable_traffic,

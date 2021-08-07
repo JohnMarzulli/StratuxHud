@@ -2,11 +2,10 @@
 View to render heading targets.
 """
 
-import pygame
 from common_utils import units
 from data_sources import norden, targets
 from data_sources.ahrs_data import AhrsData
-from rendering import colors
+from rendering import colors, drawing
 
 from views.adsb_target_bugs import AdsbTargetBugs
 from views.hud_elements import (apply_declination, get_heading_bug_x,
@@ -37,14 +36,16 @@ class HeadingTargetBugs(AdsbTargetBugs):
         degrees_of_pitch: float,
         pixels_per_degree_y: float,
         font,
-        framebuffer_size
+        framebuffer_size,
+        reduced_visuals: bool = False
     ):
         AdsbTargetBugs.__init__(
             self,
             degrees_of_pitch,
             pixels_per_degree_y,
             font,
-            framebuffer_size)
+            framebuffer_size,
+            reduced_visuals)
 
         self.__listing_text_start_y__ = int(self.__font__.get_height())
         self.__listing_text_start_x__ = int(
@@ -151,19 +152,19 @@ class HeadingTargetBugs(AdsbTargetBugs):
 
             heading_bug_x = get_heading_bug_x(
                 heading,
-                apply_declination(as_traffic.bearing),
+                as_traffic.bearing,
                 self.__pixels_per_degree_x__)
 
             reticle, reticle_edge_position_y = self.get_below_reticle(
                 heading_bug_x,
                 target_bug_scale)
 
-            pygame.draw.polygon(
+            drawing.renderer.polygon(
                 framebuffer,
                 colors.BLUE,
                 reticle)
 
 
 if __name__ == '__main__':
-    from views.hud_elements import run_adsb_hud_element
-    run_adsb_hud_element(HeadingTargetBugs)
+    from views.hud_elements import run_hud_element
+    run_hud_element(HeadingTargetBugs)

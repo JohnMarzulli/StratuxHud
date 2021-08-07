@@ -1,5 +1,4 @@
 import datetime
-from logging import log
 import queue
 import threading
 
@@ -260,8 +259,8 @@ class TaskProfiler(object):
 
             call_count = TaskProfiler.__CALL_COUNTS__[task_name]
 
-            inclusive_mean = ''
-            exclusive_mean = ''
+            inclusive_mean = 0.0
+            exclusive_mean = 0.0
 
             if call_count > 0:
                 inclusive_mean = "{:.1f}".format(inclusive_ms / call_count)
@@ -343,8 +342,9 @@ class TaskProfiler(object):
 
 
 if __name__ == '__main__':
-    import time
     import logging
+    import time
+
     from common_utils.logger import HudLogger
 
     python_logger = logging.getLogger("task_timer_test")
