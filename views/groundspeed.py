@@ -3,7 +3,6 @@ from numbers import Number
 from common_utils import tasks, units
 from common_utils.task_timer import TaskProfiler
 from configuration import configuration
-from core_services import breadcrumbs
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
 
@@ -23,20 +22,6 @@ class Groundspeed(AhrsElement):
 
         self.__text_y_pos__ = (self.__center_y__ >> 1) - \
             self.__font_half_height__
-        self.__speed_units__ = configuration.CONFIGURATION.__get_config_value__(
-            configuration.Configuration.DISTANCE_UNITS_KEY,
-            units.STATUTE)
-        self.__update_units_task__ = tasks.IntermittentTask(
-            "update_speed_units",
-            1.0,
-            self.__update_speed_units__)
-
-    def __update_speed_units__(
-        self
-    ) -> None:
-        self.__speed_units__ = configuration.CONFIGURATION.__get_config_value__(
-            configuration.Configuration.DISTANCE_UNITS_KEY,
-            units.STATUTE)
 
     def __get_indicated_text__(
         self,
@@ -97,7 +82,7 @@ class Groundspeed(AhrsElement):
         framebuffer,
         orientation: AhrsData
     ):
-        self.__update_units_task__.run()
+        super(Groundspeed, self).render(framebuffer, orientation)
 
         with TaskProfiler("views.groundspeed.Groundspeed.setup"):
             is_valid_airspeed = orientation.is_avionics_source and isinstance(
@@ -123,19 +108,9 @@ class Groundspeed(AhrsElement):
                 "GND",
                 gs_display_color)
 
-            crumb_text = self.__get_indicated_text__(
-                breadcrumbs.INSTANCE.speed,
-                "BRC",
-                gs_display_color)
-
             gs_position_adj = self.__font_height__ if is_valid_airspeed is not None else 0
 
         with TaskProfiler("views.groundspeed.Groundspeed.render"):
-            self.__render_text_with_stacked_annotations__(
-                framebuffer,
-                [self.__left_border__, self.__text_y_pos__ + (2 * gs_position_adj)],
-                crumb_text)
-
             self.__render_text_with_stacked_annotations__(
                 framebuffer,
                 [self.__left_border__, self.__text_y_pos__ + gs_position_adj],

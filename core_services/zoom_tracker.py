@@ -2,12 +2,13 @@
 Handles determining how far out we care about traffic.
 """
 
+from core_services import breadcrumbs
 import math
 from datetime import datetime
 from numbers import Number
 from typing import Tuple
 
-from common_utils import local_debug, units
+from common_utils import local_debug, tasks, units
 from common_utils.fast_math import interpolatef
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
@@ -112,17 +113,18 @@ def get_ideal_scope_range(
 
 
 def get_groundspeed(
+    display_units: str,
     orientation: AhrsData
 ) -> float:
     is_valid_groundspeed = orientation.groundspeed is not None and isinstance(orientation.groundspeed, Number)
     is_valid_airspeed = orientation.airspeed is not None and isinstance(orientation.airspeed, Number)
 
     airspeed = units.get_converted_units(
-        configuration.CONFIGURATION.get_units(),
+        display_units,
         orientation.airspeed * units.feet_to_nm) if is_valid_airspeed else 0.0
 
     groundspeed = units.get_converted_units(
-        configuration.CONFIGURATION.get_units(),
+        units,
         orientation.groundspeed * units.yards_to_nm) if is_valid_groundspeed else 0
 
     if (local_debug.is_debug() or not is_valid_groundspeed) and is_valid_airspeed:
@@ -150,6 +152,15 @@ class ZoomTracker:
         self.__last_changed__ = datetime.utcnow()
         self.__last_zoom__ = starting_zoom
         self.__target_zoom__ = starting_zoom
+        self.__user_units__ = configuration.CONFIGURATION.get_units()
+        self.__update_units_task__ = tasks.IntermittentTask(
+            "Zoom:UpdateUnits",
+            1.0,
+            self.__update_units__)
+
+    def __update_units__(
+        self
+    ) -> None:
         self.__user_units__ = configuration.CONFIGURATION.get_units()
 
     def set_target_zoom(
@@ -258,8 +269,15 @@ class ZoomTracker:
         self,
         orientation: AhrsData
     ) -> Tuple[Number, float]:
-        self.__user_units__ = configuration.CONFIGURATION.get_units()
-        groundspeed = 0.0 if orientation is None else get_groundspeed(orientation)
+        self.__update_units_task__.run()
+
+        groundspeed = 0.0 if orientation is None else get_groundspeed(self.__user_units__, orientation)
+
+        if breadcrumbs.INSTANCE is not None and not isinstance(breadcrumbs.INSTANCE.speed, str):
+            groundspeed = units.get_converted_units(
+                self.__user_units__,
+                breadcrumbs.INSTANCE.speed)
+
         ideal_range = get_ideal_scope_range(groundspeed)
 
         self.set_target_zoom(ideal_range)
