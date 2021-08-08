@@ -518,3 +518,14 @@ pip3 install PyOpenGL PyOpenGL_accelerate
 https://www.raspberrypi.org/forums/viewtopic.php?t=223592
 https://www.raspberrypi.org/forums/viewtopic.php?t=243892
 https://www.raspberrypi.org/forums/viewtopic.php?t=266277
+
+## 11 Roadmap
+
+- Dynon Skyview support
+- Airball support
+- Engine instruments and displays
+- Weather
+- Audio alerts
+- Turn "projection" on the radar map.
+- Nearby airports
+- View improvements
