@@ -238,6 +238,23 @@ class AdsbTopViewScope(AdsbElement):
                 0,
                 True)
 
+            altitude_delta = int(traffic.altitude / 100.0)
+            # No need to add a sign if it is negative. Math takes care of that for us.
+            delta_sign = ''
+            if altitude_delta > 0:
+                delta_sign = '+'
+            altitude_text = "{0}{1}".format(delta_sign, altitude_delta)
+
+            self.__render_centered_text__(
+                framebuffer,
+                altitude_text,
+                [screen_x, screen_y + self.__font_half_height__ + (self.__no_direction_target_size__ << 2)],
+                colors.YELLOW,
+                colors.BLACK,
+                0.5,
+                0,
+                True)
+
     def __render_ownship__(
         self,
         framebuffer: pygame.Surface
