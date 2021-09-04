@@ -274,9 +274,12 @@ class ZoomTracker:
         groundspeed = 0.0 if orientation is None else get_groundspeed(self.__user_units__, orientation)
 
         if breadcrumbs.INSTANCE is not None and not isinstance(breadcrumbs.INSTANCE.speed, str):
-            groundspeed = units.get_converted_units(
+            breadcrumb_speed = units.get_converted_units(
                 self.__user_units__,
                 breadcrumbs.INSTANCE.speed)
+
+            groundspeed += breadcrumb_speed
+            groundspeed /= 2
 
         ideal_range = get_ideal_scope_range(groundspeed)
 
