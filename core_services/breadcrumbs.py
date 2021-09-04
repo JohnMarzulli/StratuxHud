@@ -41,7 +41,7 @@ class Breadcrumbs:
         self.__max_reports__ = int(max_reports)
         self.__speed_calculation_period_seconds__ = speed_calculation_period_seconds
         self.__report_period_seconds__ = report_period_seconds
-        self.__seconds_of_trail_to_show__ = 15 * 60
+        self.__seconds_of_trail_to_show__ = 60 * 60
         self.__trail_reports_to_show__ = int(self.__seconds_of_trail_to_show__ / report_period_seconds)
 
     def __report__(
