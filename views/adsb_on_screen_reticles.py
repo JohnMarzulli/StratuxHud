@@ -6,6 +6,7 @@ import math
 
 from common_utils import fast_math
 from common_utils.task_timer import TaskProfiler
+from core_services import zoom_tracker
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
@@ -190,6 +191,11 @@ class AdsbOnScreenReticles(AdsbElement):
 
             traffic_reports = list(
                 filter(
+                    lambda x: zoom_tracker.INSTANCE.is_in_inner_range(x.distance)[0],
+                    traffic_reports))
+
+            traffic_reports = list(
+                filter(
                     lambda x: not x.is_on_ground() and (math.fabs(our_heading - x.bearing) < 45),
                     traffic_reports))[:hud_elements.MAX_TARGET_BUGS]
 
@@ -210,4 +216,5 @@ if __name__ == '__main__':
     from views.artificial_horizon import ArtificialHorizon
     from views.hud_elements import run_hud_elements
     from views.roll_indicator import RollIndicator
+
     run_hud_elements([RollIndicator, ArtificialHorizon, AdsbOnScreenReticles])
