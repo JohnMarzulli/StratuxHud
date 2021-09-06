@@ -546,6 +546,9 @@ class AdsbTopViewScope(AdsbElement):
                 orientation,
                 near_target_distance)
 
+            if not orientation.gps_online:
+                return
+
             # pylint: disable=expression-not-assigned
             [self.__render_on_screen_target__(
                 framebuffer,
@@ -556,8 +559,9 @@ class AdsbTopViewScope(AdsbElement):
 
 
 if __name__ == '__main__':
+    from views.compass_and_heading_top_element import \
+        CompassAndHeadingTopElement
     from views.groundspeed import Groundspeed
     from views.hud_elements import run_hud_elements
-    from views.compass_and_heading_top_element import CompassAndHeadingTopElement
 
     run_hud_elements([CompassAndHeadingTopElement, Groundspeed, AdsbTopViewScope])

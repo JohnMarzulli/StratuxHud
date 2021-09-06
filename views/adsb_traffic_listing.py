@@ -3,7 +3,7 @@ View that shows the list of nearby traffic
 """
 
 from core_services import zoom_tracker
-from data_sources.ahrs_data import AhrsData
+from data_sources.ahrs_data import NOT_AVAILABLE, AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
 from rendering import colors, text_renderer
@@ -71,10 +71,12 @@ class AdsbTrafficListing(AdsbElement):
 
     def __get_padded_traffic_reports__(
         self,
-        traffic_reports: list
+        traffic_reports: list,
+        orientation: AhrsData
     ):
         pre_padded_text, max_string_lengths = self.__get_pre_padded_text_reports__(
-            traffic_reports)
+            traffic_reports,
+            orientation)
 
         return [self.__get_listing__(
             report,
@@ -82,22 +84,24 @@ class AdsbTrafficListing(AdsbElement):
 
     def __get_report_text__(
         self,
-        traffic: Traffic
+        traffic: Traffic,
+        orientation: AhrsData
     ):
         identifier = str(traffic.get_display_name())
         altitude_delta = int(traffic.altitude / 100.0)
-        distance_text = self.__get_distance_string__(traffic.distance, True)
+        distance_text = self.__get_distance_string__(traffic.distance, True) if orientation.gps_online else NOT_AVAILABLE
         delta_sign = ''
         if altitude_delta > 0:
             delta_sign = '+'
         altitude_text = "{0}{1}".format(delta_sign, altitude_delta)
-        bearing_text = "{0:.0f}".format(apply_declination(traffic.bearing))
+        bearing_text = "{0:.0f}".format(apply_declination(traffic.bearing)) if orientation.gps_online else NOT_AVAILABLE
 
         return [identifier, bearing_text, distance_text, altitude_text, traffic.icao_address]
 
     def __get_pre_padded_text_reports__(
         self,
-        traffic_reports: list
+        traffic_reports: list,
+        orientation: AhrsData
     ):
         # We do not want to show traffic on the ground.
         reports_to_show = list(
@@ -117,7 +121,7 @@ class AdsbTrafficListing(AdsbElement):
         reports_to_show = reports_to_show[:self.__max_reports__]
 
         pre_padded_text = [['IDENT', 'BEAR', 'DIST', 'ALT', None]] + \
-            [self.__get_report_text__(traffic) for traffic in reports_to_show]
+            [self.__get_report_text__(traffic, orientation) for traffic in reports_to_show]
         # An ICAO code is the worst case display length,
         # but add a little buffer so the columns do
         # not shift around.
@@ -153,7 +157,8 @@ class AdsbTrafficListing(AdsbElement):
         x_pos = self.__listing_text_start_x__
 
         padded_traffic_reports = self.__get_padded_traffic_reports__(
-            traffic_reports)
+            traffic_reports,
+            orientation)
 
         for identifier, traffic_report in padded_traffic_reports:
             text_renderer.render_text(
