@@ -13,7 +13,8 @@
         "Groundspeed",
         "Aithre",
         "Illyrian",
-        "Traffic Not Available"
+        "Traffic Not Available",
+        "GPS Not Available"
       ],
       "name": "AHRS + ADS-B"
     },
@@ -22,7 +23,8 @@
         "Groundspeed",
         "Altitude",
         "ADSB Scope",
-        "Traffic Not Available"
+        "Traffic Not Available",
+        "GPS Not Available"
       ],
       "name": "Traffic Scope"
     },
@@ -32,20 +34,23 @@
         "ADSB Target Bugs Only",
         "ADSB Target Bugs",
         "ADSB Reticles",
-        "Traffic Not Available"
+        "Traffic Not Available",
+        "GPS Not Available"
       ],
       "name": "Traffic"
     },
     {
       "elements": [
         "Traffic List",
-        "Traffic Not Available"
+        "Traffic Not Available",
+        "GPS Not Available"
       ],
       "name": "Traffic List"
     },
     {
       "elements": [
-        "Time"
+        "Time",
+        "GPS Not Available"
       ],
       "name": "Universal Time"
     },
@@ -75,7 +80,8 @@
         "Artificial Horizon",
         "Groundspeed",
         "Aithre",
-        "Illyrian"
+        "Illyrian",
+        "GPS Not Available"
       ],
       "name": "AHRS Only"
     }

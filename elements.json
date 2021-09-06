@@ -59,6 +59,10 @@
     "class": "traffic_not_available.TrafficNotAvailable",
     "detail_font": true
   },
+  "GPS Not Available": {
+    "class": "gps_not_available.GpsNotAvailable",
+    "detail_font": true
+  },
   "Level Reference": {
     "class": "level_reference.LevelReference",
     "detail_font": true
