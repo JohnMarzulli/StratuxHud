@@ -28,9 +28,9 @@ from views import (adsb_on_screen_reticles, adsb_target_bugs,
                    adsb_target_bugs_only, adsb_top_view_scope,
                    adsb_traffic_listing, ahrs_not_available, altitude,
                    artificial_horizon, compass_and_heading_bottom_element,
-                   groundspeed, heading_target_bugs, hud_elements,
-                   level_reference, roll_indicator, skid_and_gs, system_info,
-                   time, traffic_not_available)
+                   gps_not_available, groundspeed, heading_target_bugs,
+                   hud_elements, level_reference, roll_indicator, skid_and_gs,
+                   system_info, time, traffic_not_available)
 
 STANDARD_FONT = "../assets/fonts/LiberationMono-Bold.ttf"
 LOADING_FONT = "../assets/fonts/LiberationMono-Regular.ttf"
