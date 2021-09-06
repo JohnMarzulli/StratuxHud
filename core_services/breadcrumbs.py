@@ -37,11 +37,11 @@ class Breadcrumbs:
         super().__init__()
 
         self.__breadcrumbs__ = deque()
-        self.speed = 0.0
+        self.speed = ahrs_data.NOT_AVAILABLE
         self.__max_reports__ = int(max_reports)
         self.__speed_calculation_period_seconds__ = speed_calculation_period_seconds
         self.__report_period_seconds__ = report_period_seconds
-        self.__seconds_of_trail_to_show__ = 15 * 60
+        self.__seconds_of_trail_to_show__ = 60 * 60
         self.__trail_reports_to_show__ = int(self.__seconds_of_trail_to_show__ / report_period_seconds)
 
     def __report__(
@@ -88,7 +88,7 @@ class Breadcrumbs:
         # Finally find the distance and average everything out.
 
         if self.__breadcrumbs__ is None or len(self.__breadcrumbs__) == 0:
-            return 0.0
+            return ahrs_data.NOT_AVAILABLE
 
         current_size = len(self.__breadcrumbs__)
 

@@ -300,12 +300,12 @@ def get_converted_units_string(
 
     formatter_string = "{0:.1f}"
     formatter_distance_no_decimals = "{0:.0f}"
-    formatter_speed_no_decimals = "{0:03.0f}"
-
     is_speed = unit_type is SPEED
 
     if not decimal_places or is_speed:
         raw_value = int(raw_value)
+        formatter_speed_no_decimals = "{0:03.0f}"
+
         formatter_string = formatter_speed_no_decimals if is_speed else formatter_distance_no_decimals
 
     with_units_formatter = formatter_string + " {1}"

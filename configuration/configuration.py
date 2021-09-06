@@ -14,7 +14,7 @@ MAX_FRAMERATE = 60
 TARGET_AHRS_FRAMERATE = 30
 AHRS_TIMEOUT = 10.0 * (1.0 / float(TARGET_AHRS_FRAMERATE))
 
-VERSION = "2.0 ALPHA 2"
+VERSION = "2.0 ALPHA 3"
 
 ########################
 # Default Config Files #

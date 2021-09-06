@@ -6,7 +6,7 @@ from data_sources.ahrs_data import AhrsData
 from data_sources.traffic import Traffic
 from rendering import colors, drawing, text_renderer
 
-from views.ahrs_element import HudElement
+from views.ahrs_element import AhrsElement, HudElement
 from views.hud_elements import apply_declination
 
 
@@ -39,29 +39,6 @@ class AdsbElement(HudElement):
         self.__pixels_per_degree_x__ = self.__framebuffer_size__[0] / 360.0
         self.start_fade_threshold = (configuration.CONFIGURATION.max_minutes_before_removal * 60) / 2
         self.__lower_reticle_bottom_y__ = self.__bottom_border__ - self.__font_height__ - self.__font_half_height__ - (self.__thick_line_width__ << 2)
-
-    def __get_speed_string__(
-        self,
-        speed
-    ) -> str:
-        """
-        Gets the string to display for the speed. Uses the units configured by the user.
-
-        Arguments:
-            speed {number} -- The raw speed from the sensor.
-
-        Returns:
-            string -- A string with the speed and the correct units.
-        """
-
-        speed_units = configuration.CONFIGURATION.__get_config_value__(
-            configuration.Configuration.DISTANCE_UNITS_KEY,
-            units.STATUTE)
-
-        return units.get_converted_units_string(
-            speed_units,
-            speed,
-            units.SPEED)
 
     def __get_distance_string__(
         self,
@@ -334,3 +311,10 @@ class AdsbElement(HudElement):
                 pass
 
             info_position_y += int(width_y * info_spacing)
+
+    def render(
+        self,
+        framebuffer,
+        orientation: AhrsData
+    ):
+        super(AhrsElement, self).render(framebuffer, orientation)

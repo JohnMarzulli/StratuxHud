@@ -2,6 +2,8 @@
 Base class for AHRS view elements.
 """
 
+from common_utils import tasks, units
+from configuration import configuration
 from rendering import colors, display, text_renderer
 
 
@@ -45,6 +47,41 @@ class HudElement(object):
         self.__thick_line_width__ = self.__line_width__ >> 1
 
         self.__reduced_visuals__ = reduced_visuals
+
+        self.__speed_units__ = configuration.CONFIGURATION.__get_config_value__(
+            configuration.Configuration.DISTANCE_UNITS_KEY,
+            units.STATUTE)
+
+        self.__update_units_task__ = tasks.IntermittentTask(
+            "update_speed_units",
+            1.0,
+            self.__update_speed_units__)
+
+    def __get_speed_string__(
+        self,
+        speed
+    ) -> str:
+        """
+        Gets the string to display for the speed. Uses the units configured by the user.
+
+        Arguments:
+            speed {number} -- The raw speed from the sensor.
+
+        Returns:
+            string -- A string with the speed and the correct units.
+        """
+
+        return units.get_converted_units_string(
+            self.__speed_units__,
+            speed,
+            units.SPEED)
+
+    def __update_speed_units__(
+        self
+    ) -> None:
+        self.__speed_units__ = configuration.CONFIGURATION.__get_config_value__(
+            configuration.Configuration.DISTANCE_UNITS_KEY,
+            units.STATUTE)
 
     def uses_ahrs(
         self
@@ -309,7 +346,7 @@ class HudElement(object):
 
             current_position[1] += info_size[1]
 
-            longest_x = info_size[0] if info_size[0] > longest_x else longest_x
+            longest_x = max(info_size[0], longest_x)
 
         main_package = scale_text_color_list[0]
         self.__render_text_right_justified__(
@@ -318,6 +355,13 @@ class HudElement(object):
             [current_position[0] - longest_x, starting_position[1]],
             main_package[2],
             main_package[0])
+
+    def render(
+        self,
+        framebuffer,
+        orientation
+    ):
+        self.__update_units_task__.run()
 
 
 class AhrsElement(HudElement):

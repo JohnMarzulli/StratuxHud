@@ -79,6 +79,9 @@ class AdsbTargetBugs(AdsbElement):
         with TaskProfiler('views.adsb_target_bugs.AdsbTargetBugs.setup'):
             heading = orientation.get_onscreen_projection_heading()
 
+            if not orientation.gps_online:
+                return
+
             # Get the traffic, and bail out of we have none
             traffic_reports = HudDataCache.get_reliable_traffic()
 
