@@ -470,6 +470,7 @@ class HeadsUpDisplay(object):
         self
     ):
         HudDataCache.update_traffic_reports()
+        HudDataCache.update_nearby_traffic_reports()
 
     def __update_aithre__(
         self

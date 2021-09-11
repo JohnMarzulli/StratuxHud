@@ -6,7 +6,6 @@ import math
 
 from common_utils import fast_math
 from common_utils.task_timer import TaskProfiler
-from core_services import zoom_tracker
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
@@ -187,12 +186,10 @@ class AdsbOnScreenReticles(AdsbElement):
                 return
 
             # Get the traffic, and bail out of we have none
-            traffic_reports = HudDataCache.get_reliable_traffic()
+            traffic_reports = HudDataCache.get_nearby_traffic()
 
-            traffic_reports = list(
-                filter(
-                    lambda x: zoom_tracker.INSTANCE.is_in_inner_range(x.distance)[0],
-                    traffic_reports))
+            if traffic_reports is None:
+                return
 
             traffic_reports = list(
                 filter(
