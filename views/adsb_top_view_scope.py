@@ -65,6 +65,7 @@ class AdsbTopViewScope(AdsbElement):
         half_size = int((size / 2.0) + 0.5)
         quarter_size = int((size / 4.0) + 0.5)
         self.__no_direction_target_size__ = quarter_size
+        self.__line_width__ = max(1, self.__line_width__ >> 1)
 
         # 1 - Come up with the 0,0 based line coordinates
         self.__target_indicator__ = [
