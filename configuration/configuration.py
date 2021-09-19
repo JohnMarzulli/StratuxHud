@@ -597,7 +597,7 @@ class Configuration(object):
             False)
         self.__is_declination_enabled__ = self.__get_config_value__(
             Configuration.ENABLE_DECLINATION_KEY,
-            True)
+            False)
         self.aithre_enabled = self.__get_config_value__(
             Configuration.AITHRE_KEY,
             True)
