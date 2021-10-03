@@ -2,6 +2,7 @@
 Base class for AHRS view elements.
 """
 
+from data_sources.ahrs_data import AhrsData
 from common_utils import tasks, units
 from configuration import configuration
 from rendering import colors, display, text_renderer
@@ -94,6 +95,30 @@ class HudElement(object):
         """
 
         return False
+
+    def __get_skid_amount__(
+        self,
+        orientation: AhrsData
+    ) -> float:
+        """
+        Get the normalized amount of skid. Makes sure that that
+        values between Stratux and Dynon 180 are comparable.
+
+        Args:
+            orientation (AhrsData): The current, combined AHRS data.
+
+        Returns:
+            float: The amount of skid.
+        """
+        if orientation.slip_skid is None or isinstance(orientation.slip_skid, str):
+            return 0.0
+
+        if orientation.is_avionics_source:
+            return float(orientation.slip_skid * 3.0)
+
+        skid_normalized = -(orientation.slip_skid / 10.0)
+
+        return float(skid_normalized)
 
     def __render_text__(
         self,
