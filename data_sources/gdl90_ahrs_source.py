@@ -75,8 +75,10 @@ class AhrsStratux(logging_object.LoggingObject):
 
         system_utc_time = str(datetime.utcnow())
 
-        new_ahrs_data.is_avionics_source = "Service" in ahrs_json\
-            and "ToHud" in ahrs_json["Service"]
+        new_ahrs_data.is_avionics_source = ahrs_json is not None\
+            and "Service" in ahrs_json\
+            and "ToHud" in ahrs_json["Service"]\
+            and len(ahrs_json) > 1
 
         new_ahrs_data.gps_online = self.__get_value__(
             ahrs_json,
