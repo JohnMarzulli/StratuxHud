@@ -91,13 +91,9 @@ class SkidAndGs(AhrsElement):
         if orientation is None:
             return self.__center_x__
 
-        screen_x = self.__center_x__
+        skid_amount = self.__skid_range__ * self.__get_skid_amount__(orientation)
 
-        if orientation.is_avionics_source:
-            screen_x = screen_x + int(self.__skid_range__ * orientation.slip_skid * 3.0)
-        else:
-            screen_x = screen_x + int(self.__skid_range__ * orientation.slip_skid / 10.0)
-
+        screen_x = self.__center_x__ + skid_amount
         screen_x = max(screen_x, self.__skid_left_edge__)
         screen_x = min(self.__skid_right_edge__, screen_x)
 

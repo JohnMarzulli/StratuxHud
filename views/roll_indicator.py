@@ -283,7 +283,8 @@ class RollIndicator(AhrsElement):
             # Pi given the cost of anti-aliasing
             is_antialiased = not IS_PI
 
-            skid_rotation = 0 if orientation.slip_skid is None or isinstance(orientation.slip_skid, str) else orientation.slip_skid * 5.0
+            skid_rotation = self.__get_skid_amount__(orientation)
+            skid_rotation = skid_rotation * 5.0
 
             # Draws the current roll
             indicator_objects = [
