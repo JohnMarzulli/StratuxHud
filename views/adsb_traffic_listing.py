@@ -90,12 +90,9 @@ class AdsbTrafficListing(AdsbElement):
         orientation: AhrsData
     ):
         identifier = str(traffic.get_display_name())
-        altitude_delta = int(traffic.altitude / 100.0)
+        display_alt = int(traffic.altitude)
         distance_text = self.__get_distance_string__(traffic.distance, True) if orientation.gps_online else NOT_AVAILABLE
-        delta_sign = ''
-        if altitude_delta > 0:
-            delta_sign = '+'
-        altitude_text = "{0}{1}".format(delta_sign, altitude_delta)
+        altitude_text = "{0}".format(display_alt)
         bearing_text = "{0:.0f}".format(apply_declination(traffic.bearing)) if orientation.gps_online else NOT_AVAILABLE
 
         return [identifier, bearing_text, distance_text, altitude_text, traffic.icao_address]
