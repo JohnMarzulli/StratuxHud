@@ -10,6 +10,7 @@ from common_utils import fast_math, geo_math, units
 from common_utils.task_timer import TaskProfiler
 from configuration import configuration
 from core_services import breadcrumbs, zoom_tracker
+from data_sources import ahrs_data
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
@@ -239,12 +240,7 @@ class AdsbTopViewScope(AdsbElement):
                 0,
                 True)
 
-            altitude_delta = int(traffic.altitude / 100.0)
-            # No need to add a sign if it is negative. Math takes care of that for us.
-            delta_sign = ''
-            if altitude_delta > 0:
-                delta_sign = '+'
-            altitude_text = "{0}{1}".format(delta_sign, altitude_delta)
+            altitude_text = traffic.get_altitude_delta_text(orientation)
 
             self.__render_centered_text__(
                 framebuffer,

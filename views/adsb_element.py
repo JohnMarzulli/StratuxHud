@@ -78,7 +78,7 @@ class AdsbElement(HudElement):
         # Assumes traffic.position_valid
         # TODO - Account for aircraft roll...
 
-        altitude_delta = int(traffic.altitude - orientation.alt)
+        altitude_delta = traffic.get_altitude_delta(orientation.alt)
         slope = altitude_delta / traffic.distance if traffic.distance > 0 else 0.0
         vertical_degrees_to_target = math.degrees(math.atan(slope))
         vertical_degrees_to_target -= orientation.pitch
