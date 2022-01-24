@@ -89,7 +89,7 @@ class Traffic(object):
             return "UNK"
 
         altitude_delta = self.get_altitude_delta(orientation.alt)
-        altitude_delta = int(altitude_delta / 100.0)
+        altitude_delta = int((altitude_delta / 100.0) + 0.5)
 
         delta_sign = '+' if altitude_delta > 0 else ''
         return "{0}{1}".format(delta_sign, altitude_delta)
