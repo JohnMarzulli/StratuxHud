@@ -166,17 +166,12 @@ class AdsbElement(HudElement):
             [type] -- [description]
         """
 
-        altitude_delta = int(
-            (traffic_report.altitude - orientation.alt) / 100.0)
+        altitude_delta_text = traffic_report.get_altitude_delta_text(orientation)
         distance_text = self.__get_distance_string__(traffic_report.distance)
-        delta_sign = ''
-        if altitude_delta > 0:
-            delta_sign = '+'
-        altitude_text = "{0}{1}".format(delta_sign, altitude_delta)
         bearing_text = "{0}".format(
             int(apply_declination(traffic_report.bearing)))
 
-        return [bearing_text, distance_text, altitude_text]
+        return [bearing_text, distance_text, altitude_delta_text]
 
     def __render_info_card__(
         self,
