@@ -35,7 +35,16 @@ class Time(AhrsElement):
                 if last_char.isdigit():
                     time_text += "Z"
 
+        flight_time = orientation.get_flight_length()
+        flight_time_text = "DURATION: {0:00.1f} HOURS".format(flight_time)
+
         with TaskProfiler("views.time.Time.render"):
+            self.__render_horizontal_centered_text__(
+                framebuffer,
+                flight_time_text,
+                [self.__center_x__, self.__top_border__],
+                colors.YELLOW)
+
             self.__render_horizontal_centered_text__(
                 framebuffer,
                 time_text,

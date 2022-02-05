@@ -17,7 +17,9 @@ class AhrsData:
     Class to hold the AHRS data
     """
 
-    def get_flight_length() -> float:
+    def get_flight_length(
+        self
+    ) -> float:
         delta = datetime.utcnow() - FLIGHT_START
         return (delta.total_seconds() / 60.0) / 60
 
