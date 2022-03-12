@@ -470,6 +470,7 @@ class HeadsUpDisplay(object):
         self
     ):
         HudDataCache.update_traffic_reports()
+        HudDataCache.update_nearby_traffic_reports()
 
     def __update_aithre__(
         self
@@ -632,7 +633,7 @@ class HeadsUpDisplay(object):
 
         RecurringTask(
             "update_groundtrack",
-            breadcrumbs.DEFAULT_REPORT_PERIOD_SECONDS,
+            breadcrumbs.MAXIMUM_POSITION_SAMPLE_RATE,
             self.__update_groundtrack__,
             logger.get_logger())
 

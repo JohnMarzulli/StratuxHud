@@ -25,10 +25,26 @@ class Time(AhrsElement):
         orientation: AhrsData
     ):
         with TaskProfiler("views.time.Time.setup"):
-            time_text = str(orientation.utc_time).split('.')[0] \
-                + "UTC" if orientation.utc_time is not None else AhrsElement.GPS_UNAVAILABLE_TEXT
+            time_text = AhrsElement.GPS_UNAVAILABLE_TEXT
+
+            if orientation.utc_time is not None:
+                raw_text = str(orientation.utc_time)
+                time_text = raw_text.split('.')[0]
+
+                last_char = time_text[-1]
+                if last_char.isdigit():
+                    time_text += "Z"
+
+        flight_time = orientation.get_flight_length()
+        flight_time_text = "DURATION: {0:00.1f} HOURS".format(flight_time)
 
         with TaskProfiler("views.time.Time.render"):
+            self.__render_horizontal_centered_text__(
+                framebuffer,
+                flight_time_text,
+                [self.__center_x__, self.__top_border__],
+                colors.YELLOW)
+
             self.__render_horizontal_centered_text__(
                 framebuffer,
                 time_text,

@@ -11,6 +11,7 @@ import time
 import requests
 from common_utils import simulated_values, tasks
 from configuration import configuration
+from data_sources.ahrs_data import AhrsData
 
 
 class Traffic(object):
@@ -70,6 +71,28 @@ class Traffic(object):
         "Distance": 19427.035251983383
     }
     """
+
+    def get_altitude_delta(
+        self,
+        own_altitude: int
+    ) -> int:
+        """
+        Get the delta between out own altitude and another plane's
+        """
+        return int(self.altitude - own_altitude)
+
+    def get_altitude_delta_text(
+        self,
+        orientation: AhrsData
+    ) -> str:
+        if orientation is None:
+            return "UNK"
+
+        altitude_delta = self.get_altitude_delta(orientation.alt)
+        altitude_delta = int((altitude_delta / 100.0) + 0.5)
+
+        delta_sign = '+' if altitude_delta > 0 else ''
+        return "{0}{1}".format(delta_sign, altitude_delta)
 
     def is_on_ground(
         self

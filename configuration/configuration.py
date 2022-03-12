@@ -14,7 +14,7 @@ MAX_FRAMERATE = 60
 TARGET_AHRS_FRAMERATE = 30
 AHRS_TIMEOUT = 10.0 * (1.0 / float(TARGET_AHRS_FRAMERATE))
 
-VERSION = "2.0 ALPHA 3"
+VERSION = "2.0 BETA 1"
 
 ########################
 # Default Config Files #
@@ -597,7 +597,7 @@ class Configuration(object):
             False)
         self.__is_declination_enabled__ = self.__get_config_value__(
             Configuration.ENABLE_DECLINATION_KEY,
-            True)
+            False)
         self.aithre_enabled = self.__get_config_value__(
             Configuration.AITHRE_KEY,
             True)

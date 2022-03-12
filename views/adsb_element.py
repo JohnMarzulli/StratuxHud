@@ -78,7 +78,7 @@ class AdsbElement(HudElement):
         # Assumes traffic.position_valid
         # TODO - Account for aircraft roll...
 
-        altitude_delta = int(traffic.altitude - orientation.alt)
+        altitude_delta = traffic.get_altitude_delta(orientation.alt)
         slope = altitude_delta / traffic.distance if traffic.distance > 0 else 0.0
         vertical_degrees_to_target = math.degrees(math.atan(slope))
         vertical_degrees_to_target -= orientation.pitch
@@ -166,17 +166,12 @@ class AdsbElement(HudElement):
             [type] -- [description]
         """
 
-        altitude_delta = int(
-            (traffic_report.altitude - orientation.alt) / 100.0)
+        altitude_delta_text = traffic_report.get_altitude_delta_text(orientation)
         distance_text = self.__get_distance_string__(traffic_report.distance)
-        delta_sign = ''
-        if altitude_delta > 0:
-            delta_sign = '+'
-        altitude_text = "{0}{1}".format(delta_sign, altitude_delta)
         bearing_text = "{0}".format(
             int(apply_declination(traffic_report.bearing)))
 
-        return [bearing_text, distance_text, altitude_text]
+        return [bearing_text, distance_text, altitude_delta_text]
 
     def __render_info_card__(
         self,

@@ -9,6 +9,7 @@ from datetime import datetime
 from common_utils.local_debug import IS_PI
 from common_utils.task_timer import TaskProfiler
 from configuration import configuration
+from core_services import zoom_tracker
 
 from data_sources import traffic
 
@@ -26,6 +27,7 @@ class HudDataCache(object):
 
     DECLINATION = None
 
+    NEARBY_TRAFFIC = []
     RELIABLE_TRAFFIC = []
     IS_TRAFFIC_AVAILABLE = False
 
@@ -33,6 +35,26 @@ class HudDataCache(object):
 
     __TRAFFIC_CLIENT__ = traffic.AdsbTrafficClient(
         configuration.CONFIGURATION.get_traffic_manager_address())
+    
+    @staticmethod
+    def update_nearby_traffic_reports():
+        with TaskProfiler("HudDataCache::update_nearby_traffic_reports"):
+            HudDataCache.__LOCK__.acquire()
+
+            try:
+                traffic_reports = HudDataCache.RELIABLE_TRAFFIC
+
+                if traffic_reports is None:
+                    return
+
+                HudDataCache.NEARBY_TRAFFIC = list(
+                    filter(
+                        lambda x: zoom_tracker.INSTANCE.is_in_inner_range(
+                            x.distance
+                        )[0],
+                        traffic_reports))
+            finally:
+                HudDataCache.__LOCK__.release()
 
     @staticmethod
     def update_traffic_reports():
@@ -62,6 +84,25 @@ class HudDataCache(object):
             HudDataCache.__LOCK__.acquire()
             try:
                 traffic_clone = HudDataCache.RELIABLE_TRAFFIC[:]
+            finally:
+                HudDataCache.__LOCK__.release()
+
+        return traffic_clone
+    
+    @staticmethod
+    def get_nearby_traffic() -> list:
+        """
+        Returns a thread safe copy of the currently known NEARBY reliable traffic.
+
+        Returns:
+            list: A list of the reliable and NEARBY traffic stored in Traffic objects.
+        """
+
+        with TaskProfiler("HudDataCache::get_reliable_traffic"):
+            traffic_clone = None
+            HudDataCache.__LOCK__.acquire()
+            try:
+                traffic_clone = HudDataCache.NEARBY_TRAFFIC[:]
             finally:
                 HudDataCache.__LOCK__.release()
 

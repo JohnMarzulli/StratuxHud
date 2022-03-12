@@ -84,6 +84,21 @@ class SkidAndGs(AhrsElement):
             [self.__right_border__, self.__text_y_pos__],
             text_package)
 
+    def __get_skid_position__(
+        self,
+        orientation: AhrsData
+    ) -> int:
+        if orientation is None:
+            return self.__center_x__
+
+        skid_amount = self.__skid_range__ * self.__get_skid_amount__(orientation)
+
+        screen_x = self.__center_x__ + skid_amount
+        screen_x = max(screen_x, self.__skid_left_edge__)
+        screen_x = min(self.__skid_right_edge__, screen_x)
+
+        return screen_x
+
     def __render_skid_ball__(
         self,
         framebuffer,
@@ -101,11 +116,7 @@ class SkidAndGs(AhrsElement):
             False)
 
         # Draw the skid ball
-        screen_x = self.__center_x__ + \
-            int(self.__skid_range__ * orientation.slip_skid * 3.0)
-
-        screen_x = max(screen_x, self.__skid_left_edge__)
-        screen_x = min(self.__skid_right_edge__, screen_x)
+        screen_x = self.__get_skid_position__(orientation)
 
         if not self.__reduced_visuals__:
             drawing.renderer.filled_circle(

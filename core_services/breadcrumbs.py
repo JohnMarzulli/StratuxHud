@@ -2,6 +2,7 @@
 Handles determining how far out we care about traffic.
 """
 
+import math
 from collections import deque
 from datetime import datetime, timedelta
 
@@ -9,11 +10,38 @@ from common_utils import fast_math, geo_math, units
 from data_sources import ahrs_data
 from data_sources.ahrs_data import AhrsData
 
-DEFAULT_REPORT_PERIOD_SECONDS = 15
-REPORTS_PER_MINUTE = int(60 / DEFAULT_REPORT_PERIOD_SECONDS)
-REPORTS_PER_HOUR = int(REPORTS_PER_MINUTE * 60)
+MAXIMUM_POSITION_SAMPLE_RATE = 1
+MINIMUM_POSITION_SAMPLE_RATE = 15
+MAX_ROLL = 60.0
+MAXIMUM_REPORTS_PER_MINUTE = int(60 / MAXIMUM_POSITION_SAMPLE_RATE)
+MAXIMUM_REPORTS_PER_HOUR = int(MAXIMUM_REPORTS_PER_MINUTE * 60)
 
-DEFAULT_MAX_REPORTS = REPORTS_PER_HOUR
+DEFAULT_MAX_REPORTS = MAXIMUM_REPORTS_PER_HOUR * 2
+
+
+def get_position_sample_rate(
+    roll_degrees: float
+) -> float:
+    """
+    Given a roll rate, determine how often the position same needs to be taken.
+    This allows us to record turns in better fidelity than flying straight.
+    It also makes for a sparse-array style storage.
+
+    Args:
+        roll_degrees (float): The roll of the aircraft.
+
+    Returns:
+        float: How many seconds between position samples need to happen
+    """
+
+    absolute_roll = math.fabs(roll_degrees)
+    # Make sure we only interpolate between 0 and 60 degrees
+    clamped_roll = min(MAX_ROLL, absolute_roll)
+    proportion = clamped_roll / MAX_ROLL
+    exponential_proportion = math.sqrt(proportion)
+    sample_rate = (1.0 - exponential_proportion) * (MINIMUM_POSITION_SAMPLE_RATE - MAXIMUM_POSITION_SAMPLE_RATE)
+    sample_rate = MAXIMUM_POSITION_SAMPLE_RATE + sample_rate
+    return sample_rate
 
 
 class BreadcrumbReport:
@@ -31,7 +59,6 @@ class Breadcrumbs:
     def __init__(
         self,
         speed_calculation_period_seconds=240,
-        report_period_seconds=DEFAULT_REPORT_PERIOD_SECONDS,
         max_reports=DEFAULT_MAX_REPORTS,
     ) -> None:
         super().__init__()
@@ -40,25 +67,23 @@ class Breadcrumbs:
         self.speed = ahrs_data.NOT_AVAILABLE
         self.__max_reports__ = int(max_reports)
         self.__speed_calculation_period_seconds__ = speed_calculation_period_seconds
-        self.__report_period_seconds__ = report_period_seconds
         self.__seconds_of_trail_to_show__ = 60 * 60
-        self.__trail_reports_to_show__ = int(self.__seconds_of_trail_to_show__ / report_period_seconds)
+
+    def __get_seconds_since_last_report_time__(
+        self
+    ) -> datetime:
+        if (self.__breadcrumbs__ is not None) and (len(self.__breadcrumbs__) > 0):
+            time_since_last_report = datetime.utcnow() - self.__breadcrumbs__[-1].timestamp
+
+            return time_since_last_report.total_seconds()
+
+        return MINIMUM_POSITION_SAMPLE_RATE * 2
 
     def __report__(
         self,
         position: list
     ):
         if position is None or position[0] is None or position[1] is None:
-            return False
-
-        if len(self.__breadcrumbs__) == 0:
-            self.__breadcrumbs__.append(BreadcrumbReport(position))
-
-            return True
-
-        time_since_last_report = datetime.utcnow() - self.__breadcrumbs__[-1].timestamp
-
-        if time_since_last_report.total_seconds() < self.__report_period_seconds__:
             return False
 
         self.__breadcrumbs__.append(BreadcrumbReport(position))
@@ -80,13 +105,6 @@ class Breadcrumbs:
             float: [description]
         """
 
-        # Find an average (mean) GPS position
-        # Then find the median timestamp.
-        #
-        # Use the MEAN position with the last position....
-        # the MEDIAN timestamp with the last timestamp.
-        # Finally find the distance and average everything out.
-
         if self.__breadcrumbs__ is None or len(self.__breadcrumbs__) == 0:
             return ahrs_data.NOT_AVAILABLE
 
@@ -95,11 +113,11 @@ class Breadcrumbs:
         if current_size < 5:
             return ahrs_data.NOT_AVAILABLE
 
-        oldest_report_index_to_process = int(self.__speed_calculation_period_seconds__ / self.__report_period_seconds__)
-        oldest_report_index_to_process = -min(current_size, oldest_report_index_to_process)
+        oldest_timestamp_to_process = datetime.utcnow() - timedelta(seconds=self.__speed_calculation_period_seconds__)
+        reports = list(filter(lambda x: x.timestamp >= oldest_timestamp_to_process, self.__breadcrumbs__))
 
-        oldest_report_to_process = self.__breadcrumbs__[oldest_report_index_to_process]
-        latest_report = self.__breadcrumbs__[-1]
+        oldest_report_to_process = reports[0]
+        latest_report = reports[-1]
         distance = geo_math.get_distance(oldest_report_to_process.position, latest_report.position)
 
         # This gives us Statue Miles per second
@@ -135,10 +153,8 @@ class Breadcrumbs:
             return []
 
         now = datetime.utcnow()
-        oldest_report_index_to_process = current_size - 1 - self.__trail_reports_to_show__
-        oldest_report_index_to_process = max(0, oldest_report_index_to_process)
-
-        reports = [self.__breadcrumbs__[index] for index in range(oldest_report_index_to_process, current_size - 1)]
+        oldest_trail_report = now - timedelta(seconds=self.__seconds_of_trail_to_show__)
+        reports = list(filter(lambda x: x.timestamp >= oldest_trail_report, self.__breadcrumbs__))
 
         return [[report.position, 1.0 - ((now - report.timestamp).total_seconds() / self.__seconds_of_trail_to_show__)]
                 for report in reports]
@@ -157,6 +173,13 @@ class Breadcrumbs:
         Returns:
             bool: True if the position report was added to the breadcrumbs
         """
+
+        seconds_since_last_update = MINIMUM_POSITION_SAMPLE_RATE + MAXIMUM_POSITION_SAMPLE_RATE
+        sample_rate = get_position_sample_rate(orientation.roll) if orientation is not None else MINIMUM_POSITION_SAMPLE_RATE
+        seconds_since_last_update = self.__get_seconds_since_last_report_time__()
+
+        if seconds_since_last_update < sample_rate:
+            return False
 
         while len(self.__breadcrumbs__) > self.__max_reports__:
             self.__breadcrumbs__.get()

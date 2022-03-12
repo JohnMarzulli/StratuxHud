@@ -2,7 +2,6 @@
 View that shows the list of nearby traffic
 """
 
-from core_services import zoom_tracker
 from data_sources.ahrs_data import NOT_AVAILABLE, AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
@@ -78,6 +77,9 @@ class AdsbTrafficListing(AdsbElement):
             traffic_reports,
             orientation)
 
+        if pre_padded_text is None or max_string_lengths is None:
+            return []
+
         return [self.__get_listing__(
             report,
             max_string_lengths) for report in pre_padded_text]
@@ -88,12 +90,9 @@ class AdsbTrafficListing(AdsbElement):
         orientation: AhrsData
     ):
         identifier = str(traffic.get_display_name())
-        altitude_delta = int(traffic.altitude / 100.0)
+        display_alt = int(traffic.altitude)
         distance_text = self.__get_distance_string__(traffic.distance, True) if orientation.gps_online else NOT_AVAILABLE
-        delta_sign = ''
-        if altitude_delta > 0:
-            delta_sign = '+'
-        altitude_text = "{0}{1}".format(delta_sign, altitude_delta)
+        altitude_text = "{0}".format(display_alt)
         bearing_text = "{0:.0f}".format(apply_declination(traffic.bearing)) if orientation.gps_online else NOT_AVAILABLE
 
         return [identifier, bearing_text, distance_text, altitude_text, traffic.icao_address]
@@ -103,17 +102,15 @@ class AdsbTrafficListing(AdsbElement):
         traffic_reports: list,
         orientation: AhrsData
     ):
+        reports_to_show = HudDataCache.get_nearby_traffic()
+
+        if reports_to_show is None:
+            return None, None
+
         # We do not want to show traffic on the ground.
         reports_to_show = list(
             filter(
                 lambda x: not x.is_on_ground(),
-                traffic_reports))
-
-        reports_to_show = list(
-            filter(
-                lambda x: zoom_tracker.INSTANCE.is_in_inner_range(
-                    x.distance
-                )[0],
                 traffic_reports))
 
         # The __max_reports__ value is set based on the screen size
@@ -166,8 +163,8 @@ class AdsbTrafficListing(AdsbElement):
                 self.__font__,
                 traffic_report,
                 [x_pos, y_pos],
-                colors.BLACK,
-                colors.YELLOW)
+                colors.YELLOW,
+                colors.BLACK)
 
             y_pos += self.__next_line_distance__
 
