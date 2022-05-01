@@ -2,14 +2,14 @@
 Data store to standardize AHRS data.
 """
 
+from datetime import datetime, timezone
 from typing import Union
-from datetime import datetime
 
 from common_utils import fast_math
 
 NOT_AVAILABLE = '---'
 
-FLIGHT_START = datetime.utcnow()
+FLIGHT_START = datetime.now(timezone.utc)
 
 
 class AhrsData:
@@ -20,7 +20,7 @@ class AhrsData:
     def get_flight_length(
         self
     ) -> float:
-        delta = datetime.utcnow() - FLIGHT_START
+        delta = datetime.now(timezone.utc) - FLIGHT_START
         return (delta.total_seconds() / 60.0) / 60
 
     def __is_compass_heading_valid__(

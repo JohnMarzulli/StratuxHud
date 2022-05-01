@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import contextlib
 import json
 import sys
 from time import sleep
@@ -88,10 +89,8 @@ class HeadsUpDisplay(object):
         """
         Resets the traffic manager to essentially reset the receiver unit.
         """
-        try:
+        with contextlib.suppress(Exception):
             AdsbTrafficClient.INSTANCE.reset_traffic_manager()
-        except Exception:
-            pass
 
     def __shutdown_stratux__(
         self
@@ -109,8 +108,7 @@ class HeadsUpDisplay(object):
         Runs the update/render logic loop.
         """
 
-        self.log('Initialized screen size to {}x{}'.format(
-            self.__width__, self.__height__))
+        self.log(f'Initialized scresen size to {self.__width__}x{self.__height__}')
 
         # Make sure that the disclaimer is visible for long enough.
         sleep(5)
@@ -221,15 +219,14 @@ class HeadsUpDisplay(object):
                 try:
                     [self.__render_view_element__(hud_element, orientation) for hud_element in view]
                 except Exception as e:
-                    self.warn("LOOP:" + str(e))
-
+                    self.warn(f"LOOP:{e}")
                 if show_unavailable:
                     self.__ahrs_not_available_element__.render(surface, orientation)
 
             if self.__should_render_perf__:
                 debug_status_left = int(self.__width__ * 0.9)
                 debug_status_top = int(self.__height__ * 0.1)
-                render_perf_text = '{}fps'.format(current_fps)
+                render_perf_text = f'{current_fps}fps'
 
                 self.__render_text__(
                     render_perf_text,
@@ -268,7 +265,7 @@ class HeadsUpDisplay(object):
             try:
                 hud_element.render(surface, orientation)
             except Exception as e:
-                self.warn('ELEMENT {} EX:{}'.format(element_name, e))
+                self.warn(f'ELEMENT {element_name} EX:{e}')
 
     def __render_text__(
         self,
@@ -344,10 +341,7 @@ class HeadsUpDisplay(object):
             if hud_element_class is None:
                 return None
 
-            font = self.__font__
-
-            if use_detail_font:
-                font = self.__detail_font__
+            font = self.__detail_font__ if use_detail_font else self.__font__
 
             return hud_element_class(
                 CONFIGURATION.get_degrees_of_pitch(),
@@ -356,10 +350,7 @@ class HeadsUpDisplay(object):
                 (self.__width__, self.__height__),
                 reduced_visuals)
         except Exception as e:
-            self.warn(
-                "Unable to build element {0}:{1}".format(
-                    hud_element_class,
-                    e))
+            self.warn("Unable to build element {0}:{1}".format(hud_element_class, e))
             return None
 
     def __load_view_elements__(
@@ -420,9 +411,7 @@ class HeadsUpDisplay(object):
                     for element_name in element_names:
                         elements_requested += 1
                         element_config = view_elements[element_name]
-                        element_hash_name = "{}{}".format(
-                            element_config[0],
-                            element_config[1])
+                        element_hash_name = f"{element_config[0]}{element_config[1]}"
 
                         # Instantiating multiple elements of the same type/font
                         # REALLY chews up memory.. and there is no
@@ -440,15 +429,8 @@ class HeadsUpDisplay(object):
                     is_ahrs_view = self.__is_ahrs_view__(new_view_elements)
                     hud_views.append((view_name, new_view_elements, is_ahrs_view))
                 except Exception as ex:
-                    self.log(
-                        "While attempting to load view={}, EX:{}".format(
-                            view,
-                            ex))
-
-        self.log(
-            "While loading, {} elements were requested, with {} unique being created.".format(
-                elements_requested,
-                len(existing_elements.keys())))
+                    self.log(f"While attempting to load view={view}, EX:{ex}")
+        self.log(f"While loading, {elements_requested} elements were requested, with {len(existing_elements.keys())} unique being created.")
 
         return hud_views
 
@@ -566,7 +548,7 @@ class HeadsUpDisplay(object):
         self.__display__ = display.Display(
             force_fullscreen,
             force_software)
-        pygame.display.set_caption("StratuxHUD ({})".format(drawing.renderer.RENDERER_NAME))
+        pygame.display.set_caption(f"StratuxHUD ({drawing.renderer.RENDERER_NAME})")
         self.__width__, self.__height__ = self.__display__.size
 
         pygame.mouse.set_visible(False)
@@ -603,7 +585,7 @@ class HeadsUpDisplay(object):
         try:
             self.web_server = configuration_server.HudServer()
         except Exception as ex:
-            logger.get_logger().info("Unable to start the remote control server: {}".format(ex))
+            logger.get_logger().info(f"Unable to start the remote control server: {ex}")
             self.web_server = None
 
         if self.web_server is not None:
@@ -682,7 +664,7 @@ class HeadsUpDisplay(object):
 
         key, texture, size = text_renderer.get_or_create_text_texture(
             self.__detail_font__,
-            'Version {}'.format(configuration.VERSION),
+            f'Version {configuration.VERSION}',
             colors.GREEN,
             colors.BLACK)
 

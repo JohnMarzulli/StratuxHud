@@ -1,3 +1,4 @@
+import contextlib
 import json
 import os
 from os.path import expanduser
@@ -13,8 +14,9 @@ MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT = 2
 MAX_FRAMERATE = 60
 TARGET_AHRS_FRAMERATE = 30
 AHRS_TIMEOUT = 10.0 * (1.0 / float(TARGET_AHRS_FRAMERATE))
+DEFAULT_VIEW_KEY = "default_view"
 
-VERSION = "2.0 BETA 1"
+VERSION = "2.0 RC1"
 
 ########################
 # Default Config Files #
@@ -37,9 +39,10 @@ __views_file__ = '../views.json'
 # These are the user modified files
 # that are merged in with the system
 # defaults, overriding what is set.
-__user_views_file__ = '{}/hud_views.json'.format(expanduser('~'))
-__user_config_file__ = '{}/hud_config.json'.format(expanduser('~'))
-__heading_bugs_file__ = '{}/hud_heading_bugs.json'.format(expanduser('~'))
+__user_path__ = expanduser('~')
+__user_views_file__ = f"{__user_path__}/hud_views.json"
+__user_config_file__ = f"{__user_path__}/hud_config.json"
+__heading_bugs_file__ = f"{__user_path__}/hud_heading_bugs.json"
 
 __working_dir__ = os.path.dirname(os.path.abspath(__file__))
 
@@ -119,17 +122,12 @@ class Configuration(object):
     ) -> dict:
         views_key = 'views'
 
-        try:
+        with contextlib.suppress(Exception):
             full_views_contents = self.__load_config_from_json_file__(
                 file_name)
 
             if full_views_contents is not None and len(full_views_contents) > 0:
-                if views_key in full_views_contents:
-                    return full_views_contents[views_key]
-                else:
-                    return full_views_contents
-        except Exception:
-            pass
+                return full_views_contents[views_key] if views_key in full_views_contents else full_views_contents
 
         return None
 
@@ -208,7 +206,8 @@ class Configuration(object):
             Configuration.DEGREES_OF_PITCH_KEY: self.get_degrees_of_pitch(),
             Configuration.PITCH_DEGREES_DISPLAY_SCALER_KEY: self.get_pitch_degrees_display_scaler(),
             Configuration.AITHRE_KEY: self.aithre_enabled,
-            Configuration.TRAFFIC_MANAGER_KEY: self.get_traffic_manager_address()
+            Configuration.TRAFFIC_MANAGER_KEY: self.get_traffic_manager_address(),
+            DEFAULT_VIEW_KEY: self.__view_index__
         }
 
         return json.dumps(config_dictionary, indent=4, sort_keys=True)
@@ -441,6 +440,8 @@ class Configuration(object):
             hud_views,
             self.__view_index__ + 1)
 
+        self.__save_view__()
+
     def previous_view(
         self,
         hud_views: list
@@ -454,6 +455,22 @@ class Configuration(object):
         self.__view_index__ = self.__clamp_view__(
             hud_views,
             self.__view_index__ - 1)
+
+        self.__save_view__()
+
+    def get_default_view_index(
+        self
+    ):
+        with contextlib.suppress(Exception):
+            return self.__configuration__[DEFAULT_VIEW_KEY]
+
+        return 0
+
+    def __save_view__(
+        self
+    ):
+        self.__configuration__[DEFAULT_VIEW_KEY] = self.__view_index__
+        self.write_config()
 
     def __clamp_view__(
         self,
@@ -619,6 +636,8 @@ class Configuration(object):
             'UpdateCapabilities',
             15,
             self.__update_capabilities__)
+
+        self.__view_index__ = self.get_default_view_index()
 
         self.set_from_json(self.__configuration__)
 
