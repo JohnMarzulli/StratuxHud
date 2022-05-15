@@ -57,14 +57,16 @@ class AdsbTrafficListing(AdsbElement):
             bearing = str(report[1])
         distance_text = report[2]
         altitude = report[3]
-        icao = report[4]
+        delta = report[4]
+        icao = report[5]
 
         # if self.__show_list__:
-        traffic_report = "{0} {1} {2} {3}".format(
+        traffic_report = "{0} {1} {2} {3} {4}".format(
             identifier.ljust(max_string_lengths[0]),
             bearing.rjust(max_string_lengths[1]),
             distance_text.rjust(max_string_lengths[2]),
-            altitude.rjust(max_string_lengths[3]))
+            altitude.rjust(max_string_lengths[3]),
+            delta.rjust(max_string_lengths[4]))
 
         return (icao, traffic_report)
 
@@ -94,8 +96,11 @@ class AdsbTrafficListing(AdsbElement):
         distance_text = self.__get_distance_string__(traffic.distance, True) if orientation.gps_online else NOT_AVAILABLE
         altitude_text = "{0}".format(display_alt)
         bearing_text = "{0:.0f}".format(apply_declination(traffic.bearing)) if orientation.gps_online else NOT_AVAILABLE
+        alt_delta = int(((display_alt - orientation.alt) / 100) + 0.5)
+        alt_sign = "+" if alt_delta >= 0 else ""
+        delta_text = "{0}{1}".format(alt_sign, alt_delta)
 
-        return [identifier, bearing_text, distance_text, altitude_text, traffic.icao_address]
+        return [identifier, bearing_text, distance_text, altitude_text, delta_text, traffic.icao_address]
 
     def __get_pre_padded_text_reports__(
         self,
@@ -117,22 +122,23 @@ class AdsbTrafficListing(AdsbElement):
         # and how much can fit on the screen
         reports_to_show = reports_to_show[:self.__max_reports__]
 
-        pre_padded_text = [['IDENT', 'BEAR', 'DIST', 'ALT', None]] + \
+        pre_padded_text = [['IDENT', 'BRG', 'DIST', 'ALT', 'DLT', None]] + \
             [self.__get_report_text__(traffic, orientation) for traffic in reports_to_show]
         # An ICAO code is the worst case display length,
         # but add a little buffer so the columns do
         # not shift around.
         # len(max(pre_padded_text, key = lambda x: len(str(x[4])))[0])
-        max_identifier_length = 10
+        max_identifier_length = 8
         # Since the bearing length should never be any more the 3 digits
-        max_bearing_length = 4
+        max_bearing_length = 3
         # len(max(pre_padded_text, key = lambda x: len(x[2]))[2]) + 1
-        max_distance_length = 10
+        max_distance_length = 8
         # We really should never get anything more than 35k above, but same some room
         # len(max(pre_padded_text, key = lambda x: len(x[3]))[3])
         max_altitude_length = 5
+        max_delta_length = max_altitude_length - 2
 
-        return pre_padded_text, (max_identifier_length, max_bearing_length, max_distance_length, max_altitude_length)
+        return pre_padded_text, (max_identifier_length, max_bearing_length, max_distance_length, max_altitude_length, max_delta_length)
 
     def render(
         self,
