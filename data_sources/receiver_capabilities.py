@@ -24,12 +24,10 @@ class StratuxCapabilities(LoggingObject):
         if key in self.__capabilities_json__:
             try:
                 return self.__capabilities_json__[key]
-            except KeyboardInterrupt:
-                raise
-            except SystemExit:
+            except (KeyboardInterrupt, SystemExit):
                 raise
             except Exception as ex:
-                self.warn("__get_capability__ EX={}".format(ex))
+                self.warn(f"__get_capability__ EX={ex}")
                 return None
 
         return None
@@ -50,14 +48,11 @@ class StratuxCapabilities(LoggingObject):
         if key in self.__capabilities_json__:
             try:
                 return bool(self.__capabilities_json__[key])
-            except KeyboardInterrupt:
-                raise
-            except SystemExit:
+            except (KeyboardInterrupt, SystemExit):
                 raise
             except Exception as ex:
-                self.warn("__get_capability__ EX={}".format(ex))
+                self.warn(f"__get_capability__ EX={ex}")
                 return False
-
         return False
 
     def __init__(
@@ -87,14 +82,11 @@ class StratuxCapabilities(LoggingObject):
                 self.__capabilities_json__ = stratux_session.get(
                     url, timeout=2).json()
 
-            except KeyboardInterrupt:
-                raise
-            except SystemExit:
+            except (KeyboardInterrupt, SystemExit):
                 raise
             except Exception as ex:
                 self.__capabilities_json__ = {}
-                self.warn("EX in __init__ ex={}".format(ex))
-
+                self.warn(f"EX in __init__ ex={ex}")
             self.traffic_enabled = self.__get_capability__('UAT_Enabled')
             self.gps_enabled = self.__get_capability__('GPS_Enabled')
             self.barometric_enabled = self.__get_capability__(
@@ -106,7 +98,7 @@ class StratuxCapabilities(LoggingObject):
                 # Ownship is in Hex... traffic reports come in int...
                 self.ownship_icao = int(
                     self.ownship_mode_s, 16) if self.ownship_mode_s is not None else 0
-            except:
+            except Exception:
                 self.ownship_icao = 0
             # http://192.168.10.1/getSettings - get device settings. Example output:
             #

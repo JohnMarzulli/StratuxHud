@@ -36,7 +36,7 @@ class Aircraft(logging_object.LoggingObject):
             except KeyboardInterrupt:
                 raise
             except Exception as ex:
-                self.warn("update_orientation_in_background ex={}".format(ex))
+                self.warn(f"update_orientation_in_background ex={ex}")
 
     def __init__(
         self,
@@ -94,5 +94,5 @@ if __name__ == '__main__':
     plane = Aircraft()
 
     while True:
-        print(str(plane.get_orientation().roll))
+        print(plane.get_orientation().roll)
         time.sleep(1.0 / 60.0)
