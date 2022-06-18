@@ -2,6 +2,7 @@
 Manages heading/target bugs.
 """
 
+import contextlib
 import json
 
 import configuration
@@ -21,7 +22,7 @@ class Targets(object):
                 json_config_file.write(json_config_text)
 
             return True
-        except:
+        except Exception:
             return False
 
     def clear_targets(
@@ -60,7 +61,7 @@ class Targets(object):
 
         self.targets = []
 
-        try:
+        with contextlib.suppress(Exception):
             with open(configuration.HEADING_BUGS_FILE) as json_config_file:
                 json_config_text = json_config_file.read()
                 json_config = json.loads(json_config_text)
@@ -70,8 +71,6 @@ class Targets(object):
                         if len(lat_long_altitude) == 3:
                             self.add_target(
                                 lat_long_altitude[0], lat_long_altitude[1], lat_long_altitude[2])
-        except:
-            pass
 
 
 TARGET_MANAGER = Targets()

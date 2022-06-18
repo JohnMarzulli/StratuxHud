@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from common_utils import fast_math, geo_math, simulated_values
 
@@ -16,7 +16,8 @@ class AhrsSimulation(object):
         """
         Ticks the simulated data.
         """
-        hours_since_start = ((datetime.utcnow() - self.__starting_time__).total_seconds() / 60.0) / 60.0
+        hours_since_start = (datetime.now(timezone.utc) - self.__starting_time__).total_seconds() / 60.0 / 60.0
+
         proportion_into_simulation = hours_since_start / self.__hours_to_destination__
 
         simulated_lat = fast_math.interpolatef(self.__starting_lat__, self.__ending_lat__, proportion_into_simulation)
@@ -67,7 +68,7 @@ class AhrsSimulation(object):
         self.ahrs_data.position = [self.__starting_lat__, self.__starting_long__]
 
         self.__hours_to_destination__ = 17.5
-        self.__starting_time__ = datetime.utcnow()
+        self.__starting_time__ = datetime.now(timezone.utc)
         self.__end_time__ = self.__starting_time__ + timedelta(hours=17.5)
 
         self.pitch_simulator = simulated_values.SimulatedValue(1, 30, -1)

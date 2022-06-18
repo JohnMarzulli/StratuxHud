@@ -20,12 +20,10 @@ class StratuxStatus(LoggingObject):
         if key in self.__status_json__:
             try:
                 return bool(self.__status_json__[key])
-            except KeyboardInterrupt:
-                raise
-            except SystemExit:
+            except (KeyboardInterrupt, SystemExit):
                 raise
             except Exception as ex:
-                self.warn("__get_status__ EX={}".format(ex))
+                self.warn(f"__get_status__ EX={ex}")
                 return False
 
         return False
@@ -55,14 +53,11 @@ class StratuxStatus(LoggingObject):
                 self.__status_json__ = stratux_session.get(
                     url, timeout=2).json()
 
-            except KeyboardInterrupt:
-                raise
-            except SystemExit:
+            except (KeyboardInterrupt, SystemExit):
                 raise
             except Exception as ex:
-                self.warn("__get_status__ EX={}".format(ex))
+                self.warn(f"__get_status__ EX={ex}")
                 self.__status_json__ = {}
-
             self.cpu_temp = self.__get_status__('CPUTemp')
             self.satellites_locked = self.__get_status__(
                 'GPS_satellites_locked')
