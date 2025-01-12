@@ -13,6 +13,7 @@ from core_services import breadcrumbs, zoom_tracker
 from data_sources import ahrs_data
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
+from data_sources.nexrad import NexradClient
 from data_sources.traffic import Traffic
 from rendering import colors, drawing
 
@@ -42,14 +43,15 @@ class AdsbTopViewScope(AdsbElement):
         pixels_per_degree_y: float,
         font,
         framebuffer_size,
-        reduced_visuals: bool = False
+        reduced_visuals: bool = False,
     ):
         super().__init__(
             degrees_of_pitch,
             pixels_per_degree_y,
             font,
             framebuffer_size,
-            reduced_visuals)
+            reduced_visuals,
+        )
 
         self.__draw_identifiers__ = True
 
@@ -60,7 +62,8 @@ class AdsbTopViewScope(AdsbElement):
         # that we loose to much fidelity in front of us.
         self.__scope_center__ = [
             self.__center_x__,
-            self.__center_y__ + int(self.__center_y__ >> 1)]
+            self.__center_y__ + int(self.__center_y__ >> 1),
+        ]
 
         size = self.__framebuffer_size__[1] * 0.04
         half_size = int((size / 2.0) + 0.5)
@@ -72,14 +75,11 @@ class AdsbTopViewScope(AdsbElement):
         self.__target_indicator__ = [
             [-quarter_size, half_size],
             [0, -half_size],
-            [quarter_size, half_size]
+            [quarter_size, half_size],
         ]
 
     def __get_traffic_indicator__(
-        self,
-        indicator_position: list,
-        our_heading: float,
-        traffic_heading: float
+        self, indicator_position: list, our_heading: float, traffic_heading: float
     ) -> list:
         """Generates the coordinates for a reticle indicating
         traffic is above use.
@@ -93,25 +93,28 @@ class AdsbTopViewScope(AdsbElement):
         # 2 - determine the angle of rotation compared to our "up"
         rotation = 360.0 - our_heading
         rotation = rotation + traffic_heading
-        rotation_degrees = int(
-            fast_math.wrap_degrees(
-                rotation + self.__adjustment__))
+        rotation_degrees = int(fast_math.wrap_degrees(rotation + self.__adjustment__))
 
         # 3 - Rotate the zero-based points
         radians = math.radians(rotation_degrees)
         rotation_sin = math.sin(radians)
         rotation_cos = math.cos(radians)
         rotated_points = [
-            [point[0] * rotation_cos - point[1] * rotation_sin,
-             point[0] * rotation_sin + point[1] * rotation_cos] for point in self.__target_indicator__]
+            [
+                point[0] * rotation_cos - point[1] * rotation_sin,
+                point[0] * rotation_sin + point[1] * rotation_cos,
+            ]
+            for point in self.__target_indicator__
+        ]
 
         # 4 - Translate to the bug center point
-        return [[point[0] + indicator_position[0], point[1] + indicator_position[1]] for point in rotated_points]
+        return [
+            [point[0] + indicator_position[0], point[1] + indicator_position[1]]
+            for point in rotated_points
+        ]
 
     def __get_pixel_distance__(
-        self,
-        distance_in_user_units: float,
-        scope_range: float
+        self, distance_in_user_units: float, scope_range: float
     ) -> int:
         max_pixel_distance = self.__scope_center__[1] - self.__top_border__
 
@@ -122,9 +125,7 @@ class AdsbTopViewScope(AdsbElement):
         return int(max_pixel_distance * proportion)
 
     def __get_screen_projection_from_center__(
-        self,
-        angle_degrees: float,
-        distance_pixels: float
+        self, angle_degrees: float, distance_pixels: float
     ) -> Tuple[int, int]:
         """
         Given an angle (0 is straight up, 180 is straight down), and a distance
@@ -157,7 +158,7 @@ class AdsbTopViewScope(AdsbElement):
         orientation: AhrsData,
         traffic: Traffic,
         scope_range: float,
-        first_ring_pixel_distance: int
+        first_ring_pixel_distance: int,
     ):
         """
         Draws a single reticle on the screen.
@@ -179,14 +180,14 @@ class AdsbTopViewScope(AdsbElement):
         # TODO - Consider tail numbers to the side, with lines
         # that connect the number to the target.
 
-        (is_within_threshold, display_distance) = zoom_tracker.INSTANCE.is_in_inner_range(traffic.distance)
+        (is_within_threshold, display_distance) = (
+            zoom_tracker.INSTANCE.is_in_inner_range(traffic.distance)
+        )
 
         if not is_within_threshold:
             return
 
-        pixels_from_center = self.__get_pixel_distance__(
-            display_distance,
-            scope_range)
+        pixels_from_center = self.__get_pixel_distance__(display_distance, scope_range)
 
         delta_angle = orientation.get_onscreen_gps_heading()
         delta_angle = traffic.bearing - delta_angle
@@ -197,8 +198,8 @@ class AdsbTopViewScope(AdsbElement):
 
         # Find where to draw the reticle....
         screen_x, screen_y = self.__get_screen_projection_from_center__(
-            delta_angle,
-            pixels_from_center)
+            delta_angle, pixels_from_center
+        )
 
         if screen_x < 0 or screen_x > self.__width__:
             return
@@ -212,15 +213,19 @@ class AdsbTopViewScope(AdsbElement):
             points = self.__get_traffic_indicator__(
                 [screen_x, screen_y],
                 orientation.get_onscreen_gps_heading(),
-                traffic.track)
-            drawing.renderer.polygon(framebuffer, target_color, points, not self.__reduced_visuals__)
+                traffic.track,
+            )
+            drawing.renderer.polygon(
+                framebuffer, target_color, points, not self.__reduced_visuals__
+            )
         else:
             drawing.renderer.filled_circle(
                 framebuffer,
                 target_color,
                 [screen_x, screen_y],
                 self.__no_direction_target_size__,
-                not self.__reduced_visuals__)
+                not self.__reduced_visuals__,
+            )
 
         # Do not draw identifier text for any targets further than
         # the first scope ring.
@@ -238,24 +243,28 @@ class AdsbTopViewScope(AdsbElement):
                 colors.BLACK,
                 0.5,
                 0,
-                True)
+                True,
+            )
 
             altitude_text = traffic.get_altitude_delta_text(orientation)
 
             self.__render_centered_text__(
                 framebuffer,
                 altitude_text,
-                [screen_x, screen_y + self.__font_half_height__ + (self.__no_direction_target_size__ << 2)],
+                [
+                    screen_x,
+                    screen_y
+                    + self.__font_half_height__
+                    + (self.__no_direction_target_size__ << 2),
+                ],
                 colors.YELLOW,
                 colors.BLACK,
                 0.5,
                 0,
-                True)
+                True,
+            )
 
-    def __render_ownship__(
-        self,
-        framebuffer: pygame.Surface
-    ):
+    def __render_ownship__(self, framebuffer: pygame.Surface):
         """
         Draws the graphic for an aircraft, but always pointing straight up.
         This is to indicate our own aircraft, position, and heading
@@ -264,24 +273,114 @@ class AdsbTopViewScope(AdsbElement):
         Args:
             framebuffer {pygame.Surface} -- The render target.
         """
-        points = self.__get_traffic_indicator__(
-            self.__scope_center__,
-            0,
-            0)
+        points = self.__get_traffic_indicator__(self.__scope_center__, 0, 0)
 
-        drawing.renderer.polygon(framebuffer, colors.GREEN, points, not self.__reduced_visuals__)
+        drawing.renderer.polygon(
+            framebuffer, colors.GREEN, points, not self.__reduced_visuals__
+        )
+
+    def __render_reflectivity__(
+        self,
+        framebuffer: pygame.Surface,
+        scope_range: Tuple[int, int],
+        orientation: AhrsData,
+    ):
+        max_distance = scope_range[0]
+
+        if (
+            orientation.position is None
+            or orientation.position[0] is None
+            or orientation.position[1] is None
+        ):
+            return
+
+        current_heading = orientation.get_onscreen_gps_heading()
+
+        if current_heading is None or isinstance(current_heading, str):
+            return
+
+        nexrad_blocks = NexradClient.get_nexrad_in_range(
+            orientation.position, max_distance
+        )
+
+        lon_indices = range(0, 32)
+
+        for block in nexrad_blocks:
+            lat_step = (block.north_western[0] - block.south_western[0]) / 4.0
+            lon_step = (block.north_eastern[1] - block.north_western[1]) / 32.0
+
+            for lat_index in [0, 1, 2, 3]:
+                for lon_index in lon_indices:
+                    reflectivity = block.reflectivity[lat_index][lon_index]
+
+                    if reflectivity == 0:
+                        continue
+
+                    color = NexradClient.reflectivity_to_rgb(reflectivity)
+                    n_lat = block.north_western[0] - (lat_index * lat_step)
+                    s_lat = n_lat - lat_step
+                    w_lon = block.north_western[1] + (lon_index * lon_step)
+                    e_lon = w_lon + lon_step
+
+                    nw = [n_lat, w_lon]
+                    ne = [n_lat, e_lon]
+                    se = [s_lat, e_lon]
+                    sw = [s_lat, w_lon]
+
+                    nw_pixel = self.__get_screen_coordinates__(
+                        orientation, current_heading, max_distance, nw
+                    )
+                    ne_pixel = self.__get_screen_coordinates__(
+                        orientation, current_heading, max_distance, ne
+                    )
+                    se_pixel = self.__get_screen_coordinates__(
+                        orientation, current_heading, max_distance, se
+                    )
+                    sw_pixel = self.__get_screen_coordinates__(
+                        orientation, current_heading, max_distance, sw
+                    )
+
+                    drawing.renderer.polygon(
+                        framebuffer,
+                        color,
+                        [nw_pixel, ne_pixel, se_pixel, sw_pixel],
+                        False,
+                    )
+
+    def __get_screen_coordinates__(
+        self, orientation: AhrsData, current_heading, max_distance, gps_coordinates
+    ):
+        distance_start = geo_math.get_distance(orientation.position, gps_coordinates)
+        bearing = geo_math.get_bearing(orientation.position, gps_coordinates)
+        delta_angle = bearing - current_heading
+        # We need to rotate by 270 to make sure that
+        # the orientation is correct AND to correct the phase.
+        delta_angle = AdsbTopViewScope.TRAFFIC_PHASE_SHIFT + delta_angle
+        delta_angle = fast_math.wrap_degrees(delta_angle)
+
+        pixel_distance = self.__get_pixel_distance__(distance_start, max_distance)
+
+        screen_coords = self.__get_screen_projection_from_center__(
+            delta_angle, pixel_distance
+        )
+
+        return screen_coords
 
     def __render_breadcrumbs__(
         self,
         framebuffer: pygame.Surface,
         scope_range: Tuple[int, int],
-        orientation: AhrsData
+        orientation: AhrsData,
     ):
         max_distance = scope_range[0]
         breadcrumb_reports = breadcrumbs.INSTANCE.get_trail()
         breadcrumb_count = len(breadcrumb_reports)
 
-        if orientation.position is None or orientation.position[0] is None or orientation.position[1] is None:
+        if (
+            orientation.position is None
+            or orientation.position[0] is None
+            or orientation.position[1] is None
+        ):
             return
 
         if breadcrumb_count < 2:
@@ -306,13 +405,17 @@ class AdsbTopViewScope(AdsbElement):
                 previous_position = None
                 continue
 
-            distance_start = geo_math.get_distance(orientation.position, breadcrumb_reports[index][0])
+            distance_start = geo_math.get_distance(
+                orientation.position, breadcrumb_reports[index][0]
+            )
 
             if distance_start > max_distance:
                 previous_position = None
                 continue
 
-            bearing = geo_math.get_bearing(orientation.position, breadcrumb_reports[index][0])
+            bearing = geo_math.get_bearing(
+                orientation.position, breadcrumb_reports[index][0]
+            )
             delta_angle = bearing - current_heading
             # We need to rotate by 270 to make sure that
             # the orientation is correct AND to correct the phase.
@@ -323,8 +426,8 @@ class AdsbTopViewScope(AdsbElement):
 
             color = [int(component * proportion) for component in colors.GREEN]
             screen_coords = self.__get_screen_projection_from_center__(
-                delta_angle,
-                pixel_distance)
+                delta_angle, pixel_distance
+            )
 
             if previous_position is not None:
                 drawing.renderer.segment(
@@ -332,7 +435,8 @@ class AdsbTopViewScope(AdsbElement):
                     color,
                     previous_position,
                     screen_coords,
-                    width=self.__line_width__)
+                    width=self.__line_width__,
+                )
 
             previous_position = screen_coords
 
@@ -343,12 +447,11 @@ class AdsbTopViewScope(AdsbElement):
                 colors.GREEN,
                 previous_position,
                 self.__scope_center__,
-                width=self.__line_width__)
+                width=self.__line_width__,
+            )
 
     def __draw_distance_rings__(
-        self,
-        framebuffer: pygame.Surface,
-        scope_range: Tuple[int, int]
+        self, framebuffer: pygame.Surface, scope_range: Tuple[int, int]
     ) -> int:
         """
         Draws rings that indicate how far out another aircraft is.
@@ -370,11 +473,7 @@ class AdsbTopViewScope(AdsbElement):
         ring_pixel_distances = []
 
         if step > 0:
-            ring_distances = list(
-                range(
-                    step,
-                    int(scope_range[0]),
-                    step))
+            ring_distances = list(range(step, int(scope_range[0]), step))
             # To make it inclusive to the actual final ring
             # since range() does not include the last item.
             ring_distances.append(max_distance)
@@ -387,11 +486,20 @@ class AdsbTopViewScope(AdsbElement):
             radius_pixels = self.__get_pixel_distance__(distance, max_distance)
             drawing.renderer.circle(
                 framebuffer,
+                colors.BLACK,
+                self.__scope_center__,
+                radius_pixels,
+                self.__thin_line_width__ * 4,
+                not self.__reduced_visuals__,
+            )
+            drawing.renderer.circle(
+                framebuffer,
                 colors.GREEN,
                 self.__scope_center__,
                 radius_pixels,
                 self.__thin_line_width__,
-                not self.__reduced_visuals__)  # AA circle costs a BUNCH on the Pi
+                not self.__reduced_visuals__,
+            )  # AA circle costs a BUNCH on the Pi
             ring_pixel_distances.append(radius_pixels)
 
             text_x = self.__scope_center__[0] + int(sin_text_placement * radius_pixels)
@@ -400,7 +508,11 @@ class AdsbTopViewScope(AdsbElement):
             self.__render_text_with_stacked_annotations__(
                 framebuffer,
                 [text_x, text_y],
-                [[1.0, str(int(distance)), colors.GREEN], [0.5, units_suffix, colors.GREEN]])
+                [
+                    [1.0, str(int(distance)), colors.GREEN],
+                    [0.5, units_suffix, colors.GREEN],
+                ],
+            )
 
         return ring_pixel_distances[0]
 
@@ -409,19 +521,19 @@ class AdsbTopViewScope(AdsbElement):
         framebuffer: pygame.Surface,
         our_heading: int,
         heading_to_draw: int,
-        scope_range: int
+        scope_range: int,
     ):
         delta_angle = heading_to_draw - our_heading
         # We need to rotate by 270 to make sure that
         # the orientation is correct AND to correct the phase.
         delta_angle = fast_math.wrap_degrees(
-            AdsbTopViewScope.ROTATION_PHASE_SHIFT + delta_angle)
-        pixels_from_center = self.__get_pixel_distance__(
-            scope_range, scope_range)
+            AdsbTopViewScope.ROTATION_PHASE_SHIFT + delta_angle
+        )
+        pixels_from_center = self.__get_pixel_distance__(scope_range, scope_range)
 
         screen_x, screen_y = self.__get_screen_projection_from_center__(
-            apply_declination(delta_angle),
-            pixels_from_center)
+            apply_declination(delta_angle), pixels_from_center
+        )
 
         heading_text_rotation = -(heading_to_draw - our_heading)
         heading_mark_rotation = -heading_text_rotation + 180
@@ -429,11 +541,12 @@ class AdsbTopViewScope(AdsbElement):
         indicator_mark_ends = fast_math.rotate_points(
             [[0, int(self.__line_width__ * -5)]],
             [0, 0],
-            apply_declination(heading_mark_rotation))
+            apply_declination(heading_mark_rotation),
+        )
 
         indicator_mark_ends = fast_math.translate_points(
-            indicator_mark_ends,
-            [screen_x, screen_y])
+            indicator_mark_ends, [screen_x, screen_y]
+        )
 
         drawing.renderer.segment(
             framebuffer,
@@ -441,9 +554,12 @@ class AdsbTopViewScope(AdsbElement):
             [screen_x, screen_y],
             indicator_mark_ends[0],
             self.__line_width__,
-            not self.__reduced_visuals__)
+            not self.__reduced_visuals__,
+        )
 
-        display_text = int(fast_math.wrap_degrees(AdsbTopViewScope.TEXT_PHASE_SHIFT + heading_to_draw))
+        display_text = int(
+            fast_math.wrap_degrees(AdsbTopViewScope.TEXT_PHASE_SHIFT + heading_to_draw)
+        )
         draw_text = (display_text % 90) == 0
 
         if not draw_text:
@@ -458,7 +574,8 @@ class AdsbTopViewScope(AdsbElement):
                 None,
                 1.3,
                 0,
-                True)
+                True,
+            )
 
         self.__render_centered_text__(
             framebuffer,
@@ -468,13 +585,11 @@ class AdsbTopViewScope(AdsbElement):
             colors.BLACK,
             1.0,
             0,
-            not self.__reduced_visuals__)
+            not self.__reduced_visuals__,
+        )
 
     def __draw_all_compass_headings__(
-        self,
-        framebuffer: pygame.Surface,
-        orientation: AhrsData,
-        scope_range: int
+        self, framebuffer: pygame.Surface, orientation: AhrsData, scope_range: int
     ):
         """
         Draw the text for ALL compass headings. 0, 90, 180, and 270
@@ -494,16 +609,10 @@ class AdsbTopViewScope(AdsbElement):
 
         for heading_to_draw in range(0, 360, 45):
             self.__draw_compass_text__(
-                framebuffer,
-                our_heading,
-                heading_to_draw,
-                scope_range)
+                framebuffer, our_heading, heading_to_draw, scope_range
+            )
 
-    def render(
-        self,
-        framebuffer: pygame.Surface,
-        orientation: AhrsData
-    ):
+    def render(self, framebuffer: pygame.Surface, orientation: AhrsData):
         """
         Renders all of the on-screen reticles  for nearby traffic.
 
@@ -516,49 +625,57 @@ class AdsbTopViewScope(AdsbElement):
         # TODO: Try listing identifiers on side with lines leading to the aircraft
         # TODO: MORE TESTING!!!
 
-        with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.setup'):
+        with TaskProfiler("views.adsb_top_view_scope.AdsbTopViewScope.setup"):
             scope_range = zoom_tracker.INSTANCE.get_target_zoom()
             traffic_reports = HudDataCache.get_reliable_traffic()
-            traffic_reports.sort(
-                key=lambda traffic: traffic.distance,
-                reverse=True)
+            traffic_reports.sort(key=lambda traffic: traffic.distance, reverse=True)
 
         near_target_distance = zoom_tracker.INSTANCE.get_target_threshold_distance()
 
-        with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.render_breadcrumbs'):
-            self.__render_breadcrumbs__(
-                framebuffer,
-                scope_range,
-                orientation)
+        with TaskProfiler(
+            "views.adsb_top_view_scope.AdsbTopViewScope.render_reflectivity"
+        ):
+            self.__render_reflectivity__(framebuffer, scope_range, orientation)
 
-        with TaskProfiler('views.adsb_top_view_scope.AdsbTopViewScope.render'):
+        with TaskProfiler(
+            "views.adsb_top_view_scope.AdsbTopViewScope.render_breadcrumbs"
+        ):
+            self.__render_breadcrumbs__(framebuffer, scope_range, orientation)
+
+        with TaskProfiler("views.adsb_top_view_scope.AdsbTopViewScope.render"):
             self.__render_ownship__(framebuffer)
 
             first_ring_pixel_radius = self.__draw_distance_rings__(
-                framebuffer,
-                scope_range)
+                framebuffer, scope_range
+            )
 
             self.__draw_all_compass_headings__(
-                framebuffer,
-                orientation,
-                near_target_distance)
+                framebuffer, orientation, near_target_distance
+            )
 
             if not orientation.gps_online:
                 return
 
             # pylint: disable=expression-not-assigned
-            [self.__render_on_screen_target__(
-                framebuffer,
-                orientation,
-                traffic,
-                near_target_distance,
-                first_ring_pixel_radius) for traffic in traffic_reports]
+            [
+                self.__render_on_screen_target__(
+                    framebuffer,
+                    orientation,
+                    traffic,
+                    near_target_distance,
+                    first_ring_pixel_radius,
+                )
+                for traffic in traffic_reports
+            ]
 
 
-if __name__ == '__main__':
-    from views.compass_and_heading_top_element import \
-        CompassAndHeadingTopElement
+if __name__ == "__main__":
+    from views.compass_and_heading_top_element import CompassAndHeadingTopElement
     from views.groundspeed import Groundspeed
     from views.hud_elements import run_hud_elements
+
+    nexrad_client = NexradClient(
+        configuration.CONFIGURATION.get_traffic_manager_address()
+    )
 
     run_hud_elements([CompassAndHeadingTopElement, Groundspeed, AdsbTopViewScope])
