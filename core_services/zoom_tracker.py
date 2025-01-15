@@ -31,7 +31,7 @@ SCOPE_RANGES = [
 __DISTANCE_PREDICTION_SCALER__ = 12 * 2
 
 
-def __get_maximum_scope_range__() -> Tuple[int, int]:
+def get_maximum_scope_range() -> Tuple[int, int]:
     """
     Get the maximum
 
@@ -109,7 +109,7 @@ def get_ideal_scope_range(
         if range_distance >= predicted_travel_distance:
             return possible_range
 
-    return __get_maximum_scope_range__()
+    return get_maximum_scope_range()
 
 
 def get_groundspeed(
