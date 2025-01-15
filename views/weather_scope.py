@@ -21,6 +21,9 @@ class WeatherTopViewScope(TopDownScope):
     showing where traffic is relative to our current position.
     """
 
+    BIN_ROWS = [0, 1, 2, 3]
+    BIN_COLUMNS = list(range(32))
+
     def __init__(
         self,
         degrees_of_pitch: float,
@@ -61,49 +64,88 @@ class WeatherTopViewScope(TopDownScope):
             orientation.position, max_distance
         )
 
-        lon_indices = range(0, 32)
+        [
+            self.__render_block__(
+                framebuffer, orientation, current_heading, max_distance, block
+            )
+            for block in nexrad_blocks
+        ]
 
-        for block in nexrad_blocks:
-            lat_step = (block.north_western[0] - block.south_western[0]) / 4.0
-            lon_step = (block.north_eastern[1] - block.north_western[1]) / 32.0
+    def __render_block__(
+        self,
+        framebuffer,
+        orientation,
+        current_heading,
+        max_distance,
+        block,
+    ):
+        lat_step = (block.north_western[0] - block.south_western[0]) / 4.0
+        lon_step = (block.north_eastern[1] - block.north_western[1]) / 32.0
 
-            for lat_index in [0, 1, 2, 3]:
-                for lon_index in lon_indices:
-                    reflectivity = block.reflectivity[lat_index][lon_index]
+        [
+            self.__render_bins__(
+                framebuffer,
+                orientation,
+                current_heading,
+                max_distance,
+                lat_index,
+                lon_index,
+                lat_step,
+                lon_step,
+                block,
+            )
+            for lat_index in WeatherTopViewScope.BIN_ROWS
+            for lon_index in WeatherTopViewScope.BIN_COLUMNS
+        ]
 
-                    if reflectivity == 0:
-                        continue
+    def __render_bins__(
+        self,
+        framebuffer,
+        orientation,
+        current_heading,
+        max_distance,
+        lat_index,
+        lon_index,
+        lat_step,
+        lon_step,
+        block,
+    ):
+        reflectivity = block.reflectivity[lat_index][lon_index]
 
-                    color = NexradClient.reflectivity_to_rgb(reflectivity)
-                    n_lat = block.north_western[0] - (lat_index * lat_step)
-                    s_lat = n_lat - lat_step
-                    w_lon = block.north_western[1] + (lon_index * lon_step)
-                    e_lon = w_lon + lon_step
+        if reflectivity == 0:
+            return
 
-                    nw = [n_lat, w_lon]
-                    ne = [n_lat, e_lon]
-                    se = [s_lat, e_lon]
-                    sw = [s_lat, w_lon]
+        color = NexradClient.reflectivity_to_rgb(reflectivity)
 
-                    nw_pixel = self.__get_screen_coordinates__(
-                        orientation, current_heading, max_distance, nw
-                    )
-                    ne_pixel = self.__get_screen_coordinates__(
-                        orientation, current_heading, max_distance, ne
-                    )
-                    se_pixel = self.__get_screen_coordinates__(
-                        orientation, current_heading, max_distance, se
-                    )
-                    sw_pixel = self.__get_screen_coordinates__(
-                        orientation, current_heading, max_distance, sw
-                    )
+        n_lat = block.north_western[0] - (lat_index * lat_step)
+        s_lat = n_lat - lat_step
+        w_lon = block.north_western[1] + (lon_index * lon_step)
+        e_lon = w_lon + lon_step
 
-                    drawing.renderer.polygon(
-                        framebuffer,
-                        color,
-                        [nw_pixel, ne_pixel, se_pixel, sw_pixel],
-                        False,
-                    )
+        nw = [n_lat, w_lon]
+        ne = [n_lat, e_lon]
+        se = [s_lat, e_lon]
+        sw = [s_lat, w_lon]
+
+        nw_pixel = self.__get_screen_coordinates__(
+            orientation, current_heading, max_distance, nw
+        )
+        ne_pixel = self.__get_screen_coordinates__(
+            orientation, current_heading, max_distance, ne
+        )
+        se_pixel = self.__get_screen_coordinates__(
+            orientation, current_heading, max_distance, se
+        )
+        sw_pixel = self.__get_screen_coordinates__(
+            orientation, current_heading, max_distance, sw
+        )
+
+        drawing.renderer.polygon(
+            framebuffer,
+            color,
+            [nw_pixel, ne_pixel, se_pixel, sw_pixel],
+            False,
+        )
 
     def render(self, framebuffer: pygame.Surface, orientation: AhrsData):
         """
