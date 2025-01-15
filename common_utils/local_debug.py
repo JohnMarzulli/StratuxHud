@@ -35,12 +35,12 @@ def validate_python_version():
         print(error_text)
         raise Exception(error_text)
 
-    if python_version > MAXIMUM_PYTHON_VERSION:
-        print('Python version {} is newer than the maximum allowed version of {}'.format(
-            python_version, MAXIMUM_PYTHON_VERSION))
+    # if python_version > MAXIMUM_PYTHON_VERSION:
+    #     print('Python version {} is newer than the maximum allowed version of {}'.format(
+    #         python_version, MAXIMUM_PYTHON_VERSION))
 
-        raise Exception(
-            "The HUD code is not yet compatible with Python 3.10 or newer.")
+    #     raise Exception(
+    #         "The HUD code is not yet compatible with Python 3.10 or newer.")
 
 
 def is_debug() -> bool:
