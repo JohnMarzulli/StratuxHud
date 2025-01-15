@@ -1,0 +1,142 @@
+"""
+View element for a weather "radar" that looks from the top downwards.
+"""
+
+from typing import Tuple
+
+import pygame
+
+from common_utils.task_timer import TaskProfiler
+from configuration import configuration
+from core_services import zoom_tracker
+from data_sources.ahrs_data import AhrsData
+from data_sources.nexrad import NexradClient
+from rendering import drawing
+from views.top_down_scope import TopDownScope
+
+
+class WeatherTopViewScope(TopDownScope):
+    """
+    A view element for the HUD that draws a radar style scope
+    showing where traffic is relative to our current position.
+    """
+
+    def __init__(
+        self,
+        degrees_of_pitch: float,
+        pixels_per_degree_y: float,
+        font,
+        framebuffer_size,
+        reduced_visuals: bool = False,
+    ):
+        super().__init__(
+            degrees_of_pitch,
+            pixels_per_degree_y,
+            font,
+            framebuffer_size,
+            reduced_visuals,
+        )
+
+    def __render_reflectivity__(
+        self,
+        framebuffer: pygame.Surface,
+        scope_range: Tuple[int, int],
+        orientation: AhrsData,
+    ):
+        max_distance = scope_range[0]
+
+        if (
+            orientation.position is None
+            or orientation.position[0] is None
+            or orientation.position[1] is None
+        ):
+            return
+
+        current_heading = orientation.get_onscreen_gps_heading()
+
+        if current_heading is None or isinstance(current_heading, str):
+            return
+
+        nexrad_blocks = NexradClient.get_nexrad_in_range(
+            orientation.position, max_distance
+        )
+
+        lon_indices = range(0, 32)
+
+        for block in nexrad_blocks:
+            lat_step = (block.north_western[0] - block.south_western[0]) / 4.0
+            lon_step = (block.north_eastern[1] - block.north_western[1]) / 32.0
+
+            for lat_index in [0, 1, 2, 3]:
+                for lon_index in lon_indices:
+                    reflectivity = block.reflectivity[lat_index][lon_index]
+
+                    if reflectivity == 0:
+                        continue
+
+                    color = NexradClient.reflectivity_to_rgb(reflectivity)
+                    n_lat = block.north_western[0] - (lat_index * lat_step)
+                    s_lat = n_lat - lat_step
+                    w_lon = block.north_western[1] + (lon_index * lon_step)
+                    e_lon = w_lon + lon_step
+
+                    nw = [n_lat, w_lon]
+                    ne = [n_lat, e_lon]
+                    se = [s_lat, e_lon]
+                    sw = [s_lat, w_lon]
+
+                    nw_pixel = self.__get_screen_coordinates__(
+                        orientation, current_heading, max_distance, nw
+                    )
+                    ne_pixel = self.__get_screen_coordinates__(
+                        orientation, current_heading, max_distance, ne
+                    )
+                    se_pixel = self.__get_screen_coordinates__(
+                        orientation, current_heading, max_distance, se
+                    )
+                    sw_pixel = self.__get_screen_coordinates__(
+                        orientation, current_heading, max_distance, sw
+                    )
+
+                    drawing.renderer.polygon(
+                        framebuffer,
+                        color,
+                        [nw_pixel, ne_pixel, se_pixel, sw_pixel],
+                        False,
+                    )
+
+    def render(self, framebuffer: pygame.Surface, orientation: AhrsData):
+        """
+        Renders all of the on-screen reticles  for nearby traffic.
+
+        Arguments:
+            framebuffer {pygame.Surface} -- The render target.
+            orientation {Orientation} -- The orientation of the plane the HUD is in.
+        """
+
+        with TaskProfiler("views.weather_top_view_scope.WeatherTopViewScope.setup"):
+            scope_range = zoom_tracker.get_maximum_scope_range()
+
+        with TaskProfiler(
+            "views.weather_top_view_scope.WeatherTopViewScope.render_reflectivity"
+        ):
+            self.__render_reflectivity__(framebuffer, scope_range, orientation)
+
+        with TaskProfiler("views.weather_top_view_scope.WeatherTopViewScope.render"):
+            self.__render_ownship__(framebuffer)
+
+            self.__draw_distance_rings__(framebuffer, scope_range)
+
+            self.__draw_all_compass_headings__(framebuffer, orientation, scope_range[0])
+
+
+if __name__ == "__main__":
+    from views.compass_and_heading_top_element import CompassAndHeadingTopElement
+    from views.groundspeed import Groundspeed
+    from views.hud_elements import run_hud_elements
+
+    nexrad_client = NexradClient(
+        configuration.CONFIGURATION.get_traffic_manager_address()
+    )
+
+    run_hud_elements([WeatherTopViewScope, CompassAndHeadingTopElement, Groundspeed])

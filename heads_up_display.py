@@ -31,7 +31,7 @@ from views import (adsb_on_screen_reticles, adsb_target_bugs,
                    artificial_horizon, compass_and_heading_bottom_element,
                    gps_not_available, groundspeed, heading_target_bugs,
                    hud_elements, level_reference, roll_indicator, skid_and_gs,
-                   system_info, time, traffic_not_available)
+                   system_info, time, traffic_not_available, weather_scope)
 
 STANDARD_FONT = "../assets/fonts/LiberationMono-Bold.ttf"
 LOADING_FONT = "../assets/fonts/LiberationMono-Regular.ttf"
