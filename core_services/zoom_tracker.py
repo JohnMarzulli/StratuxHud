@@ -15,20 +15,23 @@ from data_sources.ahrs_data import AhrsData
 
 DEFAULT_SCOPE_RANGE = (10, 5)
 
-SCOPE_RANGES = [
-    (1, 0),
-    (2, 1),
-    (5, 3),
-    (10, 5),
-    (15, 5),
-    (20, 10),
-    (50, 25)]
+SCOPE_RANGES = [(1, 0), (2, 1), (5, 3), (10, 5), (15, 5), (20, 10), (50, 25)]
 
 # A value of "12" is how far you will fly in
 # ten minutes. Making it 12 x 2 will range
 # the scope based on how far you will
 # fly in 5 minutes.
 __DISTANCE_PREDICTION_SCALER__ = 12 * 2
+
+
+def get_penultimate_scope_range() -> Tuple[int, int]:
+    """
+    Get the second furthest scope range.
+
+    Returns:
+        (int, int): Tuple of the second longest distance for the scope, and the distance between each ring.
+    """
+    return SCOPE_RANGES[-2]
 
 
 def get_maximum_scope_range() -> Tuple[int, int]:
@@ -41,9 +44,7 @@ def get_maximum_scope_range() -> Tuple[int, int]:
     return SCOPE_RANGES[-1]
 
 
-def get_ideal_scope_range(
-    groundspeed: float
-) -> Tuple[int, int]:
+def get_ideal_scope_range(groundspeed: float) -> Tuple[int, int]:
     """
     Given a ground speed, figure out how far the scope should be.
     This is done by figuring out how far you will be in 10 minutes
@@ -112,20 +113,27 @@ def get_ideal_scope_range(
     return get_maximum_scope_range()
 
 
-def get_groundspeed(
-    display_units: str,
-    orientation: AhrsData
-) -> float:
-    is_valid_groundspeed = orientation.groundspeed is not None and isinstance(orientation.groundspeed, Number)
-    is_valid_airspeed = orientation.airspeed is not None and isinstance(orientation.airspeed, Number)
+def get_groundspeed(display_units: str, orientation: AhrsData) -> float:
+    is_valid_groundspeed = orientation.groundspeed is not None and isinstance(
+        orientation.groundspeed, Number
+    )
+    is_valid_airspeed = orientation.airspeed is not None and isinstance(
+        orientation.airspeed, Number
+    )
 
-    airspeed = units.get_converted_units(
-        display_units,
-        orientation.airspeed * units.feet_to_nm) if is_valid_airspeed else 0.0
+    airspeed = (
+        units.get_converted_units(
+            display_units, orientation.airspeed * units.feet_to_nm
+        )
+        if is_valid_airspeed
+        else 0.0
+    )
 
-    groundspeed = units.get_converted_units(
-        units,
-        orientation.groundspeed * units.yards_to_nm) if is_valid_groundspeed else 0
+    groundspeed = (
+        units.get_converted_units(units, orientation.groundspeed * units.yards_to_nm)
+        if is_valid_groundspeed
+        else 0
+    )
 
     if (local_debug.is_debug() or not is_valid_groundspeed) and is_valid_airspeed:
         return airspeed
@@ -143,10 +151,7 @@ class ZoomTracker:
     SECONDS_FOR_ZOOM = 3
     MINIMUM_SECONDS_BETWEEN_ZOOM_CHANGE = SECONDS_FOR_ZOOM * 5
 
-    def __init__(
-        self,
-        starting_zoom: Tuple[int, int]
-    ) -> None:
+    def __init__(self, starting_zoom: Tuple[int, int]) -> None:
         super().__init__()
 
         self.__last_changed__ = datetime.utcnow()
@@ -154,19 +159,13 @@ class ZoomTracker:
         self.__target_zoom__ = starting_zoom
         self.__user_units__ = configuration.CONFIGURATION.get_units()
         self.__update_units_task__ = tasks.IntermittentTask(
-            "Zoom:UpdateUnits",
-            1.0,
-            self.__update_units__)
+            "Zoom:UpdateUnits", 1.0, self.__update_units__
+        )
 
-    def __update_units__(
-        self
-    ) -> None:
+    def __update_units__(self) -> None:
         self.__user_units__ = configuration.CONFIGURATION.get_units()
 
-    def set_target_zoom(
-        self,
-        new_target_zoom: Tuple[int, int]
-    ):
+    def set_target_zoom(self, new_target_zoom: Tuple[int, int]):
         """
         Sets the desired target zoom distance.
 
@@ -183,7 +182,9 @@ class ZoomTracker:
         if new_target_zoom[0] == self.__target_zoom__[0]:
             return
 
-        delta_since_last_change = (datetime.utcnow() - self.__last_changed__).total_seconds()
+        delta_since_last_change = (
+            datetime.utcnow() - self.__last_changed__
+        ).total_seconds()
 
         if delta_since_last_change < ZoomTracker.MINIMUM_SECONDS_BETWEEN_ZOOM_CHANGE:
             return
@@ -195,9 +196,7 @@ class ZoomTracker:
         self.__last_changed__ = datetime.utcnow()
         self.__target_zoom__ = new_target_zoom
 
-    def get_target_threshold_distance(
-        self
-    ) -> int:
+    def get_target_threshold_distance(self) -> int:
         """
         Get the distance of the first inner-ring...
         or the distance that we determine really means
@@ -205,9 +204,7 @@ class ZoomTracker:
         """
         return self.__target_zoom__[0]
 
-    def get_target_zoom(
-        self
-    ) -> Tuple[Number, int]:
+    def get_target_zoom(self) -> Tuple[Number, int]:
         """
         Get what our ideal, current zoom is.
 
@@ -217,7 +214,9 @@ class ZoomTracker:
         Returns:
             [Number, int]: The range and step of the scope rings
         """
-        delta_since_last_change = (datetime.utcnow() - self.__last_changed__).total_seconds()
+        delta_since_last_change = (
+            datetime.utcnow() - self.__last_changed__
+        ).total_seconds()
 
         proportion_into_zoom = delta_since_last_change / ZoomTracker.SECONDS_FOR_ZOOM
 
@@ -225,9 +224,8 @@ class ZoomTracker:
             return self.__target_zoom__
 
         computed_range = interpolatef(
-            self.__last_zoom__[0],
-            self.__target_zoom__[0],
-            proportion_into_zoom)
+            self.__last_zoom__[0], self.__target_zoom__[0], proportion_into_zoom
+        )
 
         # Determine the stepping to use based on
         # stepping of the rings. We want to always
@@ -242,10 +240,7 @@ class ZoomTracker:
 
         return [computed_range, target_zoom_step]
 
-    def is_in_inner_range(
-        self,
-        raw_distance: float
-    ) -> Tuple[bool, float]:
+    def is_in_inner_range(self, raw_distance: float) -> Tuple[bool, float]:
         """
         Is the current distance within the threshold of displaying
         more data about?
@@ -257,26 +252,27 @@ class ZoomTracker:
             bool: TRUE is the target is within the inner scope range.
         """
 
-        display_distance = units.get_converted_units(
-            self.__user_units__,
-            raw_distance)
+        display_distance = units.get_converted_units(self.__user_units__, raw_distance)
 
         scope_range = self.get_target_threshold_distance()
 
         return (display_distance <= scope_range, display_distance)
 
-    def update(
-        self,
-        orientation: AhrsData
-    ) -> Tuple[Number, float]:
+    def update(self, orientation: AhrsData) -> Tuple[Number, float]:
         self.__update_units_task__.run()
 
-        groundspeed = 0.0 if orientation is None else get_groundspeed(self.__user_units__, orientation)
+        groundspeed = (
+            0.0
+            if orientation is None
+            else get_groundspeed(self.__user_units__, orientation)
+        )
 
-        if breadcrumbs.INSTANCE is not None and not isinstance(breadcrumbs.INSTANCE.speed, str):
+        if breadcrumbs.INSTANCE is not None and not isinstance(
+            breadcrumbs.INSTANCE.speed, str
+        ):
             breadcrumb_speed = units.get_converted_units(
-                self.__user_units__,
-                breadcrumbs.INSTANCE.speed)
+                self.__user_units__, breadcrumbs.INSTANCE.speed
+            )
 
             groundspeed += breadcrumb_speed
             groundspeed /= 2

@@ -157,7 +157,7 @@ class WeatherTopViewScope(TopDownScope):
         """
 
         with TaskProfiler("views.weather_top_view_scope.WeatherTopViewScope.setup"):
-            scope_range = zoom_tracker.get_maximum_scope_range()
+            scope_range = zoom_tracker.get_penultimate_scope_range()
 
         with TaskProfiler(
             "views.weather_top_view_scope.WeatherTopViewScope.render_reflectivity"
