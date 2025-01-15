@@ -9,7 +9,7 @@ from sys import platform as os_platform
 from sys import version_info
 
 REQUIRED_PYTHON_VERSION = 3.5
-MAXIMUM_PYTHON_VERSION = 3.9
+MAXIMUM_PYTHON_VERSION = 3.11
 
 IS_LINUX = 'linux' in os_platform
 DETECTED_CPU = platform.machine()
