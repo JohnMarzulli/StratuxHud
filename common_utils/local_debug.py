@@ -9,9 +9,9 @@ from sys import platform as os_platform
 from sys import version_info
 
 REQUIRED_PYTHON_VERSION = 3.5
-MAXIMUM_PYTHON_VERSION = 3.11
+MAXIMUM_PYTHON_VERSION = 3.9
 
-IS_LINUX = "linux" in os_platform
+IS_LINUX = 'linux' in os_platform
 DETECTED_CPU = platform.machine()
 IS_PI = "arm" in DETECTED_CPU
 IS_SLOW = IS_PI and "v7l" in DETECTED_CPU
@@ -26,22 +26,21 @@ def validate_python_version():
         Exception -- If the  version of Python is not new enough.
     """
 
-    python_version = float("{}.{}".format(version_info.major, version_info.minor))
+    python_version = float('{}.{}'.format(
+        version_info.major,
+        version_info.minor))
+    error_text = 'Requires Python {}'.format(REQUIRED_PYTHON_VERSION)
 
-    print("Found Python={}".format(python_version))
+    if python_version < REQUIRED_PYTHON_VERSION:
+        print(error_text)
+        raise Exception(error_text)
 
-    # error_text = 'Requires Python {}'.format(REQUIRED_PYTHON_VERSION)
+    if python_version > MAXIMUM_PYTHON_VERSION:
+        print('Python version {} is newer than the maximum allowed version of {}'.format(
+            python_version, MAXIMUM_PYTHON_VERSION))
 
-    # if python_version < REQUIRED_PYTHON_VERSION:
-    #    print(error_text)
-    #    raise Exception(error_text)
-
-    # if python_version > MAXIMUM_PYTHON_VERSION:
-    #     print('Python version {} is newer than the maximum allowed version of {}'.format(
-    #         python_version, MAXIMUM_PYTHON_VERSION))
-
-    #     raise Exception(
-    #         "The HUD code is not yet compatible with Python 3.10 or newer.")
+        raise Exception(
+            "The HUD code is not yet compatible with Python 3.10 or newer.")
 
 
 def is_debug() -> bool:
