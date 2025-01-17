@@ -112,9 +112,6 @@ class TopDownScope(AdsbElement):
     ) -> int:
         max_pixel_distance = self.__scope_center__[1] - self.__top_border__
 
-        if distance_in_user_units > scope_range:
-            return max_pixel_distance
-
         proportion = distance_in_user_units / scope_range
         return int(max_pixel_distance * proportion)
 
