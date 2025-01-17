@@ -2,6 +2,7 @@
 View element for a weather "radar" that looks from the top downwards.
 """
 
+import datetime
 from typing import Tuple
 
 import pygame
@@ -40,6 +41,9 @@ class WeatherTopViewScope(TopDownScope):
             reduced_visuals,
         )
 
+        self.__time_of_last_block_fetch__ = datetime.datetime.now(datetime.timezone.utc)
+        self.__nexrad_cache__ = None
+
     def __render_reflectivity__(
         self,
         framebuffer: pygame.Surface,
@@ -60,9 +64,7 @@ class WeatherTopViewScope(TopDownScope):
         if current_heading is None or isinstance(current_heading, str):
             return
 
-        nexrad_blocks = NexradClient.get_nexrad_in_range(
-            orientation.position, max_distance
-        )
+        nexrad_blocks = self.__get_nexrad_blocks__(orientation.position, max_distance)
 
         [
             self.__render_block__(
@@ -70,6 +72,18 @@ class WeatherTopViewScope(TopDownScope):
             )
             for block in nexrad_blocks
         ]
+
+    def __get_nexrad_blocks__(self, position, max_distance: float) -> list:
+        now = datetime.datetime.now(datetime.timezone.utc)
+        seconds_since = (now - self.__time_of_last_block_fetch__).seconds
+
+        if self.__nexrad_cache__ != None and seconds_since < 15:
+            return self.__nexrad_cache__
+
+        self.__nexrad_cache__ = NexradClient.get_nexrad_in_range(position, max_distance)
+        self.__time_of_last_block_fetch__ = now
+
+        return self.__nexrad_cache__
 
     def __render_block__(
         self,
