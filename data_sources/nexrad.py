@@ -281,12 +281,15 @@ class NexradClient:
         if NexradClient.REFLECTIVITY is None:
             return []
 
+        expanded_radius = radius * 1.25
+
         return [
-            NexradClient.REFLECTIVITY[blockIdentifier]
-            for blockIdentifier in NexradClient.REFLECTIVITY
-            if NexradClient.is_in_range(
-                center, radius, NexradClient.REFLECTIVITY[blockIdentifier]
+            NexradClient.REFLECTIVITY[id]
+            for id in NexradClient.REFLECTIVITY
+            if geo_math.get_distance(
+                center, NexradClient.REFLECTIVITY[id].north_western
             )
+            < expanded_radius
         ]
 
     @staticmethod
