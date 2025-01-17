@@ -11,7 +11,7 @@ from common_utils.task_timer import TaskProfiler
 from configuration import configuration
 from core_services import zoom_tracker
 
-from data_sources import traffic
+from data_sources import traffic, nexrad
 
 __ANTI_ALIAS_TEXT__ = not IS_PI
 
@@ -35,6 +35,9 @@ class HudDataCache(object):
 
     __TRAFFIC_CLIENT__ = traffic.AdsbTrafficClient(
         configuration.CONFIGURATION.get_traffic_manager_address())
+    __NEXRAD_CLIENT__ = nexrad.NexradClient(
+        configuration.CONFIGURATION.get_traffic_manager_address()
+    )
     
     @staticmethod
     def update_nearby_traffic_reports():
