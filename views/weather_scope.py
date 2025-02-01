@@ -9,10 +9,9 @@ import pygame
 
 from common_utils.task_timer import TaskProfiler
 from configuration import configuration
-from core_services import zoom_tracker
 from data_sources.ahrs_data import AhrsData
 from data_sources.nexrad import NexradClient
-from rendering import drawing
+from rendering import colors, drawing
 from views.top_down_scope import TopDownScope
 
 
@@ -79,19 +78,26 @@ class WeatherTopViewScope(TopDownScope):
     ):
         max_distance = scope_range[0]
 
-        if (
+        text_y_pos = self.__bottom_border__ - (self.__font_height__ << 1)
+        nearby_position = [
+            self.__left_border__,
+            text_y_pos + (self.__font_height__ >> 1),
+        ]
+        total_position = [self.__left_border__, text_y_pos + self.__font_height__]
+
+        nexrad_blocks = []
+
+        if not (
             orientation.position is None
             or orientation.position[0] is None
             or orientation.position[1] is None
         ):
-            return
+            current_heading = orientation.get_onscreen_gps_heading()
 
-        current_heading = orientation.get_onscreen_gps_heading()
-
-        if current_heading is None or isinstance(current_heading, str):
-            return
-
-        nexrad_blocks = self.__get_nexrad_blocks__(orientation.position, max_distance)
+            if not (current_heading is None or isinstance(current_heading, str)):
+                nexrad_blocks = self.__get_nexrad_blocks__(
+                    orientation.position, max_distance
+                )
 
         [
             self.__render_block__(
@@ -99,6 +105,26 @@ class WeatherTopViewScope(TopDownScope):
             )
             for block in nexrad_blocks
         ]
+
+        in_range_count = len(nexrad_blocks)
+
+        self.__render_text__(
+            framebuffer,
+            f"Nearby: {in_range_count}",
+            nearby_position,
+            colors.YELLOW,
+            0.5,
+        )
+
+        total_count = len(NexradClient.REFLECTIVITY.keys())
+
+        self.__render_text__(
+            framebuffer,
+            f"Total: {total_count}",
+            total_position,
+            colors.YELLOW,
+            0.5,
+        )
 
     def __get_nexrad_blocks__(self, position, max_distance: float) -> list:
         now = datetime.datetime.now(datetime.timezone.utc)
