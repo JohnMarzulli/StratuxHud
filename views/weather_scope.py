@@ -25,6 +25,23 @@ class WeatherTopViewScope(TopDownScope):
     BIN_ROWS = [0, 1, 2, 3]
     BIN_COLUMNS = list(range(32))
 
+    def handle_events(self, unhandled_events) -> list:
+
+        remaining_unhandled_events = []
+
+        for event in unhandled_events:
+            if event.type != pygame.KEYUP:
+                continue
+
+            if event.key in [pygame.K_UP]:
+                self.__zoom_out__()
+            elif event.key in [pygame.K_DOWN]:
+                self.__zoom_in__()
+            else:
+                remaining_unhandled_events.append(event)
+
+        return remaining_unhandled_events
+
     def __init__(
         self,
         degrees_of_pitch: float,
@@ -43,6 +60,16 @@ class WeatherTopViewScope(TopDownScope):
 
         self.__time_of_last_block_fetch__ = datetime.datetime.now(datetime.timezone.utc)
         self.__nexrad_cache__ = None
+        self.__zoom_levels__ = [(10, 5), (15, 5), (20, 10), (50, 25), [100, 25]]
+        self.__zoom_index__ = len(self.__zoom_levels__) - 2
+
+    def __zoom_in__(self):
+        self.__zoom_index__ -= 1
+        self.__zoom_index__ = max(self.__zoom_index__, 0)
+
+    def __zoom_out__(self):
+        self.__zoom_index__ += 1
+        self.__zoom_index__ = min(self.__zoom_index__, len(self.__zoom_levels__) - 1)
 
     def __render_reflectivity__(
         self,
@@ -170,8 +197,7 @@ class WeatherTopViewScope(TopDownScope):
             orientation {Orientation} -- The orientation of the plane the HUD is in.
         """
 
-        with TaskProfiler("views.weather_top_view_scope.WeatherTopViewScope.setup"):
-            scope_range = zoom_tracker.get_penultimate_scope_range()
+        scope_range = self.__zoom_levels__[self.__zoom_index__]
 
         with TaskProfiler(
             "views.weather_top_view_scope.WeatherTopViewScope.render_reflectivity"
