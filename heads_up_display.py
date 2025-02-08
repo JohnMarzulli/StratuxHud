@@ -692,9 +692,9 @@ class HeadsUpDisplay(object):
         # Quit to terminal only.
         if event.key in [pygame.K_q]:
             return InputResponse(True, False, event)
-        elif event.key in [pygame.K_KP_PLUS, pygame.K_RIGHT]:
+        elif event.key in [pygame.K_KP_PLUS, pygame.K_RIGHT, pygame.K_KP6]:
             CONFIGURATION.next_view(self.__hud_views__)
-        elif event.key in [pygame.K_KP_MINUS, pygame.K_LEFT]:
+        elif event.key in [pygame.K_KP_MINUS, pygame.K_LEFT, pygame.K_KP4]:
             CONFIGURATION.previous_view(self.__hud_views__)
         elif event.key in [pygame.K_BACKSPACE]:
             self.__level_ahrs__()

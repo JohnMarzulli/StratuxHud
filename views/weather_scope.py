@@ -32,9 +32,9 @@ class WeatherTopViewScope(TopDownScope):
             if event.type != pygame.KEYUP:
                 continue
 
-            if event.key in [pygame.K_UP]:
+            if event.key in [pygame.K_UP, pygame.K_KP8]:
                 self.__zoom_out__()
-            elif event.key in [pygame.K_DOWN]:
+            elif event.key in [pygame.K_DOWN, pygame.K_KP2]:
                 self.__zoom_in__()
             else:
                 remaining_unhandled_events.append(event)
