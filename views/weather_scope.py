@@ -59,7 +59,7 @@ class WeatherTopViewScope(TopDownScope):
 
         self.__time_of_last_block_fetch__ = datetime.datetime.now(datetime.timezone.utc)
         self.__nexrad_cache__ = None
-        self.__zoom_levels__ = [(10, 5), (15, 5), (20, 10), (50, 25), [100, 25]]
+        self.__zoom_levels__ = [(2, 1), (10, 5), (20, 10), (50, 25), [100, 50]]
         self.__zoom_index__ = len(self.__zoom_levels__) - 2
 
     def __zoom_in__(self):
