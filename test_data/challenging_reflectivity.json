@@ -1,0 +1,3914 @@
+{
+    "2": {
+        "reportTime": 1739398881154,
+        "globalBlockReferenceId": 2,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -358.4,
+                "latitude": 0.06666666666666667
+            },
+            "southEastern": {
+                "longitude": -357.59999999999997,
+                "latitude": 0
+            }
+        },
+        "reflectivity": [
+            [
+                0,
+                5,
+                0,
+                2,
+                0,
+                4,
+                0,
+                2,
+                0,
+                5,
+                0,
+                1,
+                0,
+                3,
+                0,
+                3,
+                0,
+                2,
+                0,
+                7,
+                5,
+                1,
+                0,
+                0,
+                0,
+                5,
+                5,
+                2,
+                0,
+                0,
+                6,
+                0
+            ],
+            [
+                3,
+                0,
+                2,
+                0,
+                1,
+                0,
+                6,
+                0,
+                3
+            ]
+        ]
+    },
+    "8": {
+        "reportTime": 1739398823195,
+        "globalBlockReferenceId": 8,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -353.6,
+                "latitude": 0.06666666666666667
+            },
+            "southEastern": {
+                "longitude": -352.8,
+                "latitude": 0
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                0,
+                3,
+                5,
+                1,
+                0,
+                0,
+                0,
+                5,
+                2,
+                1,
+                0,
+                5,
+                0,
+                1,
+                0,
+                5,
+                0,
+                1,
+                0,
+                7,
+                0,
+                1,
+                0,
+                3,
+                0,
+                4,
+                5,
+                1,
+                0,
+                0,
+                0
+            ],
+            [
+                0,
+                0,
+                0,
+                2,
+                0,
+                4,
+                0,
+                3,
+                0
+            ]
+        ]
+    },
+    "84482": {
+        "reportTime": 1739399453136,
+        "globalBlockReferenceId": 84482,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -94.39999999999998,
+                "latitude": 12.533333333333333
+            },
+            "southEastern": {
+                "longitude": -93.59999999999998,
+                "latitude": 12.466666666666667
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                0,
+                1,
+                5
+            ]
+        ]
+    },
+    "195840": {
+        "reportTime": 1739399164372,
+        "globalBlockReferenceId": 195840,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -288,
+                "latitude": 29.066666666666666
+            },
+            "southEastern": {
+                "longitude": -287.2,
+                "latitude": 29
+            }
+        },
+        "reflectivity": [
+            [
+                0,
+                6,
+                5,
+                2,
+                1,
+                5,
+                2,
+                5,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                7,
+                5,
+                0,
+                2,
+                3,
+                7,
+                7,
+                2,
+                4,
+                7,
+                3,
+                5,
+                6,
+                5,
+                7,
+                0
+            ]
+        ]
+    },
+    "206338": {
+        "reportTime": 1739398866200,
+        "globalBlockReferenceId": 206338,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -169.6,
+                "latitude": 30.599999999999998
+            },
+            "southEastern": {
+                "longitude": -168.79999999999998,
+                "latitude": 30.53333333333333
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                1,
+                0,
+                1,
+                5
+            ]
+        ]
+    },
+    "267005": {
+        "reportTime": 1739398941417,
+        "globalBlockReferenceId": 267005,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -236,
+                "latitude": 39.6
+            },
+            "southEastern": {
+                "longitude": -235.2,
+                "latitude": 39.53333333333333
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                3,
+                5
+            ]
+        ]
+    },
+    "289789": {
+        "reportTime": 1739398692156,
+        "globalBlockReferenceId": 289789,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -8.799999999999955,
+                "latitude": 42.93333333333334
+            },
+            "southEastern": {
+                "longitude": -7.999999999999955,
+                "latitude": 42.86666666666667
+            }
+        },
+        "reflectivity": [
+            [
+                7,
+                4
+            ]
+        ]
+    },
+    "303869": {
+        "reportTime": 1739398816263,
+        "globalBlockReferenceId": 303869,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -264.8,
+                "latitude": 45.06666666666667
+            },
+            "southEastern": {
+                "longitude": -264,
+                "latitude": 45
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                3,
+                5
+            ]
+        ]
+    },
+    "318205": {
+        "reportTime": 1739398817145,
+        "globalBlockReferenceId": 318205,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -316,
+                "latitude": 47.2
+            },
+            "southEastern": {
+                "longitude": -315.2,
+                "latitude": 47.13333333333333
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                3,
+                5
+            ]
+        ]
+    },
+    "326912": {
+        "reportTime": 1739398941325,
+        "globalBlockReferenceId": 326912,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -190.39999999999998,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -189.59999999999997,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                3
+            ]
+        ]
+    },
+    "326920": {
+        "reportTime": 1739399531286,
+        "globalBlockReferenceId": 326920,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -184,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -183.2,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                3
+            ]
+        ]
+    },
+    "326922": {
+        "reportTime": 1739399531203,
+        "globalBlockReferenceId": 326922,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -182.39999999999998,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -181.59999999999997,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                0
+            ]
+        ]
+    },
+    "326927": {
+        "reportTime": 1739399177159,
+        "globalBlockReferenceId": 326927,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -178.39999999999998,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -177.59999999999997,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                1
+            ]
+        ]
+    },
+    "326928": {
+        "reportTime": 1739399531287,
+        "globalBlockReferenceId": 326928,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -177.6,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -176.79999999999998,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                3
+            ]
+        ]
+    },
+    "326929": {
+        "reportTime": 1739398691514,
+        "globalBlockReferenceId": 326929,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -176.79999999999998,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -175.99999999999997,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "326934": {
+        "reportTime": 1739398817145,
+        "globalBlockReferenceId": 326934,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -172.79999999999998,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -171.99999999999997,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                3
+            ]
+        ]
+    },
+    "326936": {
+        "reportTime": 1739399531284,
+        "globalBlockReferenceId": 326936,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -171.2,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -170.39999999999998,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "326937": {
+        "reportTime": 1739398691510,
+        "globalBlockReferenceId": 326937,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -170.39999999999998,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -169.59999999999997,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                0
+            ]
+        ]
+    },
+    "326943": {
+        "reportTime": 1739399531205,
+        "globalBlockReferenceId": 326943,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -165.6,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -164.79999999999998,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "326950": {
+        "reportTime": 1739399051261,
+        "globalBlockReferenceId": 326950,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -160,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -159.2,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                3
+            ]
+        ]
+    },
+    "326951": {
+        "reportTime": 1739398691514,
+        "globalBlockReferenceId": 326951,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -159.2,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -158.39999999999998,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "326958": {
+        "reportTime": 1739399531283,
+        "globalBlockReferenceId": 326958,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -153.6,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -152.79999999999998,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "326965": {
+        "reportTime": 1739399531285,
+        "globalBlockReferenceId": 326965,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -148,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -147.2,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5
+            ]
+        ]
+    },
+    "326966": {
+        "reportTime": 1739399051261,
+        "globalBlockReferenceId": 326966,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -147.2,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -146.39999999999998,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                3
+            ]
+        ]
+    },
+    "326973": {
+        "reportTime": 1739399531204,
+        "globalBlockReferenceId": 326973,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -141.6,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -140.79999999999998,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5
+            ]
+        ]
+    },
+    "326974": {
+        "reportTime": 1739398816263,
+        "globalBlockReferenceId": 326974,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -140.79999999999998,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -139.99999999999997,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                3
+            ]
+        ]
+    },
+    "326981": {
+        "reportTime": 1739399298283,
+        "globalBlockReferenceId": 326981,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -135.2,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -134.39999999999998,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5
+            ]
+        ]
+    },
+    "326982": {
+        "reportTime": 1739399531286,
+        "globalBlockReferenceId": 326982,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -134.39999999999998,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -133.59999999999997,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                3
+            ]
+        ]
+    },
+    "326984": {
+        "reportTime": 1739399531202,
+        "globalBlockReferenceId": 326984,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -132.79999999999998,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -131.99999999999997,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                0
+            ]
+        ]
+    },
+    "326990": {
+        "reportTime": 1739399531287,
+        "globalBlockReferenceId": 326990,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -128,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -127.2,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                3
+            ]
+        ]
+    },
+    "326991": {
+        "reportTime": 1739399531205,
+        "globalBlockReferenceId": 326991,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -127.19999999999999,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -126.39999999999999,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                1
+            ]
+        ]
+    },
+    "326998": {
+        "reportTime": 1739399531283,
+        "globalBlockReferenceId": 326998,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -121.6,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -120.8,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "326999": {
+        "reportTime": 1739398691511,
+        "globalBlockReferenceId": 326999,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -120.79999999999998,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -119.99999999999999,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                0
+            ]
+        ]
+    },
+    "327004": {
+        "reportTime": 1739399531654,
+        "globalBlockReferenceId": 327004,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -116.79999999999998,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -115.99999999999999,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                3
+            ]
+        ]
+    },
+    "327005": {
+        "reportTime": 1739399531204,
+        "globalBlockReferenceId": 327005,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -116,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -115.2,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "327012": {
+        "reportTime": 1739399051196,
+        "globalBlockReferenceId": 327012,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -110.39999999999998,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -109.59999999999998,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "327020": {
+        "reportTime": 1739399531282,
+        "globalBlockReferenceId": 327020,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -104,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -103.2,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "327021": {
+        "reportTime": 1739398691513,
+        "globalBlockReferenceId": 327021,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -103.19999999999999,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -102.39999999999999,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "327028": {
+        "reportTime": 1739399531286,
+        "globalBlockReferenceId": 327028,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -97.59999999999997,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -96.79999999999997,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                3
+            ]
+        ]
+    },
+    "327035": {
+        "reportTime": 1739399531204,
+        "globalBlockReferenceId": 327035,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -92,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -91.2,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5
+            ]
+        ]
+    },
+    "327036": {
+        "reportTime": 1739398692155,
+        "globalBlockReferenceId": 327036,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -91.19999999999999,
+                "latitude": 48.46666666666667
+            },
+            "southEastern": {
+                "longitude": -90.39999999999999,
+                "latitude": 48.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "327165": {
+        "reportTime": 1739399531654,
+        "globalBlockReferenceId": 327165,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -348,
+                "latitude": 48.53333333333334
+            },
+            "southEastern": {
+                "longitude": -347.2,
+                "latitude": 48.46666666666667
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                3,
+                5
+            ]
+        ]
+    },
+    "327933": {
+        "reportTime": 1739399051261,
+        "globalBlockReferenceId": 327933,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -93.59999999999997,
+                "latitude": 48.6
+            },
+            "southEastern": {
+                "longitude": -92.79999999999997,
+                "latitude": 48.53333333333333
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                3
+            ]
+        ]
+    },
+    "328445": {
+        "reportTime": 1739399531287,
+        "globalBlockReferenceId": 328445,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -44,
+                "latitude": 48.66666666666667
+            },
+            "southEastern": {
+                "longitude": -43.2,
+                "latitude": 48.6
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                3
+            ]
+        ]
+    },
+    "328790": {
+        "reportTime": 1739399531287,
+        "globalBlockReferenceId": 328790,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -128,
+                "latitude": 48.733333333333334
+            },
+            "southEastern": {
+                "longitude": -127.2,
+                "latitude": 48.666666666666664
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                3
+            ]
+        ]
+    },
+    "328791": {
+        "reportTime": 1739398691514,
+        "globalBlockReferenceId": 328791,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -127.19999999999999,
+                "latitude": 48.733333333333334
+            },
+            "southEastern": {
+                "longitude": -126.39999999999999,
+                "latitude": 48.666666666666664
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "329240": {
+        "reportTime": 1739399177159,
+        "globalBlockReferenceId": 329240,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -128,
+                "latitude": 48.800000000000004
+            },
+            "southEastern": {
+                "longitude": -127.2,
+                "latitude": 48.733333333333334
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                3
+            ]
+        ]
+    },
+    "329241": {
+        "reportTime": 1739398691514,
+        "globalBlockReferenceId": 329241,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -127.19999999999999,
+                "latitude": 48.800000000000004
+            },
+            "southEastern": {
+                "longitude": -126.39999999999999,
+                "latitude": 48.733333333333334
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5
+            ]
+        ]
+    },
+    "329725": {
+        "reportTime": 1739398691514,
+        "globalBlockReferenceId": 329725,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -100,
+                "latitude": 48.86666666666667
+            },
+            "southEastern": {
+                "longitude": -99.2,
+                "latitude": 48.8
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "330237": {
+        "reportTime": 1739399177159,
+        "globalBlockReferenceId": 330237,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -50.39999999999998,
+                "latitude": 48.93333333333334
+            },
+            "southEastern": {
+                "longitude": -49.59999999999998,
+                "latitude": 48.86666666666667
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                3
+            ]
+        ]
+    },
+    "330590": {
+        "reportTime": 1739399531287,
+        "globalBlockReferenceId": 330590,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -128,
+                "latitude": 49
+            },
+            "southEastern": {
+                "longitude": -127.2,
+                "latitude": 48.93333333333333
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                3
+            ]
+        ]
+    },
+    "330591": {
+        "reportTime": 1739398691513,
+        "globalBlockReferenceId": 330591,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -127.19999999999999,
+                "latitude": 49
+            },
+            "southEastern": {
+                "longitude": -126.39999999999999,
+                "latitude": 48.93333333333333
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "331040": {
+        "reportTime": 1739399531287,
+        "globalBlockReferenceId": 331040,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -128,
+                "latitude": 49.06666666666667
+            },
+            "southEastern": {
+                "longitude": -127.2,
+                "latitude": 49
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                3
+            ]
+        ]
+    },
+    "331042": {
+        "reportTime": 1739398691513,
+        "globalBlockReferenceId": 331042,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -126.39999999999998,
+                "latitude": 49.06666666666667
+            },
+            "southEastern": {
+                "longitude": -125.59999999999998,
+                "latitude": 49
+            }
+        },
+        "reflectivity": [
+            [
+                1,
+                7
+            ]
+        ]
+    },
+    "331046": {
+        "reportTime": 1739398946121,
+        "globalBlockReferenceId": 331046,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -123.19999999999999,
+                "latitude": 49.06666666666667
+            },
+            "southEastern": {
+                "longitude": -122.39999999999999,
+                "latitude": 49
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                2,
+                0,
+                0
+            ]
+        ]
+    },
+    "331517": {
+        "reportTime": 1739398691513,
+        "globalBlockReferenceId": 331517,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -106.39999999999998,
+                "latitude": 49.13333333333333
+            },
+            "southEastern": {
+                "longitude": -105.59999999999998,
+                "latitude": 49.06666666666666
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "332029": {
+        "reportTime": 1739399531653,
+        "globalBlockReferenceId": 332029,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -56.80000000000001,
+                "latitude": 49.2
+            },
+            "southEastern": {
+                "longitude": -56.000000000000014,
+                "latitude": 49.13333333333333
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                3
+            ]
+        ]
+    },
+    "332390": {
+        "reportTime": 1739399531653,
+        "globalBlockReferenceId": 332390,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -128,
+                "latitude": 49.26666666666667
+            },
+            "southEastern": {
+                "longitude": -127.2,
+                "latitude": 49.2
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                3
+            ]
+        ]
+    },
+    "332392": {
+        "reportTime": 1739398691513,
+        "globalBlockReferenceId": 332392,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -126.39999999999998,
+                "latitude": 49.26666666666667
+            },
+            "southEastern": {
+                "longitude": -125.59999999999998,
+                "latitude": 49.2
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "332840": {
+        "reportTime": 1739399177159,
+        "globalBlockReferenceId": 332840,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -128,
+                "latitude": 49.333333333333336
+            },
+            "southEastern": {
+                "longitude": -127.2,
+                "latitude": 49.266666666666666
+            }
+        },
+        "reflectivity": [
+            [
+                2,
+                5,
+                3
+            ]
+        ]
+    },
+    "332842": {
+        "reportTime": 1739398691513,
+        "globalBlockReferenceId": 332842,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -126.39999999999998,
+                "latitude": 49.333333333333336
+            },
+            "southEastern": {
+                "longitude": -125.59999999999998,
+                "latitude": 49.266666666666666
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "333309": {
+        "reportTime": 1739398691513,
+        "globalBlockReferenceId": 333309,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -112.79999999999998,
+                "latitude": 49.400000000000006
+            },
+            "southEastern": {
+                "longitude": -111.99999999999999,
+                "latitude": 49.333333333333336
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "333821": {
+        "reportTime": 1739399531654,
+        "globalBlockReferenceId": 333821,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -63.19999999999999,
+                "latitude": 49.46666666666667
+            },
+            "southEastern": {
+                "longitude": -62.39999999999999,
+                "latitude": 49.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                3
+            ]
+        ]
+    },
+    "334190": {
+        "reportTime": 1739399531654,
+        "globalBlockReferenceId": 334190,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -128,
+                "latitude": 49.53333333333334
+            },
+            "southEastern": {
+                "longitude": -127.2,
+                "latitude": 49.46666666666667
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                3
+            ]
+        ]
+    },
+    "334192": {
+        "reportTime": 1739398691512,
+        "globalBlockReferenceId": 334192,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -126.39999999999998,
+                "latitude": 49.53333333333334
+            },
+            "southEastern": {
+                "longitude": -125.59999999999998,
+                "latitude": 49.46666666666667
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "334642": {
+        "reportTime": 1739398691512,
+        "globalBlockReferenceId": 334642,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -126.39999999999998,
+                "latitude": 49.6
+            },
+            "southEastern": {
+                "longitude": -125.59999999999998,
+                "latitude": 49.53333333333333
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "335101": {
+        "reportTime": 1739399531286,
+        "globalBlockReferenceId": 335101,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -119.19999999999999,
+                "latitude": 49.66666666666667
+            },
+            "southEastern": {
+                "longitude": -118.39999999999999,
+                "latitude": 49.6
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                3
+            ]
+        ]
+    },
+    "335613": {
+        "reportTime": 1739398691512,
+        "globalBlockReferenceId": 335613,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -69.59999999999997,
+                "latitude": 49.733333333333334
+            },
+            "southEastern": {
+                "longitude": -68.79999999999997,
+                "latitude": 49.666666666666664
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "335991": {
+        "reportTime": 1739398817145,
+        "globalBlockReferenceId": 335991,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -127.19999999999999,
+                "latitude": 49.800000000000004
+            },
+            "southEastern": {
+                "longitude": -126.39999999999999,
+                "latitude": 49.733333333333334
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                1
+            ]
+        ]
+    },
+    "335992": {
+        "reportTime": 1739398691512,
+        "globalBlockReferenceId": 335992,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -126.39999999999998,
+                "latitude": 49.800000000000004
+            },
+            "southEastern": {
+                "longitude": -125.59999999999998,
+                "latitude": 49.733333333333334
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "336441": {
+        "reportTime": 1739398691575,
+        "globalBlockReferenceId": 336441,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -127.19999999999999,
+                "latitude": 49.86666666666667
+            },
+            "southEastern": {
+                "longitude": -126.39999999999999,
+                "latitude": 49.8
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                1
+            ]
+        ]
+    },
+    "336443": {
+        "reportTime": 1739398691512,
+        "globalBlockReferenceId": 336443,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -125.6,
+                "latitude": 49.86666666666667
+            },
+            "southEastern": {
+                "longitude": -124.8,
+                "latitude": 49.8
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "336893": {
+        "reportTime": 1739398816263,
+        "globalBlockReferenceId": 336893,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -125.6,
+                "latitude": 49.93333333333334
+            },
+            "southEastern": {
+                "longitude": -124.8,
+                "latitude": 49.86666666666667
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                1
+            ]
+        ]
+    },
+    "337405": {
+        "reportTime": 1739398691511,
+        "globalBlockReferenceId": 337405,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -76,
+                "latitude": 50
+            },
+            "southEastern": {
+                "longitude": -75.2,
+                "latitude": 49.93333333333333
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "337791": {
+        "reportTime": 1739399531282,
+        "globalBlockReferenceId": 337791,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -127.19999999999999,
+                "latitude": 50.06666666666667
+            },
+            "southEastern": {
+                "longitude": -126.39999999999999,
+                "latitude": 50
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5
+            ]
+        ]
+    },
+    "337917": {
+        "reportTime": 1739398691511,
+        "globalBlockReferenceId": 337917,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -26.399999999999977,
+                "latitude": 50.06666666666667
+            },
+            "southEastern": {
+                "longitude": -25.599999999999977,
+                "latitude": 50
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "338241": {
+        "reportTime": 1739399531282,
+        "globalBlockReferenceId": 338241,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -127.19999999999999,
+                "latitude": 50.13333333333333
+            },
+            "southEastern": {
+                "longitude": -126.39999999999999,
+                "latitude": 50.06666666666666
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5
+            ]
+        ]
+    },
+    "338243": {
+        "reportTime": 1739398691511,
+        "globalBlockReferenceId": 338243,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -125.6,
+                "latitude": 50.13333333333333
+            },
+            "southEastern": {
+                "longitude": -124.8,
+                "latitude": 50.06666666666666
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "338691": {
+        "reportTime": 1739399051258,
+        "globalBlockReferenceId": 338691,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -127.19999999999999,
+                "latitude": 50.2
+            },
+            "southEastern": {
+                "longitude": -126.39999999999999,
+                "latitude": 50.13333333333333
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5
+            ]
+        ]
+    },
+    "338693": {
+        "reportTime": 1739398691511,
+        "globalBlockReferenceId": 338693,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -125.6,
+                "latitude": 50.2
+            },
+            "southEastern": {
+                "longitude": -124.8,
+                "latitude": 50.13333333333333
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "339197": {
+        "reportTime": 1739399531283,
+        "globalBlockReferenceId": 339197,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -82.39999999999998,
+                "latitude": 50.26666666666667
+            },
+            "southEastern": {
+                "longitude": -81.59999999999998,
+                "latitude": 50.2
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5
+            ]
+        ]
+    },
+    "339709": {
+        "reportTime": 1739399051259,
+        "globalBlockReferenceId": 339709,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -32.799999999999955,
+                "latitude": 50.333333333333336
+            },
+            "southEastern": {
+                "longitude": -31.999999999999954,
+                "latitude": 50.266666666666666
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5
+            ]
+        ]
+    },
+    "340041": {
+        "reportTime": 1739399531283,
+        "globalBlockReferenceId": 340041,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -127.19999999999999,
+                "latitude": 50.400000000000006
+            },
+            "southEastern": {
+                "longitude": -126.39999999999999,
+                "latitude": 50.333333333333336
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5
+            ]
+        ]
+    },
+    "340491": {
+        "reportTime": 1739399531205,
+        "globalBlockReferenceId": 340491,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -127.19999999999999,
+                "latitude": 50.46666666666667
+            },
+            "southEastern": {
+                "longitude": -126.39999999999999,
+                "latitude": 50.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                4
+            ]
+        ]
+    },
+    "340989": {
+        "reportTime": 1739399531283,
+        "globalBlockReferenceId": 340989,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -88.80000000000001,
+                "latitude": 50.53333333333334
+            },
+            "southEastern": {
+                "longitude": -88.00000000000001,
+                "latitude": 50.46666666666667
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5
+            ]
+        ]
+    },
+    "341501": {
+        "reportTime": 1739399531205,
+        "globalBlockReferenceId": 341501,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -39.19999999999999,
+                "latitude": 50.6
+            },
+            "southEastern": {
+                "longitude": -38.39999999999999,
+                "latitude": 50.53333333333333
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "341842": {
+        "reportTime": 1739399531283,
+        "globalBlockReferenceId": 341842,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -126.39999999999998,
+                "latitude": 50.66666666666667
+            },
+            "southEastern": {
+                "longitude": -125.59999999999998,
+                "latitude": 50.6
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "341845": {
+        "reportTime": 1739398691511,
+        "globalBlockReferenceId": 341845,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -124,
+                "latitude": 50.66666666666667
+            },
+            "southEastern": {
+                "longitude": -123.2,
+                "latitude": 50.6
+            }
+        },
+        "reflectivity": [
+            [
+                0
+            ]
+        ]
+    },
+    "342292": {
+        "reportTime": 1739399531205,
+        "globalBlockReferenceId": 342292,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -126.39999999999998,
+                "latitude": 50.733333333333334
+            },
+            "southEastern": {
+                "longitude": -125.59999999999998,
+                "latitude": 50.666666666666664
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "342296": {
+        "reportTime": 1739398691511,
+        "globalBlockReferenceId": 342296,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -123.19999999999999,
+                "latitude": 50.733333333333334
+            },
+            "southEastern": {
+                "longitude": -122.39999999999999,
+                "latitude": 50.666666666666664
+            }
+        },
+        "reflectivity": [
+            [
+                0
+            ]
+        ]
+    },
+    "342781": {
+        "reportTime": 1739399531284,
+        "globalBlockReferenceId": 342781,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -95.19999999999999,
+                "latitude": 50.800000000000004
+            },
+            "southEastern": {
+                "longitude": -94.39999999999999,
+                "latitude": 50.733333333333334
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "343293": {
+        "reportTime": 1739399531205,
+        "globalBlockReferenceId": 343293,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -45.599999999999966,
+                "latitude": 50.86666666666667
+            },
+            "southEastern": {
+                "longitude": -44.79999999999997,
+                "latitude": 50.8
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "343642": {
+        "reportTime": 1739399531284,
+        "globalBlockReferenceId": 343642,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -126.39999999999998,
+                "latitude": 50.93333333333334
+            },
+            "southEastern": {
+                "longitude": -125.59999999999998,
+                "latitude": 50.86666666666667
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "344092": {
+        "reportTime": 1739399531284,
+        "globalBlockReferenceId": 344092,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -126.39999999999998,
+                "latitude": 51
+            },
+            "southEastern": {
+                "longitude": -125.59999999999998,
+                "latitude": 50.93333333333333
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "344573": {
+        "reportTime": 1739399531284,
+        "globalBlockReferenceId": 344573,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -101.59999999999997,
+                "latitude": 51.06666666666667
+            },
+            "southEastern": {
+                "longitude": -100.79999999999997,
+                "latitude": 51
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "345085": {
+        "reportTime": 1739399531204,
+        "globalBlockReferenceId": 345085,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -52,
+                "latitude": 51.13333333333333
+            },
+            "southEastern": {
+                "longitude": -51.2,
+                "latitude": 51.06666666666666
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "345443": {
+        "reportTime": 1739399531285,
+        "globalBlockReferenceId": 345443,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -125.6,
+                "latitude": 51.2
+            },
+            "southEastern": {
+                "longitude": -124.8,
+                "latitude": 51.13333333333333
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "345893": {
+        "reportTime": 1739399531204,
+        "globalBlockReferenceId": 345893,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -125.6,
+                "latitude": 51.26666666666667
+            },
+            "southEastern": {
+                "longitude": -124.8,
+                "latitude": 51.2
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "346365": {
+        "reportTime": 1739399531285,
+        "globalBlockReferenceId": 346365,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -108,
+                "latitude": 51.333333333333336
+            },
+            "southEastern": {
+                "longitude": -107.2,
+                "latitude": 51.266666666666666
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "346877": {
+        "reportTime": 1739399531203,
+        "globalBlockReferenceId": 346877,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -58.39999999999998,
+                "latitude": 51.400000000000006
+            },
+            "southEastern": {
+                "longitude": -57.59999999999998,
+                "latitude": 51.333333333333336
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "347243": {
+        "reportTime": 1739399531285,
+        "globalBlockReferenceId": 347243,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -125.6,
+                "latitude": 51.46666666666667
+            },
+            "southEastern": {
+                "longitude": -124.8,
+                "latitude": 51.4
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "347694": {
+        "reportTime": 1739399298207,
+        "globalBlockReferenceId": 347694,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -124.79999999999998,
+                "latitude": 51.53333333333334
+            },
+            "southEastern": {
+                "longitude": -123.99999999999999,
+                "latitude": 51.46666666666667
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                7
+            ]
+        ]
+    },
+    "348157": {
+        "reportTime": 1739399531286,
+        "globalBlockReferenceId": 348157,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -114.39999999999998,
+                "latitude": 51.6
+            },
+            "southEastern": {
+                "longitude": -113.59999999999998,
+                "latitude": 51.53333333333333
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                3
+            ]
+        ]
+    },
+    "348669": {
+        "reportTime": 1739399531285,
+        "globalBlockReferenceId": 348669,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -64.80000000000001,
+                "latitude": 51.66666666666667
+            },
+            "southEastern": {
+                "longitude": -64.00000000000001,
+                "latitude": 51.6
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                3
+            ]
+        ]
+    },
+    "349044": {
+        "reportTime": 1739399531286,
+        "globalBlockReferenceId": 349044,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -124.79999999999998,
+                "latitude": 51.733333333333334
+            },
+            "southEastern": {
+                "longitude": -123.99999999999999,
+                "latitude": 51.666666666666664
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                3
+            ]
+        ]
+    },
+    "349495": {
+        "reportTime": 1739399531203,
+        "globalBlockReferenceId": 349495,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -124,
+                "latitude": 51.800000000000004
+            },
+            "southEastern": {
+                "longitude": -123.2,
+                "latitude": 51.733333333333334
+            }
+        },
+        "reflectivity": [
+            [
+                5
+            ]
+        ]
+    },
+    "349949": {
+        "reportTime": 1739399531203,
+        "globalBlockReferenceId": 349949,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -120.79999999999998,
+                "latitude": 51.86666666666667
+            },
+            "southEastern": {
+                "longitude": -119.99999999999999,
+                "latitude": 51.8
+            }
+        },
+        "reflectivity": [
+            [
+                5
+            ]
+        ]
+    },
+    "350461": {
+        "reportTime": 1739399531203,
+        "globalBlockReferenceId": 350461,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -71.19999999999999,
+                "latitude": 51.93333333333334
+            },
+            "southEastern": {
+                "longitude": -70.39999999999999,
+                "latitude": 51.86666666666667
+            }
+        },
+        "reflectivity": [
+            [
+                0
+            ]
+        ]
+    },
+    "350846": {
+        "reportTime": 1739399531203,
+        "globalBlockReferenceId": 350846,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -123.19999999999999,
+                "latitude": 52
+            },
+            "southEastern": {
+                "longitude": -122.39999999999999,
+                "latitude": 51.93333333333333
+            }
+        },
+        "reflectivity": [
+            [
+                0
+            ]
+        ]
+    },
+    "392569": {
+        "reportTime": 1739399238194,
+        "globalBlockReferenceId": 392569,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -224.79999999999998,
+                "latitude": 58.2
+            },
+            "southEastern": {
+                "longitude": -223.99999999999997,
+                "latitude": 58.13333333333333
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                6,
+                0,
+                6,
+                4,
+                3,
+                0,
+                0,
+                1,
+                5,
+                4,
+                5,
+                7,
+                5,
+                4,
+                5,
+                5,
+                5,
+                3,
+                5,
+                0,
+                6,
+                0,
+                4,
+                6,
+                5,
+                0,
+                1,
+                5,
+                0,
+                4,
+                5
+            ],
+            [
+                2,
+                5,
+                0,
+                1,
+                0,
+                5,
+                5,
+                5,
+                2,
+                6,
+                5,
+                5,
+                5,
+                0,
+                5,
+                3,
+                5,
+                4,
+                0,
+                5,
+                4,
+                0,
+                5,
+                2,
+                3,
+                5,
+                1,
+                5,
+                4,
+                5,
+                3,
+                4
+            ],
+            [
+                0,
+                5,
+                0,
+                5,
+                5,
+                4,
+                0,
+                4,
+                5,
+                2,
+                5,
+                4,
+                5,
+                1,
+                7,
+                5,
+                4,
+                3,
+                1,
+                5,
+                4,
+                0,
+                5,
+                5,
+                5,
+                3,
+                5,
+                3,
+                2,
+                6,
+                1,
+                5
+            ],
+            [
+                6,
+                5,
+                2,
+                0,
+                4,
+                5,
+                0,
+                5,
+                0,
+                3,
+                5,
+                4,
+                0,
+                5,
+                0,
+                5,
+                3,
+                5,
+                0,
+                5,
+                4,
+                5,
+                5,
+                6,
+                6,
+                0,
+                4,
+                6,
+                3,
+                6,
+                4
+            ]
+        ]
+    },
+    "392701": {
+        "reportTime": 1739399319315,
+        "globalBlockReferenceId": 392701,
+        "boundaries": {
+            "northWestern": {
+                "longitude": -119.19999999999999,
+                "latitude": 58.2
+            },
+            "southEastern": {
+                "longitude": -118.39999999999999,
+                "latitude": 58.13333333333333
+            }
+        },
+        "reflectivity": [
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                6,
+                6,
+                6,
+                6,
+                6,
+                6,
+                2,
+                2,
+                2,
+                2,
+                2,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                2,
+                2,
+                2,
+                2,
+                2,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                0,
+                0,
+                0,
+                0,
+                0,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ],
+            [
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                7,
+                7,
+                7,
+                7,
+                7,
+                7,
+                7,
+                7,
+                0,
+                0,
+                0,
+                0,
+                0,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1
+            ],
+            [
+                1,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                0,
+                0,
+                0,
+                0,
+                4,
+                4,
+                4,
+                4,
+                4,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                3,
+                3,
+                1,
+                1,
+                1
+            ],
+            [
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2,
+                2
+            ],
+            [
+                2,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                7,
+                7,
+                7,
+                7,
+                7,
+                7,
+                7,
+                7,
+                7,
+                7,
+                7,
+                7,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                0,
+                0,
+                0,
+                0,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                1,
+                1,
+                1,
+                1,
+                1,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                4,
+                4
+            ],
+            [
+                4,
+                4,
+                4,
+                4,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5
+            ],
+            [
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                5,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ],
+            [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ],
+            [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+            ]
+        ]
+    }
+}
