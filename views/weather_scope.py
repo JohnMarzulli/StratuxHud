@@ -68,7 +68,7 @@ class WeatherTopViewScope(TopDownScope):
             [100, 50],
             [200, 100],
         ]
-        self.__zoom_index__ = len(self.__zoom_levels__) - 2
+        self.__zoom_index__ = len(self.__zoom_levels__) - 3
         self.__failed_bin_counts__ = 0
         self.__successful_bin_counts__ = 0
 
