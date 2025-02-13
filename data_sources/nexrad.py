@@ -228,6 +228,13 @@ class NexradClient:
         )
         NexradClient.INSTANCE = self
 
+    def inject(self, nexrad_json):
+        for id in nexrad_json:
+            block_identifier = int(id)
+            NexradClient.REFLECTIVITY[block_identifier] = ReflectivityBlock(
+                nexrad_json[id]
+            )
+
     def update_nexrad(self):
         """
         Calls the traffic manager and gets a list of traffic that is trustable
@@ -240,21 +247,9 @@ class NexradClient:
                 timeout=configuration.AHRS_TIMEOUT,
             ).json()
 
-            for id in nexrad_json:
-                block_identifier = int(id)
-                NexradClient.REFLECTIVITY[block_identifier] = ReflectivityBlock(
-                    nexrad_json[id]
-                )
+            self.inject(nexrad_json)
 
-            current_time = int(time.time() * 1000)
-            oldest_allowed_report_time = current_time - (15 * 60 * 1000)  # 15 minutes
-
-            for id in list(NexradClient.REFLECTIVITY.keys()):
-                if (
-                    NexradClient.REFLECTIVITY[id].report_time
-                    < oldest_allowed_report_time
-                ):
-                    del NexradClient.REFLECTIVITY[id]
+            self.__gc_reports__()
 
             return True
 
@@ -265,6 +260,14 @@ class NexradClient:
             # Do no consider the service unavailable unless we are
             # way below the max target framerate.
             return False
+
+    def __gc_reports__(self):
+        current_time = int(time.time() * 1000)
+        oldest_allowed_report_time = current_time - (15 * 60 * 1000)  # 15 minutes
+
+        for id in list(NexradClient.REFLECTIVITY.keys()):
+            if NexradClient.REFLECTIVITY[id].report_time < oldest_allowed_report_time:
+                del NexradClient.REFLECTIVITY[id]
 
     @staticmethod
     def get_nexrad_in_range(center, radius):
