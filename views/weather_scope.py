@@ -8,6 +8,7 @@ from typing import Tuple
 import pygame
 
 from common_utils.task_timer import TaskProfiler
+from common_utils.tasks import IntermittentTask
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 from data_sources.nexrad import NexradClient
@@ -59,8 +60,21 @@ class WeatherTopViewScope(TopDownScope):
 
         self.__time_of_last_block_fetch__ = datetime.datetime.now(datetime.timezone.utc)
         self.__nexrad_cache__ = None
-        self.__zoom_levels__ = [(2, 1), (10, 5), (20, 10), (50, 25), [100, 50]]
+        self.__zoom_levels__ = [
+            (2, 1),
+            (10, 5),
+            (20, 10),
+            (50, 25),
+            [100, 50],
+            [200, 100],
+        ]
         self.__zoom_index__ = len(self.__zoom_levels__) - 2
+        self.__failed_bin_counts__ = 0
+        self.__successful_bin_counts__ = 0
+
+        self.__log_bin_stats_task__ = IntermittentTask(
+            "Render Failed Weather Counts", 15.0, self.__log_bin_counts__, None
+        )
 
     def __zoom_in__(self):
         self.__zoom_index__ -= 1
@@ -76,6 +90,10 @@ class WeatherTopViewScope(TopDownScope):
         scope_range: Tuple[int, int],
         orientation: AhrsData,
     ):
+        self.__log_bin_stats_task__.run()
+        self.__successful_bin_counts__ = 0
+        self.__failed_bin_counts__ = 0
+
         max_distance = scope_range[0]
 
         text_y_pos = self.__bottom_border__ - (self.__font_height__ << 1)
@@ -177,42 +195,58 @@ class WeatherTopViewScope(TopDownScope):
         lon_step,
         block,
     ):
-        reflectivity = block.reflectivity[lat_index][lon_index]
+        try:
+            if len(block.reflectivity) <= lat_index:
+                self.__failed_bin_counts__ += 1
+                return
 
-        if reflectivity == 0:
+            if len(block.reflectivity[lat_index]) <= lon_index:
+                self.__failed_bin_counts__ += 1
+                return
+
+            reflectivity = block.reflectivity[lat_index][lon_index]
+
+            if reflectivity == 0:
+                self.__successful_bin_counts__ += 1
+                return
+
+            color = NexradClient.reflectivity_to_rgb(reflectivity)
+
+            n_lat = block.north_western[0] - (lat_index * lat_step)
+            s_lat = n_lat - lat_step
+            w_lon = block.north_western[1] + (lon_index * lon_step)
+            e_lon = w_lon + lon_step
+
+            nw = [n_lat, w_lon]
+            ne = [n_lat, e_lon]
+            se = [s_lat, e_lon]
+            sw = [s_lat, w_lon]
+
+            nw_pixel = self.__get_screen_coordinates__(
+                orientation, current_heading, max_distance, nw
+            )
+            ne_pixel = self.__get_screen_coordinates__(
+                orientation, current_heading, max_distance, ne
+            )
+            se_pixel = self.__get_screen_coordinates__(
+                orientation, current_heading, max_distance, se
+            )
+            sw_pixel = self.__get_screen_coordinates__(
+                orientation, current_heading, max_distance, sw
+            )
+
+            drawing.renderer.polygon(
+                framebuffer,
+                color,
+                [nw_pixel, ne_pixel, se_pixel, sw_pixel],
+                False,
+            )
+        except Exception as ex:
+            self.__failed_bin_counts__ += 1
+
             return
 
-        color = NexradClient.reflectivity_to_rgb(reflectivity)
-
-        n_lat = block.north_western[0] - (lat_index * lat_step)
-        s_lat = n_lat - lat_step
-        w_lon = block.north_western[1] + (lon_index * lon_step)
-        e_lon = w_lon + lon_step
-
-        nw = [n_lat, w_lon]
-        ne = [n_lat, e_lon]
-        se = [s_lat, e_lon]
-        sw = [s_lat, w_lon]
-
-        nw_pixel = self.__get_screen_coordinates__(
-            orientation, current_heading, max_distance, nw
-        )
-        ne_pixel = self.__get_screen_coordinates__(
-            orientation, current_heading, max_distance, ne
-        )
-        se_pixel = self.__get_screen_coordinates__(
-            orientation, current_heading, max_distance, se
-        )
-        sw_pixel = self.__get_screen_coordinates__(
-            orientation, current_heading, max_distance, sw
-        )
-
-        drawing.renderer.polygon(
-            framebuffer,
-            color,
-            [nw_pixel, ne_pixel, se_pixel, sw_pixel],
-            False,
-        )
+        self.__successful_bin_counts__ += 1
 
     def render(self, framebuffer: pygame.Surface, orientation: AhrsData):
         """
@@ -237,14 +271,28 @@ class WeatherTopViewScope(TopDownScope):
 
             self.__draw_all_compass_headings__(framebuffer, orientation, scope_range[0])
 
+    def __log_bin_counts__(self):
+        print(f"Failed bins:{self.__failed_bin_counts__}")
+        print(f"Passed bins:{self.__successful_bin_counts__}")
+
 
 if __name__ == "__main__":
     from views.compass_and_heading_top_element import CompassAndHeadingTopElement
     from views.groundspeed import Groundspeed
     from views.hud_elements import run_hud_elements
+    import json
 
     nexrad_client = NexradClient(
         configuration.CONFIGURATION.get_traffic_manager_address()
     )
+
+    test_data_file = configuration.get_absolute_file_path(
+        "../test_data/challenging_reflectivity.json"
+    )
+
+    with open(test_data_file) as json_test_data_file:
+        json_config_text = json_test_data_file.read()
+        test_data_json = json.loads(json_config_text)
+        nexrad_client.inject(test_data_json)
 
     run_hud_elements([WeatherTopViewScope, CompassAndHeadingTopElement, Groundspeed])
