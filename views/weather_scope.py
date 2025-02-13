@@ -71,6 +71,8 @@ class WeatherTopViewScope(TopDownScope):
         self.__zoom_index__ = len(self.__zoom_levels__) - 3
         self.__failed_bin_counts__ = 0
         self.__successful_bin_counts__ = 0
+        self.__nearby_blocks_count__ = 0
+        self.__total_blocks_count__ = 0
 
         self.__log_bin_stats_task__ = IntermittentTask(
             "Render Failed Weather Counts", 15.0, self.__log_bin_counts__, None
@@ -124,21 +126,21 @@ class WeatherTopViewScope(TopDownScope):
             for block in nexrad_blocks
         ]
 
-        in_range_count = len(nexrad_blocks)
+        self.__nearby_blocks_count__ = len(nexrad_blocks)
 
         self.__render_text__(
             framebuffer,
-            f"Nearby: {in_range_count}",
+            f"Nearby: {self.__nearby_blocks_count__}",
             nearby_position,
             colors.YELLOW,
             0.5,
         )
 
-        total_count = len(NexradClient.REFLECTIVITY.keys())
+        self.__total_blocks_count__ = len(NexradClient.REFLECTIVITY.keys())
 
         self.__render_text__(
             framebuffer,
-            f"Total: {total_count}",
+            f"Total: {self.__total_blocks_count__}",
             total_position,
             colors.YELLOW,
             0.5,
@@ -274,6 +276,8 @@ class WeatherTopViewScope(TopDownScope):
     def __log_bin_counts__(self):
         print(f"Failed bins:{self.__failed_bin_counts__}")
         print(f"Passed bins:{self.__successful_bin_counts__}")
+        print(f"Nearby blocks:{self.__nearby_blocks_count__}")
+        print(f"Total blocks:{self.__total_blocks_count__}")
 
 
 if __name__ == "__main__":
