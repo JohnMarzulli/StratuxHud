@@ -347,7 +347,7 @@ class TopDownScope(AdsbElement):
 
         [
             self.__render_airport_target__(
-                framebuffer, orientation, nearby_airports[airport_id], scope_range[1]
+                framebuffer, orientation, nearby_airports[airport_id], scope_range
             )
             for airport_id in nearby_airports
         ]
@@ -357,7 +357,7 @@ class TopDownScope(AdsbElement):
         framebuffer,
         orientation: AhrsData,
         airport: Dict[str, any],
-        inner_scope_range: float,
+        scope_ranges: List[float],
     ):
         """
         Draws a single reticle on the screen.
@@ -377,14 +377,18 @@ class TopDownScope(AdsbElement):
             airport["coordinates"]["latitude"],
         ]
 
+        # This position comes as lon/lat
+        # All supporting code needs to be provided in lat/lon
+        correct_airport_position = [
+            airport_position[1],
+            airport_position[0],
+        ]
+
         screen_x, screen_y = self.__get_screen_coordinates__(
             orientation,
             orientation.get_onscreen_gps_heading(),
-            inner_scope_range,
-            [
-                airport_position[1],
-                airport_position[0],
-            ],  # Needs to be provided in Lat/Lon
+            scope_ranges[0],
+            correct_airport_position,
         )
 
         if screen_x < 0 or screen_x > self.__width__:
@@ -395,6 +399,10 @@ class TopDownScope(AdsbElement):
 
         target_color = colors.GRAY  # TODO - Find a way to determine if it has a tower
 
+        gps_distance = geo_math.get_distance(
+            orientation.position, correct_airport_position
+        )
+
         drawing.renderer.filled_circle(
             framebuffer,
             target_color,
@@ -402,6 +410,9 @@ class TopDownScope(AdsbElement):
             self.__no_direction_target_size__,
             not self.__reduced_visuals__,
         )
+
+        if gps_distance > scope_ranges[1]:
+            return
 
         if self.__draw_identifiers__:
             identifier = airport["ident"]
