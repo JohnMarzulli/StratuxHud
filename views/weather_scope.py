@@ -70,6 +70,7 @@ class WeatherTopViewScope(TopDownScope):
         ]
         self.__zoom_index__ = len(self.__zoom_levels__) - 3
         self.__failed_bin_counts__ = 0
+        self.__missing_bin_counts__ = 0
         self.__successful_bin_counts__ = 0
         self.__nearby_blocks_count__ = 0
         self.__total_blocks_count__ = 0
@@ -95,6 +96,7 @@ class WeatherTopViewScope(TopDownScope):
         self.__log_bin_stats_task__.run()
         self.__successful_bin_counts__ = 0
         self.__failed_bin_counts__ = 0
+        self.__missing_bin_counts__ = 0
 
         max_distance = scope_range[0]
 
@@ -199,11 +201,11 @@ class WeatherTopViewScope(TopDownScope):
     ):
         try:
             if len(block.reflectivity) <= lat_index:
-                self.__failed_bin_counts__ += 1
+                self.__missing_bin_counts__ += 1
                 return
 
             if len(block.reflectivity[lat_index]) <= lon_index:
-                self.__failed_bin_counts__ += 1
+                self.__missing_bin_counts__ += 1
                 return
 
             reflectivity = block.reflectivity[lat_index][lon_index]
@@ -274,6 +276,7 @@ class WeatherTopViewScope(TopDownScope):
             self.__draw_all_compass_headings__(framebuffer, orientation, scope_range[0])
 
     def __log_bin_counts__(self):
+        print(f"Missing bins:{self.__missing_bin_counts__}")
         print(f"Failed bins:{self.__failed_bin_counts__}")
         print(f"Passed bins:{self.__successful_bin_counts__}")
         print(f"Nearby blocks:{self.__nearby_blocks_count__}")
