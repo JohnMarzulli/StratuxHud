@@ -287,7 +287,6 @@ class AdsbTopViewScope(TopDownScope):
                 for traffic in traffic_reports
             ]
 
-
 if __name__ == "__main__":
     from views.compass_and_heading_top_element import CompassAndHeadingTopElement
     from views.groundspeed import Groundspeed
