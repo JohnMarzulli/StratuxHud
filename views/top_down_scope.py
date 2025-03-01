@@ -3,7 +3,7 @@ View element for a weather "radar" that looks from the top downwards.
 """
 
 import math
-from typing import Tuple
+from typing import Tuple, Dict, List
 
 import pygame
 from common_utils import fast_math, geo_math, units
@@ -13,6 +13,7 @@ from rendering import colors, drawing
 
 from views.adsb_element import AdsbElement
 from views.hud_elements import apply_declination
+from data_sources.airports import AirportClient
 
 
 class TopDownScope(AdsbElement):
@@ -333,4 +334,85 @@ class TopDownScope(AdsbElement):
         for heading_to_draw in range(0, 360, 45):
             self.__draw_compass_text__(
                 framebuffer, our_heading, heading_to_draw, scope_range
+            )
+
+    def __draw_airports__(
+        self, framebuffer, orientation, scope_range: List[int], first_ring_pixel_radius
+    ):
+        AirportClient.set_last_known_position(orientation.position)
+        nearby_airports = AirportClient.get_nearby_airports()
+        first_ring_pixel_radius = self.__get_pixel_distance__(
+            first_ring_pixel_radius, scope_range[1]
+        )
+
+        [
+            self.__render_airport_target__(
+                framebuffer, orientation, nearby_airports[airport_id], scope_range[1]
+            )
+            for airport_id in nearby_airports
+        ]
+
+    def __render_airport_target__(
+        self,
+        framebuffer,
+        orientation: AhrsData,
+        airport: Dict[str, any],
+        inner_scope_range: float,
+    ):
+        """
+        Draws a single reticle on the screen.
+
+        Arguments:
+            framebuffer {pygame.Surface} -- Render target
+            orientation {Orientation} -- The orientation of the plane.
+            airport {Dict[str, any]} -- The airport to draw the reticle for.
+            first_ring_pixel_distance {int} -- The distance (in pixels) from the ownship to the first scope ring. Used for clutter control.
+        """
+
+        # Airport data format:
+        # {"coordinates":{"longitude":-122.149561389,"latitude":47.280656111},"ident":"WA84","name":"Auburn Academy","airportType":"AD","isPublic":false}
+
+        airport_position = [
+            airport["coordinates"]["longitude"],
+            airport["coordinates"]["latitude"],
+        ]
+
+        screen_x, screen_y = self.__get_screen_coordinates__(
+            orientation,
+            orientation.get_onscreen_gps_heading(),
+            inner_scope_range,
+            [
+                airport_position[1],
+                airport_position[0],
+            ],  # Needs to be provided in Lat/Lon
+        )
+
+        if screen_x < 0 or screen_x > self.__width__:
+            return
+
+        if screen_y < 0 or screen_y > self.__height__:
+            return
+
+        target_color = colors.GRAY  # TODO - Find a way to determine if it has a tower
+
+        drawing.renderer.filled_circle(
+            framebuffer,
+            target_color,
+            [screen_x, screen_y],
+            self.__no_direction_target_size__,
+            not self.__reduced_visuals__,
+        )
+
+        if self.__draw_identifiers__:
+            identifier = airport["ident"]
+
+            self.__render_centered_text__(
+                framebuffer,
+                identifier,
+                [screen_x, screen_y + (self.__no_direction_target_size__ << 2)],
+                target_color,
+                colors.BLACK,
+                0.5,
+                0,
+                True,
             )
