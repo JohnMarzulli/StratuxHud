@@ -256,16 +256,12 @@ class AdsbTopViewScope(TopDownScope):
 
         near_target_distance = zoom_tracker.INSTANCE.get_target_threshold_distance()
 
-        if not orientation.gps_online:
-            return
-
         with TaskProfiler(
             "views.adsb_top_view_scope.AdsbTopViewScope.render_breadcrumbs"
         ):
             self.__render_breadcrumbs__(framebuffer, scope_range, orientation)
 
-        with TaskProfiler("views.adsb_top_view_scope.AdsbTopViewScope.render"):
-            self.__render_ownship__(framebuffer)
+        with TaskProfiler("views.adsb_top_view_scope.AdsbTopViewScope.render_rings"):
 
             first_ring_pixel_radius = self.__draw_distance_rings__(
                 framebuffer, scope_range
@@ -275,9 +271,18 @@ class AdsbTopViewScope(TopDownScope):
                 framebuffer, orientation, near_target_distance
             )
 
+            self.__render_ownship__(framebuffer)
+
+        if not orientation.gps_online:
+            return
+
+        with TaskProfiler("views.adsb_top_view_scope.AdsbTopViewScope.render_airports"):
+
             self.__draw_airports__(
                 framebuffer, orientation, scope_range, first_ring_pixel_radius
             )
+
+        with TaskProfiler("views.adsb_top_view_scope.AdsbTopViewScope.render_traffic"):
 
             # pylint: disable=expression-not-assigned
             [
