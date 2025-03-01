@@ -256,6 +256,9 @@ class AdsbTopViewScope(TopDownScope):
 
         near_target_distance = zoom_tracker.INSTANCE.get_target_threshold_distance()
 
+        if not orientation.gps_online:
+            return
+
         with TaskProfiler(
             "views.adsb_top_view_scope.AdsbTopViewScope.render_breadcrumbs"
         ):
@@ -272,8 +275,9 @@ class AdsbTopViewScope(TopDownScope):
                 framebuffer, orientation, near_target_distance
             )
 
-            if not orientation.gps_online:
-                return
+            self.__draw_airports__(
+                framebuffer, orientation, scope_range, first_ring_pixel_radius
+            )
 
             # pylint: disable=expression-not-assigned
             [
@@ -286,6 +290,7 @@ class AdsbTopViewScope(TopDownScope):
                 )
                 for traffic in traffic_reports
             ]
+
 
 if __name__ == "__main__":
     from views.compass_and_heading_top_element import CompassAndHeadingTopElement

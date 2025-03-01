@@ -270,10 +270,13 @@ class WeatherTopViewScope(TopDownScope):
 
         with TaskProfiler("views.weather_top_view_scope.WeatherTopViewScope.render"):
             self.__render_ownship__(framebuffer)
-
-            self.__draw_distance_rings__(framebuffer, scope_range)
-
+            first_ring_pixel_radius = self.__draw_distance_rings__(
+                framebuffer, scope_range
+            )
             self.__draw_all_compass_headings__(framebuffer, orientation, scope_range[0])
+            self.__draw_airports__(
+                framebuffer, orientation, scope_range, first_ring_pixel_radius
+            )
 
     def __log_bin_counts__(self):
         print(f"Missing bins:{self.__missing_bin_counts__}")
