@@ -278,9 +278,7 @@ class AdsbTopViewScope(TopDownScope):
 
         with TaskProfiler("views.adsb_top_view_scope.AdsbTopViewScope.render_airports"):
 
-            self.__draw_airports__(
-                framebuffer, orientation, scope_range, first_ring_pixel_radius
-            )
+            self.__draw_airports__(framebuffer, orientation, scope_range)
 
         with TaskProfiler("views.adsb_top_view_scope.AdsbTopViewScope.render_traffic"):
 

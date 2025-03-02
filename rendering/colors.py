@@ -4,21 +4,21 @@ Module to define common colors, and the math to work with them.
 
 from common_utils.fast_math import interpolate
 
-BLACK = (0,   0,   0)
+BLACK = (0, 0, 0)
 DARK_GRAY = (64, 64, 64)
 GRAY = (128, 128, 128)
 WHITE = (255, 255, 255)
-BLUE = (0,   0, 255)
-GREEN = (0, 255,   0)
-RED = (255,   0,   0)
+BLUE = (0, 0, 255)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
+LIGHT_RED = (255, 105, 180)
+MAGENTA = (255, 0, 255)
 YELLOW = (255, 255, 0)
+PURPLE = ((148, 0, 211),)
+ORANGE = (255, 126, 0)
 
 
-def get_color_mix(
-    left_color,
-    right_color,
-    proportion: float
-):
+def get_color_mix(left_color, right_color, proportion: float):
     """
     Returns a color that is a mix between the two given colors.
     A given proportion of 0 would return the left color.
@@ -53,12 +53,15 @@ def get_color_mix(
         return left_color
 
     indices = range(0, array_length)
-    new_color = [int(interpolate(left_color[index], right_color[index], proportion)) for index in indices]
+    new_color = [
+        int(interpolate(left_color[index], right_color[index], proportion))
+        for index in indices
+    ]
 
     return new_color
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import doctest
 
     print("Starting tests.")

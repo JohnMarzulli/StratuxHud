@@ -11,6 +11,7 @@ from common_utils.task_timer import TaskProfiler
 from common_utils.tasks import IntermittentTask
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
+from data_sources.airports import AirportClient
 from data_sources.nexrad import NexradClient
 from rendering import colors, drawing
 from views.top_down_scope import TopDownScope
@@ -268,15 +269,19 @@ class WeatherTopViewScope(TopDownScope):
         ):
             self.__render_reflectivity__(framebuffer, scope_range, orientation)
 
-        with TaskProfiler("views.weather_top_view_scope.WeatherTopViewScope.render"):
+        with TaskProfiler(
+            "views.weather_top_view_scope.WeatherTopViewScope.render_ring"
+        ):
             self.__render_ownship__(framebuffer)
             first_ring_pixel_radius = self.__draw_distance_rings__(
                 framebuffer, scope_range
             )
             self.__draw_all_compass_headings__(framebuffer, orientation, scope_range[0])
-            self.__draw_airports__(
-                framebuffer, orientation, scope_range, first_ring_pixel_radius
-            )
+
+        with TaskProfiler(
+            "views.weather_top_view_scope.WeatherTopViewScope.render_airports"
+        ):
+            self.__draw_airports__(framebuffer, orientation, scope_range)
 
     def __log_bin_counts__(self):
         print(f"Missing bins:{self.__missing_bin_counts__}")
@@ -304,5 +309,22 @@ if __name__ == "__main__":
         json_config_text = json_test_data_file.read()
         test_data_json = json.loads(json_config_text)
         nexrad_client.inject(test_data_json)
+        AirportClient.inject_flight_rules(
+            {
+                "KPLU": "VFR",
+                "K4S2": "MVFR",
+                "KS39": "VFR",
+                "KBVS": "VFR",
+                "KSZT": "VFR",
+                "K0S9": "VFR",
+                "K6S2": "IFR",
+                "KS33": "VFR",
+                "K63S": "MVFR",
+                "KRNT": "IFR",
+                "KSEA": "VFR",
+                "KBFI": "MVFR",
+                "1WA6": "LIFR",
+            }
+        )
 
     run_hud_elements([WeatherTopViewScope, CompassAndHeadingTopElement, Groundspeed])

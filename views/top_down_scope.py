@@ -336,14 +336,9 @@ class TopDownScope(AdsbElement):
                 framebuffer, our_heading, heading_to_draw, scope_range
             )
 
-    def __draw_airports__(
-        self, framebuffer, orientation, scope_range: List[int], first_ring_pixel_radius
-    ):
+    def __draw_airports__(self, framebuffer, orientation, scope_range: List[int]):
         AirportClient.set_last_known_position(orientation.position)
         nearby_airports = AirportClient.get_nearby_airports()
-        first_ring_pixel_radius = self.__get_pixel_distance__(
-            first_ring_pixel_radius, scope_range[1]
-        )
 
         [
             self.__render_airport_target__(
@@ -384,6 +379,13 @@ class TopDownScope(AdsbElement):
             airport_position[0],
         ]
 
+        gps_distance = geo_math.get_distance(
+            orientation.position, correct_airport_position
+        )
+
+        if gps_distance > scope_ranges[0]:
+            return
+
         screen_x, screen_y = self.__get_screen_coordinates__(
             orientation,
             orientation.get_onscreen_gps_heading(),
@@ -397,11 +399,7 @@ class TopDownScope(AdsbElement):
         if screen_y < 0 or screen_y > self.__height__:
             return
 
-        target_color = colors.GRAY  # TODO - Find a way to determine if it has a tower
-
-        gps_distance = geo_math.get_distance(
-            orientation.position, correct_airport_position
-        )
+        target_color = self.__get_airport_color__(airport)
 
         drawing.renderer.filled_circle(
             framebuffer,
@@ -427,3 +425,20 @@ class TopDownScope(AdsbElement):
                 0,
                 True,
             )
+
+    def __get_airport_color__(self, airport: Dict[str, any]):
+        if "flightRules" not in airport:
+            return colors.GRAY  # TODO - Find a way to determine if it has a tower
+
+        flight_rules = airport["flightRules"]
+
+        if flight_rules == "VFR":
+            return colors.GREEN
+        elif flight_rules == "MVFR":
+            return colors.BLUE
+        elif flight_rules == "IFR":
+            return colors.RED
+        elif flight_rules == "LIFR":
+            return colors.MAGENTA
+
+        return colors.GRAY
