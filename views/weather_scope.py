@@ -301,30 +301,35 @@ if __name__ == "__main__":
         configuration.CONFIGURATION.get_traffic_manager_address()
     )
 
-    test_data_file = configuration.get_absolute_file_path(
-        "../test_data/challenging_reflectivity.json"
-    )
+    test_data_files = [
+        "../test_data/challenging_reflectivity.json",
+        "../test_data/seatac_nye_2024_reflectivity.json",
+    ]
 
-    with open(test_data_file) as json_test_data_file:
-        json_config_text = json_test_data_file.read()
-        test_data_json = json.loads(json_config_text)
-        nexrad_client.inject(test_data_json)
-        AirportClient.inject_flight_rules(
-            {
-                "KPLU": "VFR",
-                "K4S2": "MVFR",
-                "KS39": "VFR",
-                "KBVS": "VFR",
-                "KSZT": "VFR",
-                "K0S9": "VFR",
-                "K6S2": "IFR",
-                "KS33": "VFR",
-                "K63S": "MVFR",
-                "KRNT": "IFR",
-                "KSEA": "VFR",
-                "KBFI": "MVFR",
-                "1WA6": "LIFR",
-            }
-        )
+    for test_data_file in test_data_files:
+        full_file_path = configuration.get_absolute_file_path(test_data_file)
+
+        with open(full_file_path) as json_test_data_file:
+            json_config_text = json_test_data_file.read()
+            test_data_json = json.loads(json_config_text)
+            nexrad_client.inject(test_data_json)
+
+    AirportClient.inject_flight_rules(
+        {
+            "KPLU": "VFR",
+            "K4S2": "MVFR",
+            "KS39": "VFR",
+            "KBVS": "VFR",
+            "KSZT": "VFR",
+            "K0S9": "VFR",
+            "K6S2": "IFR",
+            "KS33": "VFR",
+            "K63S": "MVFR",
+            "KRNT": "IFR",
+            "KSEA": "VFR",
+            "KBFI": "MVFR",
+            "1WA6": "LIFR",
+        }
+    )
 
     run_hud_elements([WeatherTopViewScope, CompassAndHeadingTopElement, Groundspeed])
