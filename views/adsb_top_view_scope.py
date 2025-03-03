@@ -2,8 +2,6 @@
 View element for a "radar scope" that looks from the top downwards.
 """
 
-from typing import Tuple
-
 import pygame
 
 from common_utils import fast_math, geo_math
