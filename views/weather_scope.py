@@ -10,9 +10,11 @@ import pygame
 from common_utils.task_timer import TaskProfiler
 from common_utils.tasks import IntermittentTask
 from configuration import configuration
+from core_services.scope_range import ScopeRange
+from core_services.zoom_manager import ZoomManager
 from data_sources.ahrs_data import AhrsData
 from data_sources.airports import AirportClient
-from data_sources.nexrad import NexradClient
+from data_sources.nexrad import NexradClient, ReflectivityBlock
 from rendering import colors, drawing
 from views.top_down_scope import TopDownScope
 
@@ -35,9 +37,9 @@ class WeatherTopViewScope(TopDownScope):
                 continue
 
             if event.key in [pygame.K_UP, pygame.K_KP8]:
-                self.__zoom_out__()
+                self.__zoom_manager__.manual_zoom_out()
             elif event.key in [pygame.K_DOWN, pygame.K_KP2]:
-                self.__zoom_in__()
+                self.__zoom_manager__.manual_zoom_in()
             else:
                 remaining_unhandled_events.append(event)
 
@@ -61,15 +63,10 @@ class WeatherTopViewScope(TopDownScope):
 
         self.__time_of_last_block_fetch__ = datetime.datetime.now(datetime.timezone.utc)
         self.__nexrad_cache__ = None
-        self.__zoom_levels__ = [
-            (2, 1),
-            (10, 5),
-            (20, 10),
-            (50, 25),
-            [100, 50],
-            [200, 100],
-        ]
-        self.__zoom_index__ = len(self.__zoom_levels__) - 3
+        self.__zoom_manager__: ZoomManager = ZoomManager()
+        self.__zoom_manager__.manual_zoom_out()
+        self.__zoom_manager__.manual_zoom_out()
+        self.__zoom_manager__.manual_zoom_out()
         self.__failed_bin_counts__ = 0
         self.__missing_bin_counts__ = 0
         self.__successful_bin_counts__ = 0
@@ -80,18 +77,9 @@ class WeatherTopViewScope(TopDownScope):
             "Render Failed Weather Counts", 15.0, self.__log_bin_counts__, None
         )
 
-    def __zoom_in__(self):
-        self.__zoom_index__ -= 1
-        self.__zoom_index__ = max(self.__zoom_index__, 0)
-
-    def __zoom_out__(self):
-        self.__zoom_index__ += 1
-        self.__zoom_index__ = min(self.__zoom_index__, len(self.__zoom_levels__) - 1)
-
     def __render_reflectivity__(
         self,
         framebuffer: pygame.Surface,
-        scope_range: Tuple[int, int],
         orientation: AhrsData,
     ):
         self.__log_bin_stats_task__.run()
@@ -99,7 +87,7 @@ class WeatherTopViewScope(TopDownScope):
         self.__failed_bin_counts__ = 0
         self.__missing_bin_counts__ = 0
 
-        max_distance = scope_range[0]
+        scope_range = self.__zoom_manager__.get_current_zoom()
 
         text_y_pos = self.__bottom_border__ - (self.__font_height__ << 1)
         nearby_position = [
@@ -119,12 +107,12 @@ class WeatherTopViewScope(TopDownScope):
 
             if not (current_heading is None or isinstance(current_heading, str)):
                 nexrad_blocks = self.__get_nexrad_blocks__(
-                    orientation.position, max_distance
+                    orientation.position, scope_range.max_ring_range
                 )
 
         [
             self.__render_block__(
-                framebuffer, orientation, current_heading, max_distance, block
+                framebuffer, orientation, current_heading, scope_range, block
             )
             for block in nexrad_blocks
         ]
@@ -166,7 +154,7 @@ class WeatherTopViewScope(TopDownScope):
         framebuffer,
         orientation,
         current_heading,
-        max_distance,
+        scope_range: ScopeRange,
         block,
     ):
         lat_step = (block.north_western[0] - block.south_western[0]) / 4.0
@@ -177,7 +165,7 @@ class WeatherTopViewScope(TopDownScope):
                 framebuffer,
                 orientation,
                 current_heading,
-                max_distance,
+                scope_range,
                 lat_index,
                 lon_index,
                 lat_step,
@@ -193,12 +181,12 @@ class WeatherTopViewScope(TopDownScope):
         framebuffer,
         orientation,
         current_heading,
-        max_distance,
+        scope_range: ScopeRange,
         lat_index,
         lon_index,
         lat_step,
         lon_step,
-        block,
+        block: ReflectivityBlock,
     ):
         try:
             if len(block.reflectivity) <= lat_index:
@@ -228,16 +216,16 @@ class WeatherTopViewScope(TopDownScope):
             sw = [s_lat, w_lon]
 
             nw_pixel = self.__get_screen_coordinates__(
-                orientation, current_heading, max_distance, nw
+                orientation, current_heading, scope_range, nw
             )
             ne_pixel = self.__get_screen_coordinates__(
-                orientation, current_heading, max_distance, ne
+                orientation, current_heading, scope_range, ne
             )
             se_pixel = self.__get_screen_coordinates__(
-                orientation, current_heading, max_distance, se
+                orientation, current_heading, scope_range, se
             )
             sw_pixel = self.__get_screen_coordinates__(
-                orientation, current_heading, max_distance, sw
+                orientation, current_heading, scope_range, sw
             )
 
             drawing.renderer.polygon(
@@ -262,21 +250,19 @@ class WeatherTopViewScope(TopDownScope):
             orientation {Orientation} -- The orientation of the plane the HUD is in.
         """
 
-        scope_range = self.__zoom_levels__[self.__zoom_index__]
+        scope_range = self.__zoom_manager__.get_current_zoom()
 
         with TaskProfiler(
             "views.weather_top_view_scope.WeatherTopViewScope.render_reflectivity"
         ):
-            self.__render_reflectivity__(framebuffer, scope_range, orientation)
+            self.__render_reflectivity__(framebuffer, orientation)
 
         with TaskProfiler(
             "views.weather_top_view_scope.WeatherTopViewScope.render_ring"
         ):
             self.__render_ownship__(framebuffer)
-            first_ring_pixel_radius = self.__draw_distance_rings__(
-                framebuffer, scope_range
-            )
-            self.__draw_all_compass_headings__(framebuffer, orientation, scope_range[0])
+            self.__draw_distance_rings__(framebuffer, scope_range)
+            self.__draw_all_compass_headings__(framebuffer, orientation, scope_range)
 
         with TaskProfiler(
             "views.weather_top_view_scope.WeatherTopViewScope.render_airports"
