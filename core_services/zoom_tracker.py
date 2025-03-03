@@ -8,12 +8,14 @@ from numbers import Number
 from typing import Tuple
 
 from common_utils import local_debug, tasks, units
-from common_utils.fast_math import interpolatef
 from configuration import configuration
+from core_services.zoom_interpolation import SECONDS_FOR_ZOOM, get_actual_zoom
 from core_services.scope_range import ScopeRange
 from core_services.zoom_manager import ZoomManager, get_ideal_scope_range
 from data_sources.ahrs_data import AhrsData
 from datetime import timezone
+
+MINIMUM_SECONDS_BETWEEN_ZOOM_CHANGE = SECONDS_FOR_ZOOM * 1.1
 
 
 def get_groundspeed(display_units: str, orientation: AhrsData) -> float:
@@ -51,9 +53,6 @@ class ZoomTracker:
     zoom distance, while providing flapping prevention.
     """
 
-    SECONDS_FOR_ZOOM = 3
-    MINIMUM_SECONDS_BETWEEN_ZOOM_CHANGE = SECONDS_FOR_ZOOM * 1.1
-
     def __init__(self) -> None:
         super().__init__()
 
@@ -90,28 +89,13 @@ class ZoomTracker:
         Returns:
             [Number, int]: The range and step of the scope rings
         """
-        delta_since_last_change = (
+        seconds_into_zoom = (
             datetime.now(timezone.utc) - self.__last_changed__
         ).total_seconds()
 
-        proportion_into_zoom = delta_since_last_change / ZoomTracker.SECONDS_FOR_ZOOM
-
-        if proportion_into_zoom >= 1.0:
-            return self.__get_target_zoom__()
-
-        middle_ring_zoom = interpolatef(
-            self.__last_zoom__.center_ring_range,
-            self.__get_target_zoom__().center_ring_range,
-            proportion_into_zoom,
+        return get_actual_zoom(
+            seconds_into_zoom, self.__last_zoom__, self.__get_target_zoom__()
         )
-
-        outter_ring_zoom = interpolatef(
-            self.__last_zoom__.max_ring_range,
-            self.__get_target_zoom__().max_ring_range,
-            proportion_into_zoom,
-        )
-
-        return ScopeRange(middle_ring_zoom, outter_ring_zoom, True)
 
     def is_in_inner_range(self, raw_distance: float) -> Tuple[bool, float]:
         """
@@ -183,7 +167,7 @@ class ZoomTracker:
             datetime.now(timezone.utc) - self.__last_changed__
         ).total_seconds()
 
-        if delta_since_last_change < ZoomTracker.MINIMUM_SECONDS_BETWEEN_ZOOM_CHANGE:
+        if delta_since_last_change < MINIMUM_SECONDS_BETWEEN_ZOOM_CHANGE:
             return
 
         print(f"Setting new target zoom={new_target_zoom.max_ring_range}")
