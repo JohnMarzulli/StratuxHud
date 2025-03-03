@@ -8,6 +8,7 @@ from typing import Tuple, Dict, List
 import pygame
 from common_utils import fast_math, geo_math, units
 from configuration import configuration
+from core_services.scope_range import ScopeRange
 from data_sources.ahrs_data import AhrsData
 from rendering import colors, drawing
 
@@ -109,11 +110,11 @@ class TopDownScope(AdsbElement):
         ]
 
     def __get_pixel_distance__(
-        self, distance_in_user_units: float, scope_range: float
+        self, distance_in_user_units: float, scope_range: ScopeRange
     ) -> int:
         max_pixel_distance = self.__scope_center__[1] - self.__top_border__
 
-        proportion = distance_in_user_units / scope_range
+        proportion = distance_in_user_units / scope_range.max_ring_range
         return int(max_pixel_distance * proportion)
 
     def __get_screen_projection_from_center__(
@@ -160,7 +161,11 @@ class TopDownScope(AdsbElement):
         )
 
     def __get_screen_coordinates__(
-        self, orientation: AhrsData, current_heading, max_distance, gps_coordinates
+        self,
+        orientation: AhrsData,
+        current_heading,
+        scope_range: ScopeRange,
+        gps_coordinates,
     ):
         distance_start = geo_math.get_distance(orientation.position, gps_coordinates)
         bearing = geo_math.get_bearing(orientation.position, gps_coordinates)
@@ -170,12 +175,12 @@ class TopDownScope(AdsbElement):
         delta_angle = TopDownScope.TRAFFIC_PHASE_SHIFT + delta_angle
         delta_angle = fast_math.wrap_degrees(delta_angle)
 
-        pixel_distance = self.__get_pixel_distance__(distance_start, max_distance)
+        pixel_distance = self.__get_pixel_distance__(distance_start, scope_range)
 
         return self.__get_screen_projection_from_center__(delta_angle, pixel_distance)
 
     def __draw_distance_rings__(
-        self, framebuffer: pygame.Surface, scope_range: Tuple[int, int]
+        self, framebuffer: pygame.Surface, scope_range: ScopeRange
     ) -> int:
         """
         Draws rings that indicate how far out another aircraft is.
@@ -189,25 +194,18 @@ class TopDownScope(AdsbElement):
             int: The distance (in pixels from the center to the first ring. Used for clutter control.)
         """
 
-        max_distance = scope_range[0]
-        step = scope_range[1]
-        ring_distances = [max_distance]
         distance_units = configuration.CONFIGURATION.get_units()
         units_suffix = units.get_distance_unit_suffix(distance_units)
         ring_pixel_distances = []
-
-        if step > 0:
-            ring_distances = list(range(step, int(scope_range[0]), step))
-            # To make it inclusive to the actual final ring
-            # since range() does not include the last item.
-            ring_distances.append(max_distance)
+        ring_distances = [scope_range.center_ring_range, scope_range.max_ring_range]
 
         radians = math.radians(30)
         sin_text_placement = math.sin(radians)
         cos_text_placement = math.cos(radians)
 
         for distance in ring_distances:
-            radius_pixels = self.__get_pixel_distance__(distance, max_distance)
+            radius_pixels = self.__get_pixel_distance__(distance, scope_range)
+
             drawing.renderer.circle(
                 framebuffer,
                 colors.BLACK,
@@ -216,6 +214,7 @@ class TopDownScope(AdsbElement):
                 self.__thin_line_width__ * 4,
                 not self.__reduced_visuals__,
             )
+
             drawing.renderer.circle(
                 framebuffer,
                 colors.GREEN,
@@ -224,6 +223,7 @@ class TopDownScope(AdsbElement):
                 self.__thin_line_width__,
                 not self.__reduced_visuals__,
             )  # AA circle costs a BUNCH on the Pi
+
             ring_pixel_distances.append(radius_pixels)
 
             text_x = self.__scope_center__[0] + int(sin_text_placement * radius_pixels)
@@ -245,7 +245,7 @@ class TopDownScope(AdsbElement):
         framebuffer: pygame.Surface,
         our_heading: int,
         heading_to_draw: int,
-        scope_range: int,
+        scope_range: ScopeRange,
     ):
         delta_angle = heading_to_draw - our_heading
         # We need to rotate by 270 to make sure that
@@ -253,7 +253,9 @@ class TopDownScope(AdsbElement):
         delta_angle = fast_math.wrap_degrees(
             TopDownScope.ROTATION_PHASE_SHIFT + delta_angle
         )
-        pixels_from_center = self.__get_pixel_distance__(scope_range, scope_range)
+        pixels_from_center = self.__get_pixel_distance__(
+            scope_range.max_ring_range, scope_range
+        )
 
         screen_x, screen_y = self.__get_screen_projection_from_center__(
             apply_declination(delta_angle), pixels_from_center
@@ -313,7 +315,10 @@ class TopDownScope(AdsbElement):
         )
 
     def __draw_all_compass_headings__(
-        self, framebuffer: pygame.Surface, orientation: AhrsData, scope_range: int
+        self,
+        framebuffer: pygame.Surface,
+        orientation: AhrsData,
+        scope_range: ScopeRange,
     ):
         """
         Draw the text for ALL compass headings. 0, 90, 180, and 270
@@ -336,7 +341,15 @@ class TopDownScope(AdsbElement):
                 framebuffer, our_heading, heading_to_draw, scope_range
             )
 
-    def __draw_airports__(self, framebuffer, orientation, scope_range: List[int]):
+    def __draw_airports__(self, framebuffer, orientation, scope_range: ScopeRange):
+        if (
+            orientation is None
+            or orientation.position is None
+            or orientation.position[0] is None
+            or orientation.position[1] is None
+        ):
+            return
+
         AirportClient.set_last_known_position(orientation.position)
         nearby_airports = AirportClient.get_nearby_airports()
 
@@ -352,7 +365,7 @@ class TopDownScope(AdsbElement):
         framebuffer,
         orientation: AhrsData,
         airport: Dict[str, any],
-        scope_ranges: List[float],
+        scope_range: ScopeRange,
     ):
         """
         Draws a single reticle on the screen.
@@ -383,13 +396,13 @@ class TopDownScope(AdsbElement):
             orientation.position, correct_airport_position
         )
 
-        if gps_distance > scope_ranges[0]:
+        if gps_distance > scope_range.max_ring_range:
             return
 
         screen_x, screen_y = self.__get_screen_coordinates__(
             orientation,
             orientation.get_onscreen_gps_heading(),
-            scope_ranges[0],
+            scope_range,
             correct_airport_position,
         )
 
@@ -409,7 +422,7 @@ class TopDownScope(AdsbElement):
             not self.__reduced_visuals__,
         )
 
-        if gps_distance > scope_ranges[1]:
+        if gps_distance > scope_range.center_ring_range:
             return
 
         if self.__draw_identifiers__:
