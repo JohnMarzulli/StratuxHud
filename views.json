@@ -44,7 +44,7 @@
         "ADSB Target Bugs Only",
         "ADSB Target Bugs",
         "ADSB Reticles",
-        "Traffic Not Available",
+        "Traffic Not Available", 
         "GPS Not Available"
       ],
       "name": "Traffic"
