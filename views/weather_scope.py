@@ -159,57 +159,103 @@ class WeatherTopViewScope(TopDownScope):
         block,
     ):
         lat_step = (block.north_western[0] - block.south_western[0]) / 4.0
-        lon_step = (block.north_eastern[1] - block.north_western[1]) / 32.0
 
         [
-            self.__render_bins__(
+            self.__render_bin_row__(
                 framebuffer,
                 orientation,
                 current_heading,
                 scope_range,
-                lat_index,
-                lon_index,
-                lat_step,
-                lon_step,
                 block,
+                lat_index,
+                lat_step,
             )
             for lat_index in WeatherTopViewScope.BIN_ROWS
-            for lon_index in WeatherTopViewScope.BIN_COLUMNS
         ]
 
-    def __render_bins__(
+    def __render_bin_row__(
+        self,
+        framebuffer,
+        orientation: AhrsData,
+        current_heading,
+        scope_range: ScopeRange,
+        block: ReflectivityBlock,
+        lat_index,
+        lat_step,
+    ):
+        if len(block.reflectivity) <= lat_index:
+            self.__missing_bin_counts__ += WeatherTopViewScope.BIN_COLUMNS
+            return
+
+        lon_step = (block.north_eastern[1] - block.north_western[1]) / 32.0
+
+        n_lat = block.north_western[0] - (lat_index * lat_step)
+        s_lat = n_lat - lat_step
+
+        lon_start_index: int = 0
+        rle = self.__get_run_length_encoded_ranges__(block.reflectivity[lat_index])
+
+        [
+            self.__render_bin_lon_range__(
+                framebuffer,
+                orientation,
+                current_heading,
+                scope_range,
+                lon_start_index,
+                lon_start_index + count,
+                lon_step,
+                n_lat,
+                s_lat,
+                block,
+                reflectivity,
+            )
+            or (lon_start_index := lon_start_index + count + 1)
+            for reflectivity, count in rle
+        ]
+
+    def __get_run_length_encoded_ranges__(self, columns):
+        result = []
+        current_value = columns[0]
+        count = 1
+
+        for value in columns[1:]:
+            if value == current_value:
+                count += 1
+            else:
+                result.append((current_value, count))
+                current_value = value
+                count = 1
+
+        # Append the last run
+        result.append((current_value, count))
+
+        return result
+
+    def __render_bin_lon_range__(
         self,
         framebuffer,
         orientation,
         current_heading,
         scope_range: ScopeRange,
-        lat_index,
-        lon_index,
-        lat_step,
+        lon_start_index,
+        lon_end_index,
         lon_step,
+        n_lat,
+        s_lat,
         block: ReflectivityBlock,
+        reflectivity,
     ):
         try:
-            if len(block.reflectivity) <= lat_index:
-                self.__missing_bin_counts__ += 1
-                return
-
-            if len(block.reflectivity[lat_index]) <= lon_index:
-                self.__missing_bin_counts__ += 1
-                return
-
-            reflectivity = block.reflectivity[lat_index][lon_index]
-
             if reflectivity == 0:
-                self.__successful_bin_counts__ += 1
+                self.__successful_bin_counts__ += lon_end_index - lon_start_index
                 return
 
             color = NexradClient.reflectivity_to_rgb(reflectivity)
 
-            n_lat = block.north_western[0] - (lat_index * lat_step)
-            s_lat = n_lat - lat_step
-            w_lon = block.north_western[1] + (lon_index * lon_step)
-            e_lon = w_lon + lon_step
+            # This is subtracting since higher numbers are North
+            # and the lat bins work towards the south.
+            w_lon = block.north_western[1] + (lon_start_index * lon_step)
+            e_lon = block.north_western[1] + (lon_end_index * lon_step) + lon_step
 
             nw = [n_lat, w_lon]
             ne = [n_lat, e_lon]
@@ -218,7 +264,6 @@ class WeatherTopViewScope(TopDownScope):
 
             center_lat = (n_lat + s_lat) / 2.0
             center_lon = (w_lon + e_lon) / 2.0
-
             distance = geo_math.get_distance(
                 orientation.position, [center_lat, center_lon]
             )
@@ -250,7 +295,7 @@ class WeatherTopViewScope(TopDownScope):
 
             return
 
-        self.__successful_bin_counts__ += 1
+        self.__successful_bin_counts__ += lon_end_index - lon_start_index
 
     def render(self, framebuffer: pygame.Surface, orientation: AhrsData):
         """
