@@ -31,11 +31,11 @@ class AdsbTopViewScope(TopDownScope):
                 continue
 
             if event.key in [pygame.K_UP, pygame.K_KP8]:
-                zoom_tracker.INSTANCE.manual_zoom_out()
+                self.__zoom_tracker__.manual_zoom_out()
             elif event.key in [pygame.K_DOWN, pygame.K_KP2]:
-                zoom_tracker.INSTANCE.manual_zoom_in()
+                self.__zoom_tracker__.manual_zoom_in()
             elif event.key in [pygame.K_KP7, 55]:  # 55 is '7'
-                zoom_tracker.INSTANCE.return_to_automatic()
+                self.__zoom_tracker__.return_to_automatic()
             else:
                 remaining_unhandled_events.append(event)
 
@@ -84,11 +84,15 @@ class AdsbTopViewScope(TopDownScope):
         # TODO - Consider tail numbers to the side, with lines
         # that connect the number to the target.
 
-        (is_within_threshold, display_distance) = (
-            zoom_tracker.INSTANCE.is_in_inner_range(traffic.distance)
+        distance = geo_math.get_distance(
+            orientation.position, [traffic.latitude, traffic.longitude]
         )
 
-        if not is_within_threshold:
+        (is_within_threshold, display_distance) = self.__zoom_tracker__.is_in_range(
+            traffic.distance
+        )
+
+        if distance > scope_range.max_ring_range:
             return
 
         pixels_from_center = self.__get_pixel_distance__(display_distance, scope_range)
@@ -133,7 +137,7 @@ class AdsbTopViewScope(TopDownScope):
 
         # Do not draw identifier text for any targets further than
         # the first scope ring.
-        if pixels_from_center > scope_range.center_ring_range:
+        if distance > scope_range.center_ring_range:
             return
 
         if self.__draw_identifiers__:
@@ -264,12 +268,12 @@ class AdsbTopViewScope(TopDownScope):
         # TODO: Try listing identifiers on side with lines leading to the aircraft
         # TODO: MORE TESTING!!!
 
+        self.__zoom_tracker__.update(orientation)
+
         with TaskProfiler("views.adsb_top_view_scope.AdsbTopViewScope.setup"):
-            scope_range: ScopeRange = zoom_tracker.INSTANCE.get_target_zoom()
+            scope_range: ScopeRange = self.__zoom_tracker__.get_target_zoom()
             traffic_reports = HudDataCache.get_reliable_traffic()
             traffic_reports.sort(key=lambda traffic: traffic.distance, reverse=True)
-
-        scope_range = zoom_tracker.INSTANCE.get_target_zoom()
 
         with TaskProfiler(
             "views.adsb_top_view_scope.AdsbTopViewScope.render_breadcrumbs"

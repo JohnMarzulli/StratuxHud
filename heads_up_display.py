@@ -445,7 +445,6 @@ class HeadsUpDisplay(object):
 
     def __update_traffic_reports__(self):
         HudDataCache.update_traffic_reports()
-        HudDataCache.update_nearby_traffic_reports()
 
     def __update_aithre__(self):
         if not CONFIGURATION.aithre_enabled:
@@ -457,11 +456,6 @@ class HeadsUpDisplay(object):
 
             except Exception:
                 self.warn("Error attempting to update Aithre sensor values")
-
-    def __update_zoom__(self):
-        orientation = self.__aircraft__.get_orientation()
-
-        zoom_tracker.INSTANCE.update(orientation)
 
     def __update_groundtrack__(self):
         orientation = self.__aircraft__.get_orientation()
@@ -579,8 +573,6 @@ class HeadsUpDisplay(object):
         )
 
         RecurringTask("update_aithre", 5.0, self.__update_aithre__, logger.get_logger())
-
-        RecurringTask("update_zoom", 1.0, self.__update_zoom__, logger.get_logger())
 
         RecurringTask(
             "update_groundtrack",

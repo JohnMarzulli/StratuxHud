@@ -9,6 +9,7 @@ import pygame
 from common_utils import fast_math, geo_math, units
 from configuration import configuration
 from core_services.scope_range import ScopeRange
+from core_services.zoom_tracker import ZoomTracker
 from data_sources.ahrs_data import AhrsData
 from rendering import colors, drawing
 
@@ -49,6 +50,7 @@ class TopDownScope(AdsbElement):
             reduced_visuals,
         )
 
+        self.__zoom_tracker__ = ZoomTracker()
         self.__draw_identifiers__ = True
 
         self.__adjustment__ = 0.0

@@ -97,6 +97,24 @@ class ZoomTracker:
             seconds_into_zoom, self.__last_zoom__, self.__get_target_zoom__()
         )
 
+    def is_in_range(self, raw_distance: float) -> Tuple[bool, float]:
+        """
+        Is the current distance within the threshold of displaying
+        more data about?
+
+        Args:
+            raw_distance (float): The distance to the target (raw) from the ADS-B reciever
+
+        Returns:
+            bool: TRUE is the target is within the inner scope range.
+        """
+
+        display_distance = units.get_converted_units(self.__user_units__, raw_distance)
+
+        scope_range = self.__get_target_zoom__().max_ring_range
+
+        return (display_distance <= scope_range, display_distance)
+
     def is_in_inner_range(self, raw_distance: float) -> Tuple[bool, float]:
         """
         Is the current distance within the threshold of displaying
@@ -185,6 +203,3 @@ class ZoomTracker:
 
     def __get_target_zoom__(self) -> ScopeRange:
         return self.__zoom_manager__.get_current_zoom()
-
-
-INSTANCE = ZoomTracker()

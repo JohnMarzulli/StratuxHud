@@ -27,7 +27,6 @@ class HudDataCache(object):
 
     DECLINATION = None
 
-    NEARBY_TRAFFIC = []
     RELIABLE_TRAFFIC = []
     IS_TRAFFIC_AVAILABLE = False
 
@@ -38,26 +37,6 @@ class HudDataCache(object):
     __NEXRAD_CLIENT__ = nexrad.NexradClient(
         configuration.CONFIGURATION.get_traffic_manager_address()
     )
-    
-    @staticmethod
-    def update_nearby_traffic_reports():
-        with TaskProfiler("HudDataCache::update_nearby_traffic_reports"):
-            HudDataCache.__LOCK__.acquire()
-
-            try:
-                traffic_reports = HudDataCache.RELIABLE_TRAFFIC
-
-                if traffic_reports is None:
-                    return
-
-                HudDataCache.NEARBY_TRAFFIC = list(
-                    filter(
-                        lambda x: zoom_tracker.INSTANCE.is_in_inner_range(
-                            x.distance
-                        )[0],
-                        traffic_reports))
-            finally:
-                HudDataCache.__LOCK__.release()
 
     @staticmethod
     def update_traffic_reports():
@@ -92,25 +71,6 @@ class HudDataCache(object):
 
         return traffic_clone
     
-    @staticmethod
-    def get_nearby_traffic() -> list:
-        """
-        Returns a thread safe copy of the currently known NEARBY reliable traffic.
-
-        Returns:
-            list: A list of the reliable and NEARBY traffic stored in Traffic objects.
-        """
-
-        with TaskProfiler("HudDataCache::get_reliable_traffic"):
-            traffic_clone = None
-            HudDataCache.__LOCK__.acquire()
-            try:
-                traffic_clone = HudDataCache.NEARBY_TRAFFIC[:]
-            finally:
-                HudDataCache.__LOCK__.release()
-
-        return traffic_clone
-
     @staticmethod
     def __purge_texture__(
         texture_to_purge

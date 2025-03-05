@@ -86,7 +86,7 @@ class AdsbTargetBugsOnly(AdsbElement):
                 return
 
             # Get the traffic, and bail out of we have none
-            traffic_reports = HudDataCache.get_nearby_traffic()
+            traffic_reports = HudDataCache.get_reliable_traffic()
 
             if traffic_reports is None:
                 return

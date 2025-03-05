@@ -7,6 +7,7 @@ from typing import Tuple
 
 import pygame
 
+from common_utils import geo_math
 from common_utils.task_timer import TaskProfiler
 from common_utils.tasks import IntermittentTask
 from configuration import configuration
@@ -152,7 +153,7 @@ class WeatherTopViewScope(TopDownScope):
     def __render_block__(
         self,
         framebuffer,
-        orientation,
+        orientation: AhrsData,
         current_heading,
         scope_range: ScopeRange,
         block,
@@ -214,6 +215,16 @@ class WeatherTopViewScope(TopDownScope):
             ne = [n_lat, e_lon]
             se = [s_lat, e_lon]
             sw = [s_lat, w_lon]
+
+            center_lat = (n_lat + s_lat) / 2.0
+            center_lon = (w_lon + e_lon) / 2.0
+
+            distance = geo_math.get_distance(
+                orientation.position, [center_lat, center_lon]
+            )
+
+            if distance > scope_range.max_ring_range:
+                return
 
             nw_pixel = self.__get_screen_coordinates__(
                 orientation, current_heading, scope_range, nw

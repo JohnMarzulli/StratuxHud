@@ -107,7 +107,7 @@ class AdsbTrafficListing(AdsbElement):
         traffic_reports: list,
         orientation: AhrsData
     ):
-        reports_to_show = HudDataCache.get_nearby_traffic()
+        reports_to_show = HudDataCache.get_reliable_traffic()
 
         if reports_to_show is None:
             return None, None
