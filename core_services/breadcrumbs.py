@@ -204,19 +204,18 @@ if __name__ == '__main__':
     # Run a simulated flight from Seattle to Oshkosh at about 91MPH.
     # Print out the speed when a new report has been updated.
 
-    # starting_lat = 47.6
-    # starting_long = -122.3
-    # ending_lat = 44.0
-    # ending_long = -88.5
+    starting_lat = 47.6
+    starting_long = -122.3
+    ending_lat = 44.0
+    ending_long = -88.5
 
     # Flight due north in Oregon
     # to help debug NEXRAD decoding
     # based on the FAA sample block
-    starting_lat = 45.0667
-    starting_lon = -122.35
-
-    ending_lat = 45.133
-    ending_lon = -122.35
+    # starting_lat = 45.0667
+    # starting_lon = -122.35
+    # ending_lat = 45.133
+    # ending_lon = -122.35
 
     hours_to_destination = 17.5
     starting_time = datetime.utcnow()

@@ -60,16 +60,16 @@ class AhrsSimulation(object):
         self.ahrs_data = ahrs_data.AhrsData()
 
         # Simulate a flight from KAWO to OSH
-        # self.__starting_lat__ = 47.6
-        # self.__starting_long__ = -122.3
-        # self.__ending_lat__ = 44.0
-        # self.__ending_long__ = -88.5
+        self.__starting_lat__ = 47.6
+        self.__starting_long__ = -122.3
+        self.__ending_lat__ = 44.0
+        self.__ending_long__ = -88.5
 
         # In Oregon to help debug NEXRAD decoding
-        self.__starting_lat__ = 45.0
-        self.__starting_long__ = -122.8
-        self.__ending_lat__ = 45.2
-        self.__ending_long__ = -122.8
+        # self.__starting_lat__ = 45.0
+        # self.__starting_long__ = -122.8
+        # self.__ending_lat__ = 45.2
+        # self.__ending_long__ = -122.8
 
         self.ahrs_data.position = [self.__starting_lat__, self.__starting_long__]
 
