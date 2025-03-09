@@ -188,8 +188,8 @@ class WeatherTopViewScope(TopDownScope):
 
         lon_step = (block.north_eastern[1] - block.north_western[1]) / 32.0
 
-        n_lat = block.north_western[0] - (lat_index * lat_step)
-        s_lat = n_lat - lat_step
+        n_edge_lat = block.north_western[0] - (lat_index * lat_step)
+        s_edge_lat = n_edge_lat - lat_step
 
         lon_start_index: int = 0
         rle = block.reflectivity[lat_index]
@@ -201,10 +201,10 @@ class WeatherTopViewScope(TopDownScope):
                 current_heading,
                 scope_range,
                 lon_start_index,
-                lon_start_index + run["runLength"],
+                lon_start_index + (run["runLength"] - 1),
                 lon_step,
-                n_lat,
-                s_lat,
+                n_edge_lat,
+                s_edge_lat,
                 block,
                 run["reflectivity"],
             )
@@ -220,11 +220,14 @@ class WeatherTopViewScope(TopDownScope):
         lon_start_index,
         lon_end_index,
         lon_step,
-        n_lat,
-        s_lat,
+        n_edge_lat,
+        s_edge_lat,
         block: ReflectivityBlock,
         reflectivity,
     ):
+        if (lon_end_index < lon_start_index):
+            print(f"Invalid lon range: {lon_start_index} to {lon_end_index}")
+        
         try:
             if reflectivity == 0:
                 self.__successful_bin_counts__ += lon_end_index - lon_start_index
@@ -232,18 +235,16 @@ class WeatherTopViewScope(TopDownScope):
 
             color = NexradClient.reflectivity_to_rgb(reflectivity)
 
-            # This is subtracting since higher numbers are North
-            # and the lat bins work towards the south.
-            w_lon = block.north_western[1] + (lon_start_index * lon_step)
-            e_lon = block.north_western[1] + (lon_end_index * lon_step) + lon_step
+            w_edge_lon = block.north_western[1] + (lon_start_index * lon_step)
+            e_edge_lon = block.north_western[1] + (lon_end_index * lon_step) + lon_step
 
-            nw = [n_lat, w_lon]
-            ne = [n_lat, e_lon]
-            se = [s_lat, e_lon]
-            sw = [s_lat, w_lon]
+            nw = [n_edge_lat, w_edge_lon]
+            ne = [n_edge_lat, e_edge_lon]
+            se = [s_edge_lat, e_edge_lon]
+            sw = [s_edge_lat, w_edge_lon]
 
-            center_lat = (n_lat + s_lat) / 2.0
-            center_lon = (w_lon + e_lon) / 2.0
+            center_lat = (n_edge_lat + s_edge_lat) / 2.0
+            center_lon = (w_edge_lon + e_edge_lon) / 2.0
             distance = geo_math.get_distance(
                 orientation.position, [center_lat, center_lon]
             )
@@ -251,23 +252,23 @@ class WeatherTopViewScope(TopDownScope):
             if distance > scope_range.max_ring_range:
                 return
 
-            nw_pixel = self.__get_screen_coordinates__(
+            nw_corner = self.__get_screen_coordinates__(
                 orientation, current_heading, scope_range, nw
             )
-            ne_pixel = self.__get_screen_coordinates__(
+            ne_corner = self.__get_screen_coordinates__(
                 orientation, current_heading, scope_range, ne
             )
-            se_pixel = self.__get_screen_coordinates__(
+            se_corner = self.__get_screen_coordinates__(
                 orientation, current_heading, scope_range, se
             )
-            sw_pixel = self.__get_screen_coordinates__(
+            sw_corner = self.__get_screen_coordinates__(
                 orientation, current_heading, scope_range, sw
             )
 
             drawing.renderer.polygon(
                 framebuffer,
                 color,
-                [nw_pixel, ne_pixel, se_pixel, sw_pixel],
+                [nw_corner, ne_corner, se_corner, sw_corner],
                 False,
             )
         except Exception as ex:
