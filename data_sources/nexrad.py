@@ -3,6 +3,8 @@ Gets any available NEXRAD imaging from the TrafficToHud service
 and then helps render the images.
 """
 
+import json
+import math
 import time
 from typing import Dict, List
 
@@ -159,9 +161,46 @@ class NexradClient:
 
         return False
 
+def test_nexrad_decoding():
+    sample_center_location = [45.0, -122.8]
+    nexrad_client = NexradClient(
+        configuration.CONFIGURATION.get_traffic_manager_address()
+    )
+    full_file_path = configuration.get_absolute_file_path("../test_data/faa_sample_reflectivity.json")
+
+    with open(full_file_path) as json_test_data_file:
+        json_config_text = json_test_data_file.read()
+        test_data_json = json.loads(json_config_text)
+        nexrad_client.inject(test_data_json)
+
+    faa_sample_reflectivity = nexrad_client.get_nexrad_in_range(sample_center_location, 50)
+    assert(len(faa_sample_reflectivity) == 1)
+    faa_sample_reflectivity = faa_sample_reflectivity[0]
+
+    assert(faa_sample_reflectivity.block_id == 304496)
+    assert(math.fabs(0.016 - faa_sample_reflectivity.lat_step) < 0.01)
+    assert(math.fabs(45.133 -  faa_sample_reflectivity.north_western[0]) < 0.01)
+    assert(math.fabs(-123.2 -  faa_sample_reflectivity.north_western[1]) < 0.01)
+
+    assert(math.fabs(45.0666 -  faa_sample_reflectivity.south_eastern[0]) < 0.01)
+    assert(math.fabs(-122.4 -  faa_sample_reflectivity.south_eastern[1]) < 0.01)
+
+    assert(len(faa_sample_reflectivity.reflectivity) == 4)
+    assert(len(faa_sample_reflectivity.reflectivity[0]) == 3)
+
+    assert(faa_sample_reflectivity.reflectivity[0][0]["runLength"] == 7)
+    assert(faa_sample_reflectivity.reflectivity[0][0]["reflectivity"] == 0)
+
+    assert(faa_sample_reflectivity.reflectivity[0][1]["runLength"] == 18)
+    assert(faa_sample_reflectivity.reflectivity[0][1]["reflectivity"] == 1)
+
+    assert(faa_sample_reflectivity.reflectivity[0][2]["runLength"] == 7)
+    assert(faa_sample_reflectivity.reflectivity[0][2]["reflectivity"] == 0)
 
 if __name__ == "__main__":
     import time
+
+    test_nexrad_decoding()
 
     nexrad_client = NexradClient(
         configuration.CONFIGURATION.get_traffic_manager_address()
