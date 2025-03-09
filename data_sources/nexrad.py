@@ -4,6 +4,7 @@ and then helps render the images.
 """
 
 import time
+from typing import Dict, List
 
 import requests
 
@@ -14,8 +15,10 @@ from configuration import configuration
 class ReflectivityBlock:
     def __init__(self, block):
         self.block_id = block["globalBlockReferenceId"]
-
         self.report_time = block["reportTime"]
+
+        self.lat_step = block["boundaries"]["latSize"]
+        self.lon_step = block["boundaries"]["lonSize"]
 
         self.north_western = [
             block["boundaries"]["northWestern"]["latitude"],
@@ -44,7 +47,7 @@ class NexradClient:
     """
 
     INSTANCE = None
-    REFLECTIVITY = {}
+    REFLECTIVITY: Dict[int, ReflectivityBlock] = {}
 
     @staticmethod
     def reflectivity_to_rgb(reflectivity_value):
@@ -114,7 +117,7 @@ class NexradClient:
                 del NexradClient.REFLECTIVITY[id]
 
     @staticmethod
-    def get_nexrad_in_range(center, radius):
+    def get_nexrad_in_range(center, radius) -> List[ReflectivityBlock]:
         """
         Returns a list of NEXRAD blocks that are within the given range.
         """

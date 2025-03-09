@@ -3,6 +3,7 @@ View element for a weather "radar" that looks from the top downwards.
 """
 
 import datetime
+from typing import List
 
 import pygame
 
@@ -62,7 +63,7 @@ class WeatherTopViewScope(TopDownScope):
         )
 
         self.__time_of_last_block_fetch__ = datetime.datetime.now(datetime.timezone.utc)
-        self.__nexrad_cache__ = None
+        self.__nexrad_cache__: List[ReflectivityBlock] = None
         self.__zoom_manager__: ZoomManager = ZoomManager()
         self.__zoom_manager__.manual_zoom_out()
         self.__zoom_manager__.manual_zoom_out()
@@ -137,7 +138,7 @@ class WeatherTopViewScope(TopDownScope):
             0.5,
         )
 
-    def __get_nexrad_blocks__(self, position, max_distance: float) -> list:
+    def __get_nexrad_blocks__(self, position, max_distance: float) -> List[ReflectivityBlock]:
         now = datetime.datetime.now(datetime.timezone.utc)
         seconds_since = (now - self.__time_of_last_block_fetch__).seconds
 
@@ -155,10 +156,8 @@ class WeatherTopViewScope(TopDownScope):
         orientation: AhrsData,
         current_heading,
         scope_range: ScopeRange,
-        block,
+        block: ReflectivityBlock,
     ):
-        lat_step = (block.north_western[0] - block.south_western[0]) / 4.0
-
         [
             self.__render_bin_row__(
                 framebuffer,
@@ -166,8 +165,7 @@ class WeatherTopViewScope(TopDownScope):
                 current_heading,
                 scope_range,
                 block,
-                lat_index,
-                lat_step,
+                lat_index
             )
             for lat_index in WeatherTopViewScope.BIN_ROWS
         ]
@@ -179,17 +177,14 @@ class WeatherTopViewScope(TopDownScope):
         current_heading,
         scope_range: ScopeRange,
         block: ReflectivityBlock,
-        lat_index,
-        lat_step,
+        lat_index
     ):
         if len(block.reflectivity) <= lat_index:
             self.__missing_bin_counts__ += WeatherTopViewScope.BIN_COLUMNS
             return
 
-        lon_step = (block.north_eastern[1] - block.north_western[1]) / 32.0
-
-        n_edge_lat = block.north_western[0] - (lat_index * lat_step)
-        s_edge_lat = n_edge_lat - lat_step
+        n_edge_lat = block.north_western[0] - (lat_index * block.lat_step)
+        s_edge_lat = n_edge_lat - block.lat_step
 
         lon_start_index: int = 0
         rle = block.reflectivity[lat_index]
@@ -202,7 +197,6 @@ class WeatherTopViewScope(TopDownScope):
                 scope_range,
                 lon_start_index,
                 lon_start_index + (run["runLength"] - 1),
-                lon_step,
                 n_edge_lat,
                 s_edge_lat,
                 block,
@@ -219,7 +213,6 @@ class WeatherTopViewScope(TopDownScope):
         scope_range: ScopeRange,
         lon_start_index,
         lon_end_index,
-        lon_step,
         n_edge_lat,
         s_edge_lat,
         block: ReflectivityBlock,
@@ -235,8 +228,8 @@ class WeatherTopViewScope(TopDownScope):
 
             color = NexradClient.reflectivity_to_rgb(reflectivity)
 
-            w_edge_lon = block.north_western[1] + (lon_start_index * lon_step)
-            e_edge_lon = block.north_western[1] + (lon_end_index * lon_step) + lon_step
+            w_edge_lon = block.north_western[1] + (lon_start_index * block.lon_step)
+            e_edge_lon = block.north_western[1] + (lon_end_index * block.lon_step) + block.lon_step
 
             nw = [n_edge_lat, w_edge_lon]
             ne = [n_edge_lat, e_edge_lon]
@@ -326,8 +319,10 @@ if __name__ == "__main__":
         configuration.CONFIGURATION.get_traffic_manager_address()
     )
 
+
     test_data_files = [
-        "../test_data/reflectivity_response.json"
+        "../test_data/faa_sample_reflectivity.json"
+        #"../test_data/reflectivity_response.json"
     ]
 
     for test_data_file in test_data_files:
@@ -357,3 +352,11 @@ if __name__ == "__main__":
     )
 
     run_hud_elements([WeatherTopViewScope, CompassAndHeadingTopElement, Groundspeed])
+
+
+# Orgeon FAA sample data should look like this:
+#
+#       111111111111111111
+#    11122223333333333322211
+#  111223333355555555533332211
+# 11223333445555676555543333221 

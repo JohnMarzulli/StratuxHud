@@ -1,15 +1,17 @@
 {
     "304048": {
-        "reportTime": 1741497782947,
+        "reportTime": 1741548505334,
         "globalBlockReferenceId": 304048,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -121.6,
-                "latitude": 45.0666666666667
+                "latitude": 45.1333333333333
             },
             "southEastern": {
                 "longitude": -120.8,
-                "latitude": 45
+                "latitude": 45.0666666666667
             }
         },
         "reflectivity": [
@@ -96,16 +98,18 @@
         ]
     },
     "304496": {
-        "reportTime": 1741497771865,
+        "reportTime": 1741548505304,
         "globalBlockReferenceId": 304496,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 45.1333333333333
+                "latitude": 45.2
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 45.0666666666667
+                "latitude": 45.1333333333333
             }
         },
         "reflectivity": [
@@ -256,16 +260,18 @@
         ]
     },
     "304498": {
-        "reportTime": 1741497782949,
+        "reportTime": 1741548505335,
         "globalBlockReferenceId": 304498,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -121.6,
-                "latitude": 45.1333333333333
+                "latitude": 45.2
             },
             "southEastern": {
                 "longitude": -120.8,
-                "latitude": 45.0666666666667
+                "latitude": 45.1333333333333
             }
         },
         "reflectivity": [
@@ -356,16 +362,18 @@
         ]
     },
     "304949": {
-        "reportTime": 1741497782920,
+        "reportTime": 1741548505332,
         "globalBlockReferenceId": 304949,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120.8,
-                "latitude": 45.2
+                "latitude": 45.2666666666667
             },
             "southEastern": {
                 "longitude": -120,
-                "latitude": 45.1333333333333
+                "latitude": 45.2
             }
         },
         "reflectivity": [
@@ -440,16 +448,18 @@
         ]
     },
     "305395": {
-        "reportTime": 1741497782943,
+        "reportTime": 1741548505334,
         "globalBlockReferenceId": 305395,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124,
-                "latitude": 45.2666666666667
+                "latitude": 45.3333333333333
             },
             "southEastern": {
                 "longitude": -123.2,
-                "latitude": 45.2
+                "latitude": 45.2666666666667
             }
         },
         "reflectivity": [
@@ -532,16 +542,18 @@
         ]
     },
     "305846": {
-        "reportTime": 1741497783317,
+        "reportTime": 1741548505366,
         "globalBlockReferenceId": 305846,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 45.3333333333333
+                "latitude": 45.4
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 45.2666666666667
+                "latitude": 45.3333333333333
             }
         },
         "reflectivity": [
@@ -652,16 +664,18 @@
         ]
     },
     "305849": {
-        "reportTime": 1741497782925,
+        "reportTime": 1741548505332,
         "globalBlockReferenceId": 305849,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120.8,
-                "latitude": 45.3333333333333
+                "latitude": 45.4
             },
             "southEastern": {
                 "longitude": -120,
-                "latitude": 45.2666666666667
+                "latitude": 45.3333333333333
             }
         },
         "reflectivity": [
@@ -740,16 +754,18 @@
         ]
     },
     "306295": {
-        "reportTime": 1741497783248,
+        "reportTime": 1741548505361,
         "globalBlockReferenceId": 306295,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124,
-                "latitude": 45.4
+                "latitude": 45.4666666666667
             },
             "southEastern": {
                 "longitude": -123.2,
-                "latitude": 45.3333333333333
+                "latitude": 45.4
             }
         },
         "reflectivity": [
@@ -828,16 +844,18 @@
         ]
     },
     "306747": {
-        "reportTime": 1741497779387,
+        "reportTime": 1741548505304,
         "globalBlockReferenceId": 306747,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 45.4666666666667
+                "latitude": 45.5333333333333
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 45.4
+                "latitude": 45.4666666666667
             }
         },
         "reflectivity": [
@@ -1084,16 +1102,18 @@
         ]
     },
     "307200": {
-        "reportTime": 1741497783319,
+        "reportTime": 1741548505367,
         "globalBlockReferenceId": 307200,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 45.5333333333333
+                "latitude": 45.6
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 45.4666666666667
+                "latitude": 45.5333333333333
             }
         },
         "reflectivity": [
@@ -1196,16 +1216,18 @@
         ]
     },
     "307650": {
-        "reportTime": 1741497783003,
+        "reportTime": 1741548505341,
         "globalBlockReferenceId": 307650,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 45.6
+                "latitude": 45.6666666666667
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 45.5333333333333
+                "latitude": 45.6
             }
         },
         "reflectivity": [
@@ -1316,16 +1338,18 @@
         ]
     },
     "308095": {
-        "reportTime": 1741497783278,
+        "reportTime": 1741548505363,
         "globalBlockReferenceId": 308095,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124,
-                "latitude": 45.6666666666667
+                "latitude": 45.7333333333333
             },
             "southEastern": {
                 "longitude": -123.2,
-                "latitude": 45.6
+                "latitude": 45.6666666666667
             }
         },
         "reflectivity": [
@@ -1416,16 +1440,18 @@
         ]
     },
     "308096": {
-        "reportTime": 1741497783250,
+        "reportTime": 1741548505361,
         "globalBlockReferenceId": 308096,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 45.6666666666667
+                "latitude": 45.7333333333333
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 45.6
+                "latitude": 45.6666666666667
             }
         },
         "reflectivity": [
@@ -1504,16 +1530,18 @@
         ]
     },
     "308100": {
-        "reportTime": 1741497783269,
+        "reportTime": 1741548505362,
         "globalBlockReferenceId": 308100,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 45.6666666666667
+                "latitude": 45.7333333333333
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 45.6
+                "latitude": 45.6666666666667
             }
         },
         "reflectivity": [
@@ -1608,16 +1636,18 @@
         ]
     },
     "308545": {
-        "reportTime": 1741497783331,
+        "reportTime": 1741548505367,
         "globalBlockReferenceId": 308545,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124,
-                "latitude": 45.7333333333333
+                "latitude": 45.8
             },
             "southEastern": {
                 "longitude": -123.2,
-                "latitude": 45.6666666666667
+                "latitude": 45.7333333333333
             }
         },
         "reflectivity": [
@@ -1716,16 +1746,18 @@
         ]
     },
     "308546": {
-        "reportTime": 1741497783137,
+        "reportTime": 1741548505347,
         "globalBlockReferenceId": 308546,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 45.7333333333333
+                "latitude": 45.8
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 45.6666666666667
+                "latitude": 45.7333333333333
             }
         },
         "reflectivity": [
@@ -1864,16 +1896,18 @@
         ]
     },
     "308550": {
-        "reportTime": 1741497783252,
+        "reportTime": 1741548505361,
         "globalBlockReferenceId": 308550,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 45.7333333333333
+                "latitude": 45.8
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 45.6666666666667
+                "latitude": 45.7333333333333
             }
         },
         "reflectivity": [
@@ -1956,16 +1990,18 @@
         ]
     },
     "309000": {
-        "reportTime": 1741497783254,
+        "reportTime": 1741548505362,
         "globalBlockReferenceId": 309000,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 45.8
+                "latitude": 45.8666666666667
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 45.7333333333333
+                "latitude": 45.8
             }
         },
         "reflectivity": [
@@ -2044,16 +2080,18 @@
         ]
     },
     "309444": {
-        "reportTime": 1741497782972,
+        "reportTime": 1741548505336,
         "globalBlockReferenceId": 309444,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124.8,
-                "latitude": 45.8666666666667
+                "latitude": 45.9333333333333
             },
             "southEastern": {
                 "longitude": -124,
-                "latitude": 45.8
+                "latitude": 45.8666666666667
             }
         },
         "reflectivity": [
@@ -2152,16 +2190,18 @@
         ]
     },
     "309445": {
-        "reportTime": 1741497783260,
+        "reportTime": 1741548505362,
         "globalBlockReferenceId": 309445,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124,
-                "latitude": 45.8666666666667
+                "latitude": 45.9333333333333
             },
             "southEastern": {
                 "longitude": -123.2,
-                "latitude": 45.8
+                "latitude": 45.8666666666667
             }
         },
         "reflectivity": [
@@ -2244,16 +2284,18 @@
         ]
     },
     "309450": {
-        "reportTime": 1741497783197,
+        "reportTime": 1741548505356,
         "globalBlockReferenceId": 309450,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 45.8666666666667
+                "latitude": 45.9333333333333
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 45.8
+                "latitude": 45.8666666666667
             }
         },
         "reflectivity": [
@@ -2308,16 +2350,18 @@
         ]
     },
     "309894": {
-        "reportTime": 1741497783263,
+        "reportTime": 1741548505362,
         "globalBlockReferenceId": 309894,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124.8,
-                "latitude": 45.9333333333333
+                "latitude": 46
             },
             "southEastern": {
                 "longitude": -124,
-                "latitude": 45.8666666666667
+                "latitude": 45.9333333333333
             }
         },
         "reflectivity": [
@@ -2412,16 +2456,18 @@
         ]
     },
     "309900": {
-        "reportTime": 1741497782889,
+        "reportTime": 1741548505328,
         "globalBlockReferenceId": 309900,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 45.9333333333333
+                "latitude": 46
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 45.8666666666667
+                "latitude": 45.9333333333333
             }
         },
         "reflectivity": [
@@ -2480,16 +2526,18 @@
         ]
     },
     "310346": {
-        "reportTime": 1741497783108,
+        "reportTime": 1741548505346,
         "globalBlockReferenceId": 310346,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 46
+                "latitude": 46.0666666666667
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 45.9333333333333
+                "latitude": 46
             }
         },
         "reflectivity": [
@@ -2620,16 +2668,18 @@
         ]
     },
     "310797": {
-        "reportTime": 1741497783054,
+        "reportTime": 1741548505343,
         "globalBlockReferenceId": 310797,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 46.0666666666667
+                "latitude": 46.1333333333333
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 46
+                "latitude": 46.0666666666667
             }
         },
         "reflectivity": [
@@ -2748,16 +2798,18 @@
         ]
     },
     "310799": {
-        "reportTime": 1741497783037,
+        "reportTime": 1741548505342,
         "globalBlockReferenceId": 310799,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120.8,
-                "latitude": 46.0666666666667
+                "latitude": 46.1333333333333
             },
             "southEastern": {
                 "longitude": -120,
-                "latitude": 46
+                "latitude": 46.0666666666667
             }
         },
         "reflectivity": [
@@ -2872,16 +2924,18 @@
         ]
     },
     "310800": {
-        "reportTime": 1741497783244,
+        "reportTime": 1741548505361,
         "globalBlockReferenceId": 310800,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 46.0666666666667
+                "latitude": 46.1333333333333
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 46
+                "latitude": 46.0666666666667
             }
         },
         "reflectivity": [
@@ -2960,16 +3014,18 @@
         ]
     },
     "311245": {
-        "reportTime": 1741497783085,
+        "reportTime": 1741548505345,
         "globalBlockReferenceId": 311245,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124,
-                "latitude": 46.1333333333333
+                "latitude": 46.2
             },
             "southEastern": {
                 "longitude": -123.2,
-                "latitude": 46.0666666666667
+                "latitude": 46.1333333333333
             }
         },
         "reflectivity": [
@@ -3096,16 +3152,18 @@
         ]
     },
     "311249": {
-        "reportTime": 1741497783088,
+        "reportTime": 1741548505345,
         "globalBlockReferenceId": 311249,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120.8,
-                "latitude": 46.1333333333333
+                "latitude": 46.2
             },
             "southEastern": {
                 "longitude": -120,
-                "latitude": 46.0666666666667
+                "latitude": 46.1333333333333
             }
         },
         "reflectivity": [
@@ -3232,16 +3290,18 @@
         ]
     },
     "311250": {
-        "reportTime": 1741497783329,
+        "reportTime": 1741548505367,
         "globalBlockReferenceId": 311250,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 46.1333333333333
+                "latitude": 46.2
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 46.0666666666667
+                "latitude": 46.1333333333333
             }
         },
         "reflectivity": [
@@ -3340,16 +3400,18 @@
         ]
     },
     "311251": {
-        "reportTime": 1741497782915,
+        "reportTime": 1741548505332,
         "globalBlockReferenceId": 311251,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -119.2,
-                "latitude": 46.1333333333333
+                "latitude": 46.2
             },
             "southEastern": {
                 "longitude": -118.4,
-                "latitude": 46.0666666666667
+                "latitude": 46.1333333333333
             }
         },
         "reflectivity": [
@@ -3416,16 +3478,18 @@
         ]
     },
     "311694": {
-        "reportTime": 1741497783224,
+        "reportTime": 1741548505359,
         "globalBlockReferenceId": 311694,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124.8,
-                "latitude": 46.2
+                "latitude": 46.2666666666667
             },
             "southEastern": {
                 "longitude": -124,
-                "latitude": 46.1333333333333
+                "latitude": 46.2
             }
         },
         "reflectivity": [
@@ -3500,16 +3564,18 @@
         ]
     },
     "311697": {
-        "reportTime": 1741497783127,
+        "reportTime": 1741548505347,
         "globalBlockReferenceId": 311697,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 46.2
+                "latitude": 46.2666666666667
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 46.1333333333333
+                "latitude": 46.2
             }
         },
         "reflectivity": [
@@ -3640,16 +3706,18 @@
         ]
     },
     "311700": {
-        "reportTime": 1741497782928,
+        "reportTime": 1741548505333,
         "globalBlockReferenceId": 311700,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 46.2
+                "latitude": 46.2666666666667
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 46.1333333333333
+                "latitude": 46.2
             }
         },
         "reflectivity": [
@@ -3720,16 +3788,18 @@
         ]
     },
     "311701": {
-        "reportTime": 1741497782931,
+        "reportTime": 1741548505333,
         "globalBlockReferenceId": 311701,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -119.2,
-                "latitude": 46.2
+                "latitude": 46.2666666666667
             },
             "southEastern": {
                 "longitude": -118.4,
-                "latitude": 46.1333333333333
+                "latitude": 46.2
             }
         },
         "reflectivity": [
@@ -3800,16 +3870,18 @@
         ]
     },
     "312144": {
-        "reportTime": 1741497783292,
+        "reportTime": 1741548505364,
         "globalBlockReferenceId": 312144,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124.8,
-                "latitude": 46.2666666666667
+                "latitude": 46.3333333333333
             },
             "southEastern": {
                 "longitude": -124,
-                "latitude": 46.2
+                "latitude": 46.2666666666667
             }
         },
         "reflectivity": [
@@ -3900,16 +3972,18 @@
         ]
     },
     "312146": {
-        "reportTime": 1741497783094,
+        "reportTime": 1741548505345,
         "globalBlockReferenceId": 312146,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 46.2666666666667
+                "latitude": 46.3333333333333
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 46.2
+                "latitude": 46.2666666666667
             }
         },
         "reflectivity": [
@@ -4048,16 +4122,18 @@
         ]
     },
     "312148": {
-        "reportTime": 1741497783097,
+        "reportTime": 1741548505345,
         "globalBlockReferenceId": 312148,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -121.6,
-                "latitude": 46.2666666666667
+                "latitude": 46.3333333333333
             },
             "southEastern": {
                 "longitude": -120.8,
-                "latitude": 46.2
+                "latitude": 46.2666666666667
             }
         },
         "reflectivity": [
@@ -4184,16 +4260,18 @@
         ]
     },
     "312149": {
-        "reportTime": 1741497783009,
+        "reportTime": 1741548505341,
         "globalBlockReferenceId": 312149,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120.8,
-                "latitude": 46.2666666666667
+                "latitude": 46.3333333333333
             },
             "southEastern": {
                 "longitude": -120,
-                "latitude": 46.2
+                "latitude": 46.2666666666667
             }
         },
         "reflectivity": [
@@ -4304,16 +4382,18 @@
         ]
     },
     "312150": {
-        "reportTime": 1741497783202,
+        "reportTime": 1741548505357,
         "globalBlockReferenceId": 312150,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 46.2666666666667
+                "latitude": 46.3333333333333
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 46.2
+                "latitude": 46.2666666666667
             }
         },
         "reflectivity": [
@@ -4392,16 +4472,18 @@
         ]
     },
     "312151": {
-        "reportTime": 1741497782821,
+        "reportTime": 1741548505307,
         "globalBlockReferenceId": 312151,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -119.2,
-                "latitude": 46.2666666666667
+                "latitude": 46.3333333333333
             },
             "southEastern": {
                 "longitude": -118.4,
-                "latitude": 46.2
+                "latitude": 46.2666666666667
             }
         },
         "reflectivity": [
@@ -4472,16 +4554,18 @@
         ]
     },
     "312595": {
-        "reportTime": 1741497783294,
+        "reportTime": 1741548505364,
         "globalBlockReferenceId": 312595,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124,
-                "latitude": 46.3333333333333
+                "latitude": 46.4
             },
             "southEastern": {
                 "longitude": -123.2,
-                "latitude": 46.2666666666667
+                "latitude": 46.3333333333333
             }
         },
         "reflectivity": [
@@ -4576,16 +4660,18 @@
         ]
     },
     "312596": {
-        "reportTime": 1741497783060,
+        "reportTime": 1741548505343,
         "globalBlockReferenceId": 312596,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 46.3333333333333
+                "latitude": 46.4
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 46.2666666666667
+                "latitude": 46.3333333333333
             }
         },
         "reflectivity": [
@@ -4708,16 +4794,18 @@
         ]
     },
     "312598": {
-        "reportTime": 1741497783015,
+        "reportTime": 1741548505341,
         "globalBlockReferenceId": 312598,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -121.6,
-                "latitude": 46.3333333333333
+                "latitude": 46.4
             },
             "southEastern": {
                 "longitude": -120.8,
-                "latitude": 46.2666666666667
+                "latitude": 46.3333333333333
             }
         },
         "reflectivity": [
@@ -4840,16 +4928,18 @@
         ]
     },
     "312600": {
-        "reportTime": 1741497782893,
+        "reportTime": 1741548505329,
         "globalBlockReferenceId": 312600,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 46.3333333333333
+                "latitude": 46.4
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 46.2666666666667
+                "latitude": 46.3333333333333
             }
         },
         "reflectivity": [
@@ -4896,16 +4986,18 @@
         ]
     },
     "313047": {
-        "reportTime": 1741497783118,
+        "reportTime": 1741548505346,
         "globalBlockReferenceId": 313047,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 46.4
+                "latitude": 46.4666666666667
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 46.3333333333333
+                "latitude": 46.4
             }
         },
         "reflectivity": [
@@ -5036,16 +5128,18 @@
         ]
     },
     "313048": {
-        "reportTime": 1741497783228,
+        "reportTime": 1741548505360,
         "globalBlockReferenceId": 313048,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -121.6,
-                "latitude": 46.4
+                "latitude": 46.4666666666667
             },
             "southEastern": {
                 "longitude": -120.8,
-                "latitude": 46.3333333333333
+                "latitude": 46.4
             }
         },
         "reflectivity": [
@@ -5132,16 +5226,18 @@
         ]
     },
     "313050": {
-        "reportTime": 1741497782945,
+        "reportTime": 1741548505334,
         "globalBlockReferenceId": 313050,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 46.4
+                "latitude": 46.4666666666667
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 46.3333333333333
+                "latitude": 46.4
             }
         },
         "reflectivity": [
@@ -5240,16 +5336,18 @@
         ]
     },
     "313497": {
-        "reportTime": 1741497783121,
+        "reportTime": 1741548505347,
         "globalBlockReferenceId": 313497,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 46.4666666666667
+                "latitude": 46.5333333333333
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 46.4
+                "latitude": 46.4666666666667
             }
         },
         "reflectivity": [
@@ -5384,16 +5482,18 @@
         ]
     },
     "313500": {
-        "reportTime": 1741497783256,
+        "reportTime": 1741548505362,
         "globalBlockReferenceId": 313500,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 46.4666666666667
+                "latitude": 46.5333333333333
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 46.4
+                "latitude": 46.4666666666667
             }
         },
         "reflectivity": [
@@ -5488,16 +5588,18 @@
         ]
     },
     "313501": {
-        "reportTime": 1741497783160,
+        "reportTime": 1741548505354,
         "globalBlockReferenceId": 313501,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -119.2,
-                "latitude": 46.4666666666667
+                "latitude": 46.5333333333333
             },
             "southEastern": {
                 "longitude": -118.4,
-                "latitude": 46.4
+                "latitude": 46.4666666666667
             }
         },
         "reflectivity": [
@@ -5544,16 +5646,18 @@
         ]
     },
     "313947": {
-        "reportTime": 1741497782865,
+        "reportTime": 1741548505313,
         "globalBlockReferenceId": 313947,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 46.5333333333333
+                "latitude": 46.6
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 46.4666666666667
+                "latitude": 46.5333333333333
             }
         },
         "reflectivity": [
@@ -5636,16 +5740,18 @@
         ]
     },
     "313949": {
-        "reportTime": 1741497783312,
+        "reportTime": 1741548505366,
         "globalBlockReferenceId": 313949,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120.8,
-                "latitude": 46.5333333333333
+                "latitude": 46.6
             },
             "southEastern": {
                 "longitude": -120,
-                "latitude": 46.4666666666667
+                "latitude": 46.5333333333333
             }
         },
         "reflectivity": [
@@ -5756,16 +5862,18 @@
         ]
     },
     "313950": {
-        "reportTime": 1741497782833,
+        "reportTime": 1741548505308,
         "globalBlockReferenceId": 313950,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 46.5333333333333
+                "latitude": 46.6
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 46.4666666666667
+                "latitude": 46.5333333333333
             }
         },
         "reflectivity": [
@@ -5832,16 +5940,18 @@
         ]
     },
     "314394": {
-        "reportTime": 1741497783051,
+        "reportTime": 1741548505343,
         "globalBlockReferenceId": 314394,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124.8,
-                "latitude": 46.6
+                "latitude": 46.6666666666667
             },
             "southEastern": {
                 "longitude": -124,
-                "latitude": 46.5333333333333
+                "latitude": 46.6
             }
         },
         "reflectivity": [
@@ -5960,16 +6070,18 @@
         ]
     },
     "314398": {
-        "reportTime": 1741497782896,
+        "reportTime": 1741548505329,
         "globalBlockReferenceId": 314398,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -121.6,
-                "latitude": 46.6
+                "latitude": 46.6666666666667
             },
             "southEastern": {
                 "longitude": -120.8,
-                "latitude": 46.5333333333333
+                "latitude": 46.6
             }
         },
         "reflectivity": [
@@ -6032,16 +6144,18 @@
         ]
     },
     "314400": {
-        "reportTime": 1741497783215,
+        "reportTime": 1741548505359,
         "globalBlockReferenceId": 314400,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 46.6
+                "latitude": 46.6666666666667
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 46.5333333333333
+                "latitude": 46.6
             }
         },
         "reflectivity": [
@@ -6128,16 +6242,18 @@
         ]
     },
     "314843": {
-        "reportTime": 1741497782987,
+        "reportTime": 1741548505338,
         "globalBlockReferenceId": 314843,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -125.6,
-                "latitude": 46.6666666666667
+                "latitude": 46.7333333333333
             },
             "southEastern": {
                 "longitude": -124.8,
-                "latitude": 46.6
+                "latitude": 46.6666666666667
             }
         },
         "reflectivity": [
@@ -6232,16 +6348,18 @@
         ]
     },
     "314847": {
-        "reportTime": 1741497783235,
+        "reportTime": 1741548505360,
         "globalBlockReferenceId": 314847,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 46.6666666666667
+                "latitude": 46.7333333333333
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 46.6
+                "latitude": 46.6666666666667
             }
         },
         "reflectivity": [
@@ -6328,16 +6446,18 @@
         ]
     },
     "314848": {
-        "reportTime": 1741497783267,
+        "reportTime": 1741548505362,
         "globalBlockReferenceId": 314848,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -121.6,
-                "latitude": 46.6666666666667
+                "latitude": 46.7333333333333
             },
             "southEastern": {
                 "longitude": -120.8,
-                "latitude": 46.6
+                "latitude": 46.6666666666667
             }
         },
         "reflectivity": [
@@ -6432,16 +6552,18 @@
         ]
     },
     "314849": {
-        "reportTime": 1741497783237,
+        "reportTime": 1741548505360,
         "globalBlockReferenceId": 314849,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120.8,
-                "latitude": 46.6666666666667
+                "latitude": 46.7333333333333
             },
             "southEastern": {
                 "longitude": -120,
-                "latitude": 46.6
+                "latitude": 46.6666666666667
             }
         },
         "reflectivity": [
@@ -6520,16 +6642,18 @@
         ]
     },
     "314850": {
-        "reportTime": 1741497782909,
+        "reportTime": 1741548505331,
         "globalBlockReferenceId": 314850,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 46.6666666666667
+                "latitude": 46.7333333333333
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 46.6
+                "latitude": 46.6666666666667
             }
         },
         "reflectivity": [
@@ -6596,16 +6720,18 @@
         ]
     },
     "314851": {
-        "reportTime": 1741497782889,
+        "reportTime": 1741548505328,
         "globalBlockReferenceId": 314851,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -119.2,
-                "latitude": 46.6666666666667
+                "latitude": 46.7333333333333
             },
             "southEastern": {
                 "longitude": -118.4,
-                "latitude": 46.6
+                "latitude": 46.6666666666667
             }
         },
         "reflectivity": [
@@ -6660,16 +6786,18 @@
         ]
     },
     "315294": {
-        "reportTime": 1741497783217,
+        "reportTime": 1741548505359,
         "globalBlockReferenceId": 315294,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124.8,
-                "latitude": 46.7333333333333
+                "latitude": 46.8
             },
             "southEastern": {
                 "longitude": -124,
-                "latitude": 46.6666666666667
+                "latitude": 46.7333333333333
             }
         },
         "reflectivity": [
@@ -6748,16 +6876,18 @@
         ]
     },
     "315296": {
-        "reportTime": 1741497783182,
+        "reportTime": 1741548505356,
         "globalBlockReferenceId": 315296,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 46.7333333333333
+                "latitude": 46.8
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 46.6666666666667
+                "latitude": 46.7333333333333
             }
         },
         "reflectivity": [
@@ -6808,16 +6938,18 @@
         ]
     },
     "315297": {
-        "reportTime": 1741497783287,
+        "reportTime": 1741548505364,
         "globalBlockReferenceId": 315297,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 46.7333333333333
+                "latitude": 46.8
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 46.6666666666667
+                "latitude": 46.7333333333333
             }
         },
         "reflectivity": [
@@ -6912,16 +7044,18 @@
         ]
     },
     "315298": {
-        "reportTime": 1741497783163,
+        "reportTime": 1741548505354,
         "globalBlockReferenceId": 315298,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -121.6,
-                "latitude": 46.7333333333333
+                "latitude": 46.8
             },
             "southEastern": {
                 "longitude": -120.8,
-                "latitude": 46.6666666666667
+                "latitude": 46.7333333333333
             }
         },
         "reflectivity": [
@@ -6980,16 +7114,18 @@
         ]
     },
     "315299": {
-        "reportTime": 1741497783076,
+        "reportTime": 1741548505344,
         "globalBlockReferenceId": 315299,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120.8,
-                "latitude": 46.7333333333333
+                "latitude": 46.8
             },
             "southEastern": {
                 "longitude": -120,
-                "latitude": 46.6666666666667
+                "latitude": 46.7333333333333
             }
         },
         "reflectivity": [
@@ -7116,16 +7252,18 @@
         ]
     },
     "315300": {
-        "reportTime": 1741497783271,
+        "reportTime": 1741548505362,
         "globalBlockReferenceId": 315300,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 46.7333333333333
+                "latitude": 46.8
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 46.6666666666667
+                "latitude": 46.7333333333333
             }
         },
         "reflectivity": [
@@ -7212,16 +7350,18 @@
         ]
     },
     "315301": {
-        "reportTime": 1741497783290,
+        "reportTime": 1741548505364,
         "globalBlockReferenceId": 315301,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -119.2,
-                "latitude": 46.7333333333333
+                "latitude": 46.8
             },
             "southEastern": {
                 "longitude": -118.4,
-                "latitude": 46.6666666666667
+                "latitude": 46.7333333333333
             }
         },
         "reflectivity": [
@@ -7324,16 +7464,18 @@
         ]
     },
     "315744": {
-        "reportTime": 1741497783023,
+        "reportTime": 1741548505341,
         "globalBlockReferenceId": 315744,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124.8,
-                "latitude": 46.8
+                "latitude": 46.8666666666667
             },
             "southEastern": {
                 "longitude": -124,
-                "latitude": 46.7333333333333
+                "latitude": 46.8
             }
         },
         "reflectivity": [
@@ -7448,16 +7590,18 @@
         ]
     },
     "315747": {
-        "reportTime": 1741497782890,
+        "reportTime": 1741548505328,
         "globalBlockReferenceId": 315747,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 46.8
+                "latitude": 46.8666666666667
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 46.7333333333333
+                "latitude": 46.8
             }
         },
         "reflectivity": [
@@ -7504,16 +7648,18 @@
         ]
     },
     "315748": {
-        "reportTime": 1741497782845,
+        "reportTime": 1741548505312,
         "globalBlockReferenceId": 315748,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -121.6,
-                "latitude": 46.8
+                "latitude": 46.8666666666667
             },
             "southEastern": {
                 "longitude": -120.8,
-                "latitude": 46.7333333333333
+                "latitude": 46.8
             }
         },
         "reflectivity": [
@@ -7580,16 +7726,18 @@
         ]
     },
     "315749": {
-        "reportTime": 1741497783273,
+        "reportTime": 1741548505363,
         "globalBlockReferenceId": 315749,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120.8,
-                "latitude": 46.8
+                "latitude": 46.8666666666667
             },
             "southEastern": {
                 "longitude": -120,
-                "latitude": 46.7333333333333
+                "latitude": 46.8
             }
         },
         "reflectivity": [
@@ -7684,16 +7832,18 @@
         ]
     },
     "315750": {
-        "reportTime": 1741497783220,
+        "reportTime": 1741548505359,
         "globalBlockReferenceId": 315750,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 46.8
+                "latitude": 46.8666666666667
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 46.7333333333333
+                "latitude": 46.8
             }
         },
         "reflectivity": [
@@ -7780,16 +7930,18 @@
         ]
     },
     "315751": {
-        "reportTime": 1741497782883,
+        "reportTime": 1741548505327,
         "globalBlockReferenceId": 315751,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -119.2,
-                "latitude": 46.8
+                "latitude": 46.8666666666667
             },
             "southEastern": {
                 "longitude": -118.4,
-                "latitude": 46.7333333333333
+                "latitude": 46.8
             }
         },
         "reflectivity": [
@@ -7840,16 +7992,18 @@
         ]
     },
     "316193": {
-        "reportTime": 1741497783091,
+        "reportTime": 1741548505345,
         "globalBlockReferenceId": 316193,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -125.6,
-                "latitude": 46.8666666666667
+                "latitude": 46.9333333333333
             },
             "southEastern": {
                 "longitude": -124.8,
-                "latitude": 46.8
+                "latitude": 46.8666666666667
             }
         },
         "reflectivity": [
@@ -7988,16 +8142,18 @@
         ]
     },
     "316194": {
-        "reportTime": 1741497783144,
+        "reportTime": 1741548505347,
         "globalBlockReferenceId": 316194,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124.8,
-                "latitude": 46.8666666666667
+                "latitude": 46.9333333333333
             },
             "southEastern": {
                 "longitude": -124,
-                "latitude": 46.8
+                "latitude": 46.8666666666667
             }
         },
         "reflectivity": [
@@ -8132,16 +8288,18 @@
         ]
     },
     "316196": {
-        "reportTime": 1741497783166,
+        "reportTime": 1741548505354,
         "globalBlockReferenceId": 316196,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 46.8666666666667
+                "latitude": 46.9333333333333
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 46.8
+                "latitude": 46.8666666666667
             }
         },
         "reflectivity": [
@@ -8188,16 +8346,18 @@
         ]
     },
     "316198": {
-        "reportTime": 1741497783187,
+        "reportTime": 1741548505356,
         "globalBlockReferenceId": 316198,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -121.6,
-                "latitude": 46.8666666666667
+                "latitude": 46.9333333333333
             },
             "southEastern": {
                 "longitude": -120.8,
-                "latitude": 46.8
+                "latitude": 46.8666666666667
             }
         },
         "reflectivity": [
@@ -8260,16 +8420,18 @@
         ]
     },
     "316648": {
-        "reportTime": 1741497783194,
+        "reportTime": 1741548505356,
         "globalBlockReferenceId": 316648,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -121.6,
-                "latitude": 46.9333333333333
+                "latitude": 47
             },
             "southEastern": {
                 "longitude": -120.8,
-                "latitude": 46.8666666666667
+                "latitude": 46.9333333333333
             }
         },
         "reflectivity": [
@@ -8332,16 +8494,18 @@
         ]
     },
     "316649": {
-        "reportTime": 1741497782936,
+        "reportTime": 1741548505333,
         "globalBlockReferenceId": 316649,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120.8,
-                "latitude": 46.9333333333333
+                "latitude": 47
             },
             "southEastern": {
                 "longitude": -120,
-                "latitude": 46.8666666666667
+                "latitude": 46.9333333333333
             }
         },
         "reflectivity": [
@@ -8424,16 +8588,18 @@
         ]
     },
     "316650": {
-        "reportTime": 1741497782885,
+        "reportTime": 1741548505328,
         "globalBlockReferenceId": 316650,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 46.9333333333333
+                "latitude": 47
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 46.8666666666667
+                "latitude": 46.9333333333333
             }
         },
         "reflectivity": [
@@ -8480,16 +8646,18 @@
         ]
     },
     "317099": {
-        "reportTime": 1741497782998,
+        "reportTime": 1741548505338,
         "globalBlockReferenceId": 317099,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120.8,
-                "latitude": 47
+                "latitude": 47.0666666666667
             },
             "southEastern": {
                 "longitude": -120,
-                "latitude": 46.9333333333333
+                "latitude": 47
             }
         },
         "reflectivity": [
@@ -8592,16 +8760,18 @@
         ]
     },
     "317549": {
-        "reportTime": 1741497783000,
+        "reportTime": 1741548505338,
         "globalBlockReferenceId": 317549,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120.8,
-                "latitude": 47.0666666666667
+                "latitude": 47.1333333333333
             },
             "southEastern": {
                 "longitude": -120,
-                "latitude": 47
+                "latitude": 47.0666666666667
             }
         },
         "reflectivity": [
@@ -8704,16 +8874,18 @@
         ]
     },
     "318446": {
-        "reportTime": 1741497782894,
+        "reportTime": 1741548505329,
         "globalBlockReferenceId": 318446,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 47.2
+                "latitude": 47.2666666666667
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 47.1333333333333
+                "latitude": 47.2
             }
         },
         "reflectivity": [
@@ -8760,16 +8932,18 @@
         ]
     },
     "318447": {
-        "reportTime": 1741497783226,
+        "reportTime": 1741548505360,
         "globalBlockReferenceId": 318447,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 47.2
+                "latitude": 47.2666666666667
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 47.1333333333333
+                "latitude": 47.2
             }
         },
         "reflectivity": [
@@ -8852,16 +9026,18 @@
         ]
     },
     "318449": {
-        "reportTime": 1741497783167,
+        "reportTime": 1741548505355,
         "globalBlockReferenceId": 318449,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120.8,
-                "latitude": 47.2
+                "latitude": 47.2666666666667
             },
             "southEastern": {
                 "longitude": -120,
-                "latitude": 47.1333333333333
+                "latitude": 47.2
             }
         },
         "reflectivity": [
@@ -8916,16 +9092,18 @@
         ]
     },
     "318450": {
-        "reportTime": 1741497782895,
+        "reportTime": 1741548505329,
         "globalBlockReferenceId": 318450,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 47.2
+                "latitude": 47.2666666666667
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 47.1333333333333
+                "latitude": 47.2
             }
         },
         "reflectivity": [
@@ -8972,16 +9150,18 @@
         ]
     },
     "318896": {
-        "reportTime": 1741497782852,
+        "reportTime": 1741548505312,
         "globalBlockReferenceId": 318896,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 47.2666666666667
+                "latitude": 47.3333333333333
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 47.2
+                "latitude": 47.2666666666667
             }
         },
         "reflectivity": [
@@ -9060,16 +9240,18 @@
         ]
     },
     "318899": {
-        "reportTime": 1741497782970,
+        "reportTime": 1741548505336,
         "globalBlockReferenceId": 318899,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120.8,
-                "latitude": 47.2666666666667
+                "latitude": 47.3333333333333
             },
             "southEastern": {
                 "longitude": -120,
-                "latitude": 47.2
+                "latitude": 47.2666666666667
             }
         },
         "reflectivity": [
@@ -9156,16 +9338,18 @@
         ]
     },
     "318900": {
-        "reportTime": 1741497783169,
+        "reportTime": 1741548505355,
         "globalBlockReferenceId": 318900,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 47.2666666666667
+                "latitude": 47.3333333333333
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 47.2
+                "latitude": 47.2666666666667
             }
         },
         "reflectivity": [
@@ -9212,16 +9396,18 @@
         ]
     },
     "319346": {
-        "reportTime": 1741497783012,
+        "reportTime": 1741548505341,
         "globalBlockReferenceId": 319346,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 47.3333333333333
+                "latitude": 47.4
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 47.2666666666667
+                "latitude": 47.3333333333333
             }
         },
         "reflectivity": [
@@ -9332,16 +9518,18 @@
         ]
     },
     "319347": {
-        "reportTime": 1741497783196,
+        "reportTime": 1741548505356,
         "globalBlockReferenceId": 319347,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 47.3333333333333
+                "latitude": 47.4
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 47.2666666666667
+                "latitude": 47.3333333333333
             }
         },
         "reflectivity": [
@@ -9400,16 +9588,18 @@
         ]
     },
     "319348": {
-        "reportTime": 1741497782886,
+        "reportTime": 1741548505328,
         "globalBlockReferenceId": 319348,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -121.6,
-                "latitude": 47.3333333333333
+                "latitude": 47.4
             },
             "southEastern": {
                 "longitude": -120.8,
-                "latitude": 47.2666666666667
+                "latitude": 47.3333333333333
             }
         },
         "reflectivity": [
@@ -9452,16 +9642,18 @@
         ]
     },
     "319349": {
-        "reportTime": 1741497782864,
+        "reportTime": 1741548505313,
         "globalBlockReferenceId": 319349,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120.8,
-                "latitude": 47.3333333333333
+                "latitude": 47.4
             },
             "southEastern": {
                 "longitude": -120,
-                "latitude": 47.2666666666667
+                "latitude": 47.3333333333333
             }
         },
         "reflectivity": [
@@ -9544,16 +9736,18 @@
         ]
     },
     "319350": {
-        "reportTime": 1741497783171,
+        "reportTime": 1741548505355,
         "globalBlockReferenceId": 319350,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 47.3333333333333
+                "latitude": 47.4
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 47.2666666666667
+                "latitude": 47.3333333333333
             }
         },
         "reflectivity": [
@@ -9600,16 +9794,18 @@
         ]
     },
     "319795": {
-        "reportTime": 1741497783101,
+        "reportTime": 1741548505345,
         "globalBlockReferenceId": 319795,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124,
-                "latitude": 47.4
+                "latitude": 47.4666666666667
             },
             "southEastern": {
                 "longitude": -123.2,
-                "latitude": 47.3333333333333
+                "latitude": 47.4
             }
         },
         "reflectivity": [
@@ -9744,16 +9940,18 @@
         ]
     },
     "319796": {
-        "reportTime": 1741497783017,
+        "reportTime": 1741548505341,
         "globalBlockReferenceId": 319796,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 47.4
+                "latitude": 47.4666666666667
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 47.3333333333333
+                "latitude": 47.4
             }
         },
         "reflectivity": [
@@ -9872,16 +10070,18 @@
         ]
     },
     "319798": {
-        "reportTime": 1741497782933,
+        "reportTime": 1741548505333,
         "globalBlockReferenceId": 319798,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -121.6,
-                "latitude": 47.4
+                "latitude": 47.4666666666667
             },
             "southEastern": {
                 "longitude": -120.8,
-                "latitude": 47.3333333333333
+                "latitude": 47.4
             }
         },
         "reflectivity": [
@@ -9952,16 +10152,18 @@
         ]
     },
     "319799": {
-        "reportTime": 1741497783045,
+        "reportTime": 1741548505343,
         "globalBlockReferenceId": 319799,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120.8,
-                "latitude": 47.4
+                "latitude": 47.4666666666667
             },
             "southEastern": {
                 "longitude": -120,
-                "latitude": 47.3333333333333
+                "latitude": 47.4
             }
         },
         "reflectivity": [
@@ -10076,16 +10278,18 @@
         ]
     },
     "319800": {
-        "reportTime": 1741497782975,
+        "reportTime": 1741548505337,
         "globalBlockReferenceId": 319800,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 47.4
+                "latitude": 47.4666666666667
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 47.3333333333333
+                "latitude": 47.4
             }
         },
         "reflectivity": [
@@ -10184,16 +10388,18 @@
         ]
     },
     "320244": {
-        "reportTime": 1741497782935,
+        "reportTime": 1741548505333,
         "globalBlockReferenceId": 320244,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124.8,
-                "latitude": 47.4666666666667
+                "latitude": 47.5333333333333
             },
             "southEastern": {
                 "longitude": -124,
-                "latitude": 47.4
+                "latitude": 47.4666666666667
             }
         },
         "reflectivity": [
@@ -10264,16 +10470,18 @@
         ]
     },
     "320245": {
-        "reportTime": 1741497783140,
+        "reportTime": 1741548505347,
         "globalBlockReferenceId": 320245,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124,
-                "latitude": 47.4666666666667
+                "latitude": 47.5333333333333
             },
             "southEastern": {
                 "longitude": -123.2,
-                "latitude": 47.4
+                "latitude": 47.4666666666667
             }
         },
         "reflectivity": [
@@ -10404,16 +10612,18 @@
         ]
     },
     "320246": {
-        "reportTime": 1741497782917,
+        "reportTime": 1741548505332,
         "globalBlockReferenceId": 320246,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 47.4666666666667
+                "latitude": 47.5333333333333
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 47.4
+                "latitude": 47.4666666666667
             }
         },
         "reflectivity": [
@@ -10484,16 +10694,18 @@
         ]
     },
     "320247": {
-        "reportTime": 1741497782879,
+        "reportTime": 1741548505326,
         "globalBlockReferenceId": 320247,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 47.4666666666667
+                "latitude": 47.5333333333333
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 47.4
+                "latitude": 47.4666666666667
             }
         },
         "reflectivity": [
@@ -10544,16 +10756,18 @@
         ]
     },
     "320248": {
-        "reportTime": 1741497782977,
+        "reportTime": 1741548505337,
         "globalBlockReferenceId": 320248,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -121.6,
-                "latitude": 47.4666666666667
+                "latitude": 47.5333333333333
             },
             "southEastern": {
                 "longitude": -120.8,
-                "latitude": 47.4
+                "latitude": 47.4666666666667
             }
         },
         "reflectivity": [
@@ -10648,16 +10862,18 @@
         ]
     },
     "320249": {
-        "reportTime": 1741497783297,
+        "reportTime": 1741548505364,
         "globalBlockReferenceId": 320249,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120.8,
-                "latitude": 47.4666666666667
+                "latitude": 47.5333333333333
             },
             "southEastern": {
                 "longitude": -120,
-                "latitude": 47.4
+                "latitude": 47.4666666666667
             }
         },
         "reflectivity": [
@@ -10756,16 +10972,18 @@
         ]
     },
     "320698": {
-        "reportTime": 1741497783173,
+        "reportTime": 1741548505355,
         "globalBlockReferenceId": 320698,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -121.6,
-                "latitude": 47.5333333333333
+                "latitude": 47.6
             },
             "southEastern": {
                 "longitude": -120.8,
-                "latitude": 47.4666666666667
+                "latitude": 47.5333333333333
             }
         },
         "reflectivity": [
@@ -10812,16 +11030,18 @@
         ]
     },
     "320699": {
-        "reportTime": 1741497782828,
+        "reportTime": 1741548505307,
         "globalBlockReferenceId": 320699,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120.8,
-                "latitude": 47.5333333333333
+                "latitude": 47.6
             },
             "southEastern": {
                 "longitude": -120,
-                "latitude": 47.4666666666667
+                "latitude": 47.5333333333333
             }
         },
         "reflectivity": [
@@ -10884,16 +11104,18 @@
         ]
     },
     "321112": {
-        "reportTime": 1741497783204,
+        "reportTime": 1741548505357,
         "globalBlockReferenceId": 321112,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -150.4,
-                "latitude": 47.6
+                "latitude": 47.6666666666667
             },
             "southEastern": {
                 "longitude": -149.6,
-                "latitude": 47.5333333333333
+                "latitude": 47.6
             }
         },
         "reflectivity": [
@@ -10954,16 +11176,18 @@
         ]
     },
     "321145": {
-        "reportTime": 1741497783299,
+        "reportTime": 1741548505364,
         "globalBlockReferenceId": 321145,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124,
-                "latitude": 47.6
+                "latitude": 47.6666666666667
             },
             "southEastern": {
                 "longitude": -123.2,
-                "latitude": 47.5333333333333
+                "latitude": 47.6
             }
         },
         "reflectivity": [
@@ -11058,16 +11282,18 @@
         ]
     },
     "321146": {
-        "reportTime": 1741497782918,
+        "reportTime": 1741548505332,
         "globalBlockReferenceId": 321146,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 47.6
+                "latitude": 47.6666666666667
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 47.5333333333333
+                "latitude": 47.6
             }
         },
         "reflectivity": [
@@ -11142,16 +11368,18 @@
         ]
     },
     "321148": {
-        "reportTime": 1741497783104,
+        "reportTime": 1741548505346,
         "globalBlockReferenceId": 321148,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -121.6,
-                "latitude": 47.6
+                "latitude": 47.6666666666667
             },
             "southEastern": {
                 "longitude": -120.8,
-                "latitude": 47.5333333333333
+                "latitude": 47.6
             }
         },
         "reflectivity": [
@@ -11290,16 +11518,18 @@
         ]
     },
     "321598": {
-        "reportTime": 1741497783174,
+        "reportTime": 1741548505355,
         "globalBlockReferenceId": 321598,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -121.6,
-                "latitude": 47.6666666666667
+                "latitude": 47.7333333333333
             },
             "southEastern": {
                 "longitude": -120.8,
-                "latitude": 47.6
+                "latitude": 47.6666666666667
             }
         },
         "reflectivity": [
@@ -11362,16 +11592,18 @@
         ]
     },
     "321599": {
-        "reportTime": 1741497783230,
+        "reportTime": 1741548505360,
         "globalBlockReferenceId": 321599,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120.8,
-                "latitude": 47.6666666666667
+                "latitude": 47.7333333333333
             },
             "southEastern": {
                 "longitude": -120,
-                "latitude": 47.6
+                "latitude": 47.6666666666667
             }
         },
         "reflectivity": [
@@ -11450,16 +11682,18 @@
         ]
     },
     "322047": {
-        "reportTime": 1741497783079,
+        "reportTime": 1741548505344,
         "globalBlockReferenceId": 322047,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 47.7333333333333
+                "latitude": 47.8
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 47.6666666666667
+                "latitude": 47.7333333333333
             }
         },
         "reflectivity": [
@@ -11586,16 +11820,18 @@
         ]
     },
     "322048": {
-        "reportTime": 1741497782979,
+        "reportTime": 1741548505337,
         "globalBlockReferenceId": 322048,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -121.6,
-                "latitude": 47.7333333333333
+                "latitude": 47.8
             },
             "southEastern": {
                 "longitude": -120.8,
-                "latitude": 47.6666666666667
+                "latitude": 47.7333333333333
             }
         },
         "reflectivity": [
@@ -11698,16 +11934,18 @@
         ]
     },
     "322050": {
-        "reportTime": 1741497783258,
+        "reportTime": 1741548505362,
         "globalBlockReferenceId": 322050,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120,
-                "latitude": 47.7333333333333
+                "latitude": 47.8
             },
             "southEastern": {
                 "longitude": -119.2,
-                "latitude": 47.6666666666667
+                "latitude": 47.7333333333333
             }
         },
         "reflectivity": [
@@ -11794,16 +12032,18 @@
         ]
     },
     "322494": {
-        "reportTime": 1741497783199,
+        "reportTime": 1741548505356,
         "globalBlockReferenceId": 322494,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124.8,
-                "latitude": 47.8
+                "latitude": 47.8666666666667
             },
             "southEastern": {
                 "longitude": -124,
-                "latitude": 47.7333333333333
+                "latitude": 47.8
             }
         },
         "reflectivity": [
@@ -11862,16 +12102,18 @@
         ]
     },
     "322497": {
-        "reportTime": 1741497783073,
+        "reportTime": 1741548505344,
         "globalBlockReferenceId": 322497,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 47.8
+                "latitude": 47.8666666666667
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 47.7333333333333
+                "latitude": 47.8
             }
         },
         "reflectivity": [
@@ -11998,16 +12240,18 @@
         ]
     },
     "322499": {
-        "reportTime": 1741497783208,
+        "reportTime": 1741548505358,
         "globalBlockReferenceId": 322499,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120.8,
-                "latitude": 47.8
+                "latitude": 47.8666666666667
             },
             "southEastern": {
                 "longitude": -120,
-                "latitude": 47.7333333333333
+                "latitude": 47.8
             }
         },
         "reflectivity": [
@@ -12086,16 +12330,18 @@
         ]
     },
     "322943": {
-        "reportTime": 1741497783276,
+        "reportTime": 1741548505363,
         "globalBlockReferenceId": 322943,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -125.6,
-                "latitude": 47.8666666666667
+                "latitude": 47.9333333333333
             },
             "southEastern": {
                 "longitude": -124.8,
-                "latitude": 47.8
+                "latitude": 47.8666666666667
             }
         },
         "reflectivity": [
@@ -12198,16 +12444,18 @@
         ]
     },
     "322944": {
-        "reportTime": 1741497783200,
+        "reportTime": 1741548505357,
         "globalBlockReferenceId": 322944,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124.8,
-                "latitude": 47.8666666666667
+                "latitude": 47.9333333333333
             },
             "southEastern": {
                 "longitude": -124,
-                "latitude": 47.8
+                "latitude": 47.8666666666667
             }
         },
         "reflectivity": [
@@ -12266,16 +12514,18 @@
         ]
     },
     "322945": {
-        "reportTime": 1741497783158,
+        "reportTime": 1741548505354,
         "globalBlockReferenceId": 322945,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124,
-                "latitude": 47.8666666666667
+                "latitude": 47.9333333333333
             },
             "southEastern": {
                 "longitude": -123.2,
-                "latitude": 47.8
+                "latitude": 47.8666666666667
             }
         },
         "reflectivity": [
@@ -12330,16 +12580,18 @@
         ]
     },
     "322947": {
-        "reportTime": 1741497783304,
+        "reportTime": 1741548505365,
         "globalBlockReferenceId": 322947,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 47.8666666666667
+                "latitude": 47.9333333333333
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 47.8
+                "latitude": 47.8666666666667
             }
         },
         "reflectivity": [
@@ -12434,16 +12686,18 @@
         ]
     },
     "322948": {
-        "reportTime": 1741497782983,
+        "reportTime": 1741548505337,
         "globalBlockReferenceId": 322948,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -121.6,
-                "latitude": 47.8666666666667
+                "latitude": 47.9333333333333
             },
             "southEastern": {
                 "longitude": -120.8,
-                "latitude": 47.8
+                "latitude": 47.8666666666667
             }
         },
         "reflectivity": [
@@ -12538,16 +12792,18 @@
         ]
     },
     "323393": {
-        "reportTime": 1741497783309,
+        "reportTime": 1741548505366,
         "globalBlockReferenceId": 323393,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -125.6,
-                "latitude": 47.9333333333333
+                "latitude": 48
             },
             "southEastern": {
                 "longitude": -124.8,
-                "latitude": 47.8666666666667
+                "latitude": 47.9333333333333
             }
         },
         "reflectivity": [
@@ -12658,16 +12914,18 @@
         ]
     },
     "323396": {
-        "reportTime": 1741497783306,
+        "reportTime": 1741548505365,
         "globalBlockReferenceId": 323396,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 47.9333333333333
+                "latitude": 48
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 47.8666666666667
+                "latitude": 47.9333333333333
             }
         },
         "reflectivity": [
@@ -12762,16 +13020,18 @@
         ]
     },
     "323397": {
-        "reportTime": 1741497783025,
+        "reportTime": 1741548505341,
         "globalBlockReferenceId": 323397,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 47.9333333333333
+                "latitude": 48
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 47.8666666666667
+                "latitude": 47.9333333333333
             }
         },
         "reflectivity": [
@@ -12886,16 +13146,18 @@
         ]
     },
     "323399": {
-        "reportTime": 1741497783210,
+        "reportTime": 1741548505359,
         "globalBlockReferenceId": 323399,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120.8,
-                "latitude": 47.9333333333333
+                "latitude": 48
             },
             "southEastern": {
                 "longitude": -120,
-                "latitude": 47.8666666666667
+                "latitude": 47.9333333333333
             }
         },
         "reflectivity": [
@@ -12982,16 +13244,18 @@
         ]
     },
     "323843": {
-        "reportTime": 1741497782811,
+        "reportTime": 1741548505306,
         "globalBlockReferenceId": 323843,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -125.6,
-                "latitude": 48
+                "latitude": 48.0666666666667
             },
             "southEastern": {
                 "longitude": -124.8,
-                "latitude": 47.9333333333333
+                "latitude": 48
             }
         },
         "reflectivity": [
@@ -13066,16 +13330,18 @@
         ]
     },
     "323844": {
-        "reportTime": 1741497783176,
+        "reportTime": 1741548505355,
         "globalBlockReferenceId": 323844,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124.8,
-                "latitude": 48
+                "latitude": 48.0666666666667
             },
             "southEastern": {
                 "longitude": -124,
-                "latitude": 47.9333333333333
+                "latitude": 48
             }
         },
         "reflectivity": [
@@ -13138,16 +13404,18 @@
         ]
     },
     "323845": {
-        "reportTime": 1741497783314,
+        "reportTime": 1741548505366,
         "globalBlockReferenceId": 323845,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124,
-                "latitude": 48
+                "latitude": 48.0666666666667
             },
             "southEastern": {
                 "longitude": -123.2,
-                "latitude": 47.9333333333333
+                "latitude": 48
             }
         },
         "reflectivity": [
@@ -13250,16 +13518,18 @@
         ]
     },
     "323846": {
-        "reportTime": 1741497783336,
+        "reportTime": 1741548505368,
         "globalBlockReferenceId": 323846,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 48
+                "latitude": 48.0666666666667
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 47.9333333333333
+                "latitude": 48
             }
         },
         "reflectivity": [
@@ -13362,16 +13632,18 @@
         ]
     },
     "323848": {
-        "reportTime": 1741497783213,
+        "reportTime": 1741548505359,
         "globalBlockReferenceId": 323848,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -121.6,
-                "latitude": 48
+                "latitude": 48.0666666666667
             },
             "southEastern": {
                 "longitude": -120.8,
-                "latitude": 47.9333333333333
+                "latitude": 48
             }
         },
         "reflectivity": [
@@ -13458,16 +13730,18 @@
         ]
     },
     "323849": {
-        "reportTime": 1741497782881,
+        "reportTime": 1741548505327,
         "globalBlockReferenceId": 323849,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -120.8,
-                "latitude": 48
+                "latitude": 48.0666666666667
             },
             "southEastern": {
                 "longitude": -120,
-                "latitude": 47.9333333333333
+                "latitude": 48
             }
         },
         "reflectivity": [
@@ -13510,16 +13784,18 @@
         ]
     },
     "324294": {
-        "reportTime": 1741497783178,
+        "reportTime": 1741548505355,
         "globalBlockReferenceId": 324294,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124.8,
-                "latitude": 48.0666666666667
+                "latitude": 48.1333333333333
             },
             "southEastern": {
                 "longitude": -124,
-                "latitude": 48
+                "latitude": 48.0666666666667
             }
         },
         "reflectivity": [
@@ -13570,16 +13846,18 @@
         ]
     },
     "324296": {
-        "reportTime": 1741497783028,
+        "reportTime": 1741548505342,
         "globalBlockReferenceId": 324296,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 48.0666666666667
+                "latitude": 48.1333333333333
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 48
+                "latitude": 48.0666666666667
             }
         },
         "reflectivity": [
@@ -13694,16 +13972,18 @@
         ]
     },
     "324297": {
-        "reportTime": 1741497783057,
+        "reportTime": 1741548505343,
         "globalBlockReferenceId": 324297,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 48.0666666666667
+                "latitude": 48.1333333333333
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 48
+                "latitude": 48.0666666666667
             }
         },
         "reflectivity": [
@@ -13822,16 +14102,18 @@
         ]
     },
     "324298": {
-        "reportTime": 1741497783063,
+        "reportTime": 1741548505343,
         "globalBlockReferenceId": 324298,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -121.6,
-                "latitude": 48.0666666666667
+                "latitude": 48.1333333333333
             },
             "southEastern": {
                 "longitude": -120.8,
-                "latitude": 48
+                "latitude": 48.0666666666667
             }
         },
         "reflectivity": [
@@ -13954,16 +14236,18 @@
         ]
     },
     "324743": {
-        "reportTime": 1741497783180,
+        "reportTime": 1741548505355,
         "globalBlockReferenceId": 324743,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -125.6,
-                "latitude": 48.1333333333333
+                "latitude": 48.2
             },
             "southEastern": {
                 "longitude": -124.8,
-                "latitude": 48.0666666666667
+                "latitude": 48.1333333333333
             }
         },
         "reflectivity": [
@@ -14026,16 +14310,18 @@
         ]
     },
     "324744": {
-        "reportTime": 1741497782812,
+        "reportTime": 1741548505306,
         "globalBlockReferenceId": 324744,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124.8,
-                "latitude": 48.1333333333333
+                "latitude": 48.2
             },
             "southEastern": {
                 "longitude": -124,
-                "latitude": 48.0666666666667
+                "latitude": 48.1333333333333
             }
         },
         "reflectivity": [
@@ -14102,16 +14388,18 @@
         ]
     },
     "324745": {
-        "reportTime": 1741497783232,
+        "reportTime": 1741548505360,
         "globalBlockReferenceId": 324745,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124,
-                "latitude": 48.1333333333333
+                "latitude": 48.2
             },
             "southEastern": {
                 "longitude": -123.2,
-                "latitude": 48.0666666666667
+                "latitude": 48.1333333333333
             }
         },
         "reflectivity": [
@@ -14190,16 +14478,18 @@
         ]
     },
     "324746": {
-        "reportTime": 1741497783339,
+        "reportTime": 1741548505368,
         "globalBlockReferenceId": 324746,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 48.1333333333333
+                "latitude": 48.2
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 48.0666666666667
+                "latitude": 48.1333333333333
             }
         },
         "reflectivity": [
@@ -14302,16 +14592,18 @@
         ]
     },
     "324748": {
-        "reportTime": 1741497783265,
+        "reportTime": 1741548505362,
         "globalBlockReferenceId": 324748,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -121.6,
-                "latitude": 48.1333333333333
+                "latitude": 48.2
             },
             "southEastern": {
                 "longitude": -120.8,
-                "latitude": 48.0666666666667
+                "latitude": 48.1333333333333
             }
         },
         "reflectivity": [
@@ -14402,16 +14694,18 @@
         ]
     },
     "325194": {
-        "reportTime": 1741497783031,
+        "reportTime": 1741548505342,
         "globalBlockReferenceId": 325194,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124.8,
-                "latitude": 48.2
+                "latitude": 48.2666666666667
             },
             "southEastern": {
                 "longitude": -124,
-                "latitude": 48.1333333333333
+                "latitude": 48.2
             }
         },
         "reflectivity": [
@@ -14538,16 +14832,18 @@
         ]
     },
     "325195": {
-        "reportTime": 1741497783234,
+        "reportTime": 1741548505360,
         "globalBlockReferenceId": 325195,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124,
-                "latitude": 48.2
+                "latitude": 48.2666666666667
             },
             "southEastern": {
                 "longitude": -123.2,
-                "latitude": 48.1333333333333
+                "latitude": 48.2
             }
         },
         "reflectivity": [
@@ -14626,16 +14922,18 @@
         ]
     },
     "325196": {
-        "reportTime": 1741497783280,
+        "reportTime": 1741548505364,
         "globalBlockReferenceId": 325196,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 48.2
+                "latitude": 48.2666666666667
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 48.1333333333333
+                "latitude": 48.2
             }
         },
         "reflectivity": [
@@ -14726,16 +15024,18 @@
         ]
     },
     "325643": {
-        "reportTime": 1741497782903,
+        "reportTime": 1741548505329,
         "globalBlockReferenceId": 325643,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -125.6,
-                "latitude": 48.2666666666667
+                "latitude": 48.3333333333333
             },
             "southEastern": {
                 "longitude": -124.8,
-                "latitude": 48.2
+                "latitude": 48.2666666666667
             }
         },
         "reflectivity": [
@@ -14786,16 +15086,18 @@
         ]
     },
     "325645": {
-        "reportTime": 1741497783040,
+        "reportTime": 1741548505343,
         "globalBlockReferenceId": 325645,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124,
-                "latitude": 48.2666666666667
+                "latitude": 48.3333333333333
             },
             "southEastern": {
                 "longitude": -123.2,
-                "latitude": 48.2
+                "latitude": 48.2666666666667
             }
         },
         "reflectivity": [
@@ -14922,16 +15224,18 @@
         ]
     },
     "325646": {
-        "reportTime": 1741497782953,
+        "reportTime": 1741548505335,
         "globalBlockReferenceId": 325646,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 48.2666666666667
+                "latitude": 48.3333333333333
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 48.2
+                "latitude": 48.2666666666667
             }
         },
         "reflectivity": [
@@ -15018,16 +15322,18 @@
         ]
     },
     "325647": {
-        "reportTime": 1741497782840,
+        "reportTime": 1741548505311,
         "globalBlockReferenceId": 325647,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 48.2666666666667
+                "latitude": 48.3333333333333
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 48.2
+                "latitude": 48.2666666666667
             }
         },
         "reflectivity": [
@@ -15106,16 +15412,18 @@
         ]
     },
     "326094": {
-        "reportTime": 1741497783283,
+        "reportTime": 1741548505364,
         "globalBlockReferenceId": 326094,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124.8,
-                "latitude": 48.3333333333333
+                "latitude": 48.4
             },
             "southEastern": {
                 "longitude": -124,
-                "latitude": 48.2666666666667
+                "latitude": 48.3333333333333
             }
         },
         "reflectivity": [
@@ -15206,16 +15514,18 @@
         ]
     },
     "326095": {
-        "reportTime": 1741497782912,
+        "reportTime": 1741548505331,
         "globalBlockReferenceId": 326095,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124,
-                "latitude": 48.3333333333333
+                "latitude": 48.4
             },
             "southEastern": {
                 "longitude": -123.2,
-                "latitude": 48.2666666666667
+                "latitude": 48.3333333333333
             }
         },
         "reflectivity": [
@@ -15294,16 +15604,18 @@
         ]
     },
     "326096": {
-        "reportTime": 1741497783069,
+        "reportTime": 1741548505344,
         "globalBlockReferenceId": 326096,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 48.3333333333333
+                "latitude": 48.4
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 48.2666666666667
+                "latitude": 48.3333333333333
             }
         },
         "reflectivity": [
@@ -15426,16 +15738,18 @@
         ]
     },
     "326543": {
-        "reportTime": 1741497782914,
+        "reportTime": 1741548505331,
         "globalBlockReferenceId": 326543,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -125.6,
-                "latitude": 48.4
+                "latitude": 48.4666666666667
             },
             "southEastern": {
                 "longitude": -124.8,
-                "latitude": 48.3333333333333
+                "latitude": 48.4
             }
         },
         "reflectivity": [
@@ -15502,16 +15816,18 @@
         ]
     },
     "326544": {
-        "reportTime": 1741497783334,
+        "reportTime": 1741548505367,
         "globalBlockReferenceId": 326544,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124.8,
-                "latitude": 48.4
+                "latitude": 48.4666666666667
             },
             "southEastern": {
                 "longitude": -124,
-                "latitude": 48.3333333333333
+                "latitude": 48.4
             }
         },
         "reflectivity": [
@@ -15610,16 +15926,18 @@
         ]
     },
     "326545": {
-        "reportTime": 1741497783239,
+        "reportTime": 1741548505360,
         "globalBlockReferenceId": 326545,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124,
-                "latitude": 48.4
+                "latitude": 48.4666666666667
             },
             "southEastern": {
                 "longitude": -123.2,
-                "latitude": 48.3333333333333
+                "latitude": 48.4
             }
         },
         "reflectivity": [
@@ -15702,16 +16020,18 @@
         ]
     },
     "326546": {
-        "reportTime": 1741497783285,
+        "reportTime": 1741548505364,
         "globalBlockReferenceId": 326546,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 48.4
+                "latitude": 48.4666666666667
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 48.3333333333333
+                "latitude": 48.4
             }
         },
         "reflectivity": [
@@ -15814,16 +16134,18 @@
         ]
     },
     "326547": {
-        "reportTime": 1741497782955,
+        "reportTime": 1741548505335,
         "globalBlockReferenceId": 326547,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 48.4
+                "latitude": 48.4666666666667
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 48.3333333333333
+                "latitude": 48.4
             }
         },
         "reflectivity": [
@@ -15910,16 +16232,18 @@
         ]
     },
     "326996": {
-        "reportTime": 1741497783082,
+        "reportTime": 1741548505345,
         "globalBlockReferenceId": 326996,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 48.4666666666667
+                "latitude": 48.5333333333333
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 48.4
+                "latitude": 48.4666666666667
             }
         },
         "reflectivity": [
@@ -16046,16 +16370,18 @@
         ]
     },
     "326997": {
-        "reportTime": 1741497783184,
+        "reportTime": 1741548505356,
         "globalBlockReferenceId": 326997,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 48.4666666666667
+                "latitude": 48.5333333333333
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 48.4
+                "latitude": 48.4666666666667
             }
         },
         "reflectivity": [
@@ -16114,16 +16440,18 @@
         ]
     },
     "326998": {
-        "reportTime": 1741497782904,
+        "reportTime": 1741548505330,
         "globalBlockReferenceId": 326998,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -121.6,
-                "latitude": 48.4666666666667
+                "latitude": 48.5333333333333
             },
             "southEastern": {
                 "longitude": -120.8,
-                "latitude": 48.4
+                "latitude": 48.4666666666667
             }
         },
         "reflectivity": [
@@ -16178,16 +16506,18 @@
         ]
     },
     "327443": {
-        "reportTime": 1741497783114,
+        "reportTime": 1741548505346,
         "globalBlockReferenceId": 327443,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -125.6,
-                "latitude": 48.5333333333333
+                "latitude": 48.6
             },
             "southEastern": {
                 "longitude": -124.8,
-                "latitude": 48.4666666666667
+                "latitude": 48.5333333333333
             }
         },
         "reflectivity": [
@@ -16322,16 +16652,18 @@
         ]
     },
     "327444": {
-        "reportTime": 1741497782941,
+        "reportTime": 1741548505334,
         "globalBlockReferenceId": 327444,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124.8,
-                "latitude": 48.5333333333333
+                "latitude": 48.6
             },
             "southEastern": {
                 "longitude": -124,
-                "latitude": 48.4666666666667
+                "latitude": 48.5333333333333
             }
         },
         "reflectivity": [
@@ -16422,16 +16754,18 @@
         ]
     },
     "327446": {
-        "reportTime": 1741497782957,
+        "reportTime": 1741548505335,
         "globalBlockReferenceId": 327446,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 48.5333333333333
+                "latitude": 48.6
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 48.4666666666667
+                "latitude": 48.5333333333333
             }
         },
         "reflectivity": [
@@ -16518,16 +16852,18 @@
         ]
     },
     "327447": {
-        "reportTime": 1741497782989,
+        "reportTime": 1741548505338,
         "globalBlockReferenceId": 327447,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 48.5333333333333
+                "latitude": 48.6
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 48.4666666666667
+                "latitude": 48.5333333333333
             }
         },
         "reflectivity": [
@@ -16626,16 +16962,18 @@
         ]
     },
     "327894": {
-        "reportTime": 1741497782959,
+        "reportTime": 1741548505335,
         "globalBlockReferenceId": 327894,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124.8,
-                "latitude": 48.6
+                "latitude": 48.6666666666667
             },
             "southEastern": {
                 "longitude": -124,
-                "latitude": 48.5333333333333
+                "latitude": 48.6
             }
         },
         "reflectivity": [
@@ -16722,16 +17060,18 @@
         ]
     },
     "327897": {
-        "reportTime": 1741497782963,
+        "reportTime": 1741548505336,
         "globalBlockReferenceId": 327897,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 48.6
+                "latitude": 48.6666666666667
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 48.5333333333333
+                "latitude": 48.6
             }
         },
         "reflectivity": [
@@ -16826,16 +17166,18 @@
         ]
     },
     "328344": {
-        "reportTime": 1741497783242,
+        "reportTime": 1741548505361,
         "globalBlockReferenceId": 328344,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124.8,
-                "latitude": 48.6666666666667
+                "latitude": 48.7333333333333
             },
             "southEastern": {
                 "longitude": -124,
-                "latitude": 48.6
+                "latitude": 48.6666666666667
             }
         },
         "reflectivity": [
@@ -16914,16 +17256,18 @@
         ]
     },
     "328345": {
-        "reportTime": 1741497782992,
+        "reportTime": 1741548505338,
         "globalBlockReferenceId": 328345,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124,
-                "latitude": 48.6666666666667
+                "latitude": 48.7333333333333
             },
             "southEastern": {
                 "longitude": -123.2,
-                "latitude": 48.6
+                "latitude": 48.6666666666667
             }
         },
         "reflectivity": [
@@ -17022,16 +17366,18 @@
         ]
     },
     "328347": {
-        "reportTime": 1741497782994,
+        "reportTime": 1741548505338,
         "globalBlockReferenceId": 328347,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 48.6666666666667
+                "latitude": 48.7333333333333
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 48.6
+                "latitude": 48.6666666666667
             }
         },
         "reflectivity": [
@@ -17134,16 +17480,18 @@
         ]
     },
     "328794": {
-        "reportTime": 1741497783246,
+        "reportTime": 1741548505361,
         "globalBlockReferenceId": 328794,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124.8,
-                "latitude": 48.7333333333333
+                "latitude": 48.8
             },
             "southEastern": {
                 "longitude": -124,
-                "latitude": 48.6666666666667
+                "latitude": 48.7333333333333
             }
         },
         "reflectivity": [
@@ -17222,16 +17570,18 @@
         ]
     },
     "328796": {
-        "reportTime": 1741497783218,
+        "reportTime": 1741548505359,
         "globalBlockReferenceId": 328796,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 48.7333333333333
+                "latitude": 48.8
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 48.6666666666667
+                "latitude": 48.7333333333333
             }
         },
         "reflectivity": [
@@ -17314,16 +17664,18 @@
         ]
     },
     "328797": {
-        "reportTime": 1741497783020,
+        "reportTime": 1741548505341,
         "globalBlockReferenceId": 328797,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 48.7333333333333
+                "latitude": 48.8
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 48.6666666666667
+                "latitude": 48.7333333333333
             }
         },
         "reflectivity": [
@@ -17434,16 +17786,18 @@
         ]
     },
     "329245": {
-        "reportTime": 1741497783161,
+        "reportTime": 1741548505354,
         "globalBlockReferenceId": 329245,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124,
-                "latitude": 48.8
+                "latitude": 48.8666666666667
             },
             "southEastern": {
                 "longitude": -123.2,
-                "latitude": 48.7333333333333
+                "latitude": 48.8
             }
         },
         "reflectivity": [
@@ -17490,16 +17844,18 @@
         ]
     },
     "329695": {
-        "reportTime": 1741497783301,
+        "reportTime": 1741548505365,
         "globalBlockReferenceId": 329695,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124,
-                "latitude": 48.8666666666667
+                "latitude": 48.9333333333333
             },
             "southEastern": {
                 "longitude": -123.2,
-                "latitude": 48.8
+                "latitude": 48.8666666666667
             }
         },
         "reflectivity": [
@@ -17594,16 +17950,18 @@
         ]
     },
     "329697": {
-        "reportTime": 1741497783321,
+        "reportTime": 1741548505367,
         "globalBlockReferenceId": 329697,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 48.8666666666667
+                "latitude": 48.9333333333333
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 48.8
+                "latitude": 48.8666666666667
             }
         },
         "reflectivity": [
@@ -17714,16 +18072,18 @@
         ]
     },
     "330145": {
-        "reportTime": 1741497782927,
+        "reportTime": 1741548505333,
         "globalBlockReferenceId": 330145,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124,
-                "latitude": 48.9333333333333
+                "latitude": 49
             },
             "southEastern": {
                 "longitude": -123.2,
-                "latitude": 48.8666666666667
+                "latitude": 48.9333333333333
             }
         },
         "reflectivity": [
@@ -17806,16 +18166,18 @@
         ]
     },
     "330146": {
-        "reportTime": 1741497783124,
+        "reportTime": 1741548505347,
         "globalBlockReferenceId": 330146,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 48.9333333333333
+                "latitude": 49
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 48.8666666666667
+                "latitude": 48.9333333333333
             }
         },
         "reflectivity": [
@@ -17946,16 +18308,18 @@
         ]
     },
     "330147": {
-        "reportTime": 1741497782961,
+        "reportTime": 1741548505335,
         "globalBlockReferenceId": 330147,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 48.9333333333333
+                "latitude": 49
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 48.8666666666667
+                "latitude": 48.9333333333333
             }
         },
         "reflectivity": [
@@ -18042,16 +18406,18 @@
         ]
     },
     "330595": {
-        "reportTime": 1741497783324,
+        "reportTime": 1741548505367,
         "globalBlockReferenceId": 330595,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124,
-                "latitude": 49
+                "latitude": 49.0666666666667
             },
             "southEastern": {
                 "longitude": -123.2,
-                "latitude": 48.9333333333333
+                "latitude": 49
             }
         },
         "reflectivity": [
@@ -18162,16 +18528,18 @@
         ]
     },
     "330597": {
-        "reportTime": 1741497783222,
+        "reportTime": 1741548505359,
         "globalBlockReferenceId": 330597,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 49
+                "latitude": 49.0666666666667
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 48.9333333333333
+                "latitude": 49
             }
         },
         "reflectivity": [
@@ -18246,16 +18614,18 @@
         ]
     },
     "331047": {
-        "reportTime": 1741497783189,
+        "reportTime": 1741548505356,
         "globalBlockReferenceId": 331047,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -122.4,
-                "latitude": 49.0666666666667
+                "latitude": 49.1333333333333
             },
             "southEastern": {
                 "longitude": -121.6,
-                "latitude": 49
+                "latitude": 49.0666666666667
             }
         },
         "reflectivity": [
@@ -18306,16 +18676,18 @@
         ]
     },
     "331494": {
-        "reportTime": 1741497782996,
+        "reportTime": 1741548505338,
         "globalBlockReferenceId": 331494,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124.8,
-                "latitude": 49.1333333333333
+                "latitude": 49.2
             },
             "southEastern": {
                 "longitude": -124,
-                "latitude": 49.0666666666667
+                "latitude": 49.1333333333333
             }
         },
         "reflectivity": [
@@ -18418,16 +18790,18 @@
         ]
     },
     "331496": {
-        "reportTime": 1741497783006,
+        "reportTime": 1741548505341,
         "globalBlockReferenceId": 331496,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 49.1333333333333
+                "latitude": 49.2
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 49.0666666666667
+                "latitude": 49.1333333333333
             }
         },
         "reflectivity": [
@@ -18550,16 +18924,18 @@
         ]
     },
     "332846": {
-        "reportTime": 1741497782834,
+        "reportTime": 1741548505308,
         "globalBlockReferenceId": 332846,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 49.3333333333333
+                "latitude": 49.4
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 49.2666666666667
+                "latitude": 49.3333333333333
             }
         },
         "reflectivity": [
@@ -18634,16 +19010,18 @@
         ]
     },
     "333295": {
-        "reportTime": 1741497782820,
+        "reportTime": 1741548505307,
         "globalBlockReferenceId": 333295,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -124,
-                "latitude": 49.4
+                "latitude": 49.4666666666667
             },
             "southEastern": {
                 "longitude": -123.2,
-                "latitude": 49.3333333333333
+                "latitude": 49.4
             }
         },
         "reflectivity": [
@@ -18714,16 +19092,18 @@
         ]
     },
     "333296": {
-        "reportTime": 1741497782817,
+        "reportTime": 1741548505306,
         "globalBlockReferenceId": 333296,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 49.4
+                "latitude": 49.4666666666667
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 49.3333333333333
+                "latitude": 49.4
             }
         },
         "reflectivity": [
@@ -18794,16 +19174,18 @@
         ]
     },
     "333746": {
-        "reportTime": 1741497782939,
+        "reportTime": 1741548505334,
         "globalBlockReferenceId": 333746,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 49.4666666666667
+                "latitude": 49.5333333333333
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 49.4
+                "latitude": 49.4666666666667
             }
         },
         "reflectivity": [
@@ -18894,16 +19276,18 @@
         ]
     },
     "334196": {
-        "reportTime": 1741497783326,
+        "reportTime": 1741548505367,
         "globalBlockReferenceId": 334196,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 49.5333333333333
+                "latitude": 49.6
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 49.4666666666667
+                "latitude": 49.5333333333333
             }
         },
         "reflectivity": [
@@ -19002,16 +19386,18 @@
         ]
     },
     "334646": {
-        "reportTime": 1741497783192,
+        "reportTime": 1741548505356,
         "globalBlockReferenceId": 334646,
         "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
             "northWestern": {
                 "longitude": -123.2,
-                "latitude": 49.6
+                "latitude": 49.6666666666667
             },
             "southEastern": {
                 "longitude": -122.4,
-                "latitude": 49.5333333333333
+                "latitude": 49.6
             }
         },
         "reflectivity": [
