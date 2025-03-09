@@ -189,21 +189,23 @@ class WeatherTopViewScope(TopDownScope):
         lon_start_index: int = 0
         rle = block.reflectivity[lat_index]
 
-        [
+        for run in rle:
+            run_length:int = run["runLength"]
+            reflectivity:int  = run["reflectivity"]
+
             self.__render_bin_lon_range__(
                 framebuffer,
                 orientation,
                 current_heading,
                 scope_range,
                 lon_start_index,
-                lon_start_index + (run["runLength"] - 1),
+                lon_start_index + (run_length - 1),
                 n_edge_lat,
                 s_edge_lat,
                 block,
-                run["reflectivity"],
+                reflectivity,
             )
-            for run in rle
-        ]
+            lon_start_index += run_length
 
     def __render_bin_lon_range__(
         self,
@@ -321,8 +323,8 @@ if __name__ == "__main__":
 
 
     test_data_files = [
-        "../test_data/faa_sample_reflectivity.json"
-        #"../test_data/reflectivity_response.json"
+        "../test_data/faa_sample_reflectivity.json",
+        "../test_data/reflectivity_response.json"
     ]
 
     for test_data_file in test_data_files:
