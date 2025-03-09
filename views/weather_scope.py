@@ -3,7 +3,6 @@ View element for a weather "radar" that looks from the top downwards.
 """
 
 import datetime
-from typing import Tuple
 
 import pygame
 
@@ -193,7 +192,7 @@ class WeatherTopViewScope(TopDownScope):
         s_lat = n_lat - lat_step
 
         lon_start_index: int = 0
-        rle = self.__get_run_length_encoded_ranges__(block.reflectivity[lat_index])
+        rle = block.reflectivity[lat_index]
 
         [
             self.__render_bin_lon_range__(
@@ -202,34 +201,15 @@ class WeatherTopViewScope(TopDownScope):
                 current_heading,
                 scope_range,
                 lon_start_index,
-                lon_start_index + count,
+                lon_start_index + run["runLength"],
                 lon_step,
                 n_lat,
                 s_lat,
                 block,
-                reflectivity,
+                run["reflectivity"],
             )
-            or (lon_start_index := lon_start_index + count + 1)
-            for reflectivity, count in rle
+            for run in rle
         ]
-
-    def __get_run_length_encoded_ranges__(self, columns):
-        result = []
-        current_value = columns[0]
-        count = 1
-
-        for value in columns[1:]:
-            if value == current_value:
-                count += 1
-            else:
-                result.append((current_value, count))
-                current_value = value
-                count = 1
-
-        # Append the last run
-        result.append((current_value, count))
-
-        return result
 
     def __render_bin_lon_range__(
         self,
@@ -334,18 +314,19 @@ class WeatherTopViewScope(TopDownScope):
 
 
 if __name__ == "__main__":
-    from views.compass_and_heading_top_element import CompassAndHeadingTopElement
+    import json
+
+    from views.compass_and_heading_top_element import \
+        CompassAndHeadingTopElement
     from views.groundspeed import Groundspeed
     from views.hud_elements import run_hud_elements
-    import json
 
     nexrad_client = NexradClient(
         configuration.CONFIGURATION.get_traffic_manager_address()
     )
 
     test_data_files = [
-        "../test_data/challenging_reflectivity.json",
-        "../test_data/seatac_nye_2024_reflectivity.json",
+        "../test_data/reflectivity_response.json"
     ]
 
     for test_data_file in test_data_files:
