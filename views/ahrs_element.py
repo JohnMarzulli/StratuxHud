@@ -45,6 +45,7 @@ class HudElement(object):
         self.__thick_line_width__ = self.__line_width__ >> 1
 
         self.__reduced_visuals__ = reduced_visuals
+        self.__cluter_visuals__ = False
 
         self.__speed_units__ = configuration.CONFIGURATION.__get_config_value__(
             configuration.Configuration.DISTANCE_UNITS_KEY, units.STATUTE

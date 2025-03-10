@@ -4,6 +4,7 @@ Shared code to help speed up various math functions.
 
 import math
 from functools import lru_cache
+from typing import Generator
 
 SIN_BY_DEGREES = {}
 COS_BY_DEGREES = {}
@@ -58,13 +59,7 @@ def clamp(
     30
     """
 
-    if value < minimum:
-        return minimum
-
-    if value > maximum:
-        return maximum
-
-    return value
+    return minimum if value < minimum else min(value, maximum)
 
 
 def interpolatef(
@@ -208,7 +203,7 @@ def rangef(
     start: float,
     stop: float,
     step: float
-) -> list:
+) -> Generator[float, None, None]:
     """
     Generate a list of numbers between the starting point
     and ending point (inclusive)
@@ -225,7 +220,7 @@ def rangef(
         Iterator[list]: [description]
     """
     while start < stop:
-        yield float(start)
+        yield start
         start += step
 
 
@@ -247,7 +242,7 @@ def get_circle_points(
     Returns:
         list: The points that make the circle.
     """
-    angle_chunks = math.sqrt(radius / 2.0)
+    angle_chunks = math.sqrt(radius / 2.0) * 4.0
     arc_radians = (angle_chunks / radius)
     arc_radians = max(0.1, arc_radians)
 
@@ -268,10 +263,7 @@ def wrap_degrees(
     if angle < 0.0:
         return wrap_degrees(angle + 360.0)
 
-    if angle >= 360.0:
-        return wrap_degrees(angle - 360.0)
-
-    return angle
+    return wrap_degrees(angle - 360.0) if angle >= 360.0 else angle
 
 
 @lru_cache(maxsize=360)
@@ -287,10 +279,7 @@ def wrap_radians(
     if radians < 0.0:
         return wrap_radians(radians + TWO_PI)
 
-    if radians > TWO_PI:
-        return wrap_radians(radians - TWO_PI)
-
-    return radians
+    return wrap_radians(radians - TWO_PI) if radians > TWO_PI else radians
 
 
 @lru_cache(maxsize=1000)
@@ -395,8 +384,7 @@ def translate_points(
         list: The original points that have been translated.
     """
 
-    return [[point[0] + translation[0],
-             point[1] + translation[1]] for point in list_of_points]
+    return [[point[0] + translation[0], point[1] + translation[1]] for point in list_of_points]
 
 
 def rotate_points(

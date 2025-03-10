@@ -118,25 +118,26 @@ class WeatherTopViewScope(TopDownScope):
             for block in nexrad_blocks
         ]
 
-        self.__nearby_blocks_count__ = len(nexrad_blocks)
+        if self.__cluter_visuals__:
+            self.__nearby_blocks_count__ = len(nexrad_blocks)
 
-        self.__render_text__(
-            framebuffer,
-            f"Nearby: {self.__nearby_blocks_count__}",
-            nearby_position,
-            colors.YELLOW,
-            0.5,
-        )
+            self.__render_text__(
+                framebuffer,
+                f"Nearby: {self.__nearby_blocks_count__}",
+                nearby_position,
+                colors.YELLOW,
+                0.5,
+            )
 
-        self.__total_blocks_count__ = len(NexradClient.REFLECTIVITY.keys())
+            self.__total_blocks_count__ = len(NexradClient.REFLECTIVITY.keys())
 
-        self.__render_text__(
-            framebuffer,
-            f"Total: {self.__total_blocks_count__}",
-            total_position,
-            colors.YELLOW,
-            0.5,
-        )
+            self.__render_text__(
+                framebuffer,
+                f"Total: {self.__total_blocks_count__}",
+                total_position,
+                colors.YELLOW,
+                0.5,
+            )
 
     def __get_nexrad_blocks__(self, position, max_distance: float) -> List[ReflectivityBlock]:
         now = datetime.datetime.now(datetime.timezone.utc)
@@ -293,7 +294,7 @@ class WeatherTopViewScope(TopDownScope):
             "views.weather_top_view_scope.WeatherTopViewScope.render_ring"
         ):
             self.__render_ownship__(framebuffer)
-            self.__draw_distance_rings__(framebuffer, scope_range)
+            self.__draw_distance_rings__(framebuffer, scope_range, colors.WHITE)
             self.__draw_all_compass_headings__(framebuffer, orientation, scope_range)
 
         with TaskProfiler(
