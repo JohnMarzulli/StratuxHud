@@ -502,12 +502,14 @@ sudo make install
 
 ```bash
 sudo apt install libsdl-mixer1.2-dev
-sudo apt install libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev libsdl-sound1.2-dev python3-pygame
+sudo apt install libsdl2-ttf-dev libsdl2-mixer-dev libsdl2-image-dev libsdl-sound1.2-dev python3-pygame python3-pygame-sdl2
 
 pip3 install setuptools
 sudo python3 setup.py develop
-pip4 install pygame==1.9.6
+pip3 install pygame==1.9.6
 ```
+
+Installing Pygame V1.9.6 is important as 2.0 and newer do not allow for the creation of the framebuffer device.
 
 ## OpenGl
 

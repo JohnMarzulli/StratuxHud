@@ -2,14 +2,13 @@
 View element for a "radar scope" that looks from the top downwards.
 """
 
-from typing import Tuple
-
 import pygame
 
 from common_utils import fast_math, geo_math
 from common_utils.task_timer import TaskProfiler
 from configuration import configuration
 from core_services import breadcrumbs, zoom_tracker
+from core_services.scope_range import ScopeRange
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.nexrad import NexradClient
@@ -23,6 +22,24 @@ class AdsbTopViewScope(TopDownScope):
     A view element for the HUD that draws a radar style scope
     showing where traffic is relative to our current position.
     """
+
+    def handle_events(self, unhandled_events) -> list:
+        remaining_unhandled_events = []
+
+        for event in unhandled_events:
+            if event.type != pygame.KEYUP:
+                continue
+
+            if event.key in [pygame.K_UP, pygame.K_KP8]:
+                self.__zoom_tracker__.manual_zoom_out()
+            elif event.key in [pygame.K_DOWN, pygame.K_KP2]:
+                self.__zoom_tracker__.manual_zoom_in()
+            elif event.key in [pygame.K_KP7, 55]:  # 55 is '7'
+                self.__zoom_tracker__.return_to_automatic()
+            else:
+                remaining_unhandled_events.append(event)
+
+        return remaining_unhandled_events
 
     def __init__(
         self,
@@ -45,8 +62,7 @@ class AdsbTopViewScope(TopDownScope):
         framebuffer,
         orientation: AhrsData,
         traffic: Traffic,
-        scope_range: float,
-        first_ring_pixel_distance: int,
+        scope_range: ScopeRange,
     ):
         """
         Draws a single reticle on the screen.
@@ -68,11 +84,15 @@ class AdsbTopViewScope(TopDownScope):
         # TODO - Consider tail numbers to the side, with lines
         # that connect the number to the target.
 
-        (is_within_threshold, display_distance) = (
-            zoom_tracker.INSTANCE.is_in_inner_range(traffic.distance)
+        distance = geo_math.get_distance(
+            orientation.position, [traffic.latitude, traffic.longitude]
         )
 
-        if not is_within_threshold:
+        (is_within_threshold, display_distance) = self.__zoom_tracker__.is_in_range(
+            traffic.distance
+        )
+
+        if distance > scope_range.max_ring_range:
             return
 
         pixels_from_center = self.__get_pixel_distance__(display_distance, scope_range)
@@ -117,7 +137,7 @@ class AdsbTopViewScope(TopDownScope):
 
         # Do not draw identifier text for any targets further than
         # the first scope ring.
-        if pixels_from_center > first_ring_pixel_distance:
+        if distance > scope_range.center_ring_range:
             return
 
         if self.__draw_identifiers__:
@@ -155,10 +175,9 @@ class AdsbTopViewScope(TopDownScope):
     def __render_breadcrumbs__(
         self,
         framebuffer: pygame.Surface,
-        scope_range: Tuple[int, int],
+        scope_range: ScopeRange,
         orientation: AhrsData,
     ):
-        max_distance = scope_range[0]
         breadcrumb_reports = breadcrumbs.INSTANCE.get_trail()
         breadcrumb_count = len(breadcrumb_reports)
 
@@ -195,7 +214,7 @@ class AdsbTopViewScope(TopDownScope):
                 orientation.position, breadcrumb_reports[index][0]
             )
 
-            if distance_start > max_distance:
+            if distance_start > scope_range.max_ring_range:
                 previous_position = None
                 continue
 
@@ -208,7 +227,7 @@ class AdsbTopViewScope(TopDownScope):
             delta_angle = AdsbTopViewScope.TRAFFIC_PHASE_SHIFT + delta_angle
             delta_angle = fast_math.wrap_degrees(delta_angle)
 
-            pixel_distance = self.__get_pixel_distance__(distance_start, max_distance)
+            pixel_distance = self.__get_pixel_distance__(distance_start, scope_range)
 
             color = [int(component * proportion) for component in colors.GREEN]
             screen_coords = self.__get_screen_projection_from_center__(
@@ -249,40 +268,41 @@ class AdsbTopViewScope(TopDownScope):
         # TODO: Try listing identifiers on side with lines leading to the aircraft
         # TODO: MORE TESTING!!!
 
+        self.__zoom_tracker__.update(orientation)
+
         with TaskProfiler("views.adsb_top_view_scope.AdsbTopViewScope.setup"):
-            scope_range = zoom_tracker.INSTANCE.get_target_zoom()
+            scope_range: ScopeRange = self.__zoom_tracker__.get_target_zoom()
             traffic_reports = HudDataCache.get_reliable_traffic()
             traffic_reports.sort(key=lambda traffic: traffic.distance, reverse=True)
-
-        near_target_distance = zoom_tracker.INSTANCE.get_target_threshold_distance()
 
         with TaskProfiler(
             "views.adsb_top_view_scope.AdsbTopViewScope.render_breadcrumbs"
         ):
             self.__render_breadcrumbs__(framebuffer, scope_range, orientation)
 
-        with TaskProfiler("views.adsb_top_view_scope.AdsbTopViewScope.render"):
-            self.__render_ownship__(framebuffer)
+        with TaskProfiler("views.adsb_top_view_scope.AdsbTopViewScope.render_rings"):
 
             first_ring_pixel_radius = self.__draw_distance_rings__(
                 framebuffer, scope_range
             )
 
-            self.__draw_all_compass_headings__(
-                framebuffer, orientation, near_target_distance
-            )
+            self.__draw_all_compass_headings__(framebuffer, orientation, scope_range)
 
-            if not orientation.gps_online:
-                return
+            self.__render_ownship__(framebuffer)
+
+        if not orientation.gps_online:
+            return
+
+        with TaskProfiler("views.adsb_top_view_scope.AdsbTopViewScope.render_airports"):
+
+            self.__draw_airports__(framebuffer, orientation, scope_range)
+
+        with TaskProfiler("views.adsb_top_view_scope.AdsbTopViewScope.render_traffic"):
 
             # pylint: disable=expression-not-assigned
             [
                 self.__render_on_screen_target__(
-                    framebuffer,
-                    orientation,
-                    traffic,
-                    near_target_distance,
-                    first_ring_pixel_radius,
+                    framebuffer, orientation, traffic, scope_range
                 )
                 for traffic in traffic_reports
             ]

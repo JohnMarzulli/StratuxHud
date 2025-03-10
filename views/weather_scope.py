@@ -3,16 +3,20 @@ View element for a weather "radar" that looks from the top downwards.
 """
 
 import datetime
-from typing import Tuple
+from typing import List
 
 import pygame
 
+from common_utils import geo_math
 from common_utils.task_timer import TaskProfiler
+from common_utils.tasks import IntermittentTask
 from configuration import configuration
-from core_services import zoom_tracker
+from core_services.scope_range import ScopeRange
+from core_services.zoom_manager import ZoomManager
 from data_sources.ahrs_data import AhrsData
-from data_sources.nexrad import NexradClient
-from rendering import drawing
+from data_sources.airports import AirportClient
+from data_sources.nexrad import NexradClient, ReflectivityBlock
+from rendering import colors, drawing
 from views.top_down_scope import TopDownScope
 
 
@@ -24,6 +28,23 @@ class WeatherTopViewScope(TopDownScope):
 
     BIN_ROWS = [0, 1, 2, 3]
     BIN_COLUMNS = list(range(32))
+
+    def handle_events(self, unhandled_events) -> list:
+
+        remaining_unhandled_events = []
+
+        for event in unhandled_events:
+            if event.type != pygame.KEYUP:
+                continue
+
+            if event.key in [pygame.K_UP, pygame.K_KP8]:
+                self.__zoom_manager__.manual_zoom_out()
+            elif event.key in [pygame.K_DOWN, pygame.K_KP2]:
+                self.__zoom_manager__.manual_zoom_in()
+            else:
+                remaining_unhandled_events.append(event)
+
+        return remaining_unhandled_events
 
     def __init__(
         self,
@@ -42,38 +63,82 @@ class WeatherTopViewScope(TopDownScope):
         )
 
         self.__time_of_last_block_fetch__ = datetime.datetime.now(datetime.timezone.utc)
-        self.__nexrad_cache__ = None
+        self.__nexrad_cache__: List[ReflectivityBlock] = None
+        self.__zoom_manager__: ZoomManager = ZoomManager()
+        self.__zoom_manager__.manual_zoom_out()
+        self.__zoom_manager__.manual_zoom_out()
+        self.__zoom_manager__.manual_zoom_out()
+        self.__failed_bin_counts__ = 0
+        self.__missing_bin_counts__ = 0
+        self.__successful_bin_counts__ = 0
+        self.__nearby_blocks_count__ = 0
+        self.__total_blocks_count__ = 0
+
+        self.__log_bin_stats_task__ = IntermittentTask(
+            "Render Failed Weather Counts", 15.0, self.__log_bin_counts__, None
+        )
 
     def __render_reflectivity__(
         self,
         framebuffer: pygame.Surface,
-        scope_range: Tuple[int, int],
         orientation: AhrsData,
     ):
-        max_distance = scope_range[0]
+        self.__log_bin_stats_task__.run()
+        self.__successful_bin_counts__ = 0
+        self.__failed_bin_counts__ = 0
+        self.__missing_bin_counts__ = 0
 
-        if (
+        scope_range = self.__zoom_manager__.get_current_zoom()
+
+        text_y_pos = self.__bottom_border__ - (self.__font_height__ << 1)
+        nearby_position = [
+            self.__left_border__,
+            text_y_pos + (self.__font_height__ >> 1),
+        ]
+        total_position = [self.__left_border__, text_y_pos + self.__font_height__]
+
+        nexrad_blocks = []
+
+        if not (
             orientation.position is None
             or orientation.position[0] is None
             or orientation.position[1] is None
         ):
-            return
+            current_heading = orientation.get_onscreen_gps_heading()
 
-        current_heading = orientation.get_onscreen_gps_heading()
-
-        if current_heading is None or isinstance(current_heading, str):
-            return
-
-        nexrad_blocks = self.__get_nexrad_blocks__(orientation.position, max_distance)
+            if not (current_heading is None or isinstance(current_heading, str)):
+                nexrad_blocks = self.__get_nexrad_blocks__(
+                    orientation.position, scope_range.max_ring_range
+                )
 
         [
             self.__render_block__(
-                framebuffer, orientation, current_heading, max_distance, block
+                framebuffer, orientation, current_heading, scope_range, block
             )
             for block in nexrad_blocks
         ]
 
-    def __get_nexrad_blocks__(self, position, max_distance: float) -> list:
+        self.__nearby_blocks_count__ = len(nexrad_blocks)
+
+        self.__render_text__(
+            framebuffer,
+            f"Nearby: {self.__nearby_blocks_count__}",
+            nearby_position,
+            colors.YELLOW,
+            0.5,
+        )
+
+        self.__total_blocks_count__ = len(NexradClient.REFLECTIVITY.keys())
+
+        self.__render_text__(
+            framebuffer,
+            f"Total: {self.__total_blocks_count__}",
+            total_position,
+            colors.YELLOW,
+            0.5,
+        )
+
+    def __get_nexrad_blocks__(self, position, max_distance: float) -> List[ReflectivityBlock]:
         now = datetime.datetime.now(datetime.timezone.utc)
         seconds_since = (now - self.__time_of_last_block_fetch__).seconds
 
@@ -88,78 +153,125 @@ class WeatherTopViewScope(TopDownScope):
     def __render_block__(
         self,
         framebuffer,
-        orientation,
+        orientation: AhrsData,
         current_heading,
-        max_distance,
-        block,
+        scope_range: ScopeRange,
+        block: ReflectivityBlock,
     ):
-        lat_step = (block.north_western[0] - block.south_western[0]) / 4.0
-        lon_step = (block.north_eastern[1] - block.north_western[1]) / 32.0
-
         [
-            self.__render_bins__(
+            self.__render_bin_row__(
                 framebuffer,
                 orientation,
                 current_heading,
-                max_distance,
-                lat_index,
-                lon_index,
-                lat_step,
-                lon_step,
+                scope_range,
                 block,
+                lat_index
             )
             for lat_index in WeatherTopViewScope.BIN_ROWS
-            for lon_index in WeatherTopViewScope.BIN_COLUMNS
         ]
 
-    def __render_bins__(
+    def __render_bin_row__(
+        self,
+        framebuffer,
+        orientation: AhrsData,
+        current_heading,
+        scope_range: ScopeRange,
+        block: ReflectivityBlock,
+        lat_index
+    ):
+        if len(block.reflectivity) <= lat_index:
+            self.__missing_bin_counts__ += WeatherTopViewScope.BIN_COLUMNS
+            return
+
+        n_edge_lat = block.north_western[0] - (lat_index * block.lat_step)
+        s_edge_lat = n_edge_lat - block.lat_step
+
+        lon_start_index: int = 0
+        rle = block.reflectivity[lat_index]
+
+        for run in rle:
+            run_length:int = run["runLength"]
+            reflectivity:int  = run["reflectivity"]
+
+            self.__render_bin_lon_range__(
+                framebuffer,
+                orientation,
+                current_heading,
+                scope_range,
+                lon_start_index,
+                lon_start_index + (run_length - 1),
+                n_edge_lat,
+                s_edge_lat,
+                block,
+                reflectivity,
+            )
+            lon_start_index += run_length
+
+    def __render_bin_lon_range__(
         self,
         framebuffer,
         orientation,
         current_heading,
-        max_distance,
-        lat_index,
-        lon_index,
-        lat_step,
-        lon_step,
-        block,
+        scope_range: ScopeRange,
+        lon_start_index,
+        lon_end_index,
+        n_edge_lat,
+        s_edge_lat,
+        block: ReflectivityBlock,
+        reflectivity,
     ):
-        reflectivity = block.reflectivity[lat_index][lon_index]
+        if (lon_end_index < lon_start_index):
+            print(f"Invalid lon range: {lon_start_index} to {lon_end_index}")
+        
+        try:
+            if reflectivity == 0:
+                self.__successful_bin_counts__ += lon_end_index - lon_start_index
+                return
 
-        if reflectivity == 0:
+            color = NexradClient.reflectivity_to_rgb(reflectivity)
+
+            w_edge_lon = block.north_western[1] + (lon_start_index * block.lon_step)
+            e_edge_lon = block.north_western[1] + (lon_end_index * block.lon_step) + block.lon_step
+
+            nw = [n_edge_lat, w_edge_lon]
+            ne = [n_edge_lat, e_edge_lon]
+            se = [s_edge_lat, e_edge_lon]
+            sw = [s_edge_lat, w_edge_lon]
+
+            center_lat = (n_edge_lat + s_edge_lat) / 2.0
+            center_lon = (w_edge_lon + e_edge_lon) / 2.0
+            distance = geo_math.get_distance(
+                orientation.position, [center_lat, center_lon]
+            )
+
+            if distance > scope_range.max_ring_range:
+                return
+
+            nw_corner = self.__get_screen_coordinates__(
+                orientation, current_heading, scope_range, nw
+            )
+            ne_corner = self.__get_screen_coordinates__(
+                orientation, current_heading, scope_range, ne
+            )
+            se_corner = self.__get_screen_coordinates__(
+                orientation, current_heading, scope_range, se
+            )
+            sw_corner = self.__get_screen_coordinates__(
+                orientation, current_heading, scope_range, sw
+            )
+
+            drawing.renderer.polygon(
+                framebuffer,
+                color,
+                [nw_corner, ne_corner, se_corner, sw_corner],
+                False,
+            )
+        except Exception as ex:
+            self.__failed_bin_counts__ += 1
+
             return
 
-        color = NexradClient.reflectivity_to_rgb(reflectivity)
-
-        n_lat = block.north_western[0] - (lat_index * lat_step)
-        s_lat = n_lat - lat_step
-        w_lon = block.north_western[1] + (lon_index * lon_step)
-        e_lon = w_lon + lon_step
-
-        nw = [n_lat, w_lon]
-        ne = [n_lat, e_lon]
-        se = [s_lat, e_lon]
-        sw = [s_lat, w_lon]
-
-        nw_pixel = self.__get_screen_coordinates__(
-            orientation, current_heading, max_distance, nw
-        )
-        ne_pixel = self.__get_screen_coordinates__(
-            orientation, current_heading, max_distance, ne
-        )
-        se_pixel = self.__get_screen_coordinates__(
-            orientation, current_heading, max_distance, se
-        )
-        sw_pixel = self.__get_screen_coordinates__(
-            orientation, current_heading, max_distance, sw
-        )
-
-        drawing.renderer.polygon(
-            framebuffer,
-            color,
-            [nw_pixel, ne_pixel, se_pixel, sw_pixel],
-            False,
-        )
+        self.__successful_bin_counts__ += lon_end_index - lon_start_index
 
     def render(self, framebuffer: pygame.Surface, orientation: AhrsData):
         """
@@ -170,24 +282,38 @@ class WeatherTopViewScope(TopDownScope):
             orientation {Orientation} -- The orientation of the plane the HUD is in.
         """
 
-        with TaskProfiler("views.weather_top_view_scope.WeatherTopViewScope.setup"):
-            scope_range = zoom_tracker.get_penultimate_scope_range()
+        scope_range = self.__zoom_manager__.get_current_zoom()
 
         with TaskProfiler(
             "views.weather_top_view_scope.WeatherTopViewScope.render_reflectivity"
         ):
-            self.__render_reflectivity__(framebuffer, scope_range, orientation)
+            self.__render_reflectivity__(framebuffer, orientation)
 
-        with TaskProfiler("views.weather_top_view_scope.WeatherTopViewScope.render"):
+        with TaskProfiler(
+            "views.weather_top_view_scope.WeatherTopViewScope.render_ring"
+        ):
             self.__render_ownship__(framebuffer)
-
             self.__draw_distance_rings__(framebuffer, scope_range)
+            self.__draw_all_compass_headings__(framebuffer, orientation, scope_range)
 
-            self.__draw_all_compass_headings__(framebuffer, orientation, scope_range[0])
+        with TaskProfiler(
+            "views.weather_top_view_scope.WeatherTopViewScope.render_airports"
+        ):
+            self.__draw_airports__(framebuffer, orientation, scope_range)
+
+    def __log_bin_counts__(self):
+        print(f"Missing bins:{self.__missing_bin_counts__}")
+        print(f"Failed bins:{self.__failed_bin_counts__}")
+        print(f"Passed bins:{self.__successful_bin_counts__}")
+        print(f"Nearby blocks:{self.__nearby_blocks_count__}")
+        print(f"Total blocks:{self.__total_blocks_count__}")
 
 
 if __name__ == "__main__":
-    from views.compass_and_heading_top_element import CompassAndHeadingTopElement
+    import json
+
+    from views.compass_and_heading_top_element import \
+        CompassAndHeadingTopElement
     from views.groundspeed import Groundspeed
     from views.hud_elements import run_hud_elements
 
@@ -195,4 +321,44 @@ if __name__ == "__main__":
         configuration.CONFIGURATION.get_traffic_manager_address()
     )
 
+
+    test_data_files = [
+        "../test_data/faa_sample_reflectivity.json",
+        "../test_data/reflectivity_response.json"
+    ]
+
+    for test_data_file in test_data_files:
+        full_file_path = configuration.get_absolute_file_path(test_data_file)
+
+        with open(full_file_path) as json_test_data_file:
+            json_config_text = json_test_data_file.read()
+            test_data_json = json.loads(json_config_text)
+            nexrad_client.inject(test_data_json)
+
+    AirportClient.inject_flight_rules(
+        {
+            "KPLU": "VFR",
+            "K4S2": "MVFR",
+            "KS39": "VFR",
+            "KBVS": "VFR",
+            "KSZT": "VFR",
+            "K0S9": "VFR",
+            "K6S2": "IFR",
+            "KS33": "VFR",
+            "K63S": "MVFR",
+            "KRNT": "IFR",
+            "KSEA": "VFR",
+            "KBFI": "MVFR",
+            "1WA6": "LIFR",
+        }
+    )
+
     run_hud_elements([WeatherTopViewScope, CompassAndHeadingTopElement, Groundspeed])
+
+
+# Orgeon FAA sample data should look like this:
+#
+#       111111111111111111
+#    11122223333333333322211
+#  111223333355555555533332211
+# 11223333445555676555543333221 

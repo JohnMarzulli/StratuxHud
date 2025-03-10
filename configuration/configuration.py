@@ -16,7 +16,7 @@ TARGET_AHRS_FRAMERATE = 30
 AHRS_TIMEOUT = 10.0 * (1.0 / float(TARGET_AHRS_FRAMERATE))
 DEFAULT_VIEW_KEY = "default_view"
 
-VERSION = "2.0"
+VERSION = "2.1"
 
 ########################
 # Default Config Files #

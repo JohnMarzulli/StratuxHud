@@ -1,0 +1,164 @@
+{
+    "304496": {
+        "reportTime": 1741550834180,
+        "globalBlockReferenceId": 304496,
+        "boundaries": {
+            "latSize": 0.0166666666666667,
+            "lonSize": 0.025,
+            "northWestern": {
+                "longitude": -123.2,
+                "latitude": 45.1333333333333
+            },
+            "southEastern": {
+                "longitude": -122.4,
+                "latitude": 45.0666666666667
+            }
+        },
+        "reflectivity": [
+            [
+                {
+                    "runLength": 7,
+                    "reflectivity": 0
+                },
+                {
+                    "runLength": 18,
+                    "reflectivity": 1
+                },
+                {
+                    "runLength": 7,
+                    "reflectivity": 0
+                }
+            ],
+            [
+                {
+                    "runLength": 4,
+                    "reflectivity": 0
+                },
+                {
+                    "runLength": 3,
+                    "reflectivity": 1
+                },
+                {
+                    "runLength": 4,
+                    "reflectivity": 2
+                },
+                {
+                    "runLength": 11,
+                    "reflectivity": 3
+                },
+                {
+                    "runLength": 3,
+                    "reflectivity": 2
+                },
+                {
+                    "runLength": 2,
+                    "reflectivity": 1
+                },
+                {
+                    "runLength": 5,
+                    "reflectivity": 0
+                }
+            ],
+            [
+                {
+                    "runLength": 2,
+                    "reflectivity": 0
+                },
+                {
+                    "runLength": 3,
+                    "reflectivity": 1
+                },
+                {
+                    "runLength": 2,
+                    "reflectivity": 2
+                },
+                {
+                    "runLength": 5,
+                    "reflectivity": 3
+                },
+                {
+                    "runLength": 9,
+                    "reflectivity": 5
+                },
+                {
+                    "runLength": 4,
+                    "reflectivity": 3
+                },
+                {
+                    "runLength": 2,
+                    "reflectivity": 2
+                },
+                {
+                    "runLength": 2,
+                    "reflectivity": 1
+                },
+                {
+                    "runLength": 3,
+                    "reflectivity": 0
+                }
+            ],
+            [
+                {
+                    "runLength": 1,
+                    "reflectivity": 0
+                },
+                {
+                    "runLength": 2,
+                    "reflectivity": 1
+                },
+                {
+                    "runLength": 2,
+                    "reflectivity": 2
+                },
+                {
+                    "runLength": 4,
+                    "reflectivity": 3
+                },
+                {
+                    "runLength": 2,
+                    "reflectivity": 4
+                },
+                {
+                    "runLength": 4,
+                    "reflectivity": 5
+                },
+                {
+                    "runLength": 1,
+                    "reflectivity": 6
+                },
+                {
+                    "runLength": 1,
+                    "reflectivity": 7
+                },
+                {
+                    "runLength": 1,
+                    "reflectivity": 6
+                },
+                {
+                    "runLength": 4,
+                    "reflectivity": 5
+                },
+                {
+                    "runLength": 1,
+                    "reflectivity": 4
+                },
+                {
+                    "runLength": 4,
+                    "reflectivity": 3
+                },
+                {
+                    "runLength": 2,
+                    "reflectivity": 2
+                },
+                {
+                    "runLength": 1,
+                    "reflectivity": 1
+                },
+                {
+                    "runLength": 2,
+                    "reflectivity": 0
+                }
+            ]
+        ]
+    }
+}

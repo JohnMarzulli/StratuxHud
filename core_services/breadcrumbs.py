@@ -209,6 +209,14 @@ if __name__ == '__main__':
     ending_lat = 44.0
     ending_long = -88.5
 
+    # Flight due north in Oregon
+    # to help debug NEXRAD decoding
+    # based on the FAA sample block
+    # starting_lat = 45.0667
+    # starting_lon = -122.35
+    # ending_lat = 45.133
+    # ending_lon = -122.35
+
     hours_to_destination = 17.5
     starting_time = datetime.utcnow()
     end_time = starting_time + timedelta(hours=17.5)

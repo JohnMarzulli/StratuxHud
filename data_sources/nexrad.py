@@ -3,175 +3,24 @@ Gets any available NEXRAD imaging from the TrafficToHud service
 and then helps render the images.
 """
 
-import requests
-import requests
+import json
+import math
 import time
+from typing import Dict, List
+
+import requests
 
 from common_utils import geo_math, tasks
 from configuration import configuration
-
-# Example response:
-# {
-#     "304048": {
-#         "reportTime": 1736139682259,
-#         "globalBlockReferenceId": 304048,
-#         "boundaries": {
-#             "northWestern": {
-#                 "longitude": -121.6,
-#                 "latitude": 45.06666666666667
-#             },
-#             "southEastern": {
-#                 "longitude": -120.8,
-#                 "latitude": 45
-#             }
-#         },
-#         "reflectivity": [
-#             [
-#                 1,
-#                 1,
-#                 1,
-#                 1,
-#                 2,
-#                 1,
-#                 1,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0
-#             ],
-#             [
-#                 1,
-#                 1,
-#                 1,
-#                 1,
-#                 1,
-#                 1,
-#                 1,
-#                 1,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 1,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0
-#             ],
-#             [
-#                 1,
-#                 1,
-#                 1,
-#                 1,
-#                 1,
-#                 1,
-#                 1,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 1,
-#                 1,
-#                 1,
-#                 1,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0
-#             ],
-#             [
-#                 1,
-#                 1,
-#                 0,
-#                 1,
-#                 1,
-#                 1,
-#                 1,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 1,
-#                 1,
-#                 1,
-#                 1,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0,
-#                 0
-#             ]
-#         ]
-#     }
-# }
 
 
 class ReflectivityBlock:
     def __init__(self, block):
         self.block_id = block["globalBlockReferenceId"]
-
         self.report_time = block["reportTime"]
+
+        self.lat_step = block["boundaries"]["latSize"]
+        self.lon_step = block["boundaries"]["lonSize"]
 
         self.north_western = [
             block["boundaries"]["northWestern"]["latitude"],
@@ -200,7 +49,7 @@ class NexradClient:
     """
 
     INSTANCE = None
-    REFLECTIVITY = {}
+    REFLECTIVITY: Dict[int, ReflectivityBlock] = {}
 
     @staticmethod
     def reflectivity_to_rgb(reflectivity_value):
@@ -228,6 +77,13 @@ class NexradClient:
         )
         NexradClient.INSTANCE = self
 
+    def inject(self, nexrad_json):
+        for id in nexrad_json:
+            block_identifier = int(id)
+            NexradClient.REFLECTIVITY[block_identifier] = ReflectivityBlock(
+                nexrad_json[id]
+            )
+
     def update_nexrad(self):
         """
         Calls the traffic manager and gets a list of traffic that is trustable
@@ -240,21 +96,9 @@ class NexradClient:
                 timeout=configuration.AHRS_TIMEOUT,
             ).json()
 
-            for id in nexrad_json:
-                block_identifier = int(id)
-                NexradClient.REFLECTIVITY[block_identifier] = ReflectivityBlock(
-                    nexrad_json[id]
-                )
+            self.inject(nexrad_json)
 
-            current_time = int(time.time() * 1000)
-            oldest_allowed_report_time = current_time - (15 * 60 * 1000)  # 15 minutes
-
-            for id in list(NexradClient.REFLECTIVITY.keys()):
-                if (
-                    NexradClient.REFLECTIVITY[id].report_time
-                    < oldest_allowed_report_time
-                ):
-                    del NexradClient.REFLECTIVITY[id]
+            self.__gc_reports__()
 
             return True
 
@@ -266,8 +110,16 @@ class NexradClient:
             # way below the max target framerate.
             return False
 
+    def __gc_reports__(self):
+        current_time = int(time.time() * 1000)
+        oldest_allowed_report_time = current_time - (15 * 60 * 1000)  # 15 minutes
+
+        for id in list(NexradClient.REFLECTIVITY.keys()):
+            if NexradClient.REFLECTIVITY[id].report_time < oldest_allowed_report_time:
+                del NexradClient.REFLECTIVITY[id]
+
     @staticmethod
-    def get_nexrad_in_range(center, radius):
+    def get_nexrad_in_range(center, radius) -> List[ReflectivityBlock]:
         """
         Returns a list of NEXRAD blocks that are within the given range.
         """
@@ -309,9 +161,46 @@ class NexradClient:
 
         return False
 
+def test_nexrad_decoding():
+    sample_center_location = [45.0, -122.8]
+    nexrad_client = NexradClient(
+        configuration.CONFIGURATION.get_traffic_manager_address()
+    )
+    full_file_path = configuration.get_absolute_file_path("../test_data/faa_sample_reflectivity.json")
+
+    with open(full_file_path) as json_test_data_file:
+        json_config_text = json_test_data_file.read()
+        test_data_json = json.loads(json_config_text)
+        nexrad_client.inject(test_data_json)
+
+    faa_sample_reflectivity = nexrad_client.get_nexrad_in_range(sample_center_location, 50)
+    assert(len(faa_sample_reflectivity) == 1)
+    faa_sample_reflectivity = faa_sample_reflectivity[0]
+
+    assert(faa_sample_reflectivity.block_id == 304496)
+    assert(math.fabs(0.016 - faa_sample_reflectivity.lat_step) < 0.01)
+    assert(math.fabs(45.133 -  faa_sample_reflectivity.north_western[0]) < 0.01)
+    assert(math.fabs(-123.2 -  faa_sample_reflectivity.north_western[1]) < 0.01)
+
+    assert(math.fabs(45.0666 -  faa_sample_reflectivity.south_eastern[0]) < 0.01)
+    assert(math.fabs(-122.4 -  faa_sample_reflectivity.south_eastern[1]) < 0.01)
+
+    assert(len(faa_sample_reflectivity.reflectivity) == 4)
+    assert(len(faa_sample_reflectivity.reflectivity[0]) == 3)
+
+    assert(faa_sample_reflectivity.reflectivity[0][0]["runLength"] == 7)
+    assert(faa_sample_reflectivity.reflectivity[0][0]["reflectivity"] == 0)
+
+    assert(faa_sample_reflectivity.reflectivity[0][1]["runLength"] == 18)
+    assert(faa_sample_reflectivity.reflectivity[0][1]["reflectivity"] == 1)
+
+    assert(faa_sample_reflectivity.reflectivity[0][2]["runLength"] == 7)
+    assert(faa_sample_reflectivity.reflectivity[0][2]["reflectivity"] == 0)
 
 if __name__ == "__main__":
     import time
+
+    test_nexrad_decoding()
 
     nexrad_client = NexradClient(
         configuration.CONFIGURATION.get_traffic_manager_address()

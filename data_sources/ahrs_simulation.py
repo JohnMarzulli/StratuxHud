@@ -65,6 +65,12 @@ class AhrsSimulation(object):
         self.__ending_lat__ = 44.0
         self.__ending_long__ = -88.5
 
+        # In Oregon to help debug NEXRAD decoding
+        # self.__starting_lat__ = 45.0
+        # self.__starting_long__ = -122.8
+        # self.__ending_lat__ = 45.2
+        # self.__ending_long__ = -122.8
+
         self.ahrs_data.position = [self.__starting_lat__, self.__starting_long__]
 
         self.__hours_to_destination__ = 17.5
