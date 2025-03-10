@@ -232,11 +232,13 @@ class TopDownScope(AdsbElement):
             text_x = self.__scope_center__[0] + int(sin_text_placement * radius_pixels)
             text_y = self.__scope_center__[1] - int(cos_text_placement * radius_pixels)
 
+            range_text:str = str(int(distance)) if distance >= 1.0 else "{:.1f}".format(distance)
+
             self.__render_text_with_stacked_annotations__(
                 framebuffer,
                 [text_x, text_y],
                 [
-                    [1.0, str(int(distance)), colors.GREEN],
+                    [1.0, range_text, colors.GREEN],
                     [0.5, units_suffix, colors.GREEN],
                 ],
             )
