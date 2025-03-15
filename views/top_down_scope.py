@@ -182,7 +182,7 @@ class TopDownScope(AdsbElement):
         return self.__get_screen_projection_from_center__(delta_angle, pixel_distance)
 
     def __draw_distance_rings__(
-        self, framebuffer: pygame.Surface, scope_range: ScopeRange
+        self, framebuffer: pygame.Surface, scope_range: ScopeRange, ring_color = colors.GREEN
     ) -> int:
         """
         Draws rings that indicate how far out another aircraft is.
@@ -208,18 +208,19 @@ class TopDownScope(AdsbElement):
         for distance in ring_distances:
             radius_pixels = self.__get_pixel_distance__(distance, scope_range)
 
-            drawing.renderer.circle(
-                framebuffer,
-                colors.BLACK,
-                self.__scope_center__,
-                radius_pixels,
-                self.__thin_line_width__ * 4,
-                not self.__reduced_visuals__,
-            )
+            if not self.__reduced_visuals__:
+                drawing.renderer.circle(
+                    framebuffer,
+                    colors.BLACK,
+                    self.__scope_center__,
+                    radius_pixels,
+                    self.__thin_line_width__ * 4,
+                    True,
+                )
 
             drawing.renderer.circle(
                 framebuffer,
-                colors.GREEN,
+                ring_color,
                 self.__scope_center__,
                 radius_pixels,
                 self.__thin_line_width__,
@@ -231,11 +232,13 @@ class TopDownScope(AdsbElement):
             text_x = self.__scope_center__[0] + int(sin_text_placement * radius_pixels)
             text_y = self.__scope_center__[1] - int(cos_text_placement * radius_pixels)
 
+            range_text:str = str(int(distance)) if distance >= 1.0 else "{:.1f}".format(distance)
+
             self.__render_text_with_stacked_annotations__(
                 framebuffer,
                 [text_x, text_y],
                 [
-                    [1.0, str(int(distance)), colors.GREEN],
+                    [1.0, range_text, colors.GREEN],
                     [0.5, units_suffix, colors.GREEN],
                 ],
             )
@@ -266,24 +269,25 @@ class TopDownScope(AdsbElement):
         heading_text_rotation = -(heading_to_draw - our_heading)
         heading_mark_rotation = -heading_text_rotation + 180
 
-        indicator_mark_ends = fast_math.rotate_points(
-            [[0, int(self.__line_width__ * -5)]],
-            [0, 0],
-            apply_declination(heading_mark_rotation),
-        )
+        if self.__cluter_visuals__:
+            indicator_mark_ends = fast_math.rotate_points(
+                [[0, int(self.__line_width__ * -5)]],
+                [0, 0],
+                apply_declination(heading_mark_rotation),
+            )
 
-        indicator_mark_ends = fast_math.translate_points(
-            indicator_mark_ends, [screen_x, screen_y]
-        )
+            indicator_mark_ends = fast_math.translate_points(
+                indicator_mark_ends, [screen_x, screen_y]
+            )
 
-        drawing.renderer.segment(
-            framebuffer,
-            colors.GREEN,
-            [screen_x, screen_y],
-            indicator_mark_ends[0],
-            self.__line_width__,
-            not self.__reduced_visuals__,
-        )
+            drawing.renderer.segment(
+                framebuffer,
+                colors.GREEN,
+                [screen_x, screen_y],
+                indicator_mark_ends[0],
+                self.__line_width__,
+                not self.__reduced_visuals__,
+            )
 
         display_text = int(
             fast_math.wrap_degrees(TopDownScope.TEXT_PHASE_SHIFT + heading_to_draw)
@@ -443,7 +447,7 @@ class TopDownScope(AdsbElement):
 
     def __get_airport_color__(self, airport: Dict[str, any]):
         if "flightRules" not in airport:
-            return colors.GRAY  # TODO - Find a way to determine if it has a tower
+            return colors.WHITE  # TODO - Find a way to determine if it has a tower
 
         flight_rules = airport["flightRules"]
 

@@ -33,7 +33,6 @@
         "Groundspeed",
         "Altitude",
         "Weather Scope",
-        "Compass",
         "GPS Not Available"
       ],
       "name": "Weather Scope"
@@ -44,7 +43,7 @@
         "ADSB Target Bugs Only",
         "ADSB Target Bugs",
         "ADSB Reticles",
-        "Traffic Not Available", 
+        "Traffic Not Available",
         "GPS Not Available"
       ],
       "name": "Traffic"

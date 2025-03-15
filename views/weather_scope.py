@@ -118,27 +118,30 @@ class WeatherTopViewScope(TopDownScope):
             for block in nexrad_blocks
         ]
 
-        self.__nearby_blocks_count__ = len(nexrad_blocks)
+        if self.__cluter_visuals__:
+            self.__nearby_blocks_count__ = len(nexrad_blocks)
 
-        self.__render_text__(
-            framebuffer,
-            f"Nearby: {self.__nearby_blocks_count__}",
-            nearby_position,
-            colors.YELLOW,
-            0.5,
-        )
+            self.__render_text__(
+                framebuffer,
+                f"Nearby: {self.__nearby_blocks_count__}",
+                nearby_position,
+                colors.YELLOW,
+                0.5,
+            )
 
-        self.__total_blocks_count__ = len(NexradClient.REFLECTIVITY.keys())
+            self.__total_blocks_count__ = len(NexradClient.REFLECTIVITY.keys())
 
-        self.__render_text__(
-            framebuffer,
-            f"Total: {self.__total_blocks_count__}",
-            total_position,
-            colors.YELLOW,
-            0.5,
-        )
+            self.__render_text__(
+                framebuffer,
+                f"Total: {self.__total_blocks_count__}",
+                total_position,
+                colors.YELLOW,
+                0.5,
+            )
 
-    def __get_nexrad_blocks__(self, position, max_distance: float) -> List[ReflectivityBlock]:
+    def __get_nexrad_blocks__(
+        self, position, max_distance: float
+    ) -> List[ReflectivityBlock]:
         now = datetime.datetime.now(datetime.timezone.utc)
         seconds_since = (now - self.__time_of_last_block_fetch__).seconds
 
@@ -160,12 +163,7 @@ class WeatherTopViewScope(TopDownScope):
     ):
         [
             self.__render_bin_row__(
-                framebuffer,
-                orientation,
-                current_heading,
-                scope_range,
-                block,
-                lat_index
+                framebuffer, orientation, current_heading, scope_range, block, lat_index
             )
             for lat_index in WeatherTopViewScope.BIN_ROWS
         ]
@@ -177,10 +175,10 @@ class WeatherTopViewScope(TopDownScope):
         current_heading,
         scope_range: ScopeRange,
         block: ReflectivityBlock,
-        lat_index
+        lat_index,
     ):
         if len(block.reflectivity) <= lat_index:
-            self.__missing_bin_counts__ += WeatherTopViewScope.BIN_COLUMNS
+            self.__missing_bin_counts__ += len(WeatherTopViewScope.BIN_COLUMNS)
             return
 
         n_edge_lat = block.north_western[0] - (lat_index * block.lat_step)
@@ -190,22 +188,25 @@ class WeatherTopViewScope(TopDownScope):
         rle = block.reflectivity[lat_index]
 
         for run in rle:
-            run_length:int = run["runLength"]
-            reflectivity:int  = run["reflectivity"]
+            try:
+                run_length: int = run["runLength"]
+                reflectivity: int = run["reflectivity"]
 
-            self.__render_bin_lon_range__(
-                framebuffer,
-                orientation,
-                current_heading,
-                scope_range,
-                lon_start_index,
-                lon_start_index + (run_length - 1),
-                n_edge_lat,
-                s_edge_lat,
-                block,
-                reflectivity,
-            )
-            lon_start_index += run_length
+                self.__render_bin_lon_range__(
+                    framebuffer,
+                    orientation,
+                    current_heading,
+                    scope_range,
+                    lon_start_index,
+                    lon_start_index + (run_length - 1),
+                    n_edge_lat,
+                    s_edge_lat,
+                    block,
+                    reflectivity,
+                )
+                lon_start_index += run_length
+            except:
+                pass
 
     def __render_bin_lon_range__(
         self,
@@ -220,9 +221,9 @@ class WeatherTopViewScope(TopDownScope):
         block: ReflectivityBlock,
         reflectivity,
     ):
-        if (lon_end_index < lon_start_index):
+        if lon_end_index < lon_start_index:
             print(f"Invalid lon range: {lon_start_index} to {lon_end_index}")
-        
+
         try:
             if reflectivity == 0:
                 self.__successful_bin_counts__ += lon_end_index - lon_start_index
@@ -231,7 +232,11 @@ class WeatherTopViewScope(TopDownScope):
             color = NexradClient.reflectivity_to_rgb(reflectivity)
 
             w_edge_lon = block.north_western[1] + (lon_start_index * block.lon_step)
-            e_edge_lon = block.north_western[1] + (lon_end_index * block.lon_step) + block.lon_step
+            e_edge_lon = (
+                block.north_western[1]
+                + (lon_end_index * block.lon_step)
+                + block.lon_step
+            )
 
             nw = [n_edge_lat, w_edge_lon]
             ne = [n_edge_lat, e_edge_lon]
@@ -287,13 +292,16 @@ class WeatherTopViewScope(TopDownScope):
         with TaskProfiler(
             "views.weather_top_view_scope.WeatherTopViewScope.render_reflectivity"
         ):
-            self.__render_reflectivity__(framebuffer, orientation)
+            try:
+                self.__render_reflectivity__(framebuffer, orientation)
+            except:
+                pass
 
         with TaskProfiler(
             "views.weather_top_view_scope.WeatherTopViewScope.render_ring"
         ):
             self.__render_ownship__(framebuffer)
-            self.__draw_distance_rings__(framebuffer, scope_range)
+            self.__draw_distance_rings__(framebuffer, scope_range, colors.WHITE)
             self.__draw_all_compass_headings__(framebuffer, orientation, scope_range)
 
         with TaskProfiler(
@@ -312,8 +320,7 @@ class WeatherTopViewScope(TopDownScope):
 if __name__ == "__main__":
     import json
 
-    from views.compass_and_heading_top_element import \
-        CompassAndHeadingTopElement
+    from views.compass_and_heading_top_element import CompassAndHeadingTopElement
     from views.groundspeed import Groundspeed
     from views.hud_elements import run_hud_elements
 
@@ -321,10 +328,10 @@ if __name__ == "__main__":
         configuration.CONFIGURATION.get_traffic_manager_address()
     )
 
-
     test_data_files = [
         "../test_data/faa_sample_reflectivity.json",
-        "../test_data/reflectivity_response.json"
+        "../test_data/reflectivity_response.json",
+        "../test_data/2025-03-14_incomplete_bins.json"
     ]
 
     for test_data_file in test_data_files:
@@ -361,4 +368,4 @@ if __name__ == "__main__":
 #       111111111111111111
 #    11122223333333333322211
 #  111223333355555555533332211
-# 11223333445555676555543333221 
+# 11223333445555676555543333221
