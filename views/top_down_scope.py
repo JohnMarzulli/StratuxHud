@@ -447,7 +447,7 @@ class TopDownScope(AdsbElement):
 
     def __get_airport_color__(self, airport: Dict[str, any]):
         if "flightRules" not in airport:
-            return colors.GRAY  # TODO - Find a way to determine if it has a tower
+            return colors.WHITE  # TODO - Find a way to determine if it has a tower
 
         flight_rules = airport["flightRules"]
 
