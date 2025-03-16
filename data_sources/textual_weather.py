@@ -3,11 +3,11 @@ Gets any available NEXRAD imaging from the TrafficToHud service
 and then helps render the images.
 """
 
-import requests
-import requests
 import time
 
-from common_utils import geo_math, tasks
+import requests
+
+from common_utils import tasks
 from configuration import configuration
 
 # Example response:
