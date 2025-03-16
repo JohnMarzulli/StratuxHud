@@ -38,6 +38,13 @@
       "name": "Weather Scope"
     },
     {
+      "elements":[
+        "Airport Freqs",
+        "GPS Not Available"
+      ],
+      "name": "Airport Freqs"
+    },
+    {
       "elements": [
         "Compass",
         "ADSB Target Bugs Only",

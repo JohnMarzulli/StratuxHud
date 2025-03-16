@@ -48,6 +48,7 @@ from views import (
     time,
     traffic_not_available,
     weather_scope,
+    airport_frequencies_listing
 )
 
 STANDARD_FONT = "../assets/fonts/LiberationMono-Bold.ttf"
