@@ -117,6 +117,8 @@ class AdsbTrafficListing(AdsbElement):
             filter(
                 lambda x: not x.is_on_ground(),
                 traffic_reports))
+        
+        reports_to_show = sorted(reports_to_show, key=lambda x: x.distance)
 
         # The __max_reports__ value is set based on the screen size
         # and how much can fit on the screen
