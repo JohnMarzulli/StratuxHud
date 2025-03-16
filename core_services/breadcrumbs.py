@@ -204,10 +204,9 @@ if __name__ == '__main__':
     # Run a simulated flight from Seattle to Oshkosh at about 91MPH.
     # Print out the speed when a new report has been updated.
 
-    starting_lat = 47.6
-    starting_long = -122.3
-    ending_lat = 44.0
-    ending_long = -88.5
+    kawo = [48.16075,-122.15902777]
+    ksea = [47.6, -122.3]
+    kosh = [44.0, -88.5]
 
     # Flight due north in Oregon
     # to help debug NEXRAD decoding
@@ -225,8 +224,8 @@ if __name__ == '__main__':
         hours_since_start = ((datetime.utcnow() - starting_time).total_seconds() / 60.0) / 60.0
         proportion_into_simulation = hours_since_start / hours_to_destination
 
-        simulated_lat = fast_math.interpolatef(starting_lat, ending_lat, proportion_into_simulation)
-        simulated_long = fast_math.interpolatef(starting_long, ending_long, proportion_into_simulation)
+        simulated_lat = fast_math.interpolatef(kawo[0], kosh[0], proportion_into_simulation)
+        simulated_long = fast_math.interpolatef(kawo[1], kosh[1], proportion_into_simulation)
 
         simulated_ahrs = AhrsData()
         simulated_ahrs.position = [simulated_lat, simulated_long]
