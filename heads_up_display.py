@@ -33,6 +33,7 @@ from views import (
     adsb_target_bugs_only,
     adsb_top_view_scope,
     adsb_traffic_listing,
+    metar_listings,
     ahrs_not_available,
     altitude,
     artificial_horizon,

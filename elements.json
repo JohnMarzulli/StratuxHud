@@ -59,6 +59,10 @@
     "class": "airport_frequencies_listing.AirportFrequencyListing",
     "detail_font": true
   },
+  "METAR Listing": {
+    "class": "metar_listings.MetarListing",
+    "detail_font": true
+  },
   "Traffic List": {
     "class": "adsb_traffic_listing.AdsbTrafficListing",
     "detail_font": true

@@ -39,6 +39,12 @@
     },
     {
       "elements":[
+        "METAR Listing"
+      ],
+      "name": "METARS"
+    },
+    {
+      "elements":[
         "Airport Freqs",
         "GPS Not Available"
       ],
