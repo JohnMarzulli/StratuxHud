@@ -14,7 +14,7 @@ from configuration import configuration
 from core_services.scope_range import ScopeRange
 from core_services.zoom_manager import ZoomManager
 from data_sources.ahrs_data import AhrsData
-from data_sources.airports import AirportClient, load_example_flight_rules
+from data_sources.airports import load_example_airports, load_example_flight_rules
 from data_sources.nexrad import NexradClient, ReflectivityBlock
 from rendering import colors, drawing
 from views.top_down_scope import TopDownScope
@@ -343,6 +343,7 @@ if __name__ == "__main__":
             nexrad_client.inject(test_data_json)
 
     load_example_flight_rules()
+    load_example_airports()
 
     run_hud_elements([WeatherTopViewScope, CompassAndHeadingTopElement, Groundspeed])
 
