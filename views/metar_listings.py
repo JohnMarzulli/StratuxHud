@@ -2,13 +2,12 @@
 View that shows the list of nearby traffic
 """
 
+import datetime
 from typing import Dict, List
 
 import pygame
 
-from common_utils import geo_math, units
-from data_sources.ahrs_data import NOT_AVAILABLE, AhrsData
-from data_sources.airport_frequencies import AirportFrequency
+from data_sources.ahrs_data import AhrsData
 from data_sources.airports import AirportClient, load_example_flight_rules
 from data_sources.textual_weather import (
     TextualReport,
@@ -17,6 +16,21 @@ from data_sources.textual_weather import (
 )
 from rendering import colors
 from views.adsb_element import AdsbElement
+
+
+class MetarLine(object):
+    """
+    Holds information need to render a METAR
+    on the screen.
+
+    This split helps with pagination and grouping.
+    """
+
+    def __init__(self, color: List[int], station: str, text: str):
+        self.color = color
+
+        self.station = station
+        self.text = text
 
 
 class MetarListing(AdsbElement):
@@ -80,100 +94,65 @@ class MetarListing(AdsbElement):
         )
 
         self.__page__ = 0
-        self.__page_count__ = 0
         self.__listing_text_start_y__ = int(self.__font__.get_height())
         self.__listing_text_start_x__ = int(self.__framebuffer_size__[0] * 0.01)
         self.__next_line_distance__ = int(font.get_height())
-
-        self.__name_slice_length__ = 15
-        self.__distance_text_slice_length__ = 8
-        self.__freq_slice_length__ = 7
-        self.__freqType_slice_length__ = 8
-        self.__remarks_slice_length__ = 12
         self.__font_scale__ = 0.6
 
-        self.__max_reports__ = (
+        self.__max_screen_lines__ = (
             int(
                 (self.__height__ - self.__listing_text_start_y__)
-                / (self.__next_line_distance__ * self.__font_scale__ * 1.2)
+                / (self.__next_line_distance__ * self.__font_scale__)
             )
             - 3
         )
 
+        self.__last_updated__ = None
+        self.__reports_by_page__: List[List[MetarLine]] = None
+
     def render(self, framebuffer, orientation: AhrsData):
-        self.__page__ = min(self.__page_count__ - 1, self.__page__)
+        reports_by_page = self.__get_metar_report_pages__()
+        page_count = len(reports_by_page)
+
+        self.__page__ = min(page_count - 1, self.__page__)
         self.__page__ = max(self.__page__, 0)
-
-        # TODO - Remove this
-        self.__page_count__ = 1
-
-        reports: Dict[str, TextualReport] = TextualWeatherClient.get_metars()
-        flight_rules = AirportClient.get_flight_rules()
 
         # Render a list of traffic that we have positions
         # for, along with the tail number
 
         y_pos = self.__listing_text_start_y__
         x_pos = self.__listing_text_start_x__
-
-        max_lines = 12
-
         line_increment = int(self.__next_line_distance__ * (self.__font_scale__ * 1.2))
 
         report_start_x = x_pos + (self.__font_height__ * self.__font_scale__ * 4)
 
-        max_chars = int(
-            (
-                (((self.__center_x__ * 2) - report_start_x) / self.__font_scale__)
-                / (self.__font_height__ / 2)
-            )
-            * 0.8
-        )
+        if page_count <= 0:
+            return
 
-        # TODO - Experiment with sorting by name OR by distance
-        sorted_stations = sorted(reports.keys())
+        report_page = reports_by_page[self.__page__]
 
-        lines_shown = 0
-
-        # TODO - Split this up into an array of arrays. The top level is the page.
-        # TODO - Maybe the sublist contains a tuple of the color AND the text?
-
-        for station in sorted_stations:
-            known_flight_rules = (
-                flight_rules[station] if station in flight_rules else "UNKNOWN"
-            )
-
-            lines = self.__get_split_lines__(
-                f"{station} {reports[station].report}", max_chars
-            )
-
-            if (lines_shown + len(lines)) > max_lines:
-                break
-
+        for report_line in report_page:
             self.__render_text__(
                 framebuffer,
-                station,
+                report_line.station,
                 [x_pos, y_pos],
-                self.__get_flight_rule_color__(known_flight_rules),
+                report_line.color,
                 self.__font_scale__,
             )
 
-            for line in lines:
-                self.__render_text__(
-                    framebuffer,
-                    line,
-                    [report_start_x, y_pos],
-                    self.__get_flight_rule_color__(known_flight_rules),
-                    self.__font_scale__,
-                )
+            self.__render_text__(
+                framebuffer,
+                report_line.text,
+                [report_start_x, y_pos],
+                report_line.color,
+                self.__font_scale__,
+            )
 
-                y_pos += line_increment
-
-            lines_shown += len(lines)
+            y_pos += line_increment
 
         self.__render_text__(
             framebuffer,
-            f"Pg: {self.__page__ + 1} / {self.__page_count__}",
+            f"Pg: {self.__page__ + 1} / {page_count}",
             [
                 self.__left_border__,
                 (self.__bottom_border__ - (self.__font_height__ << 1))
@@ -189,7 +168,7 @@ class MetarListing(AdsbElement):
         lines: List[str] = []
         current_line = ""
 
-        while len(tokens) > 0:
+        while tokens:
             next_token: str = tokens[0]
             token_length = len(next_token)
 
@@ -206,6 +185,94 @@ class MetarListing(AdsbElement):
             lines.append(current_line)
 
         return lines
+
+    def __get_max_char_width__(self) -> int:
+        report_start_x = self.__listing_text_start_x__ + (
+            self.__font_height__ * self.__font_scale__ * 4
+        )
+
+        return int(
+            (
+                (((self.__center_x__ * 2) - report_start_x) / self.__font_scale__)
+                / (self.__font_height__ / 2)
+            )
+            * 0.8
+        )
+
+    def __get_metar_report_pages__(self) -> List[List[MetarLine]]:
+        if (
+            self.__reports_by_page__ is not None
+            and self.__last_updated__ is not None
+            and (
+                datetime.datetime.now(datetime.timezone.utc) - self.__last_updated__
+            ).total_seconds()
+            < 60
+        ):
+            return self.__reports_by_page__
+
+        reports_as_own_page = self.__get_reports_with_each_station_as_own_page__()
+        self.__reports_by_page__ = self.__get_consolidated_report_pages__(
+            reports_as_own_page
+        )
+
+        self.__last_updated__ = datetime.datetime.now(datetime.timezone.utc)
+
+        return self.__reports_by_page__
+
+    def __get_consolidated_report_pages__(
+        self, reports_as_own_page: List[List[MetarLine]]
+    ) -> List[List[MetarLine]]:
+        consolidated_report_pages: List[List[MetarLine]] = []
+        new_page: List[MetarLine] = []
+
+        while reports_as_own_page:
+            if len(new_page) + len(reports_as_own_page[0]) > self.__max_screen_lines__:
+                consolidated_report_pages.append(new_page)
+                new_page = []
+
+            for line in reports_as_own_page[0]:
+                new_page.append(line)
+
+            reports_as_own_page = reports_as_own_page[1:]
+
+        if len(new_page) > 0:
+            consolidated_report_pages.append(new_page)
+
+        return consolidated_report_pages
+
+    def __get_reports_with_each_station_as_own_page__(self) -> List[List[MetarLine]]:
+        max_chars: int = self.__get_max_char_width__()
+
+        reports: Dict[str, TextualReport] = TextualWeatherClient.get_metars()
+        flight_rules = AirportClient.get_flight_rules()
+
+        # TODO - Experiment with sorting by name OR by distance
+        sorted_stations = sorted(reports.keys())
+
+        lines: List[str] = []
+        reports_as_own_page: List[List[MetarLine]] = []
+
+        for station in sorted_stations:
+            known_flight_rules = (
+                flight_rules[station] if station in flight_rules else "UNKNOWN"
+            )
+
+            color: List[int] = self.__get_flight_rule_color__(known_flight_rules)
+
+            lines = self.__get_split_lines__(
+                f"{station} {reports[station].report}", max_chars
+            )
+
+            station_text = station
+            report_lines: List[MetarLine] = []
+
+            for line in lines:
+                report_lines.append(MetarLine(color, station_text, line))
+                station_text = ""
+
+            reports_as_own_page.append(report_lines)
+
+        return reports_as_own_page
 
     def __get_flight_rule_color__(self, flight_rules):
         if flight_rules == "VFR":
