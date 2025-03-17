@@ -14,7 +14,7 @@ from configuration import configuration
 from core_services.scope_range import ScopeRange
 from core_services.zoom_manager import ZoomManager
 from data_sources.ahrs_data import AhrsData
-from data_sources.airports import AirportClient
+from data_sources.airports import AirportClient, load_example_flight_rules
 from data_sources.nexrad import NexradClient, ReflectivityBlock
 from rendering import colors, drawing
 from views.top_down_scope import TopDownScope
@@ -331,7 +331,7 @@ if __name__ == "__main__":
     test_data_files = [
         "../test_data/faa_sample_reflectivity.json",
         "../test_data/reflectivity_response.json",
-        "../test_data/2025-03-14_incomplete_bins.json"
+        "../test_data/2025-03-14_incomplete_bins.json",
     ]
 
     for test_data_file in test_data_files:
@@ -342,23 +342,7 @@ if __name__ == "__main__":
             test_data_json = json.loads(json_config_text)
             nexrad_client.inject(test_data_json)
 
-    AirportClient.inject_flight_rules(
-        {
-            "KPLU": "VFR",
-            "K4S2": "MVFR",
-            "KS39": "VFR",
-            "KBVS": "VFR",
-            "KSZT": "VFR",
-            "K0S9": "VFR",
-            "K6S2": "IFR",
-            "KS33": "VFR",
-            "K63S": "MVFR",
-            "KRNT": "IFR",
-            "KSEA": "VFR",
-            "KBFI": "MVFR",
-            "1WA6": "LIFR",
-        }
-    )
+    load_example_flight_rules()
 
     run_hud_elements([WeatherTopViewScope, CompassAndHeadingTopElement, Groundspeed])
 
