@@ -126,29 +126,27 @@ class MetarListing(AdsbElement):
 
         report_start_x = x_pos + (self.__font_height__ * self.__font_scale__ * 4)
 
-        if page_count <= 0:
-            return
+        if page_count > 0:
+            report_page = reports_by_page[self.__page__]
 
-        report_page = reports_by_page[self.__page__]
+            for report_line in report_page:
+                self.__render_text__(
+                    framebuffer,
+                    report_line.station,
+                    [x_pos, y_pos],
+                    report_line.color,
+                    self.__font_scale__,
+                )
 
-        for report_line in report_page:
-            self.__render_text__(
-                framebuffer,
-                report_line.station,
-                [x_pos, y_pos],
-                report_line.color,
-                self.__font_scale__,
-            )
+                self.__render_text__(
+                    framebuffer,
+                    report_line.text,
+                    [report_start_x, y_pos],
+                    report_line.color,
+                    self.__font_scale__,
+                )
 
-            self.__render_text__(
-                framebuffer,
-                report_line.text,
-                [report_start_x, y_pos],
-                report_line.color,
-                self.__font_scale__,
-            )
-
-            y_pos += line_increment
+                y_pos += line_increment
 
         self.__render_text__(
             framebuffer,
@@ -285,12 +283,6 @@ class MetarListing(AdsbElement):
             return colors.MAGENTA
 
         return colors.WHITE
-
-    def __get_row_color__(self, index: int):
-        if index == 0:
-            return colors.WHITE
-
-        return colors.YELLOW if index % 2 else colors.ORANGE
 
 
 if __name__ == "__main__":
