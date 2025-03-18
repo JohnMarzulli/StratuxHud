@@ -65,6 +65,29 @@ class AdsbElement(HudElement):
             math.fabs(distance),
             decimal_places=decimal_places)
 
+    def __get_distance_string_without_units__(
+        self,
+        distance: float
+    ) -> str:
+        """
+        Gets the distance string for display using the units
+        from the configuration.
+
+        Arguments:
+            distance {float} -- The distance... straight from the GDL90 which means FEET
+
+        Returns:
+            string -- The distance in a handy string for display.
+        """
+
+        display_units = configuration.CONFIGURATION.__get_config_value__(
+            configuration.Configuration.DISTANCE_UNITS_KEY,
+            units.STATUTE)
+
+        return units.get_converted_units_string_without_units(
+            display_units,
+            math.fabs(distance))
+
     def __get_traffic_projection__(
         self,
         orientation: AhrsData,
