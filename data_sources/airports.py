@@ -18,6 +18,7 @@ class AirportClient:
     Handles getting, and caching, the closest airports.
     """
 
+    __INSTANCE__ = None
     __AIRPORTS__ = {}
     __FREQUENCIES__ = {}
     __FLIGHT_RULES__ = {}
@@ -151,24 +152,34 @@ class AirportClient:
         AirportClient.__LOCK_OBJECT__.release()
 
     def __init__(self, rest_address: str):
-        self.__airports_session__ = requests.Session()
-        self.rest_address = rest_address
-        # Doing all of the range calculations is probably expensive,
-        # not to mention the transfer back over the local stack.
-        #
-        # These data are not expected to change quickly.
-        # An interval of even 5 minutes may be sufficient.
-        self.__update_traffic_task__ = tasks.RecurringTask(
-            "UpdateAirports", 30, self.__update_airports__
-        )
+        AirportClient.__LOCK_OBJECT__.acquire()
 
-        self.__update_flight_rules_task__ = tasks.RecurringTask(
-            "UpdateFlightRules", 30, self.__update_flight_rules__
-        )
+        try:
+            if AirportClient.__INSTANCE__ != None:
+                return
 
-        self.__update_airport_frequencies_task__ = tasks.RecurringTask(
-            "UpdateAirportFrequencies", 30, self.__update_airport_frequencies__
-        )
+            AirportClient.__INSTANCE__ = self
+
+            self.__airports_session__ = requests.Session()
+            self.rest_address = rest_address
+            # Doing all of the range calculations is probably expensive,
+            # not to mention the transfer back over the local stack.
+            #
+            # These data are not expected to change quickly.
+            # An interval of even 5 minutes may be sufficient.
+            self.__update_traffic_task__ = tasks.RecurringTask(
+                "UpdateAirports", 30, self.__update_airports__
+            )
+
+            self.__update_flight_rules_task__ = tasks.RecurringTask(
+                "UpdateFlightRules", 30, self.__update_flight_rules__
+            )
+
+            self.__update_airport_frequencies_task__ = tasks.RecurringTask(
+                "UpdateAirportFrequencies", 30, self.__update_airport_frequencies__
+            )
+        finally:
+            AirportClient.__LOCK_OBJECT__.release()
 
     def __update_flight_rules__(self):
         # Example response
@@ -223,7 +234,7 @@ class AirportClient:
                 AirportClient.__LAST_KNOWN_POSITION__ is None
                 or len(AirportClient.__LAST_KNOWN_POSITION__) != 2
             ):
-                return
+                return False
 
             airports_json = self.__airports_session__.get(
                 f"http://{self.rest_address}/airports/Frequencies?lat={AirportClient.__LAST_KNOWN_POSITION__[0]}&lon={AirportClient.__LAST_KNOWN_POSITION__[1]}&dist=50",
