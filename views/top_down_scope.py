@@ -3,7 +3,7 @@ View element for a weather "radar" that looks from the top downwards.
 """
 
 import math
-from typing import Tuple, Dict, List
+from typing import Tuple, Dict
 
 import pygame
 from common_utils import fast_math, geo_math, units
@@ -182,7 +182,10 @@ class TopDownScope(AdsbElement):
         return self.__get_screen_projection_from_center__(delta_angle, pixel_distance)
 
     def __draw_distance_rings__(
-        self, framebuffer: pygame.Surface, scope_range: ScopeRange, ring_color = colors.GREEN
+        self,
+        framebuffer: pygame.Surface,
+        scope_range: ScopeRange,
+        ring_color=colors.GREEN,
     ) -> int:
         """
         Draws rings that indicate how far out another aircraft is.
@@ -232,7 +235,9 @@ class TopDownScope(AdsbElement):
             text_x = self.__scope_center__[0] + int(sin_text_placement * radius_pixels)
             text_y = self.__scope_center__[1] - int(cos_text_placement * radius_pixels)
 
-            range_text:str = str(int(distance)) if distance >= 1.0 else "{:.1f}".format(distance)
+            range_text: str = (
+                str(int(distance)) if distance >= 1.0 else "{:.1f}".format(distance)
+            )
 
             self.__render_text_with_stacked_annotations__(
                 framebuffer,
@@ -356,7 +361,6 @@ class TopDownScope(AdsbElement):
         ):
             return
 
-        AirportClient.set_last_known_position(orientation.position)
         nearby_airports = AirportClient.get_nearby_airports()
 
         [
