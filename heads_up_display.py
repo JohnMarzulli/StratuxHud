@@ -14,7 +14,7 @@ from common_utils.task_timer import RollingStats, TaskProfiler
 from common_utils.tasks import IntermittentTask, RecurringTask
 from configuration import configuration, configuration_server
 from configuration.configuration import CONFIGURATION
-from core_services import breadcrumbs, zoom_tracker
+from core_services import breadcrumbs
 from data_sources import aithre, declination, targets
 from data_sources.ahrs_data import AhrsData
 from data_sources.aircraft import Aircraft
@@ -30,14 +30,15 @@ from rendering import colors, display, drawing, text_renderer
 # they are not needed.
 from views import (
     adsb_on_screen_reticles,
-    adsb_target_bugs,
     adsb_target_bugs_only,
+    adsb_target_bugs,
     adsb_top_view_scope,
     adsb_traffic_listing,
-    metar_listings,
-    taf_listings,
-    airmet_listings,
     ahrs_not_available,
+    airmet_listings,
+    airport_frequencies_listing,
+    aithre_view,
+    aithre,
     altitude,
     artificial_horizon,
     compass_and_heading_bottom_element,
@@ -45,14 +46,16 @@ from views import (
     groundspeed,
     heading_target_bugs,
     hud_elements,
+    illyrian,
     level_reference,
+    metar_listings,
     roll_indicator,
     skid_and_gs,
     system_info,
+    taf_listings,
     time,
     traffic_not_available,
     weather_scope,
-    airport_frequencies_listing,
 )
 
 STANDARD_FONT = "../assets/fonts/LiberationMono-Bold.ttf"

@@ -1,14 +1,14 @@
 {
   "AithreInfo": {
-    "class": "system_info.AithreView",
+    "class": "aithre_view.AithreView",
     "detail_font": true
   },
   "Aithre": {
-    "class": "system_info.Aithre",
+    "class": "aithre.Aithre",
     "detail_font": true
   },
   "Illyrian": {
-    "class": "system_info.Illyrian",
+    "class": "illyrian.Illyrian",
     "detail_font": true
   },
   "Compass": {
