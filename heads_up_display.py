@@ -34,6 +34,8 @@ from views import (
     adsb_top_view_scope,
     adsb_traffic_listing,
     metar_listings,
+    taf_listings,
+    airmet_listings,
     ahrs_not_available,
     altitude,
     artificial_horizon,

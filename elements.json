@@ -63,6 +63,14 @@
     "class": "metar_listings.MetarListing",
     "detail_font": true
   },
+  "TAF Listing": {
+    "class": "taf_listings.TafListing",
+    "detail_font": true
+  },
+  "AIRMET Listing": {
+    "class": "airmet_listings.AirmetListing",
+    "detail_font": true
+  },
   "Traffic List": {
     "class": "adsb_traffic_listing.AdsbTrafficListing",
     "detail_font": true

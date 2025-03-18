@@ -45,6 +45,18 @@
     },
     {
       "elements":[
+        "TAF Listing"
+      ],
+      "name": "TAFS"
+    },
+    {
+      "elements":[
+        "AIRMET Listing"
+      ],
+      "name": "AIRMETS"
+    },
+    {
+      "elements":[
         "Airport Freqs",
         "GPS Not Available"
       ],
