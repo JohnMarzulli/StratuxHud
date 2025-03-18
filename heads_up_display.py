@@ -18,6 +18,7 @@ from core_services import breadcrumbs, zoom_tracker
 from data_sources import aithre, declination, targets
 from data_sources.ahrs_data import AhrsData
 from data_sources.aircraft import Aircraft
+from data_sources.airports import AirportClient
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import AdsbTrafficClient
 from input import InputResponse
@@ -51,7 +52,7 @@ from views import (
     time,
     traffic_not_available,
     weather_scope,
-    airport_frequencies_listing
+    airport_frequencies_listing,
 )
 
 STANDARD_FONT = "../assets/fonts/LiberationMono-Bold.ttf"
@@ -199,8 +200,10 @@ class HeadsUpDisplay(object):
                 if not response.is_handled
             ]
 
-            orientation = self.__aircraft__.get_orientation()
+            orientation: AhrsData = self.__aircraft__.get_orientation()
             self.__update_declination_task__.run()
+
+            AirportClient.set_last_known_position(orientation.position)
 
             view_name, view, view_uses_ahrs = self.__hud_views__[
                 CONFIGURATION.get_view_index()
