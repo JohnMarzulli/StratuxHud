@@ -5,8 +5,6 @@ View that shows the list of nearby traffic
 import datetime
 from typing import Dict, List
 
-import pygame
-
 from data_sources.ahrs_data import AhrsData
 from data_sources.airports import AirportClient, load_example_flight_rules
 from data_sources.textual_weather import (
@@ -15,67 +13,16 @@ from data_sources.textual_weather import (
     load_sample_text_reports,
 )
 from rendering import colors
-from views.adsb_element import AdsbElement
+from views.paginated_text_element import PaginatedTextElement, TextLine
 
 
-class MetarLine(object):
-    """
-    Holds information need to render a METAR
-    on the screen.
-
-    This split helps with pagination and grouping.
-    """
-
-    def __init__(self, color: List[int], station: str, text: str):
-        self.color = color
-
-        self.station = station
-        self.text = text
-
-
-class MetarListing(AdsbElement):
+class MetarListing(PaginatedTextElement):
     """
     View element that lists the closest frequencies.
     Lists airport, tower, approach, etc freqs.
 
     Implements a page/scroll view.
     """
-
-    def uses_ahrs(self) -> bool:
-        """
-        Does this element use AHRS data to render?
-
-        Returns:
-            bool -- False as this element does not use AHRS data.
-        """
-
-        return False
-
-    def handle_events(self, unhandled_events) -> list:
-        """
-        Handle up/down events so scrolling can be implemented.
-
-        Args:
-            unhandled_events (_type_): Any events that have not yet been handeled.
-
-        Returns:
-            list: A list of events that were not handled by this code.
-        """
-
-        remaining_unhandled_events = []
-
-        for event in unhandled_events:
-            if event.type != pygame.KEYUP:
-                continue
-
-            if event.key in [pygame.K_UP, pygame.K_KP8]:
-                self.__page__ -= 1
-            elif event.key in [pygame.K_DOWN, pygame.K_KP2]:
-                self.__page__ += 1
-            else:
-                remaining_unhandled_events.append(event)
-
-        return remaining_unhandled_events
 
     def __init__(
         self,
@@ -93,111 +40,10 @@ class MetarListing(AdsbElement):
             reduced_visuals,
         )
 
-        self.__page__ = 0
-        self.__listing_text_start_y__ = int(self.__font__.get_height())
-        self.__listing_text_start_x__ = int(self.__framebuffer_size__[0] * 0.01)
-        self.__next_line_distance__ = int(font.get_height())
-        self.__font_scale__ = 0.6
-
-        self.__max_screen_lines__ = (
-            int(
-                (self.__height__ - self.__listing_text_start_y__)
-                / (self.__next_line_distance__ * self.__font_scale__)
-            )
-            - 3
-        )
-
         self.__last_updated__ = None
-        self.__reports_by_page__: List[List[MetarLine]] = None
+        self.__reports_by_page__: List[List[TextLine]] = None
 
-    def render(self, framebuffer, orientation: AhrsData):
-        reports_by_page = self.__get_metar_report_pages__()
-        page_count = len(reports_by_page)
-
-        self.__page__ = min(page_count - 1, self.__page__)
-        self.__page__ = max(self.__page__, 0)
-
-        # Render a list of traffic that we have positions
-        # for, along with the tail number
-
-        y_pos = self.__listing_text_start_y__
-        x_pos = self.__listing_text_start_x__
-        line_increment = int(self.__next_line_distance__ * (self.__font_scale__ * 1.2))
-
-        report_start_x = x_pos + (self.__font_height__ * self.__font_scale__ * 4)
-
-        if page_count > 0:
-            report_page = reports_by_page[self.__page__]
-
-            for report_line in report_page:
-                self.__render_text__(
-                    framebuffer,
-                    report_line.station,
-                    [x_pos, y_pos],
-                    report_line.color,
-                    self.__font_scale__,
-                )
-
-                self.__render_text__(
-                    framebuffer,
-                    report_line.text,
-                    [report_start_x, y_pos],
-                    report_line.color,
-                    self.__font_scale__,
-                )
-
-                y_pos += line_increment
-
-        self.__render_text__(
-            framebuffer,
-            f"Pg: {self.__page__ + 1} / {page_count}",
-            [
-                self.__left_border__,
-                (self.__bottom_border__ - (self.__font_height__ << 1))
-                + self.__font_height__,
-            ],
-            colors.YELLOW,
-            0.5,
-        )
-
-    def __get_split_lines__(self, report: str, max_line_length: int) -> list[str]:
-        tokens = report.split(" ")
-
-        lines: List[str] = []
-        current_line = ""
-
-        while tokens:
-            next_token: str = tokens[0]
-            token_length = len(next_token)
-
-            if len(current_line) + token_length > max_line_length:
-                lines.append(current_line)
-                current_line = next_token
-            else:
-                current_line += f" {next_token}"
-                current_line = current_line.lstrip().rstrip()
-
-            tokens = tokens[1:]
-
-        if len(current_line) > 0:
-            lines.append(current_line)
-
-        return lines
-
-    def __get_max_char_width__(self) -> int:
-        report_start_x = self.__listing_text_start_x__ + (
-            self.__font_height__ * self.__font_scale__ * 4
-        )
-
-        return int(
-            (
-                (((self.__center_x__ * 2) - report_start_x) / self.__font_scale__)
-                / (self.__font_height__ / 2)
-            )
-            * 0.8
-        )
-
-    def __get_metar_report_pages__(self) -> List[List[MetarLine]]:
+    def __get_text_pages__(self, orientation: AhrsData) -> List[List[TextLine]]:
         if (
             self.__reports_by_page__ is not None
             and self.__last_updated__ is not None
@@ -218,10 +64,10 @@ class MetarListing(AdsbElement):
         return self.__reports_by_page__
 
     def __get_consolidated_report_pages__(
-        self, reports_as_own_page: List[List[MetarLine]]
-    ) -> List[List[MetarLine]]:
-        consolidated_report_pages: List[List[MetarLine]] = []
-        new_page: List[MetarLine] = []
+        self, reports_as_own_page: List[List[TextLine]]
+    ) -> List[List[TextLine]]:
+        consolidated_report_pages: List[List[TextLine]] = []
+        new_page: List[TextLine] = []
 
         while reports_as_own_page:
             if len(new_page) + len(reports_as_own_page[0]) > self.__max_screen_lines__:
@@ -238,8 +84,8 @@ class MetarListing(AdsbElement):
 
         return consolidated_report_pages
 
-    def __get_reports_with_each_station_as_own_page__(self) -> List[List[MetarLine]]:
-        max_chars: int = self.__get_max_char_width__()
+    def __get_reports_with_each_station_as_own_page__(self) -> List[List[TextLine]]:
+        max_chars: int = self.__get_max_line_length__()
 
         reports: Dict[str, TextualReport] = TextualWeatherClient.get_metars()
         flight_rules = AirportClient.get_flight_rules()
@@ -248,7 +94,7 @@ class MetarListing(AdsbElement):
         sorted_stations = sorted(reports.keys())
 
         lines: List[str] = []
-        reports_as_own_page: List[List[MetarLine]] = []
+        reports_as_own_page: List[List[TextLine]] = []
 
         for station in sorted_stations:
             known_flight_rules = (
@@ -257,16 +103,14 @@ class MetarListing(AdsbElement):
 
             color: List[int] = self.__get_flight_rule_color__(known_flight_rules)
 
-            lines = self.__get_split_lines__(
-                f"{station} {reports[station].report}", max_chars
-            )
+            lines = self.__get_wrapped_lines__(reports[station].report, max_chars)
 
-            station_text = station
-            report_lines: List[MetarLine] = []
+            station_text = station.rjust(8).ljust(10)
+            report_lines: List[TextLine] = []
 
             for line in lines:
-                report_lines.append(MetarLine(color, station_text, line))
-                station_text = ""
+                report_lines.append(TextLine(color, f"{station_text} {line}"))
+                station_text = " " * len(station_text)
 
             reports_as_own_page.append(report_lines)
 

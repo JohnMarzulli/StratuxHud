@@ -2,59 +2,22 @@
 View that shows the list of nearby traffic
 """
 
-import pygame
-
+from typing import List
 from common_utils import geo_math, units
 from data_sources.ahrs_data import NOT_AVAILABLE, AhrsData
 from data_sources.airport_frequencies import AirportFrequency
 from data_sources.airports import AirportClient
 from rendering import colors
-from views.adsb_element import AdsbElement
+from views.paginated_text_element import PaginatedTextElement, TextLine
 
 
-class AirportFrequencyListing(AdsbElement):
+class AirportFrequencyListing(PaginatedTextElement):
     """
     View element that lists the closest frequencies.
     Lists airport, tower, approach, etc freqs.
 
     Implements a page/scroll view.
     """
-
-    def uses_ahrs(self) -> bool:
-        """
-        Does this element use AHRS data to render?
-
-        Returns:
-            bool -- False as this element does not use AHRS data.
-        """
-
-        return False
-
-    def handle_events(self, unhandled_events) -> list:
-        """
-        Handle up/down events so scrolling can be implemented.
-
-        Args:
-            unhandled_events (_type_): Any events that have not yet been handeled.
-
-        Returns:
-            list: A list of events that were not handled by this code.
-        """
-
-        remaining_unhandled_events = []
-
-        for event in unhandled_events:
-            if event.type != pygame.KEYUP:
-                continue
-
-            if event.key in [pygame.K_UP, pygame.K_KP8]:
-                self.__page__ -= 1
-            elif event.key in [pygame.K_DOWN, pygame.K_KP2]:
-                self.__page__ += 1
-            else:
-                remaining_unhandled_events.append(event)
-
-        return remaining_unhandled_events
 
     def __init__(
         self,
@@ -72,44 +35,123 @@ class AirportFrequencyListing(AdsbElement):
             reduced_visuals,
         )
 
-        self.__page__ = 0
-        self.__page_count__ = 0
-        self.__listing_text_start_y__ = int(self.__font__.get_height())
-        self.__listing_text_start_x__ = int(self.__framebuffer_size__[0] * 0.01)
-        self.__next_line_distance__ = int(font.get_height())
+    def __get_text_pages__(self, orientation: AhrsData) -> List[List[TextLine]]:
+        airport_frequencies = AirportClient.get_nearby_airport_frequencies()
 
-        self.__name_slice_length__ = 15
-        self.__distance_text_slice_length__ = 8
-        self.__freq_slice_length__ = 7
-        self.__freqType_slice_length__ = 8
-        self.__remarks_slice_length__ = 12
-        self.__font_scale__ = 0.6
+        if airport_frequencies is None:
+            return []
 
-        self.__max_reports__ = (
-            int(
-                (self.__height__ - self.__listing_text_start_y__)
-                / (self.__next_line_distance__ * self.__font_scale__ * 1.2)
+        all_frequencies: List[str] = self.__get_all_frequency_lines__(
+            airport_frequencies, orientation
+        )
+
+        return self.__get_frequencies_grouped_by_page__(all_frequencies)
+
+    def __get_all_frequency_lines__(
+        self, airport_freqs, orientation: AhrsData
+    ) -> List[TextLine]:
+        unsorted_freqs = []
+        index: int = 0
+        text_lines: List[TextLine] = []
+
+        for ident in airport_freqs:
+            for freq in airport_freqs[ident]:
+                if freq.facilityType == "NAVAID":
+                    continue
+
+                freq_as_number = float(freq.frequency)
+
+                if (freq_as_number < 100) or (freq_as_number > 140):
+                    continue
+
+                if (
+                    freq.coordinates != None
+                    and freq.coordinates[0] != None
+                    and freq.coordinates[1] != None
+                    and (len(freq.facilityName) > 0 or len(freq.facilityId) > 0)
+                ):
+                    freq.distance = (
+                        geo_math.get_distance(orientation.position, freq.coordinates)
+                        * units.yards_to_sm
+                    )
+                    unsorted_freqs.append(freq)
+
+        sorted_freqs = sorted(unsorted_freqs, key=lambda freq: freq.distance)
+
+        for freq in sorted_freqs:
+            text_lines.append(
+                TextLine(
+                    self.__get_row_color__(index),
+                    self.__get_freq_text__(freq, orientation),
+                )
             )
-            - 3
+            index += 1
+
+        return text_lines
+
+    def __get_frequencies_grouped_by_page__(
+        self, all_frequencies: List[TextLine]
+    ) -> List[List[TextLine]]:
+        all_pages: List[List[TextLine]] = []
+        page: List[TextLine] = [self.__get_page_header__()]
+
+        while all_frequencies:
+            if len(page) < (self.__max_screen_lines__ - 1):
+                page.append(all_frequencies[0])
+
+                all_frequencies = all_frequencies[1:]
+            else:
+                all_pages.append(page)
+
+                page = [self.__get_page_header__()]
+
+        return all_pages
+
+    def __get_page_header__(self) -> TextLine:
+        return TextLine(
+            colors.WHITE,
+            self.__get_justified_line__("NAME", "DIST", "   FREQ", "TYPE", "Remarks"),
         )
 
-    def __get_listing__(self, report: list):
-        name = report[0]
-        dist = report[1]
-        freq = report[2]
-        freqType = report[3]
-        remarks = report[4]
+    def __get_freq_text__(self, freq: AirportFrequency, orientation: AhrsData) -> str:
+        # 'IDENT', 'NAME', 'DIST', 'FREQ', 'TYPE', 'REMARKS'
+        distance_text = (
+            self.__get_distance_string_without_units__(freq.distance)
+            if orientation.gps_online
+            else NOT_AVAILABLE
+        )
 
-        # if self.__show_list__:
+        identToShow = (
+            freq.facilityName if len(freq.facilityName) > 0 else freq.facilityId
+        )
+
+        return self.__get_justified_line__(
+            identToShow,
+            distance_text,
+            freq.frequency.ljust(7),
+            freq.frequencyName,
+            freq.remarks,
+        )
+
+    def __get_justified_line__(
+        self, name: str, distance: str, frequency: str, freq_type: str, remarks: str
+    ):
+        name_slice_length: int = 15
+        distance_text_slice_length: int = 6
+        freqType_slice_length: int = 8
+        remarks_slice_length: int = 15
+
         return "{0} {1} {2} {3} {4}".format(
-            self.__prepare_for_view__(name, self.__name_slice_length__, True),
-            self.__prepare_for_view__(dist, self.__distance_text_slice_length__),
-            self.__prepare_for_view__(freq, self.__freq_slice_length__),
-            self.__prepare_for_view__(freqType, self.__freqType_slice_length__),
-            self.__prepare_for_view__(remarks, self.__remarks_slice_length__),
+            self.__get_trimmed_and_justified_text__(name, name_slice_length, True),
+            self.__get_trimmed_and_justified_text__(
+                distance, distance_text_slice_length
+            ),
+            frequency,
+            self.__get_trimmed_and_justified_text__(freq_type, freqType_slice_length),
+            self.__get_trimmed_and_justified_text__(remarks, remarks_slice_length),
         )
 
-    def __prepare_for_view__(
+    def __get_trimmed_and_justified_text__(
         self, text: str, max_length: int, isLeftJustified: bool = False
     ) -> str:
         truncated_string = text[:max_length]
@@ -121,128 +163,7 @@ class AirportFrequencyListing(AdsbElement):
             else truncated_string.rjust(max_length)
         )
 
-    def __get_padded_airport_freqs__(self, airport_freqs, orientation: AhrsData):
-        pre_padded_text = self.__get_pre_padded_airport_freqs__(
-            airport_freqs, orientation
-        )
-
-        if pre_padded_text is None:
-            return []
-
-        return [self.__get_listing__(report) for report in pre_padded_text]
-
-    def __get_freq_text__(self, freq: AirportFrequency, orientation: AhrsData):
-        # 'IDENT', 'NAME', 'DIST', 'FREQ', 'TYPE', 'REMARKS'
-        distance_text = (
-            self.__get_distance_string__(freq.distance, True)
-            if orientation.gps_online
-            else NOT_AVAILABLE
-        )
-
-        identToShow = (
-            freq.facilityName if len(freq.facilityName) > 0 else freq.facilityId
-        )
-
-        return [
-            identToShow,
-            distance_text,
-            freq.frequency,
-            freq.frequencyName,
-            freq.remarks,
-        ]
-
-    def __get_pre_padded_airport_freqs__(self, airport_freqs, orientation: AhrsData):
-
-        # We do not want to show traffic on the ground.
-        reports_to_show = []
-
-        for ident in airport_freqs:
-            for freq in airport_freqs[ident]:
-                if (
-                    freq.coordinates != None
-                    and freq.coordinates[0] != None
-                    and freq.coordinates[1] != None
-                    and (len(freq.facilityName) > 0 or len(freq.facilityId) > 0)
-                ):
-                    freq.distance = (
-                        geo_math.get_distance(orientation.position, freq.coordinates)
-                        * units.yards_to_sm
-                    )
-                    reports_to_show.append(freq)
-
-        report_count = len(reports_to_show)
-        self.__page_count__ = int((report_count / self.__max_reports__) + 0.5)
-
-        self.__page__ = min(self.__page_count__ - 1, self.__page__)
-        self.__page__ = max(self.__page__, 0)
-        slice_start = self.__page__ * self.__max_reports__
-
-        # The __max_reports__ value is set based on the screen size
-        # and how much can fit on the screen
-        sorted_data = sorted(reports_to_show, key=lambda freq: freq.distance)
-        reports_to_show = sorted_data[slice_start : slice_start + self.__max_reports__]
-
-        pre_padded_text = [["NAME", "DIST", "FREQ", "TYPE", "REMARKS"]]
-
-        pre_padded_text.extend(
-            self.__get_freq_text__(freq, orientation) for freq in reports_to_show
-        )
-        return pre_padded_text
-
-    def render(self, framebuffer, orientation: AhrsData):
-        if (
-            orientation is None
-            or orientation.position is None
-            or orientation.position[0] is None
-            or orientation.position[1] is None
-        ):
-            return
-
-        # Get the traffic, and bail out of we have none
-        airport_frequencies = AirportClient.get_nearby_airport_frequencies()
-
-        if airport_frequencies is None:
-            return
-
-        # Render a list of traffic that we have positions
-        # for, along with the tail number
-
-        y_pos = self.__listing_text_start_y__
-        x_pos = self.__listing_text_start_x__
-
-        padded_traffic_reports = self.__get_padded_airport_freqs__(
-            airport_frequencies, orientation
-        )
-
-        index = 0
-        for airport_freq in padded_traffic_reports:
-            self.__render_text__(
-                framebuffer,
-                airport_freq,
-                [x_pos, y_pos],
-                self.__get_row_color__(index),
-                self.__font_scale__,
-            )
-
-            y_pos += int(self.__next_line_distance__ * (self.__font_scale__ * 1.2))
-            index += 1
-
-        self.__render_text__(
-            framebuffer,
-            f"Pg: {self.__page__ + 1} / {self.__page_count__}",
-            [
-                self.__left_border__,
-                (self.__bottom_border__ - (self.__font_height__ << 1))
-                + self.__font_height__,
-            ],
-            colors.YELLOW,
-            0.5,
-        )
-
     def __get_row_color__(self, index: int):
-        if index == 0:
-            return colors.WHITE
-
         return colors.YELLOW if index % 2 else colors.ORANGE
 
 
