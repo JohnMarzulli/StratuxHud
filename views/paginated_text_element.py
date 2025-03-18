@@ -134,6 +134,27 @@ class PaginatedTextElement(AdsbElement):
             colors.YELLOW,
             0.5,
         )
+    
+    def __get_lines_grouped_by_page__(
+        self, all_lines: List[TextLine]
+    ) -> List[List[TextLine]]:
+        all_pages: List[List[TextLine]] = []
+        page: List[TextLine] = [self.__get_page_header__()]
+
+        while all_lines:
+            if len(page) < (self.__max_screen_lines__ - 1):
+                page.append(all_lines[0])
+
+                all_lines = all_lines[1:]
+            else:
+                all_pages.append(page)
+
+                page = [self.__get_page_header__()]
+
+        if len(page) > 1:
+            all_pages.append(page)
+
+        return all_pages
 
     def __get_wrapped_lines__(self, report: str, max_line_length: int) -> list[str]:
         tokens = report.split(" ")
