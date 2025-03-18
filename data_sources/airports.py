@@ -159,15 +159,15 @@ class AirportClient:
         # These data are not expected to change quickly.
         # An interval of even 5 minutes may be sufficient.
         self.__update_traffic_task__ = tasks.RecurringTask(
-            "UpdateAirports", 120, self.__update_airports__
+            "UpdateAirports", 30, self.__update_airports__
         )
 
         self.__update_flight_rules_task__ = tasks.RecurringTask(
-            "UpdateFlightRules", 120, self.__update_flight_rules__
+            "UpdateFlightRules", 30, self.__update_flight_rules__
         )
 
         self.__update_airport_frequencies_task__ = tasks.RecurringTask(
-            "UpdateAirportFrequencies", 120, self.__update_airport_frequencies__
+            "UpdateAirportFrequencies", 30, self.__update_airport_frequencies__
         )
 
     def __update_flight_rules__(self):
