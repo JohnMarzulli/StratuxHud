@@ -1,1 +1,75 @@
-{"METAR":[{"reportTime":1742189591165,"reportType":"METAR","station":"KPLU","report":"010555Z AUTO 00000KT 10SM 04/04 A3002 RMK AO2="},{"reportTime":1742189604365,"reportType":"METAR","station":"K4S2","report":"010555Z AUTO 00000KT 5SM RA SCT006 OVC017 01/01 A3011 RMK AO2="},{"reportTime":1742189606618,"reportType":"METAR","station":"KS39","report":"010535Z AUTO 13007KT 8SM BKN030 BKN036 OVC110 01/M02 A3004 RMK AO2="},{"reportTime":1742189607500,"reportType":"METAR","station":"KBVS","report":"010555Z AUTO 10005KT 10SM SCT029 BKN034 OVC049 05/01 A3007 RMK A01="},{"reportTime":1742189609548,"reportType":"METAR","station":"KSZT","report":"010530Z AUTO 00000KT 10SM BKN032 BKN038 OVC060 00/M01 A3013 RMK AO2="},{"reportTime":1742189609548,"reportType":"METAR","station":"K0S9","report":"010555Z AUTO 13007G13KT 10SM BKN046 BKN055 OVC075 05/02 A3002 RMK AO2="},{"reportTime":1742189609549,"reportType":"METAR","station":"K6S2","report":"010555Z AUTO 00000KT 1 1/2SM -RA BR SCT003 SCT009 OVC019 06/06 A3005 RMK AO2 P0004="},{"reportTime":1742189609549,"reportType":"METAR","station":"KS33","report":"010535Z AUTO 22003KT 10SM OVC065 00/M02 A3004 RMK AO2="},{"reportTime":1742189609550,"reportType":"METAR","station":"K63S","report":"010535Z AUTO 00000KT 5SM BR OVC023 M02/M03 A3013 RMK A01Y4A"}],"TAF":[],"TEXT":[],"AIRMET":[{"reportTime":1742189583121,"reportType":"AIRMET","station":"KSFO","report":"010414 SFOS WA 010413 AMD\nAIRMET SIERRA UPDT 1 FOR IFR AND MTN OBSCN VALID UNTIL 010900\nAIRMET MTN OBSCN...WA OR CA\nFROM 80WSW YXC TO 20WSW DNJ TO 20SE REO TO 50SSE LKV TO 60E RBL\nTO RBL TO 30ENE ENI TO 30SW ENI TO 20SSW FOT TO ONP TO HQM TO\nTOU TO HUH TO 80WSW YXC\nMTNS OBSC BY CLDS/PCPN/BR. CONDS CONTG BYD 09Z THRU 15Z."}]}
+{
+    "METAR": [
+        {
+            "reportTime": 1742189591165,
+            "reportType": "METAR",
+            "station": "KPLU",
+            "report": "010555Z AUTO 00000KT 10SM 04/04 A3002 RMK AO2="
+        },
+        {
+            "reportTime": 1742189604365,
+            "reportType": "METAR",
+            "station": "K4S2",
+            "report": "010555Z AUTO 00000KT 5SM RA SCT006 OVC017 01/01 A3011 RMK AO2="
+        },
+        {
+            "reportTime": 1742189606618,
+            "reportType": "METAR",
+            "station": "KS39",
+            "report": "010535Z AUTO 13007KT 8SM BKN030 BKN036 OVC110 01/M02 A3004 RMK AO2="
+        },
+        {
+            "reportTime": 1742189607500,
+            "reportType": "METAR",
+            "station": "KBVS",
+            "report": "010555Z AUTO 10005KT 10SM SCT029 BKN034 OVC049 05/01 A3007 RMK A01="
+        },
+        {
+            "reportTime": 1742189609548,
+            "reportType": "METAR",
+            "station": "KSZT",
+            "report": "010530Z AUTO 00000KT 10SM BKN032 BKN038 OVC060 00/M01 A3013 RMK AO2="
+        },
+        {
+            "reportTime": 1742189609548,
+            "reportType": "METAR",
+            "station": "K0S9",
+            "report": "010555Z AUTO 13007G13KT 10SM BKN046 BKN055 OVC075 05/02 A3002 RMK AO2="
+        },
+        {
+            "reportTime": 1742189609549,
+            "reportType": "METAR",
+            "station": "K6S2",
+            "report": "010555Z AUTO 00000KT 1 1/2SM -RA BR SCT003 SCT009 OVC019 06/06 A3005 RMK AO2 P0004="
+        },
+        {
+            "reportTime": 1742189609549,
+            "reportType": "METAR",
+            "station": "KS33",
+            "report": "010535Z AUTO 22003KT 10SM OVC065 00/M02 A3004 RMK AO2="
+        },
+        {
+            "reportTime": 1742189609550,
+            "reportType": "METAR",
+            "station": "K63S",
+            "report": "010535Z AUTO 00000KT 5SM BR OVC023 M02/M03 A3013 RMK A01Y4A"
+        }
+    ],
+    "TAF": [
+        {
+            "reportTime": 1742189583121,
+            "reportType": "AIRMET",
+            "station": "KPAE",
+            "report": "212320Z 2200/2224 11009G16KT P6SM -RA SCT020 BKN050\nFM220100 13012KT 6SM -RA BR OVC020\nFM220600 16014G21KT 6SM -RA BR OVC022\nFM221200 15012G18KT P6SM VCSH OVC015\nFM222100 15017G28KT 6SM -RA BR OVC025"
+        }
+    ],
+    "TEXT": [],
+    "AIRMET": [
+        {
+            "reportTime": 1742189583121,
+            "reportType": "AIRMET",
+            "station": "KSFO",
+            "report": "010414 SFOS WA 010413 AMD\nAIRMET SIERRA UPDT 1 FOR IFR AND MTN OBSCN VALID UNTIL 010900\nAIRMET MTN OBSCN...WA OR CA\nFROM 80WSW YXC TO 20WSW DNJ TO 20SE REO TO 50SSE LKV TO 60E RBL\nTO RBL TO 30ENE ENI TO 30SW ENI TO 20SSW FOT TO ONP TO HQM TO\nTOU TO HUH TO 80WSW YXC\nMTNS OBSC BY CLDS/PCPN/BR. CONDS CONTG BYD 09Z THRU 15Z."
+        }
+    ]
+}
