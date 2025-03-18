@@ -31,6 +31,7 @@ class AdsbTrafficListing(PaginatedTextElement):
         )
 
         self.__font_scale__ = 0.75
+        self.__max_screen_lines__ -= 2
 
     def __get_text_pages__(self, orientation: AhrsData) -> List[List[TextLine]]:
         reports_to_show = HudDataCache.get_reliable_traffic()
