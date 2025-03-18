@@ -45,7 +45,7 @@ class AirportFrequencyListing(PaginatedTextElement):
             airport_frequencies, orientation
         )
 
-        return self.__get_frequencies_grouped_by_page__(all_frequencies)
+        return self.__get_lines_grouped_by_page__(all_frequencies)
 
     def __get_all_frequency_lines__(
         self, airport_freqs, orientation: AhrsData
@@ -88,24 +88,6 @@ class AirportFrequencyListing(PaginatedTextElement):
             index += 1
 
         return text_lines
-
-    def __get_frequencies_grouped_by_page__(
-        self, all_frequencies: List[TextLine]
-    ) -> List[List[TextLine]]:
-        all_pages: List[List[TextLine]] = []
-        page: List[TextLine] = [self.__get_page_header__()]
-
-        while all_frequencies:
-            if len(page) < (self.__max_screen_lines__ - 1):
-                page.append(all_frequencies[0])
-
-                all_frequencies = all_frequencies[1:]
-            else:
-                all_pages.append(page)
-
-                page = [self.__get_page_header__()]
-
-        return all_pages
 
     def __get_page_header__(self) -> TextLine:
         return TextLine(
