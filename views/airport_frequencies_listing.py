@@ -65,7 +65,10 @@ class AirportFrequencyListing(PaginatedTextElement):
                     continue
 
                 if (
-                    freq.coordinates != None
+                    orientation.position != None
+                    and orientation.position[0] != None
+                    and orientation.position[1] != None
+                    and freq.coordinates != None
                     and freq.coordinates[0] != None
                     and freq.coordinates[1] != None
                     and (len(freq.facilityName) > 0 or len(freq.facilityId) > 0)
