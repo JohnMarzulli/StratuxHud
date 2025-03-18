@@ -56,20 +56,15 @@ class TextualWeatherClient:
 
     @staticmethod
     def get_metars() -> Dict[str, TextualReport]:
-        TextualWeatherClient.__LOCK_OBJECT__.acquire()
+        return TextualWeatherClient.__get_text_report__("METAR")
 
-        try:
-            metars = {}
+    @staticmethod
+    def get_tafs() -> Dict[str, TextualReport]:
+        return TextualWeatherClient.__get_text_report__("TAF")
 
-            if "METAR" not in TextualWeatherClient.__REPORTS__:
-                return metars
-
-            for report in TextualWeatherClient.__REPORTS__["METAR"]:
-                metars[report.station] = report
-        finally:
-            TextualWeatherClient.__LOCK_OBJECT__.release()
-
-        return metars
+    @staticmethod
+    def get_airmets() -> Dict[str, TextualReport]:
+        return TextualWeatherClient.__get_text_report__("AIRMET")
 
     @staticmethod
     def inject_report(text_reports: Dict[str, List[TextualReport]]):
@@ -86,6 +81,26 @@ class TextualWeatherClient:
                     TextualWeatherClient.__REPORTS__[report_type].append(report)
         finally:
             TextualWeatherClient.__LOCK_OBJECT__.release()
+
+    @staticmethod
+    def __get_text_report__(report: str) -> Dict[str, TextualReport]:
+        TextualWeatherClient.__LOCK_OBJECT__.acquire()
+
+        if report is None or len(report) < 1:
+            return {}
+
+        try:
+            reports = {}
+
+            if report not in TextualWeatherClient.__REPORTS__:
+                return reports
+
+            for report in TextualWeatherClient.__REPORTS__[report]:
+                reports[report.station] = report
+        finally:
+            TextualWeatherClient.__LOCK_OBJECT__.release()
+
+        return reports
 
 
 def load_sample_text_reports():
