@@ -134,7 +134,7 @@ class PaginatedTextElement(AdsbElement):
             colors.YELLOW,
             0.5,
         )
-    
+
     def __get_lines_grouped_by_page__(
         self, all_lines: List[TextLine]
     ) -> List[List[TextLine]]:
@@ -166,9 +166,19 @@ class PaginatedTextElement(AdsbElement):
             next_token: str = tokens[0]
             token_length = len(next_token)
 
+            return_lines = next_token.split("\n")
+
             if len(current_line) + token_length > max_line_length:
                 lines.append(current_line)
                 current_line = next_token
+            elif len(return_lines) > 1:
+                current_line += f" {return_lines[0]}".rstrip()
+                lines.append(current_line)
+                current_line = ""
+                replacement_token = "\n".join(return_lines[1:])
+                tokens = tokens[1:]
+                tokens.insert(0, replacement_token)
+                tokens.insert(0, return_lines[0]) # This is going to be removed anyway...
             else:
                 current_line += f" {next_token}"
                 current_line = current_line.lstrip().rstrip()
