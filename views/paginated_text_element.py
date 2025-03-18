@@ -168,17 +168,27 @@ class PaginatedTextElement(AdsbElement):
 
             return_lines = next_token.split("\n")
 
-            if len(current_line) + token_length > max_line_length:
+            if len(return_lines) > 1:
+                new_addition = f" {return_lines[0]}".rstrip()
+
+                if len(current_line) + len(new_addition) > max_line_length:
+                    lines.append(current_line)
+
+                    for split_token in return_lines.reverse():
+                        tokens.insert(0, split_token)
+                else:
+                    current_line += new_addition
+                    lines.append(current_line)
+                    current_line = ""
+                    replacement_token = "\n".join(return_lines[1:])
+                    tokens = tokens[1:]
+                    tokens.insert(0, replacement_token)
+                    tokens.insert(
+                        0, return_lines[0]
+                    )  # This is going to be removed anyway...
+            elif len(current_line) + token_length > max_line_length:
                 lines.append(current_line)
                 current_line = next_token
-            elif len(return_lines) > 1:
-                current_line += f" {return_lines[0]}".rstrip()
-                lines.append(current_line)
-                current_line = ""
-                replacement_token = "\n".join(return_lines[1:])
-                tokens = tokens[1:]
-                tokens.insert(0, replacement_token)
-                tokens.insert(0, return_lines[0]) # This is going to be removed anyway...
             else:
                 current_line += f" {next_token}"
                 current_line = current_line.lstrip().rstrip()
