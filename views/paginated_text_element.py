@@ -8,21 +8,8 @@ import pygame
 
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
+from views.text_line import TextLine
 from views.adsb_element import AdsbElement
-
-
-class TextLine(object):
-    """
-    Holds information need to render a METAR
-    on the screen.
-
-    This split helps with pagination and grouping.
-    """
-
-    def __init__(self, color: List[int], text: str):
-        self.color = color
-
-        self.text = text
 
 
 class PaginatedTextElement(AdsbElement):

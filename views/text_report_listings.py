@@ -7,12 +7,10 @@ from typing import Dict, List
 
 from data_sources.ahrs_data import AhrsData
 from data_sources.airports import AirportClient, load_example_flight_rules
-from data_sources.textual_weather import (
-    TextualReport,
-    load_sample_text_reports,
-)
+from data_sources.textual_weather import TextualReport, load_sample_text_reports
 from rendering import colors
-from views.paginated_text_element import PaginatedTextElement, TextLine
+from views.paginated_text_element import PaginatedTextElement
+from views.text_line import TextLine
 
 
 class TextReportListing(PaginatedTextElement):

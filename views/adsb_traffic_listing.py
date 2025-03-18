@@ -10,7 +10,8 @@ from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
 from rendering import colors
 from views.adsb_element import apply_declination
-from views.paginated_text_element import PaginatedTextElement, TextLine
+from views.paginated_text_element import PaginatedTextElement
+from views.text_line import TextLine
 
 
 class AdsbTrafficListing(PaginatedTextElement):

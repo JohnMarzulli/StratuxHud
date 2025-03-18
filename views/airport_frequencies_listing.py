@@ -3,12 +3,14 @@ View that shows the list of nearby traffic
 """
 
 from typing import List
+
 from common_utils import geo_math, units
 from data_sources.ahrs_data import NOT_AVAILABLE, AhrsData
 from data_sources.airport_frequencies import AirportFrequency
 from data_sources.airports import AirportClient
 from rendering import colors
-from views.paginated_text_element import PaginatedTextElement, TextLine
+from views.paginated_text_element import PaginatedTextElement
+from views.text_line import TextLine
 
 
 class AirportFrequencyListing(PaginatedTextElement):
