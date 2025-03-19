@@ -58,7 +58,7 @@ class TextReportListing(PaginatedTextElement):
         reports_as_own_page = self.__get_reports_with_each_station_as_own_page__()
         self.__reports_by_page__ = get_consolidated_pages(
             reports_as_own_page,
-            TextLine(colors.WHITE, " STATION   REPORT"),
+            TextLine(colors.WHITE, " IDENT REPORT"),
             self.__max_screen_lines__,
         )
 
@@ -83,19 +83,27 @@ class TextReportListing(PaginatedTextElement):
             )
 
             color: List[int] = self.__get_flight_rule_color__(known_flight_rules)
-
             lines = get_wrapped_lines(reports[station].report, max_chars)
-
-            station_text = station.rjust(8).ljust(10)
-            report_lines: List[TextLine] = []
-
-            for line in lines:
-                report_lines.append(TextLine(color, f"{station_text} {line}"))
-                station_text = " " * len(station_text)
+            justified_lines = self.__get_report_lines_with_station__(station, lines)
+            report_lines = [
+                TextLine(color, justified_text) for justified_text in justified_lines
+            ]
 
             reports_as_own_page.append(report_lines)
 
         return reports_as_own_page
+
+    def __get_report_lines_with_station__(
+        self, station: str, report_lines: List[str]
+    ) -> List[str]:
+        station_text = station.rjust(6).ljust(6)
+        justified_report_lines: List[str] = []
+
+        for line in report_lines:
+            justified_report_lines.append(f"{station_text} {line}")
+            station_text = " " * len(station_text)
+
+        return justified_report_lines
 
     def __get_flight_rule_color__(self, flight_rules):
         if flight_rules == "VFR":
