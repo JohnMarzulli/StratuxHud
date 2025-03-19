@@ -76,7 +76,7 @@ class PaginatedTextElement(AdsbElement):
                 (self.__height__ - self.__listing_text_start_y__)
                 / (self.__next_line_distance__ * self.__font_scale__)
             )
-            - 3
+            - 4
         )
 
     def __get_text_pages__(self, orientation: AhrsData) -> List[List[TextLine]]:
@@ -122,71 +122,6 @@ class PaginatedTextElement(AdsbElement):
             0.5,
         )
 
-    def __get_lines_grouped_by_page__(
-        self, all_lines: List[TextLine]
-    ) -> List[List[TextLine]]:
-        all_pages: List[List[TextLine]] = []
-        page: List[TextLine] = [self.__get_page_header__()]
-
-        while all_lines:
-            if len(page) < (self.__max_screen_lines__ - 1):
-                page.append(all_lines[0])
-
-                all_lines = all_lines[1:]
-            else:
-                all_pages.append(page)
-
-                page = [self.__get_page_header__()]
-
-        if len(page) > 1:
-            all_pages.append(page)
-
-        return all_pages
-
-    def __get_wrapped_lines__(self, report: str, max_line_length: int) -> list[str]:
-        tokens = report.split(" ")
-
-        lines: List[str] = []
-        current_line = ""
-
-        while tokens:
-            next_token: str = tokens[0]
-            token_length = len(next_token)
-
-            return_lines = next_token.split("\n")
-
-            if len(return_lines) > 1:
-                new_addition = f" {return_lines[0]}".rstrip()
-
-                if len(current_line) + len(new_addition) > max_line_length:
-                    lines.append(current_line)
-
-                    for split_token in return_lines.reverse():
-                        tokens.insert(0, split_token)
-                else:
-                    current_line += new_addition
-                    lines.append(current_line)
-                    current_line = ""
-                    replacement_token = "\n".join(return_lines[1:])
-                    tokens = tokens[1:]
-                    tokens.insert(0, replacement_token)
-                    tokens.insert(
-                        0, return_lines[0]
-                    )  # This is going to be removed anyway...
-            elif len(current_line) + token_length > max_line_length:
-                lines.append(current_line)
-                current_line = next_token
-            else:
-                current_line += f" {next_token}"
-                current_line = current_line.lstrip().rstrip()
-
-            tokens = tokens[1:]
-
-        if len(current_line) > 0:
-            lines.append(current_line)
-
-        return lines
-
     def __get_max_line_length__(self) -> int:
         report_start_x = self.__listing_text_start_x__ + (
             self.__font_height__ * self.__font_scale__ * 4
@@ -202,7 +137,6 @@ class PaginatedTextElement(AdsbElement):
 
 
 if __name__ == "__main__":
-    from data_sources.airports import load_example_airports
     from views.hud_elements import run_hud_element
 
     run_hud_element(PaginatedTextElement)

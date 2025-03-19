@@ -21,6 +21,24 @@ class AirmetListing(TextReportListing):
     Implements a page/scroll view.
     """
 
+    def __init__(
+        self,
+        degrees_of_pitch: float,
+        pixels_per_degree_y: float,
+        font,
+        framebuffer_size,
+        reduced_visuals: bool = False,
+    ):
+        super().__init__(
+            degrees_of_pitch,
+            pixels_per_degree_y,
+            font,
+            framebuffer_size,
+            reduced_visuals,
+        )
+
+        self.__max_screen_lines__ += 1
+
     def __get_text_reports__(self) -> Dict[str, TextualReport]:
         return TextualWeatherClient.get_airmets()
 
