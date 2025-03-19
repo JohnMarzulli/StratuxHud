@@ -5,6 +5,7 @@ View that shows the list of nearby traffic
 from typing import List
 
 from common_utils import units
+from common_utils.text_pagination import get_lines_grouped_by_page
 from data_sources.ahrs_data import NOT_AVAILABLE, AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
@@ -55,7 +56,9 @@ class AdsbTrafficListing(PaginatedTextElement):
             pageless_reports.append(TextLine(self.__get_row_color__(index), report))
             index += 1
 
-        return self.__get_lines_grouped_by_page__(pageless_reports)
+        return get_lines_grouped_by_page(
+            pageless_reports, self.__get_page_header__(), self.__max_screen_lines__
+        )
 
     def __get_page_header__(self) -> TextLine:
         return TextLine(

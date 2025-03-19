@@ -5,6 +5,7 @@ View that shows the list of nearby traffic
 from typing import List
 
 from common_utils import geo_math, units
+from common_utils.text_pagination import get_lines_grouped_by_page
 from data_sources.ahrs_data import NOT_AVAILABLE, AhrsData
 from data_sources.airport_frequencies import AirportFrequency
 from data_sources.airports import AirportClient
@@ -47,7 +48,9 @@ class AirportFrequencyListing(PaginatedTextElement):
             airport_frequencies, orientation
         )
 
-        return self.__get_lines_grouped_by_page__(all_frequencies)
+        return get_lines_grouped_by_page(
+            all_frequencies, self.__get_page_header__(), self.__max_screen_lines__
+        )
 
     def __get_all_frequency_lines__(
         self, airport_freqs, orientation: AhrsData
