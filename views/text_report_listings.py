@@ -5,6 +5,7 @@ View that shows the list of nearby traffic
 import datetime
 from typing import Dict, List
 
+from common_utils.text_pagination import get_consolidated_pages, get_wrapped_lines
 from data_sources.ahrs_data import AhrsData
 from data_sources.airports import AirportClient, load_example_flight_rules
 from data_sources.textual_weather import TextualReport, load_sample_text_reports
@@ -55,52 +56,15 @@ class TextReportListing(PaginatedTextElement):
             return self.__reports_by_page__
 
         reports_as_own_page = self.__get_reports_with_each_station_as_own_page__()
-        self.__reports_by_page__ = self.__get_consolidated_report_pages__(
-            reports_as_own_page
+        self.__reports_by_page__ = get_consolidated_pages(
+            reports_as_own_page,
+            TextLine(colors.WHITE, " STATION   REPORT"),
+            self.__max_screen_lines__,
         )
 
         self.__last_updated__ = datetime.datetime.now(datetime.timezone.utc)
 
         return self.__reports_by_page__
-
-    def __get_consolidated_report_pages__(
-        self, reports_as_own_page: List[List[TextLine]]
-    ) -> List[List[TextLine]]:
-        consolidated_report_pages: List[List[TextLine]] = []
-        header_line = TextLine(colors.WHITE, " STATION   REPORT")
-        new_page: List[TextLine] = [header_line]
-
-        while reports_as_own_page:
-            if len(new_page) + len(reports_as_own_page[0]) > (
-                self.__max_screen_lines__ - 1
-            ):
-                if len(new_page) == 1:
-                    sub_page = new_page
-
-                    for sub_page_line in reports_as_own_page[0][
-                        : self.__max_screen_lines__ - 2
-                    ]:
-                        sub_page.append(sub_page_line)
-
-                    consolidated_report_pages.append(sub_page)
-
-                    new_page = reports_as_own_page[0][self.__max_screen_lines__ - 2 :]
-
-                    if len(reports_as_own_page) > 1:
-                        new_page.append(header_line)
-                else:
-                    consolidated_report_pages.append(new_page)
-                    new_page = [header_line]
-            else:
-                for line in reports_as_own_page[0]:
-                    new_page.append(line)
-
-            reports_as_own_page = reports_as_own_page[1:]
-
-        if len(new_page) > 0:
-            consolidated_report_pages.append(new_page)
-
-        return consolidated_report_pages
 
     def __get_reports_with_each_station_as_own_page__(self) -> List[List[TextLine]]:
         max_chars: int = self.__get_max_line_length__()
@@ -120,7 +84,7 @@ class TextReportListing(PaginatedTextElement):
 
             color: List[int] = self.__get_flight_rule_color__(known_flight_rules)
 
-            lines = self.__get_wrapped_lines__(reports[station].report, max_chars)
+            lines = get_wrapped_lines(reports[station].report, max_chars)
 
             station_text = station.rjust(8).ljust(10)
             report_lines: List[TextLine] = []
