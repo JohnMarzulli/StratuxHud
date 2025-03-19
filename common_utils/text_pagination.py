@@ -36,47 +36,36 @@ def get_wrapped_lines(report: str, max_line_length: int) -> List[str]:
     >>> get_wrapped_lines('TAF KPAE 212320Z 2200/2224 11009G16KT P6SM -RA SCT020 BKN050\\nFM220100 13012KT 6SM -RA BR OVC020\\nFM220600 16014G21KT 6SM -RA BR OVC022\\nFM221200 15012G18KT P6SM VCSH OVC015\\nFM222100 15017G28KT 6SM -RA BR OVC025', 40)
     ['TAF KPAE 212320Z 2200/2224 11009G16KT', 'P6SM -RA SCT020 BKN050', 'FM220100 13012KT 6SM -RA BR OVC020', 'FM220600 16014G21KT 6SM -RA BR OVC022', 'FM221200 15012G18KT P6SM VCSH OVC015', 'FM222100 15017G28KT 6SM -RA BR OVC025']
     >>> get_wrapped_lines('TAF KPAE 212320Z 2200/2224 11009G16KT P6SM -RA SCT020 BKN050\\nFM220100 13012KT 6SM -RA BR OVC020\\nFM220600 16014G21KT 6SM -RA BR OVC022\\nFM221200 15012G18KT P6SM VCSH OVC015\\nFM222100 15017G28KT 6SM -RA BR OVC025', 20)
-    ['TAF KPAE 212320Z', '2200/2224 11009G16KT', 'P6SM -RA SCT020', 'P6SM -RA SCT020', 'FM220100 BKN050', 'FM220100 13012KT 6SM', '-RA BR OVC020', 'FM220600 16014G21KT', '6SM -RA BR OVC022', 'FM221200 15012G18KT', 'P6SM VCSH OVC015', 'FM222100 15017G28KT', '6SM -RA BR OVC025']
+    ['TAF KPAE 212320Z', '2200/2224 11009G16KT', 'P6SM -RA SCT020', 'BKN050', 'FM220100 13012KT 6SM', '-RA BR OVC020', 'FM220600 16014G21KT', '6SM -RA BR OVC022', 'FM221200 15012G18KT', 'P6SM VCSH OVC015', 'FM222100 15017G28KT', '6SM -RA BR OVC025']
     >>> get_wrapped_lines('TAF KPAE 220253Z 14007G15KT 9SM -RA SCT038 BKN045 OVC050 09/07 A3005 RMK AO2 RAE05B25 SLP179 P0000 60000 T00940072 55013', 20)
     ['TAF KPAE 220253Z', '14007G15KT 9SM -RA', 'SCT038 BKN045 OVC050', '09/07 A3005 RMK AO2', 'RAE05B25 SLP179 P0000', '60000 T00940072 55013']
     >>> get_wrapped_lines('010414 SFOS WA 010413 AMD\\nAIRMET SIERRA UPDT 1 FOR IFR AND MTN OBSCN VALID UNTIL 010900\\nAIRMET MTN OBSCN...WA OR CA\\nFROM 80WSW YXC TO 20WSW DNJ TO 20SE REO TO 50SSE LKV TO 60E RBL\\nTO RBL TO 30ENE ENI TO 30SW ENI TO 20SSW FOT TO ONP TO HQM TO\\nTOU TO HUH TO 80WSW YXC\\nMTNS OBSC BY CLDS/PCPN/BR. CONDS CONTG BYD 09Z THRU 15Z.\\nTHIS\\nIS\\nOVERFLOW', 39)
     ['010414 SFOS WA 010413 AMD', 'AIRMET SIERRA UPDT 1 FOR IFR AND MTN', 'OBSCN VALID UNTIL 010900', 'AIRMET MTN OBSCN...WA OR CA', 'FROM 80WSW YXC TO 20WSW DNJ TO 20SE REO', 'TO 50SSE LKV TO 60E RBL', 'TO RBL TO 30ENE ENI TO 30SW ENI TO 20SSW', 'FOT TO ONP TO HQM TO', 'TOU TO HUH TO 80WSW YXC', 'MTNS OBSC BY CLDS/PCPN/BR. CONDS CONTG', 'BYD 09Z THRU 15Z.', 'THIS', 'IS', 'OVERFLOW']
+    >>> get_wrapped_lines('190540Z 1906/2006 17004KT P6SM BKN045 OVC090\\nFM191100 13003KT P6SM OVC060\\nFM191800 14004KT P6SM -RA OVC050\\nFM192200 13010G20KT P6SM -RA OVC040\\nFM200300 15012G25KT P6SM -RA OVC030', 44)
+    ['190540Z 1906/2006 17004KT P6SM BKN045 OVC090', 'FM191100 13003KT P6SM OVC060', 'FM191800 14004KT P6SM -RA OVC050', 'FM192200 13010G20KT P6SM -RA OVC040', 'FM200300 15012G25KT P6SM -RA OVC030']
     """
-    tokens = report.split(" ")
+    if report is None or len(report) < 1:
+        return []
+
+    broken_down_lines: List[str] = []
+
+    text_lines = report.splitlines()
+
+    if len(text_lines) > 1:
+        for page_broken_line in text_lines:
+            broken_down_lines += get_wrapped_lines(page_broken_line, max_line_length)
+
+        return broken_down_lines
 
     lines: List[str] = []
     current_line = ""
+    tokens = report.split(" ")
 
     while tokens:
         next_token: str = tokens[0]
         token_length = len(next_token)
 
-        return_lines = next_token.split("\n")
-
-        if len(return_lines) > 1:
-            new_addition = f" {return_lines[0]}".rstrip()
-
-            if len(current_line) == 0:
-                new_addition = new_addition.lstrip()
-
-            if len(current_line) + len(new_addition) > max_line_length:
-                lines.append(current_line)
-
-                reversed_tokens = return_lines.copy()
-                reversed_tokens.reverse()
-                for split_token in reversed_tokens:
-                    tokens.insert(0, split_token)
-            else:
-                current_line += new_addition
-                lines.append(current_line)
-                current_line = ""
-                replacement_token = "\n".join(return_lines[1:])
-                tokens = tokens[1:]
-                tokens.insert(0, replacement_token)
-                tokens.insert(
-                    0, return_lines[0]
-                )  # This is going to be removed anyway...
-        elif len(current_line) + token_length > max_line_length:
+        if len(current_line) + token_length > max_line_length:
             if len(current_line) > 0:
                 lines.append(current_line.lstrip())
             current_line = next_token
