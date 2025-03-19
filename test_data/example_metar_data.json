@@ -58,9 +58,21 @@
     "TAF": [
         {
             "reportTime": 1742189583121,
-            "reportType": "AIRMET",
+            "reportType": "TAF",
             "station": "KPAE",
             "report": "212320Z 2200/2224 11009G16KT P6SM -RA SCT020 BKN050\nFM220100 13012KT 6SM -RA BR OVC020\nFM220600 16014G21KT 6SM -RA BR OVC022\nFM221200 15012G18KT P6SM VCSH OVC015\nFM222100 15017G28KT 6SM -RA BR OVC025"
+        },
+        {
+            "reportTime": 1742189583121,
+            "reportType": "TAF",
+            "station": "KBFI",
+            "report": "190540Z 1906/2006 17004KT P6SM BKN045 OVC090\nFM191100 13003KT P6SM OVC060\nFM191800 14004KT P6SM -RA OVC050\nFM192200 13010G20KT P6SM -RA OVC040\nFM200300 15012G25KT P6SM -RA OVC030"
+        },
+        {
+            "reportTime": 1742189583121,
+            "reportType": "TAF",
+            "station": "KSEA",
+            "report": "190540Z 1906/2012 14006KT P6SM BKN040 OVC080\nFM191800 13006KT P6SM -RA OVC050\nFM192200 14010G20KT P6SM -RA OVC035\nFM200300 13013G25KT P6SM -RA OVC025\nFM201000 17012KT P6SM VCSH OVC035"
         }
     ],
     "TEXT": [],
