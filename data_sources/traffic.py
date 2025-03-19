@@ -296,9 +296,10 @@ class SimulatedTraffic(object):
         Creates a new traffic simulation object.
         """
 
-        target_center_position = (48.160464, -122.166409)
-        runway_number_position = (48.155973, -122.157582)
-        starting_points = (target_center_position, runway_number_position)
+        starting_point = (48.15895571856626, -122.14451265407008)
+        kawo = (47.5, -122.2)
+        ksea = (47.6, -122.3)
+        starting_points = (starting_point, kawo, ksea)
 
         self.icao_address = random.randint(10000, 100000)
         self.tail_number = "N{0}{1}{2}".format(
@@ -306,10 +307,10 @@ class SimulatedTraffic(object):
         )
         self.time_decoded = datetime.datetime.utcnow()
         self.latitude = simulated_values.SimulatedValue(
-            0.1, 10, 1, random.randint(0, 9), starting_points[random.randint(0, 1)][0]
+            0.01, 0.1, 1, random.randint(0, 9) / 100.0, starting_points[random.randint(0, 2)][0]
         )
         self.longitude = simulated_values.SimulatedValue(
-            0.1, 10, 1, random.randint(0, 9), starting_points[random.randint(0, 1)][1]
+            0.01, 0.1, 1, random.randint(0, 9) / 100.0, starting_points[random.randint(0, 2)][1]
         )
         self.distance = simulated_values.SimulatedValue(
             10, max_distance, -1, random.randint(0, max_distance), max_distance
@@ -371,17 +372,17 @@ class SimulatedTraffic(object):
             "ExtrapolatedPosition": False,
             "Addr_type": 0,
             "Last_alt": str(self.time_decoded),
-            "Lat": self.latitude.value,
-            "Distance": self.distance.value,
+            "Lat": self.latitude.get_value(),
+            "Distance": self.distance.get_value(),
             "Age": 0.15000000000000002,
             "Last_GnssDiffAlt": 4000,
             "Last_speed": str(self.time_decoded),
             "AgeLastAlt": 0.15000000000000002,
             "Last_GnssDiff": str(self.time_decoded),
             "BearingDist_valid": True,
-            "Lng": self.longitude.value,
-            "Lon": self.longitude.value,
-            "Bearing": self.bearing.value,
+            "Lng": self.longitude.get_value(),
+            "Lon": self.longitude.get_value(),
+            "Bearing": self.bearing.get_value(),
             "OnGround": False,
             "NIC": 8,
             "Last_source": 1,
@@ -389,8 +390,8 @@ class SimulatedTraffic(object):
             "NACp": 10,
             "SignalLevel": -5.054252345140135,
             "AltIsGNSS": False,
-            "Alt": self.altitude.value,
-            "Speed": self.speed.value,
+            "Alt": self.altitude.get_value(),
+            "Speed": self.speed.get_value(),
         }
 
 
