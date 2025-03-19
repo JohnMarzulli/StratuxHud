@@ -313,8 +313,4 @@ if __name__ == "__main__":
     from views.groundspeed import Groundspeed
     from views.hud_elements import run_hud_elements
 
-    nexrad_client = NexradClient(
-        configuration.CONFIGURATION.get_traffic_manager_address()
-    )
-
     run_hud_elements([AdsbTopViewScope, CompassAndHeadingTopElement, Groundspeed])
