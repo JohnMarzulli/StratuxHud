@@ -132,7 +132,7 @@ class PaginatedTextElement(AdsbElement):
                 (((self.__center_x__ * 2) - report_start_x) / self.__font_scale__)
                 / (self.__font_height__ / 2)
             )
-            * 0.8
+            * 0.9
         )
 
 
