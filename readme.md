@@ -526,8 +526,13 @@ https://www.raspberrypi.org/forums/viewtopic.php?t=266277
 - Dynon Skyview support
 - Airball support
 - Engine instruments and displays
-- Weather
 - Audio alerts
 - Turn "projection" on the radar map.
 - Nearby airports
 - View improvements
+
+## Code Cleanliness Commands
+
+```powershell
+Get-ChildItem *.py -File | ForEach-Object {[PSCustomObject]@{FileName  = $_.Name; LineCount = (Get-Content $_.FullName | Measure-Object).Count}} | Sort-Object LineCount -Descending | Format-Table
+```
