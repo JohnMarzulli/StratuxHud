@@ -90,23 +90,20 @@ class WeatherTopViewScope(TopDownScope):
 
         scope_range = self.__zoom_manager__.get_current_zoom()
 
-        text_y_pos = self.__bottom_border__ - (self.__font_height__ << 1)
-        nearby_position = [
-            self.__left_border__,
-            text_y_pos + (self.__font_height__ >> 1),
-        ]
-        total_position = [self.__left_border__, text_y_pos + self.__font_height__]
-
         nexrad_blocks = []
+        is_valid_orientation = (
+            orientation.position is not None
+            and orientation.position[0] is not None
+            and orientation.position[1] is not None
+        )
 
-        if not (
-            orientation.position is None
-            or orientation.position[0] is None
-            or orientation.position[1] is None
-        ):
+        if is_valid_orientation:
             current_heading = orientation.get_onscreen_gps_heading()
+            is_heading_valid = current_heading is not None and not isinstance(
+                current_heading, str
+            )
 
-            if not (current_heading is None or isinstance(current_heading, str)):
+            if is_heading_valid:
                 nexrad_blocks = self.__get_nexrad_blocks__(
                     orientation.position, scope_range.max_ring_range
                 )
@@ -117,6 +114,20 @@ class WeatherTopViewScope(TopDownScope):
             )
             for block in nexrad_blocks
         ]
+
+        self.__render_debug_visuals__(framebuffer, nexrad_blocks)
+
+    def __render_debug_visuals__(
+        self,
+        framebuffer: pygame.Surface,
+        nexrad_blocks: List[ReflectivityBlock],
+    ):
+        text_y_pos = self.__bottom_border__ - (self.__font_height__ << 1)
+        nearby_position = [
+            self.__left_border__,
+            text_y_pos + (self.__font_height__ >> 1),
+        ]
+        total_position = [self.__left_border__, text_y_pos + self.__font_height__]
 
         if self.__cluter_visuals__:
             self.__nearby_blocks_count__ = len(nexrad_blocks)
