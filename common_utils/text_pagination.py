@@ -23,6 +23,10 @@ def get_wrapped_lines(report: str, max_line_length: int) -> List[str]:
     []
     >>> get_wrapped_lines('statute', 20)
     ['statute']
+    >>> get_wrapped_lines('statute', 2)
+    ['statute']
+    >>> get_wrapped_lines('statute', 1)
+    ['statute']
     >>> get_wrapped_lines('Willy Wonka', 8)
     ['Willy', 'Wonka']
     >>> get_wrapped_lines('   Willy   Wonka  ', 8)
