@@ -30,15 +30,15 @@ from rendering import colors, display, drawing, text_renderer
 # they are not needed.
 from views import (
     adsb_on_screen_reticles,
-    adsb_target_bugs_only,
     adsb_target_bugs,
+    adsb_target_bugs_only,
     adsb_top_view_scope,
     adsb_traffic_listing,
     ahrs_not_available,
     airmet_listings,
     airport_frequencies_listing,
-    aithre_view,
     aithre,
+    aithre_view,
     altitude,
     artificial_horizon,
     compass_and_heading_bottom_element,

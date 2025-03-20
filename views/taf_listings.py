@@ -6,15 +6,14 @@ from typing import Dict, List
 
 from common_utils.text_pagination import get_wrapped_lines
 from core_services import weather_report_classification
-from data_sources.airports import AirportClient, load_example_flight_rules
+from data_sources.airports import load_example_flight_rules
 from data_sources.textual_weather import (
     TextualReport,
     TextualWeatherClient,
     load_sample_text_reports,
 )
-from rendering import colors
-from views.text_line import TextLine
-from views.text_report_listings import TextReportListing
+from views.abstract_elements.text_line import TextLine
+from views.abstract_elements.text_report_listings import TextReportListing
 
 
 class TafListing(TextReportListing):

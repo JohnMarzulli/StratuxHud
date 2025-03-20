@@ -5,15 +5,12 @@ from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 from data_sources.traffic import Traffic
 from rendering import colors, drawing, text_renderer
-
-from views.ahrs_element import AhrsElement, HudElement
+from views.abstract_elements.ahrs_element import AhrsElement, HudElement
 from views.hud_elements import apply_declination
 
 
 class AdsbElement(HudElement):
-    def uses_ahrs(
-        self
-    ) -> bool:
+    def uses_ahrs(self) -> bool:
         """
         Does this element use AHRS data to render?
 
@@ -29,7 +26,7 @@ class AdsbElement(HudElement):
         pixels_per_degree_y: float,
         font,
         framebuffer_size,
-        reduced_visuals: bool = False
+        reduced_visuals: bool = False,
     ):
         super().__init__(font, framebuffer_size, reduced_visuals)
 
@@ -37,13 +34,18 @@ class AdsbElement(HudElement):
         self.__text_y_pos__ = self.__center_y__ - self.__font_half_height__
         self.__pixels_per_degree_y__ = pixels_per_degree_y
         self.__pixels_per_degree_x__ = self.__framebuffer_size__[0] / 360.0
-        self.start_fade_threshold = (configuration.CONFIGURATION.max_minutes_before_removal * 60) / 2
-        self.__lower_reticle_bottom_y__ = self.__bottom_border__ - self.__font_height__ - self.__font_half_height__ - (self.__thick_line_width__ << 2)
+        self.start_fade_threshold = (
+            configuration.CONFIGURATION.max_minutes_before_removal * 60
+        ) / 2
+        self.__lower_reticle_bottom_y__ = (
+            self.__bottom_border__
+            - self.__font_height__
+            - self.__font_half_height__
+            - (self.__thick_line_width__ << 2)
+        )
 
     def __get_distance_string__(
-        self,
-        distance: float,
-        decimal_places: bool = True
+        self, distance: float, decimal_places: bool = True
     ) -> str:
         """
         Gets the distance string for display using the units
@@ -57,18 +59,14 @@ class AdsbElement(HudElement):
         """
 
         display_units = configuration.CONFIGURATION.__get_config_value__(
-            configuration.Configuration.DISTANCE_UNITS_KEY,
-            units.STATUTE)
+            configuration.Configuration.DISTANCE_UNITS_KEY, units.STATUTE
+        )
 
         return units.get_converted_units_string(
-            display_units,
-            math.fabs(distance),
-            decimal_places=decimal_places)
+            display_units, math.fabs(distance), decimal_places=decimal_places
+        )
 
-    def __get_distance_string_without_units__(
-        self,
-        distance: float
-    ) -> str:
+    def __get_distance_string_without_units__(self, distance: float) -> str:
         """
         Gets the distance string for display using the units
         from the configuration.
@@ -81,18 +79,14 @@ class AdsbElement(HudElement):
         """
 
         display_units = configuration.CONFIGURATION.__get_config_value__(
-            configuration.Configuration.DISTANCE_UNITS_KEY,
-            units.STATUTE)
+            configuration.Configuration.DISTANCE_UNITS_KEY, units.STATUTE
+        )
 
         return units.get_converted_units_string_without_units(
-            display_units,
-            math.fabs(distance))
+            display_units, math.fabs(distance)
+        )
 
-    def __get_traffic_projection__(
-        self,
-        orientation: AhrsData,
-        traffic: Traffic
-    ):
+    def __get_traffic_projection__(self, orientation: AhrsData, traffic: Traffic):
         """
         Attempts to figure out where the traffic reticle should be rendered.
         Returns value within screen space
@@ -112,19 +106,14 @@ class AdsbElement(HudElement):
         if isinstance(compass, str):
             return None, None
 
-        horizontal_degrees_to_target = apply_declination(
-            traffic.bearing) - compass
+        horizontal_degrees_to_target = apply_declination(traffic.bearing) - compass
 
         screen_y = -vertical_degrees_to_target * self.__pixels_per_degree_y__
         screen_x = horizontal_degrees_to_target * self.__pixels_per_degree_y__
 
         return self.__center__[0] + screen_x, self.__center__[1] + screen_y
 
-    def get_above_reticle(
-        self,
-        center_x: int,
-        scale: float
-    ):
+    def get_above_reticle(self, center_x: int, scale: float):
         """Generates the coordinates for a reticle indicating
         traffic is above use.
 
@@ -139,16 +128,12 @@ class AdsbElement(HudElement):
         above_reticle = [
             [center_x - (size >> 2), self.__top_border__ + size],
             [center_x, self.__top_border__],
-            [center_x + (size >> 2), self.__top_border__ + size]
+            [center_x + (size >> 2), self.__top_border__ + size],
         ]
 
         return above_reticle, self.__top_border__ + size
 
-    def get_below_reticle(
-        self,
-        center_x: int,
-        scale: float
-    ):
+    def get_below_reticle(self, center_x: int, scale: float):
         """
         Generates the coordinates for a reticle indicating
         traffic is below us.
@@ -168,15 +153,14 @@ class AdsbElement(HudElement):
         below_reticle = [
             [left, top],
             [center_x, self.__lower_reticle_bottom_y__],
-            [right, top]]
+            [right, top],
+        ]
 
         # self.__height__ - size - bug_vertical_offset
         return below_reticle, below_reticle[2][1]
 
     def __get_additional_target_text__(
-        self,
-        traffic_report: Traffic,
-        orientation: AhrsData
+        self, traffic_report: Traffic, orientation: AhrsData
     ):
         """
         Gets the additional text for a traffic report
@@ -191,8 +175,7 @@ class AdsbElement(HudElement):
 
         altitude_delta_text = traffic_report.get_altitude_delta_text(orientation)
         distance_text = self.__get_distance_string__(traffic_report.distance)
-        bearing_text = "{0}".format(
-            int(apply_declination(traffic_report.bearing)))
+        bearing_text = "{0}".format(int(apply_declination(traffic_report.bearing)))
 
         return [bearing_text, distance_text, altitude_delta_text]
 
@@ -202,7 +185,7 @@ class AdsbElement(HudElement):
         identifier_text: str,
         additional_info_text: str,
         center_x: int,
-        time_since_last_report: float = 0.0
+        time_since_last_report: float = 0.0,
     ):
         """
         Renders a targetting reticle on the screen.
@@ -214,11 +197,12 @@ class AdsbElement(HudElement):
         # Render all of the textures and then
         # find which one is the widest.
         all_text = [identifier_text] + additional_info_text
-        all_textures_and_sizes = [text_renderer.get_or_create_text_texture(
-            self.__font__,
-            text,
-            colors.BLACK,
-            card_color) for text in all_text]
+        all_textures_and_sizes = [
+            text_renderer.get_or_create_text_texture(
+                self.__font__, text, colors.BLACK, card_color
+            )
+            for text in all_text
+        ]
 
         texture_widths = [texture[2][0] for texture in all_textures_and_sizes]
 
@@ -226,13 +210,12 @@ class AdsbElement(HudElement):
         text_height = all_textures_and_sizes[0][2][1]
 
         info_spacing = 1.2
-        texture_height = int(
-            (len(all_textures_and_sizes) * info_spacing) * text_height)
+        texture_height = int((len(all_textures_and_sizes) * info_spacing) * text_height)
 
-        info_position_y = ((self.__height__ >> 1) - (texture_height >> 1) - text_height)
+        info_position_y = (self.__height__ >> 1) - (texture_height >> 1) - text_height
 
-        edge_left = (center_x - (widest_texture >> 1))
-        edge_right = (center_x + (widest_texture >> 1))
+        edge_left = center_x - (widest_texture >> 1)
+        edge_right = center_x + (widest_texture >> 1)
 
         if edge_left < 0:
             edge_right += math.fabs(edge_left)
@@ -243,37 +226,39 @@ class AdsbElement(HudElement):
             edge_left -= diff
             edge_right = self.__framebuffer_size__[0]
 
-        fill_top_left = [edge_left - self.__line_width__, info_position_y - self.__line_width__]
+        fill_top_left = [
+            edge_left - self.__line_width__,
+            info_position_y - self.__line_width__,
+        ]
         fill_top_right = [edge_right + self.__line_width__, fill_top_left[1]]
         fill_bottom_right = [
             fill_top_right[0],
-            info_position_y + self.__line_width__ + int((len(additional_info_text) + 1) * info_spacing * text_height)]
+            info_position_y
+            + self.__line_width__
+            + int((len(additional_info_text) + 1) * info_spacing * text_height),
+        ]
         fill_bottom_left = [fill_top_left[0], fill_bottom_right[1]]
 
         drawing.renderer.polygon(
             framebuffer,
             card_color,
             [fill_top_left, fill_top_right, fill_bottom_right, fill_bottom_left],
-            False)
+            False,
+        )
 
         drawing.renderer.segments(
             framebuffer,
             colors.BLACK,
             True,
             [fill_top_left, fill_top_right, fill_bottom_right, fill_bottom_left],
-            int(self.__line_width__ * 1.5))
+            int(self.__line_width__ * 1.5),
+        )
 
         self.__render_info_text__(
-            all_textures_and_sizes,
-            center_x,
-            framebuffer,
-            info_position_y,
-            info_spacing)
+            all_textures_and_sizes, center_x, framebuffer, info_position_y, info_spacing
+        )
 
-    def __get_card_color__(
-        self,
-        time_since_last_report: float
-    ):
+    def __get_card_color__(self, time_since_last_report: float):
         """
         Gets the color the card should be based on how long it has been
         since the traffic has had a report.
@@ -289,13 +274,16 @@ class AdsbElement(HudElement):
             card_color = colors.YELLOW
 
             if time_since_last_report > self.start_fade_threshold:
-                max_distance = (configuration.CONFIGURATION.max_minutes_before_removal * 60.0) - self.start_fade_threshold
-                proportion = (time_since_last_report - self.start_fade_threshold) / max_distance
+                max_distance = (
+                    configuration.CONFIGURATION.max_minutes_before_removal * 60.0
+                ) - self.start_fade_threshold
+                proportion = (
+                    time_since_last_report - self.start_fade_threshold
+                ) / max_distance
 
                 card_color = colors.get_color_mix(
-                    colors.YELLOW,
-                    colors.BLACK,
-                    proportion)
+                    colors.YELLOW, colors.BLACK, proportion
+                )
 
             return card_color
         except:
@@ -307,7 +295,7 @@ class AdsbElement(HudElement):
         center_x: int,
         framebuffer,
         info_position_y: int,
-        info_spacing
+        info_spacing,
     ):
         for key, info_texture, size in additional_info_textures:
             width_x, width_y = size
@@ -322,17 +310,12 @@ class AdsbElement(HudElement):
 
             try:
                 text_renderer.render_cached_texture(
-                    framebuffer,
-                    key,
-                    [x_pos, info_position_y])
+                    framebuffer, key, [x_pos, info_position_y]
+                )
             except:
                 pass
 
             info_position_y += int(width_y * info_spacing)
 
-    def render(
-        self,
-        framebuffer,
-        orientation: AhrsData
-    ):
+    def render(self, framebuffer, orientation: AhrsData):
         super(AhrsElement, self).render(framebuffer, orientation)

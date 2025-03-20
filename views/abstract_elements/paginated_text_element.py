@@ -8,8 +8,8 @@ import pygame
 
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
-from views.text_line import TextLine
-from views.adsb_element import AdsbElement
+from views.abstract_elements.adsb_element import AdsbElement
+from views.abstract_elements.text_line import TextLine
 
 
 class PaginatedTextElement(AdsbElement):

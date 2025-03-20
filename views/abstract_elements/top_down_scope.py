@@ -3,19 +3,19 @@ View element for a weather "radar" that looks from the top downwards.
 """
 
 import math
-from typing import Tuple, Dict
+from typing import Dict, Tuple
 
 import pygame
+
 from common_utils import fast_math, geo_math, units
 from configuration import configuration
 from core_services.scope_range import ScopeRange
 from core_services.zoom_tracker import ZoomTracker
 from data_sources.ahrs_data import AhrsData
-from rendering import colors, drawing
-
-from views.adsb_element import AdsbElement
-from views.hud_elements import apply_declination
 from data_sources.airports import AirportClient
+from rendering import colors, drawing
+from views.abstract_elements.adsb_element import AdsbElement
+from views.hud_elements import apply_declination
 
 
 class TopDownScope(AdsbElement):

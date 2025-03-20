@@ -10,9 +10,9 @@ from data_sources.ahrs_data import NOT_AVAILABLE, AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
 from rendering import colors
-from views.adsb_element import apply_declination
-from views.paginated_text_element import PaginatedTextElement
-from views.text_line import TextLine
+from views.abstract_elements.adsb_element import apply_declination
+from views.abstract_elements.paginated_text_element import PaginatedTextElement
+from views.abstract_elements.text_line import TextLine
 
 
 class AdsbTrafficListing(PaginatedTextElement):

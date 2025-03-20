@@ -10,7 +10,7 @@ from data_sources.textual_weather import (
     TextualWeatherClient,
     load_sample_text_reports,
 )
-from views.text_report_listings import TextReportListing
+from views.abstract_elements.text_report_listings import TextReportListing
 
 
 class MetarListing(TextReportListing):

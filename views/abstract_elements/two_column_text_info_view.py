@@ -1,6 +1,6 @@
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
-from views.ahrs_element import AhrsElement
+from views.abstract_elements.ahrs_element import AhrsElement
 
 
 class TwoColumnTextInfoView(AhrsElement):

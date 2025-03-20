@@ -6,9 +6,8 @@ from common_utils import fast_math, local_debug
 from configuration import configuration
 from data_sources.data_cache import HudDataCache
 from rendering import colors
-
-from views.two_column_text_info_view import TwoColumnTextInfoView
-from views.text_line import TextLine
+from views.abstract_elements.text_line import TextLine
+from views.abstract_elements.two_column_text_info_view import TwoColumnTextInfoView
 
 NORMAL_TEMP = 50
 REDLINE_TEMP = 80

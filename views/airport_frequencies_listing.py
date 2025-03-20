@@ -10,8 +10,8 @@ from data_sources.ahrs_data import NOT_AVAILABLE, AhrsData
 from data_sources.airport_frequencies import AirportFrequency
 from data_sources.airports import AirportClient
 from rendering import colors
-from views.paginated_text_element import PaginatedTextElement
-from views.text_line import TextLine
+from views.abstract_elements.paginated_text_element import PaginatedTextElement
+from views.abstract_elements.text_line import TextLine
 
 
 class AirportFrequencyListing(PaginatedTextElement):

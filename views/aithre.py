@@ -2,7 +2,7 @@ from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 from data_sources.aithre import AithreClient, CoReport
 from rendering import colors
-from views.ahrs_element import AhrsElement
+from views.abstract_elements.ahrs_element import AhrsElement
 from views.system_info import get_aithre_co_color
 
 
@@ -25,10 +25,7 @@ class Aithre(AhrsElement):
         framebuffer_size,
         reduced_visuals: bool = False,
     ):
-        super().__init__(
-            font,
-            framebuffer_size,
-            reduced_visuals)
+        super().__init__(font, framebuffer_size, reduced_visuals)
 
         self.__text_y_pos__ = self.__center_y__ + self.__font_half_height__
 
@@ -63,6 +60,7 @@ class Aithre(AhrsElement):
                 self.__render_text_with_stacked_annotations__(
                     framebuffer, [self.__left_border__, self.__text_y_pos__], text
                 )
+
 
 if __name__ == "__main__":
     from views.hud_elements import run_hud_element

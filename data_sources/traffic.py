@@ -9,6 +9,7 @@ import threading
 import time
 
 import requests
+
 from common_utils import simulated_values, tasks
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
@@ -307,10 +308,18 @@ class SimulatedTraffic(object):
         )
         self.time_decoded = datetime.datetime.utcnow()
         self.latitude = simulated_values.SimulatedValue(
-            0.01, 0.1, 1, random.randint(0, 9) / 100.0, starting_points[random.randint(0, 2)][0]
+            0.01,
+            0.1,
+            1,
+            random.randint(0, 9) / 100.0,
+            starting_points[random.randint(0, 2)][0],
         )
         self.longitude = simulated_values.SimulatedValue(
-            0.01, 0.1, 1, random.randint(0, 9) / 100.0, starting_points[random.randint(0, 2)][1]
+            0.01,
+            0.1,
+            1,
+            random.randint(0, 9) / 100.0,
+            starting_points[random.randint(0, 2)][1],
         )
         self.distance = simulated_values.SimulatedValue(
             10, max_distance, -1, random.randint(0, max_distance), max_distance

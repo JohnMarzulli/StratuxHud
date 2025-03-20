@@ -1,12 +1,10 @@
 from numbers import Number
 
-from common_utils import tasks, units
+from common_utils import units
 from common_utils.task_timer import TaskProfiler
-from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
-
-from views.ahrs_element import AhrsElement
+from views.abstract_elements.ahrs_element import AhrsElement
 
 
 class Groundspeed(AhrsElement):
@@ -16,19 +14,13 @@ class Groundspeed(AhrsElement):
         pixels_per_degree_y: float,
         font,
         framebuffer_size,
-        reduced_visuals: bool = False
+        reduced_visuals: bool = False,
     ):
         super().__init__(font, framebuffer_size, reduced_visuals)
 
-        self.__text_y_pos__ = (self.__center_y__ >> 1) - \
-            self.__font_half_height__
+        self.__text_y_pos__ = (self.__center_y__ >> 1) - self.__font_half_height__
 
-    def __get_indicated_text__(
-        self,
-        speed,
-        type_of_speed: str,
-        color: list
-    ) -> list:
+    def __get_indicated_text__(self, speed, type_of_speed: str, color: list) -> list:
         """
         Given a speed, generate a list of text description pacakges
         that will result in the speed and annotations
@@ -43,11 +35,13 @@ class Groundspeed(AhrsElement):
             list: A list of text description packages.
         """
 
-        text = speed if isinstance(speed, str) else units.get_converted_units_string(
-            self.__speed_units__,
-            speed,
-            unit_type=units.SPEED,
-            decimal_places=False)
+        text = (
+            speed
+            if isinstance(speed, str)
+            else units.get_converted_units_string(
+                self.__speed_units__, speed, unit_type=units.SPEED, decimal_places=False
+            )
+        )
 
         split_from_units = text.split(" ")
 
@@ -77,53 +71,62 @@ class Groundspeed(AhrsElement):
 
         return text_with_scale_and_color
 
-    def render(
-        self,
-        framebuffer,
-        orientation: AhrsData
-    ):
+    def render(self, framebuffer, orientation: AhrsData):
         super(Groundspeed, self).render(framebuffer, orientation)
 
         with TaskProfiler("views.groundspeed.Groundspeed.setup"):
             is_valid_airspeed = orientation.is_avionics_source and isinstance(
-                orientation.airspeed,
-                Number)
+                orientation.airspeed, Number
+            )
             is_valid_groundspeed = orientation.groundspeed is not None and isinstance(
-                orientation.groundspeed,
-                Number)
+                orientation.groundspeed, Number
+            )
 
-            gs_display_color = colors.WHITE if is_valid_groundspeed and orientation.gps_online else colors.RED
+            gs_display_color = (
+                colors.WHITE
+                if is_valid_groundspeed and orientation.gps_online
+                else colors.RED
+            )
             airspeed_color = colors.WHITE if is_valid_airspeed else colors.RED
 
-            airspeed_text = self.__get_indicated_text__(
-                orientation.airspeed * units.feet_to_nm,
-                "IAS",
-                airspeed_color) if is_valid_airspeed else None
+            airspeed_text = (
+                self.__get_indicated_text__(
+                    orientation.airspeed * units.feet_to_nm, "IAS", airspeed_color
+                )
+                if is_valid_airspeed
+                else None
+            )
 
-            shown_gs = orientation.groundspeed * \
-                units.yards_to_nm if is_valid_groundspeed else orientation.groundspeed
+            shown_gs = (
+                orientation.groundspeed * units.yards_to_nm
+                if is_valid_groundspeed
+                else orientation.groundspeed
+            )
 
             groundspeed_text = self.__get_indicated_text__(
-                shown_gs,
-                "GND",
-                gs_display_color)
+                shown_gs, "GND", gs_display_color
+            )
 
-            gs_position_adj = self.__font_height__ if is_valid_airspeed is not None else 0
+            gs_position_adj = (
+                self.__font_height__ if is_valid_airspeed is not None else 0
+            )
 
         with TaskProfiler("views.groundspeed.Groundspeed.render"):
             self.__render_text_with_stacked_annotations__(
                 framebuffer,
                 [self.__left_border__, self.__text_y_pos__ + gs_position_adj],
-                groundspeed_text)
+                groundspeed_text,
+            )
 
             if airspeed_text is not None:
                 self.__render_text_with_stacked_annotations__(
                     framebuffer,
                     [self.__left_border__, self.__text_y_pos__],
-                    airspeed_text)
+                    airspeed_text,
+                )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from views.hud_elements import run_hud_element
 
     run_hud_element(Groundspeed, True)

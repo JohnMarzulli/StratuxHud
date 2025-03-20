@@ -17,7 +17,7 @@ from data_sources.ahrs_data import AhrsData
 from data_sources.airports import load_example_airports, load_example_flight_rules
 from data_sources.nexrad import NexradClient, ReflectivityBlock
 from rendering import colors, drawing
-from views.top_down_scope import TopDownScope
+from views.abstract_elements.top_down_scope import TopDownScope
 
 
 class WeatherTopViewScope(TopDownScope):

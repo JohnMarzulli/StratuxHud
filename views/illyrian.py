@@ -6,7 +6,7 @@ from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 from data_sources.aithre import AithreClient, Spo2Report
 from rendering import colors
-from views.ahrs_element import AhrsElement
+from views.abstract_elements.ahrs_element import AhrsElement
 from views.system_info import get_illyrian_spo2_color
 
 
@@ -33,10 +33,7 @@ class Illyrian(AhrsElement):
         framebuffer_size,
         reduced_visuals: bool = False,
     ):
-        super().__init__(
-            font,
-            framebuffer_size,
-            reduced_visuals)
+        super().__init__(font, framebuffer_size, reduced_visuals)
 
         self.__text_y_pos__ = self.__center_y__ + self.__font_height__
         self.__has_been_connected__ = False

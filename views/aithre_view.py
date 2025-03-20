@@ -3,14 +3,14 @@ from numbers import Number
 from configuration import configuration
 from data_sources.aithre import AithreClient
 from rendering import colors
+from views.abstract_elements.text_line import TextLine
+from views.abstract_elements.two_column_text_info_view import TwoColumnTextInfoView
 from views.system_info import (
     DISABLED_TEXT,
     DISCONNECTED_TEXT,
     get_aithre_battery_color,
     get_aithre_co_color,
 )
-from views.text_line import TextLine
-from views.two_column_text_info_view import TwoColumnTextInfoView
 
 
 class AithreView(TwoColumnTextInfoView):

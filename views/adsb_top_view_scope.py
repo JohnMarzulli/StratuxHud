@@ -6,15 +6,13 @@ import pygame
 
 from common_utils import fast_math, geo_math
 from common_utils.task_timer import TaskProfiler
-from configuration import configuration
-from core_services import breadcrumbs, zoom_tracker
+from core_services import breadcrumbs
 from core_services.scope_range import ScopeRange
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
-from data_sources.nexrad import NexradClient
 from data_sources.traffic import Traffic
 from rendering import colors, drawing
-from views.top_down_scope import TopDownScope
+from views.abstract_elements.top_down_scope import TopDownScope
 
 
 class AdsbTopViewScope(TopDownScope):

@@ -7,10 +7,8 @@ from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
 from rendering import colors, drawing
-
-from views.adsb_element import AdsbElement
-from views.hud_elements import (MAX_TARGET_BUGS, get_heading_bug_x,
-                                get_reticle_size)
+from views.abstract_elements.adsb_element import AdsbElement
+from views.hud_elements import MAX_TARGET_BUGS, get_heading_bug_x, get_reticle_size
 
 
 class AdsbTargetBugsOnly(AdsbElement):
@@ -20,21 +18,22 @@ class AdsbTargetBugsOnly(AdsbElement):
         pixels_per_degree_y: float,
         font,
         framebuffer_size,
-        reduced_visuals: bool = False
+        reduced_visuals: bool = False,
     ):
         super().__init__(
             degrees_of_pitch,
             pixels_per_degree_y,
             font,
             framebuffer_size,
-            reduced_visuals)
+            reduced_visuals,
+        )
 
     def __render_traffic_heading_bug__(
         self,
         traffic_report: Traffic,
         heading: float,
         ownship_altitude: int,
-        framebuffer
+        framebuffer,
     ):
         """
         Render a single heading bug to the framebuffer.
@@ -51,9 +50,8 @@ class AdsbTargetBugsOnly(AdsbElement):
         target_bug_scale = get_reticle_size(traffic_report.distance)
 
         heading_bug_x = get_heading_bug_x(
-            heading,
-            traffic_report.bearing,
-            self.__pixels_per_degree_x__)
+            heading, traffic_report.bearing, self.__pixels_per_degree_x__
+        )
 
         try:
             # TODO
@@ -62,11 +60,11 @@ class AdsbTargetBugsOnly(AdsbElement):
             # .. or use the Pressure Alt if that is available from the avionics.
             # .. or just validate that we are using pressure altitude...
             is_below = ownship_altitude > traffic_report.altitude
-            reticle, reticle_edge_position_y = self.get_below_reticle(
-                heading_bug_x,
-                target_bug_scale) if is_below else self.get_above_reticle(
-                    heading_bug_x,
-                    target_bug_scale)
+            reticle, reticle_edge_position_y = (
+                self.get_below_reticle(heading_bug_x, target_bug_scale)
+                if is_below
+                else self.get_above_reticle(heading_bug_x, target_bug_scale)
+            )
 
             bug_color = colors.BLUE if traffic_report.is_on_ground() else colors.RED
 
@@ -74,12 +72,8 @@ class AdsbTargetBugsOnly(AdsbElement):
         finally:
             pass
 
-    def render(
-        self,
-        framebuffer,
-        orientation: AhrsData
-    ):
-        with TaskProfiler('views.adsb_target_bugs_only.AdsbTargetBugsOnly.setup'):
+    def render(self, framebuffer, orientation: AhrsData):
+        with TaskProfiler("views.adsb_target_bugs_only.AdsbTargetBugsOnly.setup"):
             heading = orientation.get_onscreen_projection_heading()
 
             if isinstance(heading, str):
@@ -94,18 +88,20 @@ class AdsbTargetBugsOnly(AdsbElement):
             reports_to_show = traffic_reports[:MAX_TARGET_BUGS]
 
         # pylint:disable=expression-not-assigned
-        with TaskProfiler('views.adsb_target_bugs_only.AdsbTargetBugsOnly.render'):
-            [self.__render_traffic_heading_bug__(
-                traffic_report,
-                heading,
-                orientation.alt,
-                framebuffer) for traffic_report in reports_to_show]
+        with TaskProfiler("views.adsb_target_bugs_only.AdsbTargetBugsOnly.render"):
+            [
+                self.__render_traffic_heading_bug__(
+                    traffic_report, heading, orientation.alt, framebuffer
+                )
+                for traffic_report in reports_to_show
+            ]
 
 
-if __name__ == '__main__':
-    from views.compass_and_heading_bottom_element import \
-        CompassAndHeadingBottomElement
+if __name__ == "__main__":
+    from views.compass_and_heading_bottom_element import CompassAndHeadingBottomElement
     from views.hud_elements import run_hud_elements
     from views.roll_indicator import RollIndicator
 
-    run_hud_elements([AdsbTargetBugsOnly, CompassAndHeadingBottomElement, RollIndicator])
+    run_hud_elements(
+        [AdsbTargetBugsOnly, CompassAndHeadingBottomElement, RollIndicator]
+    )
