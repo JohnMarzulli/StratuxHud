@@ -5,7 +5,10 @@ View that shows the list of nearby traffic
 from typing import List
 
 from common_utils import geo_math, units
-from common_utils.text_pagination import get_lines_grouped_by_page
+from common_utils.text_pagination import (
+    get_lines_grouped_by_page,
+    get_trimmed_and_justified_text,
+)
 from data_sources.ahrs_data import NOT_AVAILABLE, AhrsData
 from data_sources.airport_frequencies import AirportFrequency
 from data_sources.airports import AirportClient
@@ -132,25 +135,11 @@ class AirportFrequencyListing(PaginatedTextElement):
         remarks_slice_length: int = 15
 
         return "{0} {1} {2} {3} {4}".format(
-            self.__get_trimmed_and_justified_text__(name, name_slice_length, True),
-            self.__get_trimmed_and_justified_text__(
-                distance, distance_text_slice_length
-            ),
+            get_trimmed_and_justified_text(name, name_slice_length, True),
+            get_trimmed_and_justified_text(distance, distance_text_slice_length),
             frequency,
-            self.__get_trimmed_and_justified_text__(freq_type, freqType_slice_length),
-            self.__get_trimmed_and_justified_text__(remarks, remarks_slice_length),
-        )
-
-    def __get_trimmed_and_justified_text__(
-        self, text: str, max_length: int, isLeftJustified: bool = False
-    ) -> str:
-        truncated_string = text[:max_length]
-        truncated_string = truncated_string.rstrip().lstrip()
-
-        return (
-            truncated_string.ljust(max_length)
-            if isLeftJustified
-            else truncated_string.rjust(max_length)
+            get_trimmed_and_justified_text(freq_type, freqType_slice_length),
+            get_trimmed_and_justified_text(remarks, remarks_slice_length),
         )
 
     def __get_row_color__(self, index: int):
