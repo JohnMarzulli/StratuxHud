@@ -5,7 +5,10 @@ View that shows the list of nearby traffic
 from typing import List
 
 from common_utils import units
-from common_utils.text_pagination import get_lines_grouped_by_page
+from common_utils.text_pagination import (
+    get_lines_grouped_by_page,
+    get_trimmed_and_justified_text,
+)
 from data_sources.ahrs_data import NOT_AVAILABLE, AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
@@ -130,33 +133,15 @@ class AdsbTrafficListing(PaginatedTextElement):
         altitude_text_slice_length: int = 5
 
         return "{0} {1} {2} {3} {4} {5} {6}".format(
-            self.__get_trimmed_and_justified_text__(
+            get_trimmed_and_justified_text(
                 identifier, identifier_name_slice_length, True
             ),
-            self.__get_trimmed_and_justified_text__(
-                distance, distance_text_slice_length
-            ),
-            self.__get_trimmed_and_justified_text__(speed, speed_text_slice_length),
-            self.__get_trimmed_and_justified_text__(heading, bearing_slice_length),
-            self.__get_trimmed_and_justified_text__(bearing, bearing_slice_length),
-            self.__get_trimmed_and_justified_text__(
-                altitude, altitude_text_slice_length
-            ),
-            self.__get_trimmed_and_justified_text__(
-                delta, altitude_text_slice_length - 1
-            ),
-        )
-
-    def __get_trimmed_and_justified_text__(
-        self, text: str, max_length: int, isLeftJustified: bool = False
-    ) -> str:
-        truncated_string = text[:max_length]
-        truncated_string = truncated_string.rstrip().lstrip()
-
-        return (
-            truncated_string.ljust(max_length)
-            if isLeftJustified
-            else truncated_string.rjust(max_length)
+            get_trimmed_and_justified_text(distance, distance_text_slice_length),
+            get_trimmed_and_justified_text(speed, speed_text_slice_length),
+            get_trimmed_and_justified_text(heading, bearing_slice_length),
+            get_trimmed_and_justified_text(bearing, bearing_slice_length),
+            get_trimmed_and_justified_text(altitude, altitude_text_slice_length),
+            get_trimmed_and_justified_text(delta, altitude_text_slice_length - 1),
         )
 
     def __get_row_color__(self, index: int):

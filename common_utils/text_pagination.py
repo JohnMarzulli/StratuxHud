@@ -214,6 +214,51 @@ def get_consolidated_pages(
     return consolidated_report_pages
 
 
+def get_trimmed_and_justified_text(
+    text: str, max_length: int, isLeftJustified: bool = False
+) -> str:
+    """
+    Trim and align the given text. Great for text views that we want to columnate.
+
+    Args:
+        text (str): The text to trim and justify.
+        max_length (int): The maximum length of the text after processing.
+        isLeftJustified (bool, optional): Do we want to left justify the text? Defaults to False, which is right-justified.
+
+    Returns:
+        str: The justified text.
+
+    >>> get_trimmed_and_justified_text('really long text', 7)
+    ' really'
+    >>> get_trimmed_and_justified_text('really long text', 7, True)
+    'really '
+    >>> get_trimmed_and_justified_text('really long text', 6)
+    'really'
+    >>> get_trimmed_and_justified_text('really long text', 6, True)
+    'really'
+    >>> get_trimmed_and_justified_text('really long text', 4)
+    'real'
+    >>> get_trimmed_and_justified_text('really long text', 4, True)
+    'real'
+    >>> get_trimmed_and_justified_text('text', 10)
+    '      text'
+    >>> get_trimmed_and_justified_text('text', 10, True)
+    'text      '
+    >>> get_trimmed_and_justified_text('', 10)
+    '          '
+    >>> get_trimmed_and_justified_text('', 10, True)
+    '          '
+    """
+    truncated_string = text[:max_length]
+    truncated_string = truncated_string.rstrip().lstrip()
+
+    return (
+        truncated_string.ljust(max_length)
+        if isLeftJustified
+        else truncated_string.rjust(max_length)
+    )
+
+
 if __name__ == "__main__":
     import doctest
 
