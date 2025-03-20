@@ -2,9 +2,9 @@
 Base class for AHRS view elements.
 """
 
-from data_sources.ahrs_data import AhrsData
 from common_utils import tasks, units
 from configuration import configuration
+from data_sources.ahrs_data import AhrsData
 from rendering import colors, display, text_renderer
 
 

@@ -257,16 +257,18 @@ def get_converted_units_string(
     '151 KPH'
     >>> get_converted_units_string('metric', 16500, SPEED)
     '015 KPH'
-    >>> get_converted_units_string('statute', 0, DISTANCE)
+    >>> get_converted_units_string('statute', 0, DISTANCE, False)
     '0 yards'
+    >>> get_converted_units_string('statute', 0, DISTANCE, True)
+    '0.0 SM'
     >>> get_converted_units_string('statute', 0.0, DISTANCE, True)
-    '0 yards'
+    '0.0 SM'
     >>> get_converted_units_string('statute', 0, SPEED, False)
     '000 MPH'
     >>> get_converted_units_string('statute', 0, SPEED, True)
     '000 MPH'
     >>> get_converted_units_string('statute', 10, DISTANCE)
-    '10 yards'
+    '0.0 SM'
     >>> get_converted_units_string('statute', 165000, DISTANCE)
     '93.8 SM'
     >>> get_converted_units_string('statute', 165000, DISTANCE, True)
@@ -318,10 +320,75 @@ def get_converted_units_string(
     if units == NAUTICAL:
         return with_units_formatter.format(raw_value / yards_to_nm, UNIT_LABELS[NAUTICAL][unit_type])
 
-    if raw_value < IMPERIAL_NEARBY and not is_speed:
+    if raw_value < IMPERIAL_NEARBY and not is_speed and not decimal_places:
         return formatter_distance_no_decimals.format(raw_value) + " yards"
 
     return with_units_formatter.format(raw_value / yards_to_sm, UNIT_LABELS[STATUTE][unit_type])
+
+def get_converted_units_string_without_units(
+    units: str,
+    raw_value: float
+) -> str:
+    """
+    Given a base measurement (RAW from the ADS-B), a type of unit,
+    and if it is speed or distance, returns a nice string for display.
+
+    Arguments:
+        units {string} -- 'statute', 'knots', or 'metric'
+        raw_value {float} -- The raw measurement from the ADS-B receiver (yards).
+
+    Keyword Arguments:
+        unit_type {string} -- 'speed' or 'distance' (default: {DISTANCE})
+
+    Returns:
+        string -- A string for display in the given units and type.
+
+    >>> get_converted_units_string_without_units('statute', 165000)
+    '93.8'
+    >>> get_converted_units_string_without_units('knots', 165000)
+    '81.5'
+    >>> get_converted_units_string_without_units('metric', 165000)
+    '150.9'
+    >>> get_converted_units_string_without_units('metric', 16500)
+    '15.1'
+    >>> get_converted_units_string_without_units('metric', 0)
+    '0.0'
+    >>> get_converted_units_string_without_units('statute', 0.0)
+    '0.0'
+    >>> get_converted_units_string_without_units('statute', 0)
+    '0.0'
+    >>> get_converted_units_string_without_units('statute', 10)
+    '0.0'
+    >>> get_converted_units_string_without_units('statute', 165000)
+    '93.8'
+    >>> get_converted_units_string_without_units('metric', 165000)
+    '150.9'
+    >>> get_converted_units_string_without_units('knots', 165000)
+    '81.5'
+    >>> get_converted_units_string_without_units('statute', 165000)
+    '93.8'
+    >>> get_converted_units_string_without_units('statute', 5280)
+    '3.0'
+    >>> get_converted_units_string_without_units('statute', 5680)
+    '3.2'
+    >>> get_converted_units_string_without_units('metric', 5680)
+    '5.2'
+    """
+
+    if units is None:
+        units = STATUTE
+
+    formatter_string = "{0:.1f}"
+
+    if units == METRIC:
+        conversion = raw_value / yards_to_km
+
+        return formatter_string.format(conversion)
+
+    if units == NAUTICAL:
+        return formatter_string.format(raw_value / yards_to_nm)
+
+    return formatter_string.format(raw_value / yards_to_sm)
 
 
 if __name__ == '__main__':

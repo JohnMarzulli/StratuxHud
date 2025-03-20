@@ -5,6 +5,7 @@ Common code for HUD view elements.
 from datetime import datetime
 
 import pygame
+
 from common_utils import fast_math, units
 from configuration import configuration
 from core_services import breadcrumbs, zoom_tracker

@@ -9,8 +9,7 @@ from common_utils.local_debug import IS_PI
 from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
 from rendering import colors, drawing
-
-from views.ahrs_element import AhrsElement
+from views.abstract_elements.ahrs_element import AhrsElement
 
 
 @lru_cache(maxsize=100)
@@ -34,11 +33,7 @@ def __get_point_on_arc__(
     return point
 
 
-def __get_points_on_arc__(
-    radius: float,
-    angles: list,
-    center: list
-) -> list:
+def __get_points_on_arc__(radius: float, angles: list, center: list) -> list:
     """
     Given a list of angles, generate the points for them
     on the roll indicator arc.
@@ -49,9 +44,9 @@ def __get_points_on_arc__(
     Returns:
         list: The list of points on the indicator arc.
     """
-    segments = [__get_point_on_arc__(
-        radius,
-        start_angle - 180) for start_angle in angles]
+    segments = [
+        __get_point_on_arc__(radius, start_angle - 180) for start_angle in angles
+    ]
 
     return translate_points(segments, center)
 
@@ -68,19 +63,16 @@ class RollIndicator(AhrsElement):
         pixels_per_degree_y: float,
         font,
         framebuffer_size,
-        reduced_visuals: bool = False
+        reduced_visuals: bool = False,
     ):
         super().__init__(font, framebuffer_size, reduced_visuals)
 
         self.__text_y_pos__ = self.__center_y__ - self.__font_half_height__
-        self.arc_radius = int(self.__height__ * .4)
-        self.__indicator_arc_center__ = [
-            self.__center__[0],
-            self.__center__[1]]
+        self.arc_radius = int(self.__height__ * 0.4)
+        self.__indicator_arc_center__ = [self.__center__[0], self.__center__[1]]
         self.__indicator_arc__ = __get_points_on_arc__(
-            self.arc_radius,
-            range(-60, 61, 5),
-            self.__indicator_arc_center__)
+            self.arc_radius, range(-60, 61, 5), self.__indicator_arc_center__
+        )
 
         self.__current_angle_triangle__ = self.__get_current_angle_triangle_shape__()
         self.__slip_skid_box__ = self.__get_current_angle_box_shape__()
@@ -90,26 +82,49 @@ class RollIndicator(AhrsElement):
 
         is_antialiased = not IS_PI
 
-        self.__indicator_elements__ = [drawing.Segments(self.__indicator_arc__, colors.WHITE, self.__arc_width__, is_antialiased)]
+        self.__indicator_elements__ = [
+            drawing.Segments(
+                self.__indicator_arc__, colors.WHITE, self.__arc_width__, is_antialiased
+            )
+        ]
 
         # Draw the important angle/roll step marks
-        self.__indicator_elements__.extend([drawing.Segment(segment_start, segment_end, colors.WHITE, self.__line_width__, is_antialiased)
-                                            for segment_start, segment_end in roll_angle_marks])
+        self.__indicator_elements__.extend(
+            [
+                drawing.Segment(
+                    segment_start,
+                    segment_end,
+                    colors.WHITE,
+                    self.__line_width__,
+                    is_antialiased,
+                )
+                for segment_start, segment_end in roll_angle_marks
+            ]
+        )
 
         # Roll scale zero
         self.__indicator_elements__.append(
             drawing.FilledPolygon(
                 self.__get_upper_angle_reference_shape__(),
                 colors.WHITE,
-                not self.__reduced_visuals__))
+                not self.__reduced_visuals__,
+            )
+        )
 
         if not self.__reduced_visuals__:
-            self.__indicator_elements__.extend([drawing.FilledCircle(segment_start, self.__thin_line_width__, colors.WHITE, is_antialiased)
-                                                for segment_start, segment_end in roll_angle_marks])
+            self.__indicator_elements__.extend(
+                [
+                    drawing.FilledCircle(
+                        segment_start,
+                        self.__thin_line_width__,
+                        colors.WHITE,
+                        is_antialiased,
+                    )
+                    for segment_start, segment_end in roll_angle_marks
+                ]
+            )
 
-    def __get_angle_mark_points__(
-        self
-    ) -> dict:
+    def __get_angle_mark_points__(self) -> dict:
         """
         Get the list of line segments that define the angle indication marks.
 
@@ -118,9 +133,8 @@ class RollIndicator(AhrsElement):
         """
         angles = [-60, -45, -30, 0, 30, 45, 60]
         mark_start_points = __get_points_on_arc__(
-            self.arc_radius,
-            angles,
-            self.__indicator_arc_center__)
+            self.arc_radius, angles, self.__indicator_arc_center__
+        )
 
         angle_and_start_points = {}
         index = 0
@@ -132,9 +146,7 @@ class RollIndicator(AhrsElement):
         return angle_and_start_points
 
     @lru_cache(maxsize=10)
-    def __get_arc_center__(
-        self
-    ) -> list:
+    def __get_arc_center__(self) -> list:
         """
         Get the top-center point of the indicator arc (0 degrees)
 
@@ -142,13 +154,10 @@ class RollIndicator(AhrsElement):
             list: The x,y of the arc center/nuetral
         """
         return __get_points_on_arc__(
-            self.arc_radius,
-            [0],
-            self.__indicator_arc_center__)[0]
+            self.arc_radius, [0], self.__indicator_arc_center__
+        )[0]
 
-    def __get_upper_angle_reference_shape__(
-        self
-    ) -> list:
+    def __get_upper_angle_reference_shape__(self) -> list:
         """
         Generates the triangle shape that indicates the zero-roll/level
         position on the indicator arc. It is intended to be shown
@@ -169,9 +178,7 @@ class RollIndicator(AhrsElement):
 
         return [[self.__center_x__, bottom], [left, top], [right, top]]
 
-    def __get_current_angle_triangle_shape__(
-        self
-    ) -> list:
+    def __get_current_angle_triangle_shape__(self) -> list:
         """
         Generates the triangle shape that indicates the current
         roll along the indicator arc.
@@ -193,9 +200,7 @@ class RollIndicator(AhrsElement):
 
         return [[self.__center_x__, top], [left, bottom], [right, bottom]]
 
-    def __get_current_angle_box_shape__(
-        self
-    ) -> list:
+    def __get_current_angle_box_shape__(self) -> list:
         """
         Generates an "underline" box for the current angle indicator.
         The positions is intended to be below the flat base
@@ -209,17 +214,14 @@ class RollIndicator(AhrsElement):
         top_point = self.__get_arc_center__()[1]
         top = top_point + self.__thin_line_width__ + 1
 
-        top = top + (zero_angle_triangle_size << 1) + \
-            int(self.__line_width__ * 1.5)
+        top = top + (zero_angle_triangle_size << 1) + int(self.__line_width__ * 1.5)
         bottom = top + self.__line_width__
         left = self.__center_x__ - zero_angle_triangle_size
         right = self.__center_x__ + zero_angle_triangle_size
 
         return [[left, top], [right, top], [right, bottom], [left, bottom]]
 
-    def __get_major_roll_indicator_marks__(
-        self
-    ) -> list:
+    def __get_major_roll_indicator_marks__(self) -> list:
         """
         Generates a list of line segments.
         Each line segment describes an indicator mark for the
@@ -250,15 +252,14 @@ class RollIndicator(AhrsElement):
         minor_mark_length = major_mark_length >> 1
 
         for roll_angle in list(angles_and_start_points.keys()):
-            mark_length = major_mark_length if roll_angle % 10 == 0 else minor_mark_length
+            mark_length = (
+                major_mark_length if roll_angle % 10 == 0 else minor_mark_length
+            )
             mark_length = mark_length if roll_angle != 0 else 0
             angle_mark_start = angles_and_start_points[roll_angle]
             angle_mark_end = [0, mark_length]
 
-            angle_mark_end = rotate_points(
-                [angle_mark_end],
-                [0, 0],
-                roll_angle)[0]
+            angle_mark_end = rotate_points([angle_mark_end], [0, 0], roll_angle)[0]
             angle_mark_end[0] = angle_mark_end[0] + angle_mark_start[0]
             angle_mark_end[1] = angle_mark_start[1] - angle_mark_end[1]
 
@@ -266,11 +267,7 @@ class RollIndicator(AhrsElement):
 
         return roll_angle_marks
 
-    def render(
-        self,
-        framebuffer,
-        orientation: AhrsData
-    ):
+    def render(self, framebuffer, orientation: AhrsData):
         """
         Draws the roll indicator arc with the current roll indicator
 
@@ -292,26 +289,36 @@ class RollIndicator(AhrsElement):
                     rotate_points(
                         self.__current_angle_triangle__,
                         self.__indicator_arc_center__,
-                        -orientation.roll),
+                        -orientation.roll,
+                    ),
                     colors.WHITE,
-                    is_antialiased),
+                    is_antialiased,
+                ),
                 drawing.FilledPolygon(
                     rotate_points(
                         self.__slip_skid_box__,
                         self.__indicator_arc_center__,
-                        -orientation.roll + skid_rotation),
+                        -orientation.roll + skid_rotation,
+                    ),
                     colors.WHITE,
-                    is_antialiased)]
+                    is_antialiased,
+                ),
+            ]
 
-        with TaskProfiler("views.roll_indicator.RollIndicator.render.indicator_elements"):
+        with TaskProfiler(
+            "views.roll_indicator.RollIndicator.render.indicator_elements"
+        ):
             # pylint:disable=expression-not-assigned
             [mark.render(framebuffer) for mark in self.__indicator_elements__]
 
-        with TaskProfiler("views.roll_indicator.RollIndicator.render.indicator_objects"):
+        with TaskProfiler(
+            "views.roll_indicator.RollIndicator.render.indicator_objects"
+        ):
             [indicator.render(framebuffer) for indicator in indicator_objects]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from views.hud_elements import run_hud_elements
     from views.skid_and_gs import SkidAndGs
+
     run_hud_elements([RollIndicator, SkidAndGs], False)

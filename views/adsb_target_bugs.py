@@ -6,8 +6,7 @@ from common_utils.task_timer import TaskProfiler
 from core_services import zoom_tracker
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
-
-from views.adsb_element import AdsbElement
+from views.abstract_elements.adsb_element import AdsbElement
 from views.hud_elements import MAX_TARGET_BUGS, get_heading_bug_x
 
 

@@ -1,14 +1,14 @@
 {
   "AithreInfo": {
-    "class": "system_info.AithreView",
+    "class": "aithre_view.AithreView",
     "detail_font": true
   },
   "Aithre": {
-    "class": "system_info.Aithre",
+    "class": "aithre.Aithre",
     "detail_font": true
   },
   "Illyrian": {
-    "class": "system_info.Illyrian",
+    "class": "illyrian.Illyrian",
     "detail_font": true
   },
   "Compass": {
@@ -57,6 +57,18 @@
   },
   "Airport Freqs": {
     "class": "airport_frequencies_listing.AirportFrequencyListing",
+    "detail_font": true
+  },
+  "METAR Listing": {
+    "class": "metar_listings.MetarListing",
+    "detail_font": true
+  },
+  "TAF Listing": {
+    "class": "taf_listings.TafListing",
+    "detail_font": true
+  },
+  "AIRMET Listing": {
+    "class": "airmet_listings.AirmetListing",
     "detail_font": true
   },
   "Traffic List": {

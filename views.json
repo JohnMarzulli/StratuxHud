@@ -33,13 +33,39 @@
         "Groundspeed",
         "Altitude",
         "Weather Scope",
+        "Traffic Not Available",
         "GPS Not Available"
       ],
       "name": "Weather Scope"
     },
     {
-      "elements":[
+      "elements": [
+        "METAR Listing",
+        "Traffic Not Available",
+        "GPS Not Available"
+      ],
+      "name": "METARS"
+    },
+    {
+      "elements": [
+        "TAF Listing",
+        "Traffic Not Available",
+        "GPS Not Available"
+      ],
+      "name": "TAFS"
+    },
+    {
+      "elements": [
+        "AIRMET Listing",
+        "Traffic Not Available",
+        "GPS Not Available"
+      ],
+      "name": "AIRMETS"
+    },
+    {
+      "elements": [
         "Airport Freqs",
+        "Traffic Not Available",
         "GPS Not Available"
       ],
       "name": "Airport Freqs"
@@ -66,6 +92,7 @@
     {
       "elements": [
         "Time",
+        "Traffic Not Available",
         "GPS Not Available"
       ],
       "name": "Time"

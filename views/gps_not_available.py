@@ -2,9 +2,8 @@ from datetime import datetime
 
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
-
 from views import hud_elements
-from views.ahrs_element import AhrsElement
+from views.abstract_elements.ahrs_element import AhrsElement
 
 
 class GpsNotAvailable(AhrsElement):
@@ -14,7 +13,7 @@ class GpsNotAvailable(AhrsElement):
         pixels_per_degree_y: float,
         font,
         framebuffer_size,
-        reduced_visuals: bool = False
+        reduced_visuals: bool = False,
     ):
         super().__init__(font, framebuffer_size, reduced_visuals)
 
@@ -22,11 +21,7 @@ class GpsNotAvailable(AhrsElement):
 
         self.__position__ = [self.__left_border__, text_y_pos]
 
-    def render(
-        self,
-        framebuffer,
-        orientation: AhrsData
-    ):
+    def render(self, framebuffer, orientation: AhrsData):
         if orientation.gps_online:
             return
 
@@ -37,12 +32,9 @@ class GpsNotAvailable(AhrsElement):
             return
 
         self.__render_text__(
-            framebuffer,
-            "ERROR: GPS",
-            self.__position__,
-            colors.RED,
-            0.5)
+            framebuffer, "ERROR: GPS", self.__position__, colors.RED, 0.5
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     hud_elements.run_hud_element(GpsNotAvailable, True)
