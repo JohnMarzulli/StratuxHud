@@ -1,6 +1,7 @@
 """
 Main entry code for Stratux HUD
 """
+
 # !python
 #
 # StratuxHud
@@ -39,12 +40,11 @@ __PYTHON_LOGGGER__ = logging.getLogger("stratux_hud")
 __PYTHON_LOGGGER__.setLevel(logging.DEBUG)
 __LOGGER__ = HudLogger(__PYTHON_LOGGGER__)
 __HANDLER__ = logging.handlers.RotatingFileHandler(
-    "stratux_hud.log",
-    maxBytes=1048576,
-    backupCount=10)
+    "stratux_hud.log", maxBytes=1048576, backupCount=10
+)
 __HANDLER__.setFormatter(
-    logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+)
 __PYTHON_LOGGGER__.addHandler(__HANDLER__)
 
 
@@ -52,9 +52,7 @@ __USE_FULLSCREEN_FLAG__ = "fullscreen"
 __USE_REDUCED_VISUALS_FLAG__ = "reduced"
 
 
-def __is_flag_present__(
-    flag_name: str
-) -> bool:
+def __is_flag_present__(flag_name: str) -> bool:
     """
     Should we use fullscreen no matter what type of
     runtime environment we are in.
@@ -70,13 +68,16 @@ def __is_flag_present__(
     return is_flag_present
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     __LOGGER__.log_info_message("Starting HUD")
-    __LOGGER__.log_info_message("System, DateTime, Component, Instantaneous, Rolling Mean, Max")
+    __LOGGER__.log_info_message(
+        "System, DateTime, Component, Instantaneous, Rolling Mean, Max"
+    )
 
     hud = heads_up_display.HeadsUpDisplay(
         __LOGGER__,
         __is_flag_present__(__USE_FULLSCREEN_FLAG__),
         __is_flag_present__(display.FORCE_SOFTWARE_FLAG),
-        __is_flag_present__(__USE_REDUCED_VISUALS_FLAG__))
+        __is_flag_present__(__USE_REDUCED_VISUALS_FLAG__),
+    )
     hud.run()
