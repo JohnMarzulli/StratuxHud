@@ -433,6 +433,13 @@ class Configuration(object):
         The index is relative (index 0) to the views
         configuration that is loaded from the views.json file.
         """
+
+        if (self.__view_index__ >= len(self.__hud_views__)):
+            self.__view_index__ = len(self.__hud_views__) - 1
+        
+        if (self.__view_index__ < 0):
+            self.__view_index__ = 0
+
         return self.__view_index__
 
     def next_view(self, hud_views: list):

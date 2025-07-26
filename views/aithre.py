@@ -5,6 +5,16 @@ from rendering import colors
 from views.abstract_elements.ahrs_element import AhrsElement
 from views.system_info import get_aithre_co_color
 
+"""
+Recommended view:
+
+{
+    "elements": [
+    "AithreInfo"
+    ],
+    "name": "Aithre"
+}
+"""
 
 class Aithre(AhrsElement):
     def uses_ahrs(self) -> bool:
