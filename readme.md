@@ -23,7 +23,7 @@ The first is as a stand-alone unit. For the standalone configuration, the HUD co
 The second is in an "All-In-One" (AIO) configuration. With an AIO setup, the HUD code runs on the Stratux.
 
 | Feature                    | Stand Alone | AIO          |
-| -------------------------- | ----------- | ------------ |
+|----------------------------|-------------|--------------|
 | Keypad Control             | Yes         | No           |
 | Dynon D180 Support         | Yes         | No           |
 | Aithre CO Monitor          | Yes         | Experimental |
@@ -33,17 +33,13 @@ The second is in an "All-In-One" (AIO) configuration. With an AIO setup, the HUD
 
 ### 2.2 Recommended Projector
 
-Using the "Kivic HUD 2nd Gen" projector and a Raspberry Pi 3.
+Projector availability is subject to change, and compatability is subject to your choice of Pi.
 
-![Kivic Version](media/kivic_in_flight.jpg)
+My reccomendation is a R-Pi 4 with a Hudly Wireless OR with the [StratuxHudDisplay](https://github.com/JohnMarzulli/StratuxHudDisplay)
 
-Estimated cost is \$240
+![HUDLY Version](media/hudly-in-flight.jpg)
 
-- \$45 for RaspberryPi 3b+
-- \$195 for Kivic 2nd Gen projector
-- Fans, case, cables
-
-Uses 5V USB power.
+While the HUDway Drive looked promising, getting video signal into it was a failure.
 
 **NOTE:** This project initially used and recommended the "HUDLY Classic" projector which is no longer available.
 
@@ -84,124 +80,337 @@ While the DynonToHud service does decode and make available both the EFIS and EM
 
 For more information on the setup, and installation of the DynonToHud service, please visit the project page.
 
-(DynonToHud)[<https://github.com/JohnMarzulli/DynonToHud>]
+[DynonToHud](<https://github.com/JohnMarzulli/DynonToHud>)
 
 ## 3 In-Flight Controls
 
 You may use a number pad as an input device. I used velcro to secure the number pad to my dashboard.
 
-| Key       | Action                                                                       |
-| --------- | ---------------------------------------------------------------------------- |
-| Backspace | Tell the Stratux that you are in a level position. Resets the AHRS to level. |
-| +         | Next view                                                                    |
-| -         | Previous view                                                                |
-| =         | Toggle rendering debug information                                           |
-| Esc       | Send shutdown commands to both the HUD controller **and** the Stratux        |
-| q         | (_Full keyboard only_) Quit to the command line.                             |
-| 0/Ins     | Force a connection reset between the HUD and the Stratux                     |
+| Key         | Action                                                                       |
+|-------------|------------------------------------------------------------------------------|
+| Backspace   | Tell the Stratux that you are in a level position. Resets the AHRS to level. |
+| +           | Next view                                                                    |
+| Right Arrow | Next view                                                                    |
+| -           | Previous view                                                                |
+| Left Arrow  | Previous view                                                                |
+| =           | Toggle rendering debug information                                           |
+| Esc         | Send shutdown commands to both the HUD controller **and** the Stratux        |
+| q           | (_Full keyboard only_) Quit to the command line.                             |
+| 0/Ins       | Force a connection reset between the HUD and the Stratux                     |
+| Up Arrow    | Zoom Out, or Previous Page (not all displays)                                |
+| Down Arrow  | Zoom In, or next Page (not all displays)                                     |
 
 ## 4 Included (Default) Views
 
-- AHRS + ADS-B
-- Traffic
-- Traffic List
-- Universal Time
-- Diagnostics
-- (Blank)
-- AHRS Only
+### 4.1 AHRS Only
 
-### 4.1 AHRS + ADS-B View
+![AHRS Only View](media/ahrs_with_dynon_view.png)
 
-![AHRS + ADS-B](media/ahrs_plus_adsb_view.png)
+Displays attitude information including pitch, roll, and heading without traffic information.
 
-This view shows attitude information along with targeting bugs that show the relative position and distance of traffic.
+**Information Displayed:**
 
-In this example:
+- Artificial horizon with pitch and roll
+- Heading indicator
+- Altitude
+- Ground speed and ground track
+- G-force indicator
+- Optional: Aithre CO detector readings
+- Optional: Dynon AHRS data if available
 
-- There is one (1) potential target. The traffic is at a higher altitude, and somewhat distant.
-- The traffic is within our field of view and has a targeting reticle.
-- With are rolled to the left slightly, less than 10 degrees.
-- We are at 649 feet MSL.
-- We have an indicated AIRSPEED of 75MPG, but are hovering with a groundspeed of 0MPH
-- We have a heading of 76, but our GPS track is 303\. If the AHRS or GPS is unable to obtain a reliable heading then `---` is shown for that portion of the heading.
+**Interactions:**
 
-_NOTE:_ This example was using EFIS/AHRS data obtained from a Dynon D-180 FlightDek. As a result, **I**ndicated **A**ir **S**peed (IAS) is displayed. The heading of 76, G-Force of 1.0, and altitude of 649' are also sourced from the Dynon.
+- Use `+` or Right Arrow to cycle to next view
+- Use `-` or Left Arrow to cycle to previous view
+- Backspace to reset AHRS to level
 
-_NOTE:_ This is the default view on startup. If you would like to switch to the `AHRS Only` You may press `-` on the keypad.
+---
 
-### 4.2 Traffic View
+### 4.2 AHRS + ADS-B
 
-![Traffic View Screenshot](media/traffic_view.png)
+![AHRS + ADS-B View](media/ahrs_ads-b.jpg)
 
-This view shows a heading strip, target bugs, targeting reticles, and "information cards" about our potential traffic.
+Primary view combining attitude information with real-time traffic targeting. Shows artificial horizon and targeting bugs for nearby aircraft.
 
-In this example, `N4768B` is almost directly in front of us. The plane is 11.3 statute miles away, with a bearing of 105 degrees, and 1,100 feet above us.
+**Information Displayed:**
 
-Note that the bearing is calculated using the direction we are pointing (left side heading), **NOT** the ground track heading which is the right portion.
+- Artificial horizon with pitch and roll
+- Heading indicator
+- Altitude and indicated/ground speed
+- Traffic targeting bugs showing relative position and distance
+- Information cards with aircraft details
+- G-force indicator
+- Optional: Dynon EFIS data (IAS, G-force, heading from Dynon)
 
-### 4.3 Traffic Listing View
+**Interactions:**
 
-![Traffic Listing View Screenshot](media/traffic_listing_view.png)
+- Use `+` or Right Arrow to cycle to next view
+- Use `-` or Left Arrow to cycle to previous view
+- Backspace to reset AHRS to level
 
-This shows us _at most_, the eight closest planes.
+_Note: This is the default view on startup._
 
-The \_IDENT_ifier will be the tail number when available, otherwise, the ICAO identifier or callsign may be used. The \_BEAR_ing is the heading to take to fly to that target. The \_DIST_ance is the distance to the target. The \_ALT_itude is given in relative terms, with two digits dropped.
+---
 
-In this example, the closest target is N4768B. The plane is only 4.4 statue mile away, and 1,500 feet above us.
+### 4.3 Traffic Scope
 
-### 4.4 Diagnostics View
+![Traffic Scope View](media/radar.jpg)
+![Traffic Scope View](media/radar-in-flight.jpg)
 
-![Diagnostics View Screenshot](media/diagnostics_view.png)
+Top-down radar scope display showing traffic targets relative to your current heading and position.
 
-The diagnostics view is designed to help give some troubleshooting ability. If a value is set for "OWNSHIP" (See the configuration file section), then any report from that tailnumber is ignored. The IP address is provided so you may use the configuration webpage if you set it up.
+**Information Displayed:**
 
-This view also tells you how hot the HUD processor is with the `HUD CPU` row (temperature is in Celsius). The Aithre row tells you information about any Aithre or Illyrian sensors attached. The Traffic row tells you the address that the HUD is using to contact the TrafficManager service. If you see a "TRAFFIC UNAVAILABLE" warning, this address is critical to resolving your issue.
+- Heading strip at top
+- Scope with target bugs at relative positions
+- Targeting reticles for nearby aircraft
+- Distance and bearing information for visible targets
+- Altitude information for traffic
 
-### 4.5 Universal Time
+**Interactions:**
 
-![Diagnostics View Screenshot](media/time_view.png)
+- Use `+` or Right Arrow to cycle to next view
+- Use `-` or Left Arrow to cycle to previous view
+- Use Up/Down arrows to zoom in/out on scope
 
-Shows the current time in UTC at the bottom of the screen.
+---
 
-### 4.6 Blank
+### 4.4 Weather Scope
 
-A blank screen so no information is displayed.
+![Weather Scope View](media/NEXRAD.jpg)
 
-### 4.7 AHRS View
+Weather radar display showing NEXRAD reflectivity and precipitation patterns in your area.
 
-![Traffic View Screenshot](media/ahrs_view.png)
+**Information Displayed:**
 
-This is a similar view to `AHRS + ADS-B`, but removes any AHRS information.
+- Reflectivity radar data
+- Weather targets and storm cells
+- Relative distance and bearing
+- Weather intensity indicators
 
-Here you can see that only the Stratux is being used for flight data. As a result only the Ground Speed is available.
+**Interactions:**
 
-The unit was not moving at the time, so the heading was not available, but the ground track was 343.
+- Use `+` or Right Arrow to cycle to next view
+- Use `-` or Left Arrow to cycle to previous view
+- Use Up/Down arrows to zoom in/out on weather map
 
-### 4.8 Traffic Unavailable Warning
+---
 
-![Traffic View Screenshot](media/no_traffic_warning.png)
+### 4.5 Airport Frequencies
 
-This view element appears when the HUD software is unable to communicate with the "TrafficManager" service.
+![Airport Frequencies View](media/freqs.jpg)
 
-This sub-service handles the communication of traffic data with the Stratux receiver.
+Lists nearby airport information including ATIS, UNICOM, ground, tower, and other relevant frequencies.
 
-If you see this warning, the service has stopped, was not installed correctly, or the HUD is looking for it in the wrong place.
+**Information Displayed:**
 
-If this warning appears sometime during the flight, and is not always on, then a HUD restart may resolve the issue.
+- Nearest airports
+- Distance to each airport
+- Available frequencies (ATIS, UNICOM, Ground, Tower, Approach, Departure)
+- Runway information
 
-Please note that the warning DOES not appear on the "AHRS Only" view.
+**Interactions:**
 
-### 4.9 AHRS Only With Only Dynon
+- Use `+` or Right Arrow to cycle to next view
+- Use `-` or Left Arrow to cycle to previous view
+- Use Up/Down arrows to navigate through airport list (if multiple pages)
 
-![Traffic View Screenshot](media/dynon_only_ahrs_view.png)
+---
 
-If you are using the DynonToHud service, then it is possible to run the StratuxHud without a Stratux.
+### 4.6 METARS
 
-When you do this, traffic and GPS based data will not be available.
+![METARS View](media/metar.jpg)
 
-Here you can see the Ground Speed (GND) read "---" and is colored red to indicate the data is not available. The ground track also reads "---"
+Displays METAR data for nearby airports including weather conditions, wind, visibility, and temperature.
 
-_NOTE:_ If you are using the DynonToHud service AND the Stratux is unable to gain or keep GPS lock, then this is what will appear. The ground speed and ground track will re-appear when GPS lock is re-obtained. _NOTE:_ Positioning of your GPS antenna, or flight maneuvers that cause the antenna to no longer have a view to the sky may cause GPS lock to be lost.
+**Information Displayed:**
+
+- Raw METAR reports
+- Decoded weather information
+- Wind speed and direction
+- Visibility
+- Temperature and dewpoint
+- Flight category indicators
+
+**Interactions:**
+
+- Use `+` or Right Arrow to cycle to next view
+- Use `-` or Left Arrow to cycle to previous view
+- Use Up/Down arrows to navigate through METAR list (if multiple pages)
+
+---
+
+### 4.7 TAFS
+
+![TAFS View](media/tafs_view.png)
+
+Terminal Aerodrome Forecasts (TAF) for nearby airports showing predicted weather conditions.
+
+**Information Displayed:**
+
+- TAF reports for nearby airports
+- Forecast weather conditions
+- Wind forecasts
+- Visibility forecasts
+- Change indicators (BECMG, TEMPO)
+
+**Interactions:**
+
+- Use `+` or Right Arrow to cycle to next view
+- Use `-` or Left Arrow to cycle to previous view
+- Use Up/Down arrows to navigate through TAF list (if multiple pages)
+
+---
+
+### 4.8 AIRMETS
+
+![AIRMETS View](media/airmets_view.png)
+
+Airmen's Meteorological Information showing significant weather in your flight information region.
+
+**Information Displayed:**
+
+- AIRMET reports
+- Affected areas
+- Weather phenomena (turbulence, icing, low visibility, etc.)
+- Valid time periods
+- Hazard type and intensity
+
+**Interactions:**
+
+- Use `+` or Right Arrow to cycle to next view
+- Use `-` or Left Arrow to cycle to previous view
+- Use Up/Down arrows to navigate through AIRMET list
+
+---
+
+### 4.9 Traffic
+
+![Traffic View](media/traffic.jpg)
+
+Detailed traffic information display with aircraft cards showing identification, distance, bearing, and altitude.
+
+**Information Displayed:**
+
+- Heading strip at top
+- Target bugs and targeting reticles
+- Information cards with:
+  - Aircraft identifier (tail number or ICAO code)
+  - Distance (statute miles)
+  - Bearing (relative to current heading)
+  - Altitude (relative to your altitude)
+- Traffic icon indicators
+
+**Interactions:**
+
+- Use `+` or Right Arrow to cycle to next view
+- Use `-` or Left Arrow to cycle to previous view
+
+_Note: Bearing is calculated from aircraft heading, NOT ground track._
+
+---
+
+### 4.10 Traffic List
+
+![Traffic List View](media/traffic-list.jpg)
+
+Tabular list of nearest aircraft showing up to eight closest targets with key information.
+
+**Information Displayed:**
+
+- IDENT (tail number, ICAO, or callsign)
+- BEAR (bearing to target)
+- DIST (distance in statute miles)
+- ALT (relative altitude with two digits dropped)
+- Aircraft type and squawk code (when available)
+
+**Interactions:**
+
+- Use `+` or Right Arrow to cycle to next view
+- Use `-` or Left Arrow to cycle to previous view
+- Use Up/Down arrows to navigate through traffic list (if multiple pages)
+
+---
+
+### 4.11 Time
+
+![Time View](media/time_view.png)
+
+Displays current Zulu (UTC) time prominently. Useful for logging and flight planning.
+
+**Information Displayed:**
+
+- Current UTC time
+- Optional: Local time
+- Date information
+
+**Interactions:**
+
+- Use `+` or Right Arrow to cycle to next view
+- Use `-` or Left Arrow to cycle to previous view
+
+---
+
+### 4.12 Aithre
+
+![Aithre View](media/aithre_view.png)
+
+Carbon monoxide detector readings and status from paired Aithre CO monitor.
+
+**Information Displayed:**
+
+- CO PPM (parts per million) level
+- Alert status
+- Signal strength
+- Battery status
+- Historical trend data
+
+**Interactions:**
+
+- Use `+` or Right Arrow to cycle to next view
+- Use `-` or Left Arrow to cycle to previous view
+
+_Note: Requires Aithre device paired via Bluetooth. Only works on Raspberry Pi units with Bluetooth capability (Pi 3, 3B+, 4)._
+
+---
+
+### 4.13 Diagnostics
+
+![Diagnostics View](media/diagnostics_view.png)
+
+System diagnostics and status information for troubleshooting HUD connectivity and health.
+
+**Information Displayed:**
+
+- HUD CPU temperature (Celsius)
+- Connection status to Stratux
+- Traffic Manager service status
+- Aithre/Illyrian sensor status (if connected)
+- IP address of HUD
+- OWNSHIP configuration
+- GPS status
+
+**Interactions:**
+
+- Use `+` or Right Arrow to cycle to next view
+- Use `-` or Left Arrow to cycle to previous view
+
+_Note: This view is critical for resolving connectivity issues. If "TRAFFIC UNAVAILABLE" appears, the Traffic Manager address shown here is needed for diagnosis._
+
+---
+
+### 4.14 Intentionally Blank
+
+A blank screen with no information displayed. Useful for reducing power consumption or when you want a clear view without HUD overlay.
+
+**Information Displayed:**
+
+- None
+
+**Interactions:**
+
+- Use `+` or Right Arrow to cycle to next view
+- Use `-` or Left Arrow to cycle to previous view
 
 ## 5 Parts List
 
@@ -225,10 +434,10 @@ _NOTE:_ This _does not_ include a power source. You will need to supply ship pow
 
 Please use one of the provided images from the "Release" page on GitHub.
 
-1. Download the image for your scenario from the GitHub (Releases Page)[<https://github.com/JohnMarzulli/StratuxHud/releases>]
-2. Use (Etcher)[<https://www.balena.io/etcher/>] to flash the image onto a Micro SD card.
+1. Download the image for your scenario from the GitHub [Releases Page](<https://github.com/JohnMarzulli/StratuxHud/releases>)
+2. Use [Etcher](<https://www.balena.io/etcher/>) to flash the image onto a Micro SD card.
 3. Plug in your Projector to the Raspberry Pi
-4. It is recommended that you SSH into the HUD and use `raspi-config` to ("expand the filesystem")[<https://geek-university.com/raspberry-pi/expand-raspbian-filesystem/>].
+4. It is recommended that you SSH into the HUD and use `raspi-config` to ["expand the filesystem"](<https://geek-university.com/raspberry-pi/expand-raspbian-filesystem/>).
 
 ## 7 Development/From Scratch Install instructions
 
@@ -301,7 +510,7 @@ Make sure you are using a high-quality power cable if you are using a Pi 3B+
 
 Use LXDE autostart:
 
-https://www.raspberrypi.org/forums/viewtopic.php?t=275703
+<https://www.raspberrypi.org/forums/viewtopic.php?t=275703>
 
 #### 7.2.1 Developer Note
 
@@ -424,7 +633,8 @@ You will find the solder pads on the bottom of the Raspberry Pi 3, near the Micr
 ### 8.3 Revision History
 
 | Date       | Version | Major Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| ---------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|------------|---------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2025-11-15 | 2.2     | Major refactor, addition of NEXRAD, weather products, radio frequencies, and more |
 | 2020-10-31 | 2.0     | Migration to Python V3, with major refactoring of underlying code. New TopDownScope element and view.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | 2020-04-20 | 1.7     | Now able to cycle through views using the HudConfig page. Support for Illyrian by Aithre. Split Aithre data collection into a micro-service. Improve warning on some elements when GPS lock is lost. Fix user configuration files not always being used or saved. Support new V3 radio and Stratux 1.6\. Experimental support for Aithre in Stratux + HUD AIO configurations. Updates to distance conversion. Use the same naming strategy for aircraft as popular EFBs. Support data collected from Dynon serial output using the DynonToHud project. Indicate which speeds are IAS and groundspeed when GPS and Avionics data are both available. Update element positions. Added new indication when the Traffic service is not available. |
 | 2019-09-04 | 1.6     | Traffic manager moved to a stand-alone service in NodeJs/TypeScript.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
@@ -440,7 +650,7 @@ You will find the solder pads on the bottom of the Raspberry Pi 3, near the Micr
 Please note that performance characteristics are only shown for displays that are currently available for purchase. The Hudly Classic is intentionally not listed.
 
 | Board                          | Screen         | Frames Per Second (AHRS View Only) | Notes              |
-| ------------------------------ | -------------- | ---------------------------------- | ------------------ |
+|--------------------------------|----------------|------------------------------------|--------------------|
 | Rasp Pi 2 (stand-alone)        | Sun Founder 5" | ~25FPS to ~30FPS                   | Not recommended    |
 | Rasp Pi 3 (stand-alone)        | Kivic          | 50FPS - 60FPS                      | Recommended        |
 | Rasp Pi 3 (stand-alone)        | Hudly Wireless | 30FPS - 50FPS                      | Recommended        |
@@ -517,9 +727,9 @@ sudo apt install freeglut3 freeglut3-dev
 
 pip3 install PyOpenGL PyOpenGL_accelerate
 
-https://www.raspberrypi.org/forums/viewtopic.php?t=223592
-https://www.raspberrypi.org/forums/viewtopic.php?t=243892
-https://www.raspberrypi.org/forums/viewtopic.php?t=266277
+<https://www.raspberrypi.org/forums/viewtopic.php?t=223592>
+<https://www.raspberrypi.org/forums/viewtopic.php?t=243892>
+<https://www.raspberrypi.org/forums/viewtopic.php?t=266277>
 
 ## 11 Roadmap
 
