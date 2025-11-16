@@ -217,7 +217,7 @@ Lists nearby airport information including ATIS, UNICOM, ground, tower, and othe
 
 ---
 
-### 4.6 METARS
+### 4.6 METARS (Experimental, Off By Default)
 
 ![METARS View](media/metar.jpg)
 
@@ -240,7 +240,7 @@ Displays METAR data for nearby airports including weather conditions, wind, visi
 
 ---
 
-### 4.7 TAFS
+### 4.7 TAFS (Experimental, Off By Default)
 
 ![TAFS View](media/tafs_view.png)
 
@@ -262,7 +262,7 @@ Terminal Aerodrome Forecasts (TAF) for nearby airports showing predicted weather
 
 ---
 
-### 4.8 AIRMETS
+### 4.8 AIRMETS (Experimental, Off By Default)
 
 ![AIRMETS View](media/airmets_view.png)
 
