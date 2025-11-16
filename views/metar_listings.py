@@ -1,5 +1,16 @@
 """
 View that shows the list of nearby traffic
+
+Recommended view:
+
+{
+    "elements": [
+    "METAR Listing",
+    "Traffic Not Available",
+    "GPS Not Available"
+    ],
+    "name": "METARS"
+}
 """
 
 from typing import Dict

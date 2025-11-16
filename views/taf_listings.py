@@ -1,5 +1,16 @@
 """
 View that shows the list of nearby traffic
+
+Recommended view:
+
+{
+    "elements": [
+    "TAF Listing",
+    "Traffic Not Available",
+    "GPS Not Available"
+    ],
+    "name": "TAFS"
+}
 """
 
 from typing import Dict, List
