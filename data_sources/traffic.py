@@ -9,6 +9,7 @@ import threading
 import time
 
 import requests
+
 from common_utils import simulated_values, tasks
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
@@ -19,15 +20,16 @@ class Traffic(object):
     Holds data about traffic that the ADSB has received.
     """
 
-    TAIL_NUMBER_KEY = 'displayName'
-    LATITUDE_KEY = 'Lat'
-    LONGITUDE_KEY = 'Lng'
-    DISTANCE_KEY = 'Distance'
-    BEARING_KEY = 'Bearing'
-    TRACK_KEY = 'Track'
-    ALTITUDE_KEY = 'Alt'
+    TAIL_NUMBER_KEY = "displayName"
+    LATITUDE_KEY = "Lat"
+    LONGITUDE_KEY = "Lng"
+    DISTANCE_KEY = "Distance"
+    BEARING_KEY = "Bearing"
+    TRACK_KEY = "Track"
+    SPEED_KEY = "Speed"
+    ALTITUDE_KEY = "Alt"
     # We need to key off the ICAO address due to 'Anonymous Mode'...
-    ICAO_ADDR_KEY = 'Icao_addr'
+    ICAO_ADDR_KEY = "Icao_addr"
 
     """
     Holds an instance of a traffic callout.
@@ -72,31 +74,23 @@ class Traffic(object):
     }
     """
 
-    def get_altitude_delta(
-        self,
-        own_altitude: int
-    ) -> int:
+    def get_altitude_delta(self, own_altitude: int) -> int:
         """
         Get the delta between out own altitude and another plane's
         """
         return int(self.altitude - own_altitude)
 
-    def get_altitude_delta_text(
-        self,
-        orientation: AhrsData
-    ) -> str:
+    def get_altitude_delta_text(self, orientation: AhrsData) -> str:
         if orientation is None:
             return "UNK"
 
         altitude_delta = self.get_altitude_delta(orientation.alt)
         altitude_delta = int((altitude_delta / 100.0) + 0.5)
 
-        delta_sign = '+' if altitude_delta > 0 else ''
+        delta_sign = "+" if altitude_delta > 0 else ""
         return "{0}{1}".format(delta_sign, altitude_delta)
 
-    def is_on_ground(
-        self
-    ) -> bool:
+    def is_on_ground(self) -> bool:
         """
         Is this aircraft on the ground?
 
@@ -105,25 +99,21 @@ class Traffic(object):
         """
 
         try:
-            if 'OnGround' in self.__json__:
-                return bool(self.__json__['OnGround'])
+            if "OnGround" in self.__json__:
+                return bool(self.__json__["OnGround"])
         except:
             pass
 
         return False
 
-    def get_age(
-        self
-    ) -> float:
+    def get_age(self) -> float:
         """
         Returns the age of this report in total seconds.
         """
         delta = datetime.datetime.utcnow() - self.time_decoded
         return delta.total_seconds()
 
-    def get_display_name(
-        self
-    ) -> str:
+    def get_display_name(self) -> str:
         """
         Returns the identifier to use of the traffic
         """
@@ -133,11 +123,7 @@ class Traffic(object):
 
         return self.icao_address
 
-    def get_bearing(
-        self,
-        starting_lat: float,
-        starting_lon: float
-    ) -> float:
+    def get_bearing(self, starting_lat: float, starting_lon: float) -> float:
         """
         Returns the bearing to the traffic from the
         given point.
@@ -146,18 +132,17 @@ class Traffic(object):
         lat2 = float(self.__json__[Traffic.LATITUDE_KEY])
         lon2 = float(self.__json__[Traffic.LONGITUDE_KEY])
 
-        bearing = math.atan2(math.sin(lon2 - starting_lon) * math.cos(lat2), math.cos(starting_lat)
-                             * math.sin(lat2) - math.sin(starting_lat) * math.cos(lat2) * math.cos(lon2 - starting_lon))
+        bearing = math.atan2(
+            math.sin(lon2 - starting_lon) * math.cos(lat2),
+            math.cos(starting_lat) * math.sin(lat2)
+            - math.sin(starting_lat) * math.cos(lat2) * math.cos(lon2 - starting_lon),
+        )
         bearing = math.degrees(bearing)
         bearing = (bearing + 360) % 360
 
         return bearing
 
-    def get_distance(
-        self,
-        starting_lat: float,
-        starting_lon: float
-    ) -> float:
+    def get_distance(self, starting_lat: float, starting_lon: float) -> float:
         """
         Returns the distance to the traffic from the
         given point.
@@ -177,17 +162,16 @@ class Traffic(object):
         # haversine formula
         dlon = lon2 - lon1
         dlat = lat2 - lat1
-        a = math.sin(dlat / 2)**2 + math.cos(lat1) * \
-            math.cos(lat2) * math.sin(dlon / 2)**2
+        a = (
+            math.sin(dlat / 2) ** 2
+            + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
+        )
         c = 2 * math.asin(math.sqrt(a))
         # Radius of earth. Can change with units
         r = configuration.EARTH_RADIUS_STATUTE_MILES
         return c * r
 
-    def update(
-        self,
-        json_report: dict
-    ):
+    def update(self, json_report: dict):
         """
         Applies the new data to the existing traffic.
         """
@@ -198,11 +182,7 @@ class Traffic(object):
         except:
             print("Issue in update()")
 
-    def __init__(
-        self,
-        icao_address: str,
-        json_from_stratux: dict
-    ):
+    def __init__(self, icao_address: str, json_from_stratux: dict):
         """
         Initializes the traffic from the JSON response.
         """
@@ -217,13 +197,12 @@ class Traffic(object):
         self.bearing = None
         self.altitude = None
         self.track = None
+        self.speed = None
 
         self.__json__ = json_from_stratux
         self.__update_from_json__()
 
-    def __update_from_json__(
-        self
-    ):
+    def __update_from_json__(self):
         """
         Updates the report from the most recently received report.
         (Deserialized from the JSON)
@@ -295,6 +274,11 @@ class Traffic(object):
             else:
                 self.track = None
 
+            if Traffic.SPEED_KEY in self.__json__:
+                self.speed = float(self.__json__[Traffic.SPEED_KEY])
+            else:
+                self.speed = None
+
             if Traffic.ALTITUDE_KEY in self.__json__:
                 self.altitude = float(self.__json__[Traffic.ALTITUDE_KEY])
             else:
@@ -308,52 +292,44 @@ class SimulatedTraffic(object):
     Class to simulated ADSB received traffic.
     """
 
-    def __init__(
-        self,
-        max_distance: int = 1000
-    ):
+    def __init__(self, max_distance: int = 1000):
         """
         Creates a new traffic simulation object.
         """
 
-        target_center_position = (48.160464, -122.166409)
-        runway_number_position = (48.155973, -122.157582)
-        starting_points = (target_center_position, runway_number_position)
+        starting_point = (48.15895571856626, -122.14451265407008)
+        kawo = (47.5, -122.2)
+        ksea = (47.6, -122.3)
+        starting_points = (starting_point, kawo, ksea)
 
         self.icao_address = random.randint(10000, 100000)
         self.tail_number = "N{0}{1}{2}".format(
-            random.randint(1, 9),
-            random.randint(0, 9),
-            random.randint(0, 9))
+            random.randint(1, 9), random.randint(0, 9), random.randint(0, 9)
+        )
         self.time_decoded = datetime.datetime.utcnow()
         self.latitude = simulated_values.SimulatedValue(
+            0.01,
             0.1,
-            10,
             1,
-            random.randint(0, 9),
-            starting_points[random.randint(0, 1)][0])
+            random.randint(0, 9) / 100.0,
+            starting_points[random.randint(0, 2)][0],
+        )
         self.longitude = simulated_values.SimulatedValue(
+            0.01,
             0.1,
-            10,
             1,
-            random.randint(0, 9),
-            starting_points[random.randint(0, 1)][1])
+            random.randint(0, 9) / 100.0,
+            starting_points[random.randint(0, 2)][1],
+        )
         self.distance = simulated_values.SimulatedValue(
-            10,
-            max_distance,
-            -1,
-            random.randint(0, max_distance),
-            max_distance)
+            10, max_distance, -1, random.randint(0, max_distance), max_distance
+        )
         self.bearing = simulated_values.SimulatedValue(
-            0,
-            360,
-            -1,
-            random.randint(0, 360))
+            0, 360, -1, random.randint(0, 360)
+        )
         self.heading = simulated_values.SimulatedValue(
-            random.random(),
-            360,
-            -1,
-            random.randint(0, 360))
+            random.random(), 360, -1, random.randint(0, 360)
+        )
 
         max_altitude = 5000
         starting_relative_altitude = random.randrange(-max_altitude, max_altitude)
@@ -362,16 +338,11 @@ class SimulatedTraffic(object):
             max_altitude,
             1 if (random.randint(0, 100) % 2) == 0 else -1,
             starting_relative_altitude,
-            0)
-        self.speed = simulated_values.SimulatedValue(
-            5,
-            10,
-            1,
-            85)
+            0,
+        )
+        self.speed = simulated_values.SimulatedValue(5, 10, 1, 85)
 
-    def simulate(
-        self
-    ):
+    def simulate(self):
         """
         Simulates the traffic for a 'tick'.
         """
@@ -385,9 +356,7 @@ class SimulatedTraffic(object):
         self.altitude.simulate()
         self.speed.simulate()
 
-    def to_json(
-        self
-    ):
+    def to_json(self):
         """
         Returns this object back as a dictionary (deserialized json)
 
@@ -396,42 +365,42 @@ class SimulatedTraffic(object):
         """
 
         return {
-            'TargetType': 1,
-            'Vvel': -1152,
-            'Speed_valid': True,
-            'Emitter_category': 3,
-            'Tail': self.tail_number,
-            'displayName': self.tail_number,
-            'GnssDiffFromBaroAlt': -300,
-            'Reg': self.tail_number,
-            'Last_seen': str(self.time_decoded),
-            'Squawk': 0,
-            'Track': self.heading.value,
-            'Timestamp': str(self.time_decoded),
-            'Icao_addr': self.icao_address,
-            'ExtrapolatedPosition': False,
-            'Addr_type': 0,
-            'Last_alt': str(self.time_decoded),
-            'Lat': self.latitude.value,
-            'Distance': self.distance.value,
-            'Age': 0.15000000000000002,
-            'Last_GnssDiffAlt': 4000,
-            'Last_speed': str(self.time_decoded),
-            'AgeLastAlt': 0.15000000000000002,
-            'Last_GnssDiff': str(self.time_decoded),
-            'BearingDist_valid': True,
-            'Lng': self.longitude.value,
-            'Lon': self.longitude.value,
-            'Bearing': self.bearing.value,
-            'OnGround': False,
-            'NIC': 8,
-            'Last_source': 1,
-            'PriorityStatus': 0,
-            'NACp': 10,
-            'SignalLevel': -5.054252345140135,
-            'AltIsGNSS': False,
-            'Alt': self.altitude.value,
-            'Speed': self.speed.value
+            "TargetType": 1,
+            "Vvel": -1152,
+            "Speed_valid": True,
+            "Emitter_category": 3,
+            "Tail": self.tail_number,
+            "displayName": self.tail_number,
+            "GnssDiffFromBaroAlt": -300,
+            "Reg": self.tail_number,
+            "Last_seen": str(self.time_decoded),
+            "Squawk": 0,
+            "Track": self.heading.value,
+            "Timestamp": str(self.time_decoded),
+            "Icao_addr": self.icao_address,
+            "ExtrapolatedPosition": False,
+            "Addr_type": 0,
+            "Last_alt": str(self.time_decoded),
+            "Lat": self.latitude.get_value(),
+            "Distance": self.distance.get_value(),
+            "Age": 0.15000000000000002,
+            "Last_GnssDiffAlt": 4000,
+            "Last_speed": str(self.time_decoded),
+            "AgeLastAlt": 0.15000000000000002,
+            "Last_GnssDiff": str(self.time_decoded),
+            "BearingDist_valid": True,
+            "Lng": self.longitude.get_value(),
+            "Lon": self.longitude.get_value(),
+            "Bearing": self.bearing.get_value(),
+            "OnGround": False,
+            "NIC": 8,
+            "Last_source": 1,
+            "PriorityStatus": 0,
+            "NACp": 10,
+            "SignalLevel": -5.054252345140135,
+            "AltIsGNSS": False,
+            "Alt": self.altitude.get_value(),
+            "Speed": self.speed.get_value(),
         }
 
 
@@ -440,17 +409,13 @@ class TrafficManager(object):
     Manager class that handles all of the position reports.
     """
 
-    def heartbeat(
-        self
-    ):
+    def heartbeat(self):
         """
         Record a heartbeat / response from the traffic manager.
         """
         self.__last_report_time__ = datetime.datetime.utcnow()
 
-    def is_traffic_available(
-        self
-    ):
+    def is_traffic_available(self):
         """
         Do we believe the traffic manager is available and responding?
 
@@ -460,20 +425,18 @@ class TrafficManager(object):
         if self.__last_report_time__ is None:
             return False
 
-        return (datetime.datetime.utcnow() - self.__last_report_time__).total_seconds() < 10
+        return (
+            datetime.datetime.utcnow() - self.__last_report_time__
+        ).total_seconds() < 10
 
-    def clear(
-        self
-    ):
+    def clear(self):
         """
         Resets the traffic reports.
         """
 
         self.traffic = {}
 
-    def get_traffic_with_position(
-        self
-    ) -> list:
+    def get_traffic_with_position(self) -> list:
         """
         Returns the subset of traffic with actionable
         traffic data.
@@ -485,7 +448,8 @@ class TrafficManager(object):
         self.__lock__.acquire()
         try:
             traffic_with_position = {
-                k: v for k, v in self.traffic.items()
+                k: v
+                for k, v in self.traffic.items()
                 if v is not None and ownship != int(v.icao_address)
             }
         except Exception:
@@ -493,19 +457,17 @@ class TrafficManager(object):
         finally:
             self.__lock__.release()
 
-        actionable_traffic = [self.traffic[identifier] for identifier in traffic_with_position]
+        actionable_traffic = [
+            self.traffic[identifier] for identifier in traffic_with_position
+        ]
 
         sorted_traffic = sorted(
-            actionable_traffic,
-            key=lambda traffic: traffic.distance)
+            actionable_traffic, key=lambda traffic: traffic.distance
+        )
 
         return sorted_traffic
 
-    def handle_traffic_report(
-        self,
-        icao_address: str,
-        json_report: dict
-    ) -> str:
+    def handle_traffic_report(self, icao_address: str, json_report: dict) -> str:
         """
         Updates or sets a traffic report.
         """
@@ -525,9 +487,7 @@ class TrafficManager(object):
 
         return None
 
-    def prune_traffic_reports(
-        self
-    ):
+    def prune_traffic_reports(self):
         """
         Removes traffic reports that are too old.
         """
@@ -538,7 +498,9 @@ class TrafficManager(object):
             for identifier in self.traffic:
                 traffic_age = self.traffic[identifier].get_age()
 
-                if traffic_age > (configuration.CONFIGURATION.max_minutes_before_removal * 60):
+                if traffic_age > (
+                    configuration.CONFIGURATION.max_minutes_before_removal * 60
+                ):
                     traffic_to_remove.append(identifier)
 
             for identifier_to_remove in traffic_to_remove:
@@ -548,17 +510,14 @@ class TrafficManager(object):
         finally:
             self.__lock__.release()
 
-    def __init__(
-        self
-    ):
+    def __init__(self):
         # Traffic held by tail number
         self.traffic = {}
         self.__last_report_time__ = None
         self.__lock__ = threading.Lock()
         self.__prune_task__ = tasks.RecurringTask(
-            'PruneTraffic',
-            10,
-            self.prune_traffic_reports)
+            "PruneTraffic", 10, self.prune_traffic_reports
+        )
 
 
 class AdsbTrafficClient:
@@ -571,42 +530,38 @@ class AdsbTrafficClient:
     INSTANCE = None
     TIME_SINCE_LAST_REPORT_KEY = "socketTimeSinceLastTraffic"
 
-    def __init__(
-        self,
-        rest_address: str
-    ):
+    def __init__(self, rest_address: str):
         self.__traffic_session__ = requests.Session()
         self.rest_address = rest_address
         self.__update_traffic_task__ = tasks.RecurringTask(
-            'UpdateTraffic',
-            0.1,
-            self.update_reliable_traffic)
+            "UpdateTraffic", 0.1, self.update_reliable_traffic
+        )
         self.__update_service_health_task__ = tasks.RecurringTask(
-            'UpdateTrafficManagerHealth',
-            0.5,
-            self.get_traffic_manager_service_status)
+            "UpdateTrafficManagerHealth", 0.5, self.get_traffic_manager_service_status
+        )
         AdsbTrafficClient.INSTANCE = self
 
-    def get_traffic_manager_service_status(
-        self
-    ):
+    def get_traffic_manager_service_status(self):
         try:
             status_json = self.__traffic_session__.get(
                 "http://{}/Service/Status".format(self.rest_address),
-                timeout=configuration.AHRS_TIMEOUT).json()
+                timeout=configuration.AHRS_TIMEOUT,
+            ).json()
 
-            if status_json is not None and AdsbTrafficClient.TIME_SINCE_LAST_REPORT_KEY in status_json:
+            if (
+                status_json is not None
+                and AdsbTrafficClient.TIME_SINCE_LAST_REPORT_KEY in status_json
+            ):
                 time_since_last_report = float(
-                    status_json[AdsbTrafficClient.TIME_SINCE_LAST_REPORT_KEY])
+                    status_json[AdsbTrafficClient.TIME_SINCE_LAST_REPORT_KEY]
+                )
 
                 if time_since_last_report < 60.0:
                     AdsbTrafficClient.TRAFFIC_MANAGER.heartbeat()
         except:
             pass
 
-    def reset_traffic_manager(
-        self
-    ):
+    def reset_traffic_manager(self):
         """
         Sends a reset signal (if able) to the traffic manager.
         """
@@ -614,13 +569,12 @@ class AdsbTrafficClient:
         try:
             self.__traffic_session__.get(
                 "http://{}/Service/Reset".format(self.rest_address),
-                timeout=configuration.AHRS_TIMEOUT).json()
+                timeout=configuration.AHRS_TIMEOUT,
+            ).json()
         except:
             pass
 
-    def update_reliable_traffic(
-        self
-    ):
+    def update_reliable_traffic(self):
         """
         Calls the traffic manager and gets a list of traffic that is trustable
         for position data.
@@ -628,12 +582,12 @@ class AdsbTrafficClient:
         try:
             traffic_json = self.__traffic_session__.get(
                 "http://{}/Traffic/Reliable".format(self.rest_address),
-                timeout=configuration.AHRS_TIMEOUT).json()
+                timeout=configuration.AHRS_TIMEOUT,
+            ).json()
 
             # Report each traffic based on the keys
             for icao_identifier in traffic_json.keys():
-                self.received_message(
-                    icao_identifier, traffic_json[icao_identifier])
+                self.received_message(icao_identifier, traffic_json[icao_identifier])
 
             return True
 
@@ -647,11 +601,7 @@ class AdsbTrafficClient:
             # way below the max target framerate.
             return False
 
-    def received_message(
-        self,
-        icao_identifier: str,
-        adsb_traffic: dict
-    ):
+    def received_message(self, icao_identifier: str, adsb_traffic: dict):
         """
         Handler for receiving a message.
 
@@ -661,14 +611,12 @@ class AdsbTrafficClient:
 
         try:
             AdsbTrafficClient.TRAFFIC_MANAGER.handle_traffic_report(
-                icao_identifier,
-                adsb_traffic)
+                icao_identifier, adsb_traffic
+            )
         except:
             print("Issue decoding JSON")
 
-    def __dump_traffic_diag__(
-        self
-    ):
+    def __dump_traffic_diag__(self):
         """
         Prints our current traffic understanding.
         """
@@ -677,24 +625,29 @@ class AdsbTrafficClient:
 
         if diag_traffic is not None:
             for traffic in diag_traffic:
-                print("{0} - {1} - {2}".format(
-                    traffic.get_display_name(),
-                    traffic.bearing,
-                    traffic.distance))
+                print(
+                    "{0} - {1} - {2}".format(
+                        traffic.get_display_name(), traffic.bearing, traffic.distance
+                    )
+                )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import time
 
     trafficClient = AdsbTrafficClient(
-        configuration.CONFIGURATION.get_traffic_manager_address())
+        configuration.CONFIGURATION.get_traffic_manager_address()
+    )
 
     while True:
         time.sleep(5)
         print("position_valid:")
         reports = AdsbTrafficClient.TRAFFIC_MANAGER.get_traffic_with_position()
         for traffic_report in reports:
-            print("    {0} {1} {2}".format(
-                traffic_report.get_display_name(),
-                traffic_report.bearing,
-                traffic_report.distance))
+            print(
+                "    {0} {1} {2}".format(
+                    traffic_report.get_display_name(),
+                    traffic_report.bearing,
+                    traffic_report.distance,
+                )
+            )

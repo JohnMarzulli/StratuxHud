@@ -1,0 +1,4034 @@
+{
+    "13W": [
+        {
+            "coordinates": {
+                "longitude": -122.43619444,
+                "latitude": 48.25694444
+            },
+            "facilityId": "13W",
+            "facilityName": "CAMANO ISLAND AIRFIELD",
+            "facilityType": "NON-ATCT",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "",
+            "frequency": "122.9",
+            "frequencyName": "CTAF",
+            "remarks": ""
+        }
+    ],
+    "AWO": [
+        {
+            "coordinates": {
+                "longitude": -122.15902777,
+                "latitude": 48.16075
+            },
+            "facilityId": "AWO",
+            "facilityName": "ARLINGTON MUNI",
+            "facilityType": "NON-ATCT",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "",
+            "frequency": "122.725",
+            "frequencyName": "CTAF",
+            "remarks": "REIL RWY 11 & 29 OPR SS-SR; PAPI RWY 11"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.15912777,
+                "latitude": 48.15840555
+            },
+            "facilityId": "AWO",
+            "facilityName": "",
+            "facilityType": "ASOS_AWOS",
+            "artcOrFssId": "",
+            "serviceSiteType": "AWOS-3PT",
+            "towerOrComFreq": "",
+            "approachFreq": "",
+            "frequency": "135.625",
+            "frequencyName": "AWO AWOS-3PT",
+            "remarks": ""
+        }
+    ],
+    "PAE": [
+        {
+            "coordinates": {
+                "longitude": -122.28209388,
+                "latitude": 47.90731805
+            },
+            "facilityId": "PAE",
+            "facilityName": "SEATTLE PAINE FLD INTL",
+            "facilityType": "ATCT",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "PAINE",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.2",
+            "frequencyName": "LCL/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.28209388,
+                "latitude": 47.90731805
+            },
+            "facilityId": "PAE",
+            "facilityName": "SEATTLE PAINE FLD INTL",
+            "facilityType": "ATCT",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "PAINE",
+            "approachFreq": "SEATTLE",
+            "frequency": "121.8",
+            "frequencyName": "GND/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.28209388,
+                "latitude": 47.90731805
+            },
+            "facilityId": "PAE",
+            "facilityName": "SEATTLE PAINE FLD INTL",
+            "facilityType": "ATCT",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "",
+            "frequency": "122.95",
+            "frequencyName": "UNICOM",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.28209388,
+                "latitude": 47.90731805
+            },
+            "facilityId": "PAE",
+            "facilityName": "SEATTLE PAINE FLD INTL",
+            "facilityType": "ATCT",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "PAINE",
+            "approachFreq": "SEATTLE",
+            "frequency": "127.175",
+            "frequencyName": "CD/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.28209388,
+                "latitude": 47.90731805
+            },
+            "facilityId": "PAE",
+            "facilityName": "SEATTLE PAINE FLD INTL",
+            "facilityType": "ATCT",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "PAINE",
+            "approachFreq": "SEATTLE",
+            "frequency": "128.65",
+            "frequencyName": "ATIS",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.28209388,
+                "latitude": 47.90731805
+            },
+            "facilityId": "PAE",
+            "facilityName": "SEATTLE PAINE FLD INTL",
+            "facilityType": "ATCT",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "",
+            "frequency": "132.95",
+            "frequencyName": "CTAF",
+            "remarks": "WHEN ATCT CLSD"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.28209388,
+                "latitude": 47.90731805
+            },
+            "facilityId": "PAE",
+            "facilityName": "SEATTLE PAINE FLD INTL",
+            "facilityType": "ATCT",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "PAINE",
+            "approachFreq": "SEATTLE",
+            "frequency": "132.95",
+            "frequencyName": "LCL/P IC",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.28209388,
+                "latitude": 47.90731805
+            },
+            "facilityId": "PAE",
+            "facilityName": "SEATTLE PAINE FLD INTL",
+            "facilityType": "ATCT",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "PAINE",
+            "approachFreq": "SEATTLE",
+            "frequency": "256.7",
+            "frequencyName": "LCL/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.28209388,
+                "latitude": 47.90731805
+            },
+            "facilityId": "PAE",
+            "facilityName": "SEATTLE PAINE FLD INTL",
+            "facilityType": "ATCT",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "PAINE",
+            "approachFreq": "SEATTLE",
+            "frequency": "339.8",
+            "frequencyName": "GND/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.28209388,
+                "latitude": 47.90731805
+            },
+            "facilityId": "PAE",
+            "facilityName": "SEATTLE PAINE FLD INTL",
+            "facilityType": "ATCT",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "PAINE",
+            "approachFreq": "SEATTLE",
+            "frequency": "34.1",
+            "frequencyName": "AR OPS",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.29152777,
+                "latitude": 47.91730555
+            },
+            "facilityId": "PAE",
+            "facilityName": "PAINE",
+            "facilityType": "RCO",
+            "artcOrFssId": "SEA",
+            "serviceSiteType": "RCO",
+            "towerOrComFreq": "PAINE",
+            "approachFreq": "",
+            "frequency": "122.2",
+            "frequencyName": "PAINE RCO",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.27780177,
+                "latitude": 47.91983322
+            },
+            "facilityId": "PAE",
+            "facilityName": "PAINE",
+            "facilityType": "NAVAID",
+            "artcOrFssId": "",
+            "serviceSiteType": "VOR/DME",
+            "towerOrComFreq": "",
+            "approachFreq": "",
+            "frequency": "110.6/43X",
+            "frequencyName": "PAE VOR/DME",
+            "remarks": ""
+        }
+    ],
+    "S43": [
+        {
+            "coordinates": {
+                "longitude": -122.10274361,
+                "latitude": 47.90486802
+            },
+            "facilityId": "S43",
+            "facilityName": "HARVEY FLD",
+            "facilityType": "NON-ATCT",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "",
+            "frequency": "123.0",
+            "frequencyName": "CTAF",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.10274361,
+                "latitude": 47.90486802
+            },
+            "facilityId": "S43",
+            "facilityName": "HARVEY FLD",
+            "facilityType": "NON-ATCT",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "",
+            "frequency": "123.0",
+            "frequencyName": "UNICOM",
+            "remarks": ""
+        }
+    ],
+    "S46": [
+        {
+            "coordinates": {
+                "longitude": -122.15902777,
+                "latitude": 48.16075
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "SEATTLE",
+            "frequency": "121.725",
+            "frequencyName": "CD/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.15902777,
+                "latitude": 48.16075
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "SEATTLE",
+            "frequency": "128.5",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.15902777,
+                "latitude": 48.16075
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "SEATTLE",
+            "frequency": "306.9",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "119.2",
+            "frequencyName": " RWY 32",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "119.2",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "119.2",
+            "frequencyName": " RWY 32",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "119.2",
+            "frequencyName": "CLASS B",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "119.2",
+            "frequencyName": "KENT DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "119.2",
+            "frequencyName": "NRVNA RNAV DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.1",
+            "frequencyName": " RWY 14",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.1",
+            "frequencyName": " RWY 32",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.1",
+            "frequencyName": " RWY 14",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.1",
+            "frequencyName": " RWY 32",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.4",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.4",
+            "frequencyName": "CBAIN RNAV DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.4",
+            "frequencyName": "NEEDLE DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "123.9",
+            "frequencyName": "GLASR STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.6",
+            "frequencyName": "JAWBN STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.6",
+            "frequencyName": "OLYMPIA STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.9",
+            "frequencyName": " RWY 32",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.9",
+            "frequencyName": "RWY 32",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.9",
+            "frequencyName": " RWY 14",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.9",
+            "frequencyName": "APCH/P IC",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.9",
+            "frequencyName": "CLASS B",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.9",
+            "frequencyName": "CLASS B",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "126.5",
+            "frequencyName": " RWY 32",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "126.5",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "126.5",
+            "frequencyName": " RWY 32",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "126.5",
+            "frequencyName": " RWY 14",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "128.5",
+            "frequencyName": " RWY 32",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "128.5",
+            "frequencyName": " RWY 14",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "128.5",
+            "frequencyName": " RWY 32",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "128.5",
+            "frequencyName": " RWY 14",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "269.125",
+            "frequencyName": " RWY 32",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "269.125",
+            "frequencyName": "CBAIN RNAV DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "269.125",
+            "frequencyName": "NEEDLE DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "273.45",
+            "frequencyName": "JAWBN STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "273.45",
+            "frequencyName": "OLYMPIA STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "284.7",
+            "frequencyName": " RWY 32",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "284.7",
+            "frequencyName": " RWY 14",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "284.7",
+            "frequencyName": "CLASS B",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "284.7",
+            "frequencyName": "CLASS B",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "284.7",
+            "frequencyName": "KENT DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "284.7",
+            "frequencyName": "NRVNA RNAV DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "290.9",
+            "frequencyName": " RWY 32",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "290.9",
+            "frequencyName": " RWY 14",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "290.9",
+            "frequencyName": " RWY 32",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "290.9",
+            "frequencyName": " RWY 14",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "290.9",
+            "frequencyName": " RWY 32",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "290.9",
+            "frequencyName": " RWY 14",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "306.9",
+            "frequencyName": " RWY 32",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "306.9",
+            "frequencyName": " RWY 14",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "306.9",
+            "frequencyName": "APCH/P IC",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "306.9",
+            "frequencyName": " RWY 32",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "306.9",
+            "frequencyName": " RWY 14",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "338.2",
+            "frequencyName": "GLASR STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "377.15",
+            "frequencyName": " RWY 32",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "377.15",
+            "frequencyName": " RWY 14",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "377.15",
+            "frequencyName": " RWY 32",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.30194444,
+                "latitude": 47.52997222
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "BOEING",
+            "approachFreq": "SEATTLE",
+            "frequency": "377.15",
+            "frequencyName": " RWY 14",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.98275,
+                "latitude": 46.67702777
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "SEATTLE",
+            "frequency": "121.1",
+            "frequencyName": "APCH/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.98275,
+                "latitude": 46.67702777
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "SEATTLE",
+            "frequency": "377.15",
+            "frequencyName": "APCH/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.58078333,
+                "latitude": 47.07921944
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "GRAY",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.1",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.90254472,
+                "latitude": 46.96940444
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "OLYMPIA",
+            "approachFreq": "SEATTLE",
+            "frequency": "121.1",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.90254472,
+                "latitude": 46.96940444
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "OLYMPIA",
+            "approachFreq": "SEATTLE",
+            "frequency": "290.9",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.28209388,
+                "latitude": 47.90731805
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "PAINE",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.6",
+            "frequencyName": "OLYMPIA STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.28209388,
+                "latitude": 47.90731805
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "PAINE",
+            "approachFreq": "SEATTLE",
+            "frequency": "128.5",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.28209388,
+                "latitude": 47.90731805
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "PAINE",
+            "approachFreq": "SEATTLE",
+            "frequency": "273.45",
+            "frequencyName": "OLYMPIA STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.28209388,
+                "latitude": 47.90731805
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "PAINE",
+            "approachFreq": "SEATTLE",
+            "frequency": "306.9",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.28720027,
+                "latitude": 47.10392
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "SEATTLE",
+            "frequency": "121.85",
+            "frequencyName": "CD/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.28720027,
+                "latitude": 47.10392
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "SEATTLE",
+            "frequency": "126.5",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.28720027,
+                "latitude": 47.10392
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "SEATTLE",
+            "frequency": "377.15",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.76480555,
+                "latitude": 47.49025
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.1",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.76480555,
+                "latitude": 47.49025
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "SEATTLE",
+            "frequency": "127.1",
+            "frequencyName": "CD/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.76480555,
+                "latitude": 47.49025
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "SEATTLE",
+            "frequency": "254.4",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.76480555,
+                "latitude": 47.49025
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "SEATTLE",
+            "frequency": "269.125",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.76480555,
+                "latitude": 47.49025
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "SEATTLE",
+            "frequency": "269.125",
+            "frequencyName": "APCH/S DEP/S",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "119.2",
+            "frequencyName": "APCH/P DE/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "119.2",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "119.2",
+            "frequencyName": "BELLEVUE DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "119.2",
+            "frequencyName": " RWY 34",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "119.2",
+            "frequencyName": "CLASS B",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "119.2",
+            "frequencyName": "RENTN DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.1",
+            "frequencyName": " RWY 16",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.1",
+            "frequencyName": " RWY 34",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.1",
+            "frequencyName": " RWY 16",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.1",
+            "frequencyName": " RWY 34",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.4",
+            "frequencyName": " RWY 34",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "123.9",
+            "frequencyName": "APCH/P IC",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "123.9",
+            "frequencyName": "GLASR STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.6",
+            "frequencyName": "OLYMPIA STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.9",
+            "frequencyName": " RWY 34",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.9",
+            "frequencyName": " RWY 16",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.9",
+            "frequencyName": "APCH/P IC",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.9",
+            "frequencyName": " RWY 34",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.9",
+            "frequencyName": "CLASS B",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "126.5",
+            "frequencyName": " RWY 34",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "126.5",
+            "frequencyName": " RWY 16",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "126.5",
+            "frequencyName": " RWY 34",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "126.5",
+            "frequencyName": " RWY 16",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "128.5",
+            "frequencyName": " RWY 34",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "128.5",
+            "frequencyName": " RWY 16",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "128.5",
+            "frequencyName": " RWY 34",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "128.5",
+            "frequencyName": "CLASS B",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "269.125",
+            "frequencyName": " RWY 34",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "273.45",
+            "frequencyName": "OLYMPIA STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "284.7",
+            "frequencyName": " RWY 34",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "284.7",
+            "frequencyName": " RWY 16",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "284.7",
+            "frequencyName": " RWY 34",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "284.7",
+            "frequencyName": " RWY 16",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "290.9",
+            "frequencyName": " RWY 34",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "290.9",
+            "frequencyName": " RWY 16",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "290.9",
+            "frequencyName": " RWY 16",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "290.9",
+            "frequencyName": " RWY 16",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "290.9",
+            "frequencyName": " RWY 34",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "290.9",
+            "frequencyName": " RWY 16",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "306.9",
+            "frequencyName": " RWY 16",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "306.9",
+            "frequencyName": "APCH/P IC",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "306.9",
+            "frequencyName": "BELLEVUE DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "306.9",
+            "frequencyName": " RWY 34",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "306.9",
+            "frequencyName": "CLASS B",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "338.2",
+            "frequencyName": "APCH/P IC",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "338.2",
+            "frequencyName": "GLASR STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "338.2",
+            "frequencyName": "RENTN DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "377.15",
+            "frequencyName": " RWY 34",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "377.15",
+            "frequencyName": " RWY 16",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "377.15",
+            "frequencyName": " RWY 34",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.21575,
+                "latitude": 47.49313888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "RENTON",
+            "approachFreq": "SEATTLE",
+            "frequency": "377.15",
+            "frequencyName": " RWY 16",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.10274361,
+                "latitude": 47.90486802
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "SEATTLE",
+            "frequency": "128.5",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.10274361,
+                "latitude": 47.90486802
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "SEATTLE",
+            "frequency": "306.9",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": null,
+                "latitude": null
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "TRACON",
+            "towerOrComFreq": "",
+            "approachFreq": "SEATTLE",
+            "frequency": "121.5",
+            "frequencyName": "EMERG",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": null,
+                "latitude": null
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "TRACON",
+            "towerOrComFreq": "",
+            "approachFreq": "SEATTLE",
+            "frequency": "243.0",
+            "frequencyName": "EMERG",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": null,
+                "latitude": null
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "TRACON",
+            "towerOrComFreq": "",
+            "approachFreq": "SEATTLE",
+            "frequency": "284.7",
+            "frequencyName": " RWY 32",
+            "remarks": "APCH/P DEP/P IC"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.226655,
+                "latitude": 47.327625
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "SEATTLE",
+            "frequency": "123.85",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.226655,
+                "latitude": 47.327625
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "SEATTLE",
+            "frequency": "123.85",
+            "frequencyName": "CD/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "119.2",
+            "frequencyName": "APCH/P DE/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "119.2",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "119.2",
+            "frequencyName": " RWY 34",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "119.2",
+            "frequencyName": "CLASS B",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "119.2",
+            "frequencyName": "MOUNTAIN DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "119.2",
+            "frequencyName": "SEATTLE DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "119.2",
+            "frequencyName": " NORTH",
+            "remarks": "SUMMA DP"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.1",
+            "frequencyName": " RWY 16",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.1",
+            "frequencyName": " RWY 34",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.1",
+            "frequencyName": " RWY 16",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.1",
+            "frequencyName": " RWY 34",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.4",
+            "frequencyName": " RWY 34",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.4",
+            "frequencyName": "ATOME DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.4",
+            "frequencyName": "BANGR RNAV DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.4",
+            "frequencyName": " RWY 34",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.4",
+            "frequencyName": "ELMAA DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.4",
+            "frequencyName": "HAROB RNAV DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.4",
+            "frequencyName": "ISBRG DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.4",
+            "frequencyName": "JEFPO DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.4",
+            "frequencyName": "OZWLD RNAV DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.4",
+            "frequencyName": " SOUTH",
+            "remarks": "SUMMA DP"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "123.9",
+            "frequencyName": "APCH/S DEP/S",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "123.9",
+            "frequencyName": "CHINS STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "123.9",
+            "frequencyName": "GLASR STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "123.9",
+            "frequencyName": "SKYKO STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.6",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.6",
+            "frequencyName": "HAWKZ RNAV STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.6",
+            "frequencyName": "JAWBN STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.6",
+            "frequencyName": "MARNR RNAV STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.6",
+            "frequencyName": "OLYMPIA STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.9",
+            "frequencyName": " RWY 34",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.9",
+            "frequencyName": " RWY 16",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.9",
+            "frequencyName": " RWY 34",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.9",
+            "frequencyName": "CLASS B",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "126.5",
+            "frequencyName": " RWY 34",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "126.5",
+            "frequencyName": " RWY 16",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "126.5",
+            "frequencyName": " RWY 34",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "126.5",
+            "frequencyName": " RWY 16",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "128.5",
+            "frequencyName": " RWY 34",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "128.5",
+            "frequencyName": " RWY 16",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "128.5",
+            "frequencyName": " RWY 34",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "128.5",
+            "frequencyName": "CLASS B",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "133.65",
+            "frequencyName": "APCH/P IC",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "133.65",
+            "frequencyName": "FINAL",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "269.125",
+            "frequencyName": " RWY 34",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "269.125",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "269.125",
+            "frequencyName": "APCH/S DEP/S",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "269.125",
+            "frequencyName": "ATOME DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "269.125",
+            "frequencyName": " RWY 34",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "269.125",
+            "frequencyName": "ISBRG DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "269.125",
+            "frequencyName": "JEFPO DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "269.125",
+            "frequencyName": "OZWLD RNAV DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "269.125",
+            "frequencyName": " SOUTH",
+            "remarks": "SUMMA DP"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "273.45",
+            "frequencyName": "APCH/P IC",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "273.45",
+            "frequencyName": "FINAL",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "273.45",
+            "frequencyName": "HAWKZ RNAV STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "273.45",
+            "frequencyName": "JAWBN STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "273.45",
+            "frequencyName": "MARNR RNAV STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "273.45",
+            "frequencyName": "OLYMPIA STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "284.7",
+            "frequencyName": " RWY 34",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "284.7",
+            "frequencyName": " RWY 16",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "284.7",
+            "frequencyName": " RWY 34",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "284.7",
+            "frequencyName": " RWY 16",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "284.7",
+            "frequencyName": "MOUNTAIN DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "284.7",
+            "frequencyName": "SEATTLE DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "284.7",
+            "frequencyName": " NORTH",
+            "remarks": "SUMMA DP"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "290.9",
+            "frequencyName": " RWY 34",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "290.9",
+            "frequencyName": " RWY 16",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "290.9",
+            "frequencyName": " RWY 16",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "290.9",
+            "frequencyName": " RWY 34",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "290.9",
+            "frequencyName": " RWY 16",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "290.9",
+            "frequencyName": " RWY 34",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "290.9",
+            "frequencyName": " RWY 16",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "306.9",
+            "frequencyName": " RWY 16",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "306.9",
+            "frequencyName": " RWY 34",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "306.9",
+            "frequencyName": "CLASS B",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "338.2",
+            "frequencyName": "CHINS STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "338.2",
+            "frequencyName": "GLASR STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "338.2",
+            "frequencyName": "SKYKO STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "377.15",
+            "frequencyName": " RWY 34",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "377.15",
+            "frequencyName": " RWY 16",
+            "remarks": "APCH/P DEP/P"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "377.15",
+            "frequencyName": " RWY 34",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "377.15",
+            "frequencyName": " RWY 16",
+            "remarks": "CLASS B"
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "395.0",
+            "frequencyName": "BANGR RNAV DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "395.0",
+            "frequencyName": "ELMAA DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.31177777,
+                "latitude": 47.44988888
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "SEATTLE",
+            "approachFreq": "SEATTLE",
+            "frequency": "395.0",
+            "frequencyName": "HAROB RNAV DP",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -123.14755555,
+                "latitude": 47.23355555
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "SEATTLE",
+            "frequency": "121.1",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -123.14755555,
+                "latitude": 47.23355555
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "SEATTLE",
+            "frequency": "290.9",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.476475,
+                "latitude": 47.13767777
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "MCCHORD",
+            "approachFreq": "SEATTLE",
+            "frequency": "123.9",
+            "frequencyName": "GLASR STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.476475,
+                "latitude": 47.13767777
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "MCCHORD",
+            "approachFreq": "SEATTLE",
+            "frequency": "125.6",
+            "frequencyName": "JAWBN STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.476475,
+                "latitude": 47.13767777
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "MCCHORD",
+            "approachFreq": "SEATTLE",
+            "frequency": "126.5",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.476475,
+                "latitude": 47.13767777
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "MCCHORD",
+            "approachFreq": "SEATTLE",
+            "frequency": "273.45",
+            "frequencyName": "JAWBN STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.476475,
+                "latitude": 47.13767777
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "MCCHORD",
+            "approachFreq": "SEATTLE",
+            "frequency": "338.2",
+            "frequencyName": "GLASR STAR",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.476475,
+                "latitude": 47.13767777
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "MCCHORD",
+            "approachFreq": "SEATTLE",
+            "frequency": "377.15",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.57811111,
+                "latitude": 47.26794444
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "TACOMA",
+            "approachFreq": "SEATTLE",
+            "frequency": "120.1",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        },
+        {
+            "coordinates": {
+                "longitude": -122.57811111,
+                "latitude": 47.26794444
+            },
+            "facilityId": "S46",
+            "facilityName": "SEATTLE-TACOMA APPROACH CONTROL",
+            "facilityType": "TRACON",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "TACOMA",
+            "approachFreq": "SEATTLE",
+            "frequency": "290.9",
+            "frequencyName": "APCH/P DEP/P",
+            "remarks": ""
+        }
+    ],
+    "W10": [
+        {
+            "coordinates": {
+                "longitude": -122.4377275,
+                "latitude": 48.01751225
+            },
+            "facilityId": "W10",
+            "facilityName": "WHIDBEY AIR PARK",
+            "facilityType": "NON-ATCT",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "",
+            "frequency": "122.9",
+            "frequencyName": "CTAF",
+            "remarks": ""
+        }
+    ],
+    "WA25": [
+        {
+            "coordinates": {
+                "longitude": -122.014515,
+                "latitude": 48.09302638
+            },
+            "facilityId": "WA25",
+            "facilityName": "GREEN VALLEY AIRFIELD",
+            "facilityType": "NON-ATCT",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "",
+            "frequency": "122.8",
+            "frequencyName": "UNICOM",
+            "remarks": ""
+        }
+    ],
+    "WN53": [
+        {
+            "coordinates": {
+                "longitude": -122.06283611,
+                "latitude": 48.11042361
+            },
+            "facilityId": "WN53",
+            "facilityName": "FRONTIER AIRPARK",
+            "facilityType": "NON-ATCT",
+            "artcOrFssId": "",
+            "serviceSiteType": "AIRPORT",
+            "towerOrComFreq": "",
+            "approachFreq": "",
+            "frequency": "122.9",
+            "frequencyName": "CTAF",
+            "remarks": ""
+        }
+    ]
+}

@@ -2,9 +2,9 @@
 Base class for AHRS view elements.
 """
 
-from data_sources.ahrs_data import AhrsData
 from common_utils import tasks, units
 from configuration import configuration
+from data_sources.ahrs_data import AhrsData
 from rendering import colors, display, text_renderer
 
 
@@ -14,10 +14,7 @@ def __get_default_text_background_color__() -> list:
 
 class HudElement(object):
     def __init__(
-        self,
-        font,
-        framebuffer_size: list,
-        reduced_visuals: bool = False
+        self, font, framebuffer_size: list, reduced_visuals: bool = False
     ) -> None:
         super().__init__()
 
@@ -48,20 +45,20 @@ class HudElement(object):
         self.__thick_line_width__ = self.__line_width__ >> 1
 
         self.__reduced_visuals__ = reduced_visuals
+        self.__cluter_visuals__ = False
 
         self.__speed_units__ = configuration.CONFIGURATION.__get_config_value__(
-            configuration.Configuration.DISTANCE_UNITS_KEY,
-            units.STATUTE)
+            configuration.Configuration.DISTANCE_UNITS_KEY, units.STATUTE
+        )
 
         self.__update_units_task__ = tasks.IntermittentTask(
-            "update_speed_units",
-            1.0,
-            self.__update_speed_units__)
+            "update_speed_units", 1.0, self.__update_speed_units__
+        )
 
-    def __get_speed_string__(
-        self,
-        speed
-    ) -> str:
+    def handle_events(self, unhandled_events) -> list:
+        return unhandled_events
+
+    def __get_speed_string__(self, speed) -> str:
         """
         Gets the string to display for the speed. Uses the units configured by the user.
 
@@ -73,20 +70,15 @@ class HudElement(object):
         """
 
         return units.get_converted_units_string(
-            self.__speed_units__,
-            speed,
-            units.SPEED)
+            self.__speed_units__, speed, units.SPEED
+        )
 
-    def __update_speed_units__(
-        self
-    ) -> None:
+    def __update_speed_units__(self) -> None:
         self.__speed_units__ = configuration.CONFIGURATION.__get_config_value__(
-            configuration.Configuration.DISTANCE_UNITS_KEY,
-            units.STATUTE)
+            configuration.Configuration.DISTANCE_UNITS_KEY, units.STATUTE
+        )
 
-    def uses_ahrs(
-        self
-    ) -> bool:
+    def uses_ahrs(self) -> bool:
         """
         Does this element use AHRS data to render?
 
@@ -96,10 +88,7 @@ class HudElement(object):
 
         return False
 
-    def __get_skid_amount__(
-        self,
-        orientation: AhrsData
-    ) -> float:
+    def __get_skid_amount__(self, orientation: AhrsData) -> float:
         """
         Get the normalized amount of skid. Makes sure that that
         values between Stratux and Dynon 180 are comparable.
@@ -121,12 +110,7 @@ class HudElement(object):
         return float(skid_normalized)
 
     def __render_text__(
-        self,
-        framebuffer,
-        text: str,
-        position: list,
-        color: list,
-        scale: float = 1.0
+        self, framebuffer, text: str, position: list, color: list, scale: float = 1.0
     ) -> list:
         """
         Renders the given text at the position, color, and scale given.
@@ -150,7 +134,8 @@ class HudElement(object):
             color,
             colors.BLACK,
             not self.__reduced_visuals__,
-            scale)
+            scale,
+        )
 
     def __render_horizontal_centered_text__(
         self,
@@ -160,7 +145,7 @@ class HudElement(object):
         color: list,
         bg_color: list = __get_default_text_background_color__(),
         scale: float = 1.0,
-        use_alpha: bool = True
+        use_alpha: bool = True,
     ) -> list:
         """
         Renders the given text so that the given X position is at the center, with
@@ -178,19 +163,14 @@ class HudElement(object):
         """
 
         key, texture, size = text_renderer.get_or_create_text_texture(
-            self.__font__,
-            text,
-            color,
-            bg_color,
-            use_alpha,
-            scale)
+            self.__font__, text, color, bg_color, use_alpha, scale
+        )
 
         x_adjustment = size[0] >> 1
 
         text_renderer.render_cached_texture(
-            framebuffer,
-            key,
-            [position[0] - x_adjustment, position[1]])
+            framebuffer, key, [position[0] - x_adjustment, position[1]]
+        )
 
         return size
 
@@ -203,7 +183,7 @@ class HudElement(object):
         bg_color: list = __get_default_text_background_color__(),
         scale: float = 1.0,
         rotation: float = 0.0,
-        use_alpha: bool = True
+        use_alpha: bool = True,
     ) -> list:
         """
         Renders the given text so that the given X position is at the center, with
@@ -225,31 +205,18 @@ class HudElement(object):
         use_alpha |= bg_color is None
 
         key, texture, size = text_renderer.get_or_create_text_texture(
-            self.__font__,
-            text,
-            color,
-            bg_color,
-            use_alpha,
-            scale,
-            rotation)
+            self.__font__, text, color, bg_color, use_alpha, scale, rotation
+        )
 
         new_x = position[0] - (size[0] >> 1)
         new_y = position[1] - (size[1] >> 1)
 
-        text_renderer.render_cached_texture(
-            framebuffer,
-            key,
-            [new_x, new_y])
+        text_renderer.render_cached_texture(framebuffer, key, [new_x, new_y])
 
         return size
 
     def __render_text_right_justified__(
-        self,
-        framebuffer,
-        text: str,
-        position: list,
-        color: list,
-        scale: float = 1.0
+        self, framebuffer, text: str, position: list, color: list, scale: float = 1.0
     ) -> list:
         """
         Renders the given text at the position, color, and scale given.
@@ -271,20 +238,17 @@ class HudElement(object):
             color,
             __get_default_text_background_color__(),
             True,
-            scale)
+            scale,
+        )
 
         text_renderer.render_cached_texture(
-            framebuffer,
-            key,
-            [position[0] - size[0], position[1]])
+            framebuffer, key, [position[0] - size[0], position[1]]
+        )
 
         return size
 
     def __render_text_with_stacked_annotations__(
-        self,
-        framebuffer,
-        starting_position: list,
-        scale_text_color_list: list
+        self, framebuffer, starting_position: list, scale_text_color_list: list
     ):
         """
         Renders text such that the main text is left most,
@@ -314,26 +278,20 @@ class HudElement(object):
             main_package[1],
             starting_position,
             main_package[2],
-            main_package[0])
+            main_package[0],
+        )
 
-        current_position = [starting_position[0] + main_size[0],
-                            starting_position[1]]
+        current_position = [starting_position[0] + main_size[0], starting_position[1]]
 
-        for (scale, text, color) in scale_text_color_list[1:]:
+        for scale, text, color in scale_text_color_list[1:]:
             info_size = self.__render_text__(
-                framebuffer,
-                text,
-                current_position,
-                color,
-                scale)
+                framebuffer, text, current_position, color, scale
+            )
 
             current_position[1] += info_size[1]
 
     def __render_text_with_stacked_annotations_right_justified__(
-        self,
-        framebuffer,
-        starting_position: list,
-        scale_text_color_list: list
+        self, framebuffer, starting_position: list, scale_text_color_list: list
     ):
         """
         Renders text such that the main text is left most,
@@ -361,13 +319,10 @@ class HudElement(object):
         current_position = [starting_position[0], starting_position[1]]
         longest_x = 0
 
-        for (scale, text, color) in scale_text_color_list[1:]:
+        for scale, text, color in scale_text_color_list[1:]:
             info_size = self.__render_text_right_justified__(
-                framebuffer,
-                text,
-                current_position,
-                color,
-                scale)
+                framebuffer, text, current_position, color, scale
+            )
 
             current_position[1] += info_size[1]
 
@@ -379,13 +334,10 @@ class HudElement(object):
             main_package[1],
             [current_position[0] - longest_x, starting_position[1]],
             main_package[2],
-            main_package[0])
+            main_package[0],
+        )
 
-    def render(
-        self,
-        framebuffer,
-        orientation
-    ):
+    def render(self, framebuffer, orientation):
         self.__update_units_task__.run()
 
 
@@ -397,9 +349,7 @@ class AhrsElement(HudElement):
     GPS_UNAVAILABLE_TEXT = "NO GPS"
     INOPERATIVE_TEXT = "INOP"
 
-    def uses_ahrs(
-        self
-    ) -> bool:
+    def uses_ahrs(self) -> bool:
         """
         Does this element use AHRS data to render?
 

@@ -9,30 +9,26 @@ from common_utils import fast_math
 from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
 from rendering import colors, display, drawing
-
-from views.ahrs_element import AhrsElement
+from views.abstract_elements.ahrs_element import AhrsElement
 from views.hud_elements import run_hud_element
 
 
 @lru_cache(maxsize=180)
-def __get_pitch_ladder_range__(
-    current_pitch: int,
-    pitch_range: int
-) -> list:
-    smallest_pitch = (current_pitch - pitch_range)
-    largest_pitch = (current_pitch + pitch_range)
+def __get_pitch_ladder_range__(current_pitch: int, pitch_range: int) -> list:
+    smallest_pitch = current_pitch - pitch_range
+    largest_pitch = current_pitch + pitch_range
 
     return (smallest_pitch, largest_pitch)
 
 
 @lru_cache(maxsize=180)
-def __get_angles_to_render__(
-    smallest_pitch: int,
-    largest_pitch: int
-) -> list:
+def __get_angles_to_render__(smallest_pitch: int, largest_pitch: int) -> list:
     return list(
         filter(
-            lambda pitch: pitch < largest_pitch and pitch > smallest_pitch, ArtificialHorizon.REFERENCE_ANGLES))
+            lambda pitch: pitch < largest_pitch and pitch > smallest_pitch,
+            ArtificialHorizon.REFERENCE_ANGLES,
+        )
+    )
 
 
 class ArtificialHorizon(AhrsElement):
@@ -48,14 +44,15 @@ class ArtificialHorizon(AhrsElement):
         pixels_per_degree_y: float,
         font,
         framebuffer_size,
-        reduced_visuals: bool = False
+        reduced_visuals: bool = False,
     ):
         super().__init__(font, framebuffer_size, reduced_visuals)
 
         self.__long_segment_length__ = int(self.__width__ * 0.4)
         self.__short_segment_length__ = int(self.__width__ * 0.2)
-        self.__inner_blank_area_length__ = int((self.__short_segment_length__ / 2)
-                                               * 1.5)
+        self.__inner_blank_area_length__ = int(
+            (self.__short_segment_length__ / 2) * 1.5
+        )
         self.__pixels_per_degree_y__ = int(pixels_per_degree_y)
 
         self.__upper_cull__ = -self.__font_height__
@@ -65,16 +62,10 @@ class ArtificialHorizon(AhrsElement):
         self.__pitch_range__ = int(self.__center_x__ / self.__pixels_per_degree_y__)
 
         ArtificialHorizon.REFERENCE_ANGLES = range(
-            -degrees_of_pitch,
-            degrees_of_pitch + 1,
-            10)
+            -degrees_of_pitch, degrees_of_pitch + 1, 10
+        )
 
-    def __render_horizon_reference__(
-        self,
-        framebuffer,
-        segments_info,
-        roll: float
-    ):
+    def __render_horizon_reference__(self, framebuffer, segments_info, roll: float):
         """
         Renders a single line of the AH ladder.
 
@@ -94,12 +85,14 @@ class ArtificialHorizon(AhrsElement):
                 segment[0],
                 segment[1],
                 self.__line_width__,
-                not self.__reduced_visuals__)
+                not self.__reduced_visuals__,
+            )
 
         roll = int(roll)
 
-        is_not_visible_y = (center_y < self.__upper_cull__) \
-            or (center_y > self.__lower_cull__)
+        is_not_visible_y = (center_y < self.__upper_cull__) or (
+            center_y > self.__lower_cull__
+        )
 
         if is_not_visible_y:
             return
@@ -116,7 +109,8 @@ class ArtificialHorizon(AhrsElement):
                 None,
                 1.2,
                 roll,
-                True)
+                True,
+            )
 
         self.__render_centered_text__(
             framebuffer,
@@ -126,13 +120,10 @@ class ArtificialHorizon(AhrsElement):
             colors.BLACK,
             1.0,
             roll,
-            not self.__reduced_visuals__)
+            not self.__reduced_visuals__,
+        )
 
-    def render(
-        self,
-        framebuffer,
-        orientation: AhrsData
-    ):
+    def render(self, framebuffer, orientation: AhrsData):
         """
         Renders the artificial horizon to the framebuffer
 
@@ -143,34 +134,35 @@ class ArtificialHorizon(AhrsElement):
 
         with TaskProfiler("views.artificial_horizon.ArtificialHorizon.setup"):
             current_pitch = int(orientation.pitch)
-            smallest_pitch, largest_pitch = __get_pitch_ladder_range__(current_pitch,  self.__pitch_range__)
+            smallest_pitch, largest_pitch = __get_pitch_ladder_range__(
+                current_pitch, self.__pitch_range__
+            )
             angles_to_render = __get_angles_to_render__(smallest_pitch, largest_pitch)
 
             # Calculating the coordinates ahead of time...
-            segments_centers_and_angles = [self.__get_segment__(
-                orientation.pitch,
-                orientation.roll,
-                reference_angle) for reference_angle in angles_to_render]
+            segments_centers_and_angles = [
+                self.__get_segment__(
+                    orientation.pitch, orientation.roll, reference_angle
+                )
+                for reference_angle in angles_to_render
+            ]
 
         with TaskProfiler("views.artificial_horizon.ArtificialHorizon.render"):
             # pylint: disable=expression-not-assigned
-            [self.__render_horizon_reference__(
-                framebuffer,
-                segments,
-                orientation.roll) for segments in segments_centers_and_angles]
+            [
+                self.__render_horizon_reference__(
+                    framebuffer, segments, orientation.roll
+                )
+                for segments in segments_centers_and_angles
+            ]
 
     def __get_segment_endpoints__(
-        self,
-        length: int,
-        pitch_offset: float,
-        roll: float
+        self, length: int, pitch_offset: float, roll: float
     ) -> list:
         roll_delta = math.radians(90 - roll)
 
-        center_x = self.__center_x__ - \
-            (pitch_offset * math.cos(roll_delta)) + 0.5
-        center_y = self.__center_y__ - \
-            (pitch_offset * math.sin(roll_delta)) + 0.5
+        center_x = self.__center_x__ - (pitch_offset * math.cos(roll_delta)) + 0.5
+        center_y = self.__center_y__ - (pitch_offset * math.sin(roll_delta)) + 0.5
 
         roll_radians = math.radians(roll)
 
@@ -187,12 +179,7 @@ class ArtificialHorizon(AhrsElement):
 
         return [[start_x, start_y], [end_x, end_y]], (center_x, center_y)
 
-    def __get_segment__(
-        self,
-        pitch: int,
-        roll: int,
-        reference_angle: int
-    ):
+    def __get_segment__(self, pitch: int, roll: int, reference_angle: int):
         """
         Get the coordinate for the lines for a given pitch and roll.
 
@@ -205,26 +192,25 @@ class ArtificialHorizon(AhrsElement):
             [tuple] -- An array[4] of the X/Y line coords.
         """
 
-        #length = self.__long_segment_length__ if reference_angle == 0 else self.__short_segment_length__
+        # length = self.__long_segment_length__ if reference_angle == 0 else self.__short_segment_length__
         proportion = math.fabs(reference_angle) / 45
         proportion = min(proportion, 1.0)
 
-        length = fast_math.interpolate(self.__long_segment_length__, self.__short_segment_length__, proportion)
+        length = fast_math.interpolate(
+            self.__long_segment_length__, self.__short_segment_length__, proportion
+        )
 
-        pitch_offset = self.__pixels_per_degree_y__ * \
-            (-pitch + reference_angle)
+        pitch_offset = self.__pixels_per_degree_y__ * (-pitch + reference_angle)
 
         outter_endpoints, center = self.__get_segment_endpoints__(
-            length,
-            pitch_offset,
-            roll)
+            length, pitch_offset, roll
+        )
 
         inner_length = self.__inner_blank_area_length__
 
         inner_endpoints, _ = self.__get_segment_endpoints__(
-            inner_length,
-            pitch_offset,
-            roll)
+            inner_length, pitch_offset, roll
+        )
 
         left_segment = [outter_endpoints[0], inner_endpoints[0]]
         right_segment = [outter_endpoints[1], inner_endpoints[1]]
@@ -232,5 +218,5 @@ class ArtificialHorizon(AhrsElement):
         return [left_segment, right_segment], center, reference_angle
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run_hud_element(ArtificialHorizon)

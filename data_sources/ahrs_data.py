@@ -91,7 +91,6 @@ class AhrsData:
     ):
         self.roll = 0.0
         self.pitch = 0.0
-        self.compass_heading = 0.0
         self.gps_heading = 0.0
         self.compass_heading = 0.0
         self.alt = 0.0

@@ -7,14 +7,10 @@ from numbers import Number
 from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
+from views.abstract_elements.ahrs_element import AhrsElement
 
-from views.ahrs_element import AhrsElement
 
-
-def __get_indicated_text__(
-    orientation: AhrsData,
-    color: list
-) -> list:
+def __get_indicated_text__(orientation: AhrsData, color: list) -> list:
     """
     Get the text package (scale, text, color) for the given altitude.
 
@@ -27,12 +23,13 @@ def __get_indicated_text__(
         and units to be drawn using vertical stacking.
     """
     is_altitude_valid = orientation.alt is not None and isinstance(
-        orientation.alt,
-        Number)
+        orientation.alt, Number
+    )
 
     text_package = []
-    alt_value = str(int(orientation.alt)) \
-        if is_altitude_valid else AhrsElement.INOPERATIVE_TEXT
+    alt_value = (
+        str(int(orientation.alt)) if is_altitude_valid else AhrsElement.INOPERATIVE_TEXT
+    )
     color = colors.WHITE if is_altitude_valid else colors.RED
 
     text_package.append(alt_value)
@@ -65,7 +62,7 @@ class Altitude(AhrsElement):
         pixels_per_degree_y: float,
         font,
         framebuffer_size,
-        reduced_visuals: bool = False
+        reduced_visuals: bool = False,
     ):
         super().__init__(font, framebuffer_size, reduced_visuals)
 
@@ -73,11 +70,7 @@ class Altitude(AhrsElement):
 
         self.__text_y_pos__ = alt_y_pos - self.__font_half_height__
 
-    def render(
-        self,
-        framebuffer,
-        orientation: AhrsData
-    ):
+    def render(self, framebuffer, orientation: AhrsData):
         """
         Render the altitude to the framebuffer
 
@@ -87,8 +80,8 @@ class Altitude(AhrsElement):
         """
         with TaskProfiler("views.altitude.Altitude.setup"):
             is_altitude_valid = orientation.alt is not None and isinstance(
-                orientation.alt,
-                Number)
+                orientation.alt, Number
+            )
             color = colors.WHITE if is_altitude_valid else colors.RED
             annotated_text = __get_indicated_text__(orientation, color)
 
@@ -99,10 +92,11 @@ class Altitude(AhrsElement):
             self.__render_text_with_stacked_annotations_right_justified__(
                 framebuffer,
                 [self.__right_border__, self.__text_y_pos__],
-                annotated_text)
+                annotated_text,
+            )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from views.hud_elements import run_hud_element
 
     run_hud_element(Altitude)

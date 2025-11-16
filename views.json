@@ -30,6 +30,32 @@
     },
     {
       "elements": [
+        "Groundspeed",
+        "Altitude",
+        "Weather Scope",
+        "Traffic Not Available",
+        "GPS Not Available"
+      ],
+      "name": "Weather Scope"
+    },
+    {
+      "elements": [
+        "AIRMET Listing",
+        "Traffic Not Available",
+        "GPS Not Available"
+      ],
+      "name": "AIRMETS"
+    },
+    {
+      "elements": [
+        "Airport Freqs",
+        "Traffic Not Available",
+        "GPS Not Available"
+      ],
+      "name": "Airport Freqs"
+    },
+    {
+      "elements": [
         "Compass",
         "ADSB Target Bugs Only",
         "ADSB Target Bugs",
@@ -50,15 +76,10 @@
     {
       "elements": [
         "Time",
+        "Traffic Not Available",
         "GPS Not Available"
       ],
       "name": "Time"
-    },
-    {
-      "elements": [
-        "AithreInfo"
-      ],
-      "name": "Aithre"
     },
     {
       "elements": [

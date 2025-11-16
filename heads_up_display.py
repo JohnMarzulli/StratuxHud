@@ -14,32 +14,55 @@ from common_utils.task_timer import RollingStats, TaskProfiler
 from common_utils.tasks import IntermittentTask, RecurringTask
 from configuration import configuration, configuration_server
 from configuration.configuration import CONFIGURATION
-from core_services import breadcrumbs, zoom_tracker
+from core_services import breadcrumbs
 from data_sources import aithre, declination, targets
 from data_sources.ahrs_data import AhrsData
 from data_sources.aircraft import Aircraft
+from data_sources.airports import AirportClient
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import AdsbTrafficClient
+from input import InputResponse
 from rendering import colors, display, drawing, text_renderer
+
 # Due to the way we import the name of the class to be instantiated
 # from the configuration, all of the element class names need
 # to be imported EVEN if the compiler tries to tell you
 # they are not needed.
-from views import (adsb_on_screen_reticles, adsb_target_bugs,
-                   adsb_target_bugs_only, adsb_top_view_scope,
-                   adsb_traffic_listing, ahrs_not_available, altitude,
-                   artificial_horizon, compass_and_heading_bottom_element,
-                   gps_not_available, groundspeed, heading_target_bugs,
-                   hud_elements, level_reference, roll_indicator, skid_and_gs,
-                   system_info, time, traffic_not_available)
+from views import (
+    adsb_on_screen_reticles,
+    adsb_target_bugs,
+    adsb_target_bugs_only,
+    adsb_top_view_scope,
+    adsb_traffic_listing,
+    ahrs_not_available,
+    airmet_listings,
+    airport_frequencies_listing,
+    aithre,
+    aithre_view,
+    altitude,
+    artificial_horizon,
+    compass_and_heading_bottom_element,
+    gps_not_available,
+    groundspeed,
+    heading_target_bugs,
+    hud_elements,
+    illyrian,
+    level_reference,
+    metar_listings,
+    roll_indicator,
+    skid_and_gs,
+    system_info,
+    taf_listings,
+    time,
+    traffic_not_available,
+    weather_scope,
+)
 
 STANDARD_FONT = "../assets/fonts/LiberationMono-Bold.ttf"
 LOADING_FONT = "../assets/fonts/LiberationMono-Regular.ttf"
 
 
-def __send_stratux_post__(
-    ending_url
-):
+def __send_stratux_post__(ending_url):
     """
     Sends a post call to the given ending portion of the URL
 
@@ -52,9 +75,7 @@ def __send_stratux_post__(
     if ending_url is None:
         return False
 
-    url = "http://{0}/{1}".format(
-        CONFIGURATION.stratux_address(),
-        ending_url)
+    url = "http://{0}/{1}".format(CONFIGURATION.stratux_address(), ending_url)
 
     try:
         requests.Session().post(url, timeout=2)
@@ -74,60 +95,47 @@ class HeadsUpDisplay(object):
     Class to handle the HUD work...
     """
 
-    def __level_ahrs__(
-        self
-    ):
+    def __level_ahrs__(self):
         """
         Sends the command to the Stratux to level the AHRS.
         """
 
         __send_stratux_post__("cageAHRS")
 
-    def __reset_traffic_manager__(
-        self
-    ):
+    def __reset_traffic_manager__(self):
         """
         Resets the traffic manager to essentially reset the receiver unit.
         """
         with contextlib.suppress(Exception):
             AdsbTrafficClient.INSTANCE.reset_traffic_manager()
 
-    def __shutdown_stratux__(
-        self
-    ):
+    def __shutdown_stratux__(self):
         """
         Sends the command to the Stratux to shutdown.
         """
 
         __send_stratux_post__("shutdown")
 
-    def run(
-        self
-    ):
+    def run(self):
         """
         Runs the update/render logic loop.
         """
 
-        self.log(f'Initialized scresen size to {self.__width__}x{self.__height__}')
+        self.log(f"Initialized screen size to {self.__width__}x{self.__height__}")
 
         # Make sure that the disclaimer is visible for long enough.
         sleep(5)
 
         clock = pygame.time.Clock()
 
-        try:
-            while self.tick(clock):
-                pass
-        finally:
-            pygame.display.quit()
+        while self.tick(clock):
+            pass
 
-        return 0
+        pygame.display.quit()
 
-    def __render_view_title__(
-        self,
-        text: str,
-        surface
-    ):
+        return 1
+
+    def __render_view_title__(self, text: str, surface):
         text_renderer.render_text(
             surface,
             self.__detail_font__,
@@ -136,12 +144,10 @@ class HeadsUpDisplay(object):
             colors.BLUE,
             colors.BLACK,
             False,
-            0.5)
+            0.5,
+        )
 
-    def __is_ahrs_view__(
-        self,
-        view
-    ):
+    def __is_ahrs_view__(self, view):
         """
         Does any element in this view use AHRS?
 
@@ -162,9 +168,7 @@ class HeadsUpDisplay(object):
 
         return is_ahrs_view
 
-    def get_hud_views(
-        self
-    ) -> list:
+    def get_hud_views(self) -> list:
         """
         Get the set of current HUD views.
 
@@ -173,10 +177,7 @@ class HeadsUpDisplay(object):
         """
         return self.__hud_views__
 
-    def tick(
-        self,
-        clock
-    ):
+    def tick(self, clock):
         """
         Run for a single frame.
 
@@ -190,15 +191,29 @@ class HeadsUpDisplay(object):
         current_fps = 0  # initialize up front avoids exception
 
         try:
-            if not self.__handle_input__():
+            responses = self.__global_handle_input__()
+            is_loop_finished = True in (response.is_terminal for response in responses)
+
+            if is_loop_finished:
                 return False
 
-            orientation = self.__aircraft__.get_orientation()
+            unhandled_events = [
+                response.input_event
+                for response in responses
+                if not response.is_handled
+            ]
+
+            orientation: AhrsData = self.__aircraft__.get_orientation()
             self.__update_declination_task__.run()
 
+            AirportClient.set_last_known_position(orientation.position)
+
             view_name, view, view_uses_ahrs = self.__hud_views__[
-                CONFIGURATION.get_view_index()]
-            show_unavailable = view_uses_ahrs and not self.__aircraft__.is_ahrs_available()
+                CONFIGURATION.get_view_index()
+            ]
+            show_unavailable = (
+                view_uses_ahrs and not self.__aircraft__.is_ahrs_available()
+            )
 
             current_fps = int(clock.get_fps())
 
@@ -217,7 +232,9 @@ class HeadsUpDisplay(object):
             # and improve readability
             with TaskProfiler("Render::AllElements"):
                 try:
-                    [self.__render_view_element__(hud_element, orientation) for hud_element in view]
+                    for hud_element in view:
+                        unhandled_events = hud_element.handle_events(unhandled_events)
+                        self.__render_view_element__(hud_element, orientation)
                 except Exception as e:
                     self.warn(f"LOOP:{e}")
                 if show_unavailable:
@@ -226,22 +243,22 @@ class HeadsUpDisplay(object):
             if self.__should_render_perf__:
                 debug_status_left = int(self.__width__ * 0.9)
                 debug_status_top = int(self.__height__ * 0.1)
-                render_perf_text = f'{current_fps}fps'
+                render_perf_text = f"{current_fps}fps"
 
                 self.__render_text__(
                     render_perf_text,
                     colors.BLACK,
                     [debug_status_left, debug_status_top],
-                    colors.YELLOW)
+                    colors.YELLOW,
+                )
 
             self.__render_perf_task__.run()
         finally:
             # Change the frame buffer
             if CONFIGURATION.flip_horizontal or CONFIGURATION.flip_vertical:
                 flipped = pygame.transform.flip(
-                    surface,
-                    CONFIGURATION.flip_horizontal,
-                    CONFIGURATION.flip_vertical)
+                    surface, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical
+                )
                 surface.blit(flipped, [0, 0])
 
             self.__display__.flip()
@@ -251,28 +268,24 @@ class HeadsUpDisplay(object):
 
         return True
 
-    def __render_view_element__(
-        self,
-        hud_element,
-        orientation: AhrsData
-    ):
+    def __render_view_element__(self, hud_element, orientation: AhrsData):
         element_name = str(hud_element)
         element_name = element_name.split(" object")[0]
-        element_name = element_name.split('<')[-1]
+        element_name = element_name.split("<")[-1]
 
         with TaskProfiler(element_name):
             surface = pygame.display.get_surface()
             try:
                 hud_element.render(surface, orientation)
             except Exception as e:
-                self.warn(f'ELEMENT {element_name} EX:{e}')
+                self.warn(f"ELEMENT {element_name} EX:{e}")
 
     def __render_text__(
         self,
         text: str,
         color: list,
         position: list,
-        background_color: list = __get_default_text_background_color__()
+        background_color: list = __get_default_text_background_color__(),
     ) -> list:
         """
         Renders the text with the results centered on the given
@@ -284,12 +297,10 @@ class HeadsUpDisplay(object):
             text,
             position,
             color,
-            background_color)
+            background_color,
+        )
 
-    def log(
-        self,
-        text: str
-    ):
+    def log(self, text: str):
         """
         Logs the given text if a logger is available.
 
@@ -302,10 +313,7 @@ class HeadsUpDisplay(object):
         else:
             print(text)
 
-    def warn(
-        self,
-        text: str
-    ):
+    def warn(self, text: str):
         """
         Logs the given text if a logger is available AS A WARNING.
 
@@ -322,7 +330,7 @@ class HeadsUpDisplay(object):
         self,
         hud_element_class,
         use_detail_font: bool = False,
-        reduced_visuals: bool = False
+        reduced_visuals: bool = False,
     ):
         """
         Builds a generic AHRS HUD element.
@@ -348,14 +356,13 @@ class HeadsUpDisplay(object):
                 self.__pixels_per_degree_y__,
                 font,
                 (self.__width__, self.__height__),
-                reduced_visuals)
+                reduced_visuals,
+            )
         except Exception as e:
             self.warn("Unable to build element {0}:{1}".format(hud_element_class, e))
             return None
 
-    def __load_view_elements__(
-        self
-    ) -> str:
+    def __load_view_elements__(self) -> str:
         """
         Loads the list of available view elements from the configuration
         file. Returns it as a map of the element name (Human/kind) to
@@ -372,17 +379,18 @@ class HeadsUpDisplay(object):
             json_config = json.loads(json_config_text)
 
             for view_element_name in json_config:
-                namespace = json_config[view_element_name]['class'].split('.')
-                file_module = getattr(sys.modules['views'], namespace[0])
+                namespace = json_config[view_element_name]["class"].split(".")
+                file_module = getattr(sys.modules["views"], namespace[0])
                 class_name = getattr(file_module, namespace[1])
-                view_elements[view_element_name] = (class_name, json_config[view_element_name]['detail_font'])
+                view_elements[view_element_name] = (
+                    class_name,
+                    json_config[view_element_name]["detail_font"],
+                )
 
         return view_elements
 
     def __load_views__(
-        self,
-        view_elements: list,
-        reduced_visuals: bool = False
+        self, view_elements: list, reduced_visuals: bool = False
     ) -> list:
         """
         Returns a list of views that can be used by the HUD
@@ -402,10 +410,10 @@ class HeadsUpDisplay(object):
             json_config_text = json_config_file.read()
             json_config = json.loads(json_config_text)
 
-            for view in json_config['views']:
+            for view in json_config["views"]:
                 try:
-                    view_name = view['name']
-                    element_names = view['elements']
+                    view_name = view["name"]
+                    element_names = view["elements"]
                     new_view_elements = []
 
                     for element_name in element_names:
@@ -418,26 +426,23 @@ class HeadsUpDisplay(object):
                         # good reason to use new instances anyway.
                         if element_hash_name not in existing_elements:
                             new_element = self.__build_ahrs_hud_element__(
-                                element_config[0],
-                                element_config[1],
-                                reduced_visuals)
+                                element_config[0], element_config[1], reduced_visuals
+                            )
                             existing_elements[element_hash_name] = new_element
 
-                        new_view_elements.append(
-                            existing_elements[element_hash_name])
+                        new_view_elements.append(existing_elements[element_hash_name])
 
                     is_ahrs_view = self.__is_ahrs_view__(new_view_elements)
                     hud_views.append((view_name, new_view_elements, is_ahrs_view))
                 except Exception as ex:
                     self.log(f"While attempting to load view={view}, EX:{ex}")
-        self.log(f"While loading, {elements_requested} elements were requested, with {len(existing_elements.keys())} unique being created.")
+        self.log(
+            f"While loading, {elements_requested} elements were requested, with {len(existing_elements.keys())} unique being created."
+        )
 
         return hud_views
 
-    def __build_hud_views__(
-        self,
-        reduced_visuals: bool = False
-    ) -> list:
+    def __build_hud_views__(self, reduced_visuals: bool = False) -> list:
         """
         Returns the built object of the views.
 
@@ -448,15 +453,10 @@ class HeadsUpDisplay(object):
         view_elements = self.__load_view_elements__()
         return self.__load_views__(view_elements, reduced_visuals)
 
-    def __update_traffic_reports__(
-        self
-    ):
+    def __update_traffic_reports__(self):
         HudDataCache.update_traffic_reports()
-        HudDataCache.update_nearby_traffic_reports()
 
-    def __update_aithre__(
-        self
-    ):
+    def __update_aithre__(self):
         if not CONFIGURATION.aithre_enabled:
             return
 
@@ -467,41 +467,30 @@ class HeadsUpDisplay(object):
             except Exception:
                 self.warn("Error attempting to update Aithre sensor values")
 
-    def __update_zoom__(
-        self
-    ):
-        orientation = self.__aircraft__.get_orientation()
-
-        zoom_tracker.INSTANCE.update(orientation)
-
-    def __update_groundtrack__(
-        self
-    ):
+    def __update_groundtrack__(self):
         orientation = self.__aircraft__.get_orientation()
 
         breadcrumbs.INSTANCE.update(orientation)
 
-    def __update_declination__(
-        self
-    ):
+    def __update_declination__(self):
         updated_declination = None
         orientation = self.__aircraft__.get_orientation()
 
-        if orientation is not None \
-                and orientation.gps_online \
-                and orientation.position is not None \
-                and orientation.position[0] is not None \
-                and orientation.position[1] is not None:
+        if (
+            orientation is not None
+            and orientation.gps_online
+            and orientation.position is not None
+            and orientation.position[0] is not None
+            and orientation.position[1] is not None
+        ):
 
             updated_declination = declination.Declination.get_declination(
-                orientation.position[0],
-                orientation.position[1])
+                orientation.position[0], orientation.position[1]
+            )
 
         HudDataCache.DECLINATION = updated_declination
 
-    def __render_perf__(
-        self
-    ):
+    def __render_perf__(self):
         TaskProfiler.log(self.__logger__)
         self.__perf_log_count = self.__perf_log_count + 1
 
@@ -514,7 +503,7 @@ class HeadsUpDisplay(object):
         logger: HudLogger,
         force_fullscreen: bool = False,
         force_software: bool = False,
-        reduced_visuals: bool = False
+        reduced_visuals: bool = False,
     ):
         """
         Initialize and create a new HUD.
@@ -526,28 +515,22 @@ class HeadsUpDisplay(object):
         """
 
         self.__update_declination_task__ = IntermittentTask(
-            "Update Declination",
-            60.0,
-            self.__update_declination__,
-            logger)
+            "Update Declination", 60.0, self.__update_declination__, logger
+        )
 
         self.__render_perf_task__ = IntermittentTask(
-            "Render Performance Data",
-            15.0,
-            self.__render_perf__,
-            logger)
+            "Render Performance Data", 15.0, self.__render_perf__, logger
+        )
 
         self.__logger__ = logger
-        self.__fps__ = RollingStats('FPS')
-        self.__texture_cache_size__ = RollingStats('TextureCacheSize')
-        self.__texture_cache_misses__ = RollingStats('TextureCacheMisses')
-        self.__texture_cache_purges__ = RollingStats('TextureCachePurges')
+        self.__fps__ = RollingStats("FPS")
+        self.__texture_cache_size__ = RollingStats("TextureCacheSize")
+        self.__texture_cache_misses__ = RollingStats("TextureCacheMisses")
+        self.__texture_cache_purges__ = RollingStats("TextureCachePurges")
 
         self.__fps__.push(0)
 
-        self.__display__ = display.Display(
-            force_fullscreen,
-            force_software)
+        self.__display__ = display.Display(force_fullscreen, force_software)
         pygame.display.set_caption(f"StratuxHUD ({drawing.renderer.RENDERER_NAME})")
         self.__width__, self.__height__ = self.__display__.size
 
@@ -561,22 +544,26 @@ class HeadsUpDisplay(object):
         font_size_loading = int(self.__height__ / 4.0)
 
         self.__font__ = pygame.font.Font(
-            configuration.get_absolute_file_path(STANDARD_FONT),
-            font_size_std)
+            configuration.get_absolute_file_path(STANDARD_FONT), font_size_std
+        )
         self.__detail_font__ = pygame.font.Font(
-            configuration.get_absolute_file_path(STANDARD_FONT),
-            font_size_detail)
+            configuration.get_absolute_file_path(STANDARD_FONT), font_size_detail
+        )
         self.__loading_font__ = pygame.font.Font(
-            configuration.get_absolute_file_path(LOADING_FONT),
-            font_size_loading)
+            configuration.get_absolute_file_path(LOADING_FONT), font_size_loading
+        )
         self.__show_boot_screen__()
 
         self.__aircraft__ = Aircraft(self.__logger__)
 
-        self.__pixels_per_degree_y__ = int((self.__height__ / CONFIGURATION.get_degrees_of_pitch()) * CONFIGURATION.get_pitch_degrees_display_scaler())
+        self.__pixels_per_degree_y__ = int(
+            (self.__height__ / CONFIGURATION.get_degrees_of_pitch())
+            * CONFIGURATION.get_pitch_degrees_display_scaler()
+        )
 
         self.__ahrs_not_available_element__ = self.__build_ahrs_hud_element__(
-            ahrs_not_available.AhrsNotAvailable)
+            ahrs_not_available.AhrsNotAvailable
+        )
 
         self.__hud_views__ = self.__build_hud_views__(reduced_visuals)
 
@@ -589,118 +576,92 @@ class HeadsUpDisplay(object):
             self.web_server = None
 
         if self.web_server is not None:
-            RecurringTask(
-                "rest_host",
-                0.1,
-                self.web_server.run,
-                logger.get_logger())
+            RecurringTask("rest_host", 0.1, self.web_server.run, logger.get_logger())
 
         RecurringTask(
-            "update_traffic",
-            0.1,
-            self.__update_traffic_reports__,
-            logger.get_logger())
+            "update_traffic", 0.1, self.__update_traffic_reports__, logger.get_logger()
+        )
 
-        RecurringTask(
-            "update_aithre",
-            5.0,
-            self.__update_aithre__,
-            logger.get_logger())
-
-        RecurringTask(
-            "update_zoom",
-            1.0,
-            self.__update_zoom__,
-            logger.get_logger())
+        RecurringTask("update_aithre", 5.0, self.__update_aithre__, logger.get_logger())
 
         RecurringTask(
             "update_groundtrack",
             breadcrumbs.MAXIMUM_POSITION_SAMPLE_RATE,
             self.__update_groundtrack__,
-            logger.get_logger())
+            logger.get_logger(),
+        )
 
-    def __show_boot_screen__(
-        self
-    ):
+    def __show_boot_screen__(self):
         """
         Renders a BOOTING screen.
         """
 
         disclaimer_text = [
-            'Not intended as',
-            'a primary collision evasion',
-            'or flight instrument system.',
-            'For advisory only.']
+            "Not intended as",
+            "a primary collision evasion",
+            "or flight instrument system.",
+            "For advisory only.",
+        ]
 
         surface = pygame.display.get_surface()
 
         key, texture, size = text_renderer.get_or_create_text_texture(
-            self.__loading_font__,
-            "LOADING",
-            colors.RED,
-            colors.BLACK)
+            self.__loading_font__, "LOADING", colors.RED, colors.BLACK
+        )
 
         text_renderer.render_cached_texture(
             surface,
             key,
-            [(self.__width__ >> 1) - (size[0] >> 1), self.__detail_font__.get_height()])
+            [(self.__width__ >> 1) - (size[0] >> 1), self.__detail_font__.get_height()],
+        )
 
         y_pos = (self.__height__ >> 2) + (self.__height__ >> 3)
         for text in disclaimer_text:
             key, texture, size = text_renderer.get_or_create_text_texture(
-                self.__detail_font__,
-                text,
-                colors.YELLOW,
-                colors.BLACK)
+                self.__detail_font__, text, colors.YELLOW, colors.BLACK
+            )
 
             text_width, text_height = size
 
             text_renderer.render_cached_texture(
-                surface,
-                key,
-                [(self.__width__ >> 1) - (text_width >> 1), y_pos])
+                surface, key, [(self.__width__ >> 1) - (text_width >> 1), y_pos]
+            )
 
             y_pos += text_height + (text_height >> 3)
 
         key, texture, size = text_renderer.get_or_create_text_texture(
             self.__detail_font__,
-            f'Version {configuration.VERSION}',
+            f"Version {configuration.VERSION}",
             colors.GREEN,
-            colors.BLACK)
+            colors.BLACK,
+        )
 
         text_width, text_height = size
 
         text_renderer.render_cached_texture(
             surface,
             key,
-            [(self.__width__ >> 1) - (text_width >> 1), self.__height__ - text_height])
+            [(self.__width__ >> 1) - (text_width >> 1), self.__height__ - text_height],
+        )
 
         flipped = pygame.transform.flip(
-            surface,
-            CONFIGURATION.flip_horizontal,
-            CONFIGURATION.flip_vertical)
+            surface, CONFIGURATION.flip_horizontal, CONFIGURATION.flip_vertical
+        )
         surface.blit(flipped, [0, 0])
         pygame.display.flip()
 
-    def __handle_input__(
-        self
-    ) -> bool:
+    def __global_handle_input__(self) -> list:
         """
         Top level handler for keyboard input.
 
         Returns:
-            bool -- True if the loop should continue, False if it should quit.
+            list -- The responses from the top level input handler.
         """
 
         events = pygame.event.get()
-        event_handling_responses = map(self.__handle_key_event__, events)
+        return [self.__handle_key_event__(event) for event in events]
 
-        return False not in event_handling_responses
-
-    def __handle_key_event__(
-        self,
-        event
-    ) -> bool:
+    def __handle_key_event__(self, event) -> InputResponse:
         """
         Handles a keyboard/keypad press event.
 
@@ -708,56 +669,57 @@ class HeadsUpDisplay(object):
             event {pygame.event} -- The event from the keyboard.
 
         Returns:
-            bool -- True if the loop should continue, False if it should quit.
+            InputResponse -- Details on the handling of the input.
         """
+
+        terminal_event: InputResponse = InputResponse(True, True, event)
+        handled_event: InputResponse = InputResponse(True, False, event)
+        unhandled_event: InputResponse = InputResponse(False, False, event)
 
         if event.type == pygame.QUIT:
             system_tools.shutdown()
-            return False
+
+            return terminal_event
 
         if event.type != pygame.KEYUP:
-            return True
+            return handled_event
 
         if event.key in [pygame.K_ESCAPE]:
             system_tools.shutdown(0)
             if local_debug.IS_PI:
                 self.__shutdown_stratux__()
 
-            return False
+            return terminal_event
 
         # Quit to terminal only.
         if event.key in [pygame.K_q]:
-            return False
-
-        if event.key in [pygame.K_KP_PLUS, pygame.K_PLUS, pygame.K_UP]:
+            return InputResponse(True, False, event)
+        elif event.key == pygame.K_TAB:
+            CONFIGURATION.next_video_flip_mode()
+        elif event.key in [pygame.K_KP_PLUS, pygame.K_RIGHT, pygame.K_KP6]:
             CONFIGURATION.next_view(self.__hud_views__)
-
-        if event.key in [pygame.K_KP_MINUS, pygame.K_MINUS, pygame.K_DOWN]:
+        elif event.key in [pygame.K_KP_MINUS, pygame.K_LEFT, pygame.K_KP4]:
             CONFIGURATION.previous_view(self.__hud_views__)
-
-        if event.key in [pygame.K_BACKSPACE]:
+        elif event.key in [pygame.K_BACKSPACE]:
             self.__level_ahrs__()
-
-        if event.key in [pygame.K_DELETE, pygame.K_PERIOD, pygame.K_KP_PERIOD]:
+        elif event.key in [pygame.K_DELETE, pygame.K_PERIOD, pygame.K_KP_PERIOD]:
             targets.TARGET_MANAGER.clear_targets()
-
-        if event.key in [pygame.K_RETURN, pygame.K_KP_ENTER]:
+        elif event.key in [pygame.K_RETURN, pygame.K_KP_ENTER]:
             orientation = self.__aircraft__.get_orientation()
             targets.TARGET_MANAGER.add_target(
-                orientation.position[0],
-                orientation.position[1],
-                orientation.alt)
+                orientation.position[0], orientation.position[1], orientation.alt
+            )
             targets.TARGET_MANAGER.save()
-
-        if event.key in [pygame.K_EQUALS, pygame.K_KP_EQUALS]:
+        elif event.key in [pygame.K_EQUALS, pygame.K_KP_EQUALS]:
             self.__should_render_perf__ = not self.__should_render_perf__
-
-        if event.key in [pygame.K_KP0, pygame.K_0, pygame.K_INSERT]:
+        elif event.key in [pygame.K_KP0, pygame.K_0, pygame.K_INSERT]:
             self.__reset_traffic_manager__()
+        else:
+            return unhandled_event
 
-        return True
+        return handled_event
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     hud = HeadsUpDisplay(None)
     sys.exit(hud.run())
