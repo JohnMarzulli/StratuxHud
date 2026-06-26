@@ -1,2 +1,2 @@
 requests
-pygame
+pygame-ce

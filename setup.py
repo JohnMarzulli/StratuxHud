@@ -2,10 +2,10 @@ from setuptools import setup
 
 from common_utils.local_debug import IS_PI
 
-installs = ["pytest", "pygame", "requests"]
+installs = ["pytest", "pygame-ce", "requests"]
 
 if IS_PI:
-    installs += "bluepy"
+    installs.append("bluepy")
 
 setup(
     name="StratuxHud",

@@ -688,6 +688,7 @@ This project is covered by the GPL v3 license.
 
 - Python 3.9 introduces issues with `isAlive`
 - PyGame 1.9.6 is the last known working version. v2.0 instroduces issues with window creation.
+- On Python 3.14+, `pygame` 2.6.1 can fail with `pygame.font` import errors. Use `pygame-ce` instead.
 
 ## AIO Jessie Install
 
