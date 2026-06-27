@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "StratuxHud",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${cwd}/stratux_hud.py",
             "console": "integratedTerminal",
@@ -16,7 +16,7 @@
         },
         {
             "name": "VIEW: Top View Scope",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "views.adsb_top_view_scope",
             "cwd": "${workspaceFolder}",
@@ -27,7 +27,7 @@
         },
         {
             "name": "VIEW: Traffic Listing",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "views.adsb_traffic_listing",
             "cwd": "${workspaceFolder}",
@@ -38,7 +38,7 @@
         },
         {
             "name": "VIEW: METARs",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "views.metar_listings",
             "cwd": "${workspaceFolder}",
@@ -49,7 +49,7 @@
         },
         {
             "name": "VIEW: Weather Scope",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "views.weather_scope",
             "cwd": "${workspaceFolder}",
@@ -60,7 +60,7 @@
         },
         {
             "name": "VIEW: Frequencies",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "module": "views.airport_frequencies_listing",
             "cwd": "${workspaceFolder}",
@@ -71,7 +71,7 @@
         },
         {
             "name": "Python: Current File",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal"
