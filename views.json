@@ -40,6 +40,22 @@
     },
     {
       "elements": [
+        "METAR Listing",
+        "Traffic Not Available",
+        "GPS Not Available"
+      ],
+      "name": "METARS"
+    },
+    {
+      "elements": [
+        "TAF Listing",
+        "Traffic Not Available",
+        "GPS Not Available"
+      ],
+      "name": "TAFS"
+    },
+    {
+      "elements": [
         "AIRMET Listing",
         "Traffic Not Available",
         "GPS Not Available"

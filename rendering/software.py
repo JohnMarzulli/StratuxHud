@@ -2,11 +2,9 @@
 Rendering routines for the default PyGame software renderer.
 """
 
-import math
-
 import pygame
 import pygame.gfxdraw
-from common_utils import fast_math, generic_data_cache
+from common_utils import generic_data_cache
 from common_utils.local_debug import IS_PI
 
 RENDERER_NAME = "Rasterization"
@@ -56,12 +54,12 @@ def polygon(
         0)  # Make filled
 
     if is_antialiased:
-        segments(
+        # A single native call to outline the polygon, instead of
+        # re-walking every edge through segment()'s fill+AA pass.
+        pygame.gfxdraw.aapolygon(
             framebuffer,
-            color,
-            True,
             points,
-            1)
+            color)
 
 
 def circle(
@@ -84,16 +82,51 @@ def circle(
         is_antialiased (bool, optional): Should the circle be drawn anti aliased. Defaults to False.
     """
 
-    segments(
+    center_x = int(position[0])
+    center_y = int(position[1])
+    radius = int(radius)
+    width = int(width)
+
+    if not is_antialiased:
+        pygame.draw.circle(
+            framebuffer,
+            color,
+            (center_x, center_y),
+            radius,
+            width)
+        return
+
+    if width <= 1:
+        pygame.gfxdraw.aacircle(
+            framebuffer,
+            center_x,
+            center_y,
+            radius,
+            color)
+        return
+
+    # Fill the ring with the fast (non-AA) native circle, then smooth
+    # only the inner and outer edges with two cheap AA outline calls.
+    # This replaces what used to be an O(sqrt(radius)) chain of
+    # rotated, filled-then-outlined quads.
+    pygame.draw.circle(
         framebuffer,
         color,
-        True,
-        fast_math.get_circle_points(
-            position[0],
-            position[1],
-            radius),
-        width,
-        is_antialiased)
+        (center_x, center_y),
+        radius,
+        width)
+    pygame.gfxdraw.aacircle(
+        framebuffer,
+        center_x,
+        center_y,
+        radius,
+        color)
+    pygame.gfxdraw.aacircle(
+        framebuffer,
+        center_x,
+        center_y,
+        max(0, radius - width),
+        color)
 
 
 def filled_circle(
@@ -114,14 +147,24 @@ def filled_circle(
         is_antialiased (bool, optional): Should the circle be drawn anti aliased. Defaults to False.
     """
 
-    polygon(
+    center_x = int(position[0])
+    center_y = int(position[1])
+    radius = int(radius)
+
+    pygame.gfxdraw.filled_circle(
         framebuffer,
-        color,
-        fast_math.get_circle_points(
-            position[0],
-            position[1],
-            radius),
-        is_antialiased)
+        center_x,
+        center_y,
+        radius,
+        color)
+
+    if is_antialiased:
+        pygame.gfxdraw.aacircle(
+            framebuffer,
+            center_x,
+            center_y,
+            radius,
+            color)
 
 
 def segments(
@@ -148,25 +191,24 @@ def segments(
         is_antialiased (bool, optional): Should the line segment be drawn anti aliased. Defaults to False.
     """
 
-    points_count = len(points)
+    if len(points) < 2:
+        return
 
-    for point_index in range(1, points_count):
-        segment(
+    # A single native multi-segment draw instead of one segment() call
+    # (each of which used to do a fill + AA outline pass) per edge.
+    if is_antialiased and width <= 1:
+        pygame.draw.aalines(
             framebuffer,
             color,
-            points[point_index - 1],
-            points[point_index],
-            width,
-            is_antialiased)
-
-    if is_closed:
-        segment(
+            is_closed,
+            points)
+    else:
+        pygame.draw.lines(
             framebuffer,
             color,
-            points[points_count - 1],
-            points[0],
-            width,
-            is_antialiased)
+            is_closed,
+            points,
+            max(1, int(width)))
 
 
 def segment(
@@ -192,53 +234,17 @@ def segment(
         width (int, optional): The width (in pixels) of the line segment. The theoretical single pixel line is defined by the points, with the additional pixels drawn above and below. Defaults to 1.
         is_antialiased (bool, optional): Should the line segment be drawn anti aliased. Defaults to False.
     """
-    rise = start[1] - end[1]
-    run = start[0] - end[0]
 
-    # Never divide by zero. Also veritical and
-    # horizontal lines can not gain anything
-    # from anti-aliasing
-    if rise == 0 or run == 0:
+    if is_antialiased and width <= 1:
+        pygame.draw.aaline(
+            framebuffer,
+            color,
+            start,
+            end)
+    else:
         pygame.draw.line(
             framebuffer,
             color,
             start,
             end,
-            width)
-    else:
-        slope = rise / float(run)
-        degrees = math.degrees(math.atan(slope))
-        half_thickness = width / 2.0
-
-        # start with the assumption of a veritcal
-        # line. Calculate the points to the left
-        # and right
-        end_points_to_rotate = [[-half_thickness, 0], [half_thickness, 0]]
-        amount_to_rotate = degrees + 90.0
-        rotated_endpoints = fast_math.rotate_points(
-            end_points_to_rotate,
-            [0, 0],
-            amount_to_rotate)
-        starting_points = [
-            [start[0] + rotated_endpoints[0][0],
-                start[1] + rotated_endpoints[0][1]],
-            [start[0] + rotated_endpoints[1][0], start[1] + rotated_endpoints[1][1]]]
-        ending_points = [
-            [end[0] + rotated_endpoints[0][0], end[1] + rotated_endpoints[0][1]],
-            [end[0] + rotated_endpoints[1][0], end[1] + rotated_endpoints[1][1]]]
-
-        segments_to_draw = [starting_points[0], ending_points[0],
-                            ending_points[1], starting_points[1]]
-
-        # We need to draw the filled polygon
-        # THEN draw an anti-aliased outline around it
-        # due to the lack of a "aa_filled_polygon"
-        pygame.draw.polygon(
-            framebuffer,
-            color,
-            segments_to_draw)
-
-        pygame.gfxdraw.aapolygon(
-            framebuffer,
-            segments_to_draw,
-            color)
+            max(1, int(width)))

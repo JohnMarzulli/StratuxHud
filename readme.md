@@ -535,6 +535,12 @@ The StratuxHud depends on the AithreManager and the TrafficManager. It can optio
 
 The HudConfig depends on the StratuxHud
 
+#### Development Env
+
+You may need to create a new venv from the repo root using `python -m venv .venv`
+
+Additionally, you may need to execute a command similar to `source /home/johnm/git/StratuxHud/.venv/bin/activate.fish` from your development terminal.
+
 #### 7.2.1 Upgrading From v1.7
 
 If you are compiling from source code and upgrading from V1.7, some additional steps will need to be taken.

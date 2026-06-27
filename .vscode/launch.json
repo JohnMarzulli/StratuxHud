@@ -1,0 +1,80 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "StratuxHud",
+            "type": "python",
+            "request": "launch",
+            "program": "${cwd}/stratux_hud.py",
+            "console": "integratedTerminal",
+            "args": [
+                "software"
+            ]
+        },
+        {
+            "name": "VIEW: Top View Scope",
+            "type": "python",
+            "request": "launch",
+            "module": "views.adsb_top_view_scope",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "args": [
+                "software"
+            ]
+        },
+        {
+            "name": "VIEW: Traffic Listing",
+            "type": "python",
+            "request": "launch",
+            "module": "views.adsb_traffic_listing",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "args": [
+                "software"
+            ]
+        },
+        {
+            "name": "VIEW: METARs",
+            "type": "python",
+            "request": "launch",
+            "module": "views.metar_listings",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "args": [
+                "software"
+            ]
+        },
+        {
+            "name": "VIEW: Weather Scope",
+            "type": "python",
+            "request": "launch",
+            "module": "views.weather_scope",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "args": [
+                "software"
+            ]
+        },
+        {
+            "name": "VIEW: Frequencies",
+            "type": "python",
+            "request": "launch",
+            "module": "views.airport_frequencies_listing",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "args": [
+                "software"
+            ]
+        },
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        }
+    ]
+}
