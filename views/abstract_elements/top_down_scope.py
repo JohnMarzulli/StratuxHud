@@ -3,6 +3,7 @@ View element for a weather "radar" that looks from the top downwards.
 """
 
 import math
+from datetime import datetime, timezone
 from typing import Dict, Tuple
 
 import pygame
@@ -91,7 +92,8 @@ class TopDownScope(AdsbElement):
         # 2 - determine the angle of rotation compared to our "up"
         rotation = 360.0 - our_heading
         rotation = rotation + traffic_heading
-        rotation_degrees = int(fast_math.wrap_degrees(rotation + self.__adjustment__))
+        rotation_degrees = int(fast_math.wrap_degrees(
+            rotation + self.__adjustment__))
 
         # 3 - Rotate the zero-based points
         radians = math.radians(rotation_degrees)
@@ -142,8 +144,10 @@ class TopDownScope(AdsbElement):
         radians = math.radians(angle_degrees)
         reticle_x = math.cos(radians)
         reticle_y = math.sin(radians)
-        screen_x = int((reticle_x * distance_pixels) + self.__scope_center__[0])
-        screen_y = int((reticle_y * distance_pixels) + self.__scope_center__[1])
+        screen_x = int((reticle_x * distance_pixels) +
+                       self.__scope_center__[0])
+        screen_y = int((reticle_y * distance_pixels) +
+                       self.__scope_center__[1])
 
         return (screen_x, screen_y)
 
@@ -169,7 +173,8 @@ class TopDownScope(AdsbElement):
         scope_range: ScopeRange,
         gps_coordinates,
     ):
-        distance_start = geo_math.get_distance(orientation.position, gps_coordinates)
+        distance_start = geo_math.get_distance(
+            orientation.position, gps_coordinates)
         bearing = geo_math.get_bearing(orientation.position, gps_coordinates)
         delta_angle = bearing - current_heading
         # We need to rotate by 270 to make sure that
@@ -177,7 +182,8 @@ class TopDownScope(AdsbElement):
         delta_angle = TopDownScope.TRAFFIC_PHASE_SHIFT + delta_angle
         delta_angle = fast_math.wrap_degrees(delta_angle)
 
-        pixel_distance = self.__get_pixel_distance__(distance_start, scope_range)
+        pixel_distance = self.__get_pixel_distance__(
+            distance_start, scope_range)
 
         return self.__get_screen_projection_from_center__(delta_angle, pixel_distance)
 
@@ -202,7 +208,8 @@ class TopDownScope(AdsbElement):
         distance_units = configuration.CONFIGURATION.get_units()
         units_suffix = units.get_distance_unit_suffix(distance_units)
         ring_pixel_distances = []
-        ring_distances = [scope_range.center_ring_range, scope_range.max_ring_range]
+        ring_distances = [scope_range.center_ring_range,
+                          scope_range.max_ring_range]
 
         radians = math.radians(30)
         sin_text_placement = math.sin(radians)
@@ -232,11 +239,14 @@ class TopDownScope(AdsbElement):
 
             ring_pixel_distances.append(radius_pixels)
 
-            text_x = self.__scope_center__[0] + int(sin_text_placement * radius_pixels)
-            text_y = self.__scope_center__[1] - int(cos_text_placement * radius_pixels)
+            text_x = self.__scope_center__[
+                0] + int(sin_text_placement * radius_pixels)
+            text_y = self.__scope_center__[
+                1] - int(cos_text_placement * radius_pixels)
 
             range_text: str = (
-                str(int(distance)) if distance >= 1.0 else "{:.1f}".format(distance)
+                str(int(distance)) if distance >= 1.0 else "{:.1f}".format(
+                    distance)
             )
 
             self.__render_text_with_stacked_annotations__(
@@ -295,7 +305,8 @@ class TopDownScope(AdsbElement):
             )
 
         display_text = int(
-            fast_math.wrap_degrees(TopDownScope.TEXT_PHASE_SHIFT + heading_to_draw)
+            fast_math.wrap_degrees(
+                TopDownScope.TEXT_PHASE_SHIFT + heading_to_draw)
         )
         draw_text = (display_text % 90) == 0
 
@@ -353,6 +364,15 @@ class TopDownScope(AdsbElement):
             )
 
     def __draw_airports__(self, framebuffer, orientation, scope_range: ScopeRange):
+        is_airport_data_valid = AirportClient.is_airport_data_valid()
+
+        if not is_airport_data_valid and datetime.now(timezone.utc).second % 2 == 0:
+            self.__render_text_right_justified__(
+                framebuffer,
+                "EXPIRED",
+                [self.__right_border__, self.__bottom_border__ - self.__font_height__],
+                colors.RED)
+
         if (
             orientation is None
             or orientation.position is None
@@ -441,7 +461,8 @@ class TopDownScope(AdsbElement):
             self.__render_centered_text__(
                 framebuffer,
                 identifier,
-                [screen_x, screen_y + (self.__no_direction_target_size__ << 2)],
+                [screen_x, screen_y +
+                    (self.__no_direction_target_size__ << 2)],
                 target_color,
                 colors.BLACK,
                 0.5,

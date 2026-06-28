@@ -3,6 +3,7 @@ View that shows the list of nearby traffic
 """
 
 from typing import List
+from datetime import datetime, timezone
 
 from common_utils import geo_math, units
 from common_utils.text_pagination import (
@@ -40,6 +41,16 @@ class AirportFrequencyListing(PaginatedTextElement):
             framebuffer_size,
             reduced_visuals,
         )
+
+    def __final_render__(self, framebuffer, orientation):
+        is_airport_data_valid = AirportClient.is_airport_data_valid()
+
+        if not is_airport_data_valid and datetime.now(timezone.utc).second % 2 == 0:
+            self.__render_text_right_justified__(
+                framebuffer,
+                "EXPIRED",
+                [self.__right_border__, self.__bottom_border__ - self.__font_height__],
+                colors.RED)
 
     def __get_text_pages__(self, orientation: AhrsData) -> List[List[TextLine]]:
         airport_frequencies = AirportClient.get_nearby_airport_frequencies()
@@ -82,7 +93,8 @@ class AirportFrequencyListing(PaginatedTextElement):
                     and (len(freq.facilityName) > 0 or len(freq.facilityId) > 0)
                 ):
                     freq.distance = (
-                        geo_math.get_distance(orientation.position, freq.coordinates)
+                        geo_math.get_distance(
+                            orientation.position, freq.coordinates)
                         * units.yards_to_sm
                     )
                     unsorted_freqs.append(freq)
@@ -103,7 +115,8 @@ class AirportFrequencyListing(PaginatedTextElement):
     def __get_page_header__(self) -> TextLine:
         return TextLine(
             colors.WHITE,
-            self.__get_justified_line__("NAME", "DIST", "   FREQ", "TYPE", "Remarks"),
+            self.__get_justified_line__(
+                "NAME", "DIST", "   FREQ", "TYPE", "Remarks"),
         )
 
     def __get_freq_text__(self, freq: AirportFrequency, orientation: AhrsData) -> str:
@@ -115,7 +128,8 @@ class AirportFrequencyListing(PaginatedTextElement):
         )
 
         identToShow = (
-            freq.facilityName if len(freq.facilityName) > 0 else freq.facilityId
+            freq.facilityName if len(
+                freq.facilityName) > 0 else freq.facilityId
         )
 
         return self.__get_justified_line__(
@@ -136,7 +150,8 @@ class AirportFrequencyListing(PaginatedTextElement):
 
         return "{0} {1} {2} {3} {4}".format(
             get_trimmed_and_justified_text(name, name_slice_length, True),
-            get_trimmed_and_justified_text(distance, distance_text_slice_length),
+            get_trimmed_and_justified_text(
+                distance, distance_text_slice_length),
             frequency,
             get_trimmed_and_justified_text(freq_type, freqType_slice_length),
             get_trimmed_and_justified_text(remarks, remarks_slice_length),

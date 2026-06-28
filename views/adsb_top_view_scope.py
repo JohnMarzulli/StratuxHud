@@ -93,7 +93,8 @@ class AdsbTopViewScope(TopDownScope):
         if distance > scope_range.max_ring_range:
             return
 
-        pixels_from_center = self.__get_pixel_distance__(display_distance, scope_range)
+        pixels_from_center = self.__get_pixel_distance__(
+            display_distance, scope_range)
 
         delta_angle = orientation.get_onscreen_gps_heading()
         delta_angle = traffic.bearing - delta_angle
@@ -144,7 +145,8 @@ class AdsbTopViewScope(TopDownScope):
             self.__render_centered_text__(
                 framebuffer,
                 identifier,
-                [screen_x, screen_y + (self.__no_direction_target_size__ << 2)],
+                [screen_x, screen_y +
+                    (self.__no_direction_target_size__ << 2)],
                 colors.YELLOW,
                 colors.BLACK,
                 0.5,
@@ -225,7 +227,8 @@ class AdsbTopViewScope(TopDownScope):
             delta_angle = AdsbTopViewScope.TRAFFIC_PHASE_SHIFT + delta_angle
             delta_angle = fast_math.wrap_degrees(delta_angle)
 
-            pixel_distance = self.__get_pixel_distance__(distance_start, scope_range)
+            pixel_distance = self.__get_pixel_distance__(
+                distance_start, scope_range)
 
             color = [int(component * proportion) for component in colors.GREEN]
             screen_coords = self.__get_screen_projection_from_center__(
@@ -271,7 +274,8 @@ class AdsbTopViewScope(TopDownScope):
         with TaskProfiler("views.adsb_top_view_scope.AdsbTopViewScope.setup"):
             scope_range: ScopeRange = self.__zoom_tracker__.get_target_zoom()
             traffic_reports = HudDataCache.get_reliable_traffic()
-            traffic_reports.sort(key=lambda traffic: traffic.distance, reverse=True)
+            traffic_reports.sort(
+                key=lambda traffic: traffic.distance, reverse=True)
 
         with TaskProfiler(
             "views.adsb_top_view_scope.AdsbTopViewScope.render_breadcrumbs"
@@ -284,16 +288,16 @@ class AdsbTopViewScope(TopDownScope):
                 framebuffer, scope_range
             )
 
-            self.__draw_all_compass_headings__(framebuffer, orientation, scope_range)
+            self.__draw_all_compass_headings__(
+                framebuffer, orientation, scope_range)
 
             self.__render_ownship__(framebuffer)
 
+        with TaskProfiler("views.adsb_top_view_scope.AdsbTopViewScope.render_airports"):
+            self.__draw_airports__(framebuffer, orientation, scope_range)
+
         if not orientation.gps_online:
             return
-
-        with TaskProfiler("views.adsb_top_view_scope.AdsbTopViewScope.render_airports"):
-
-            self.__draw_airports__(framebuffer, orientation, scope_range)
 
         with TaskProfiler("views.adsb_top_view_scope.AdsbTopViewScope.render_traffic"):
 
@@ -311,4 +315,5 @@ if __name__ == "__main__":
     from views.groundspeed import Groundspeed
     from views.hud_elements import run_hud_elements
 
-    run_hud_elements([AdsbTopViewScope, CompassAndHeadingTopElement, Groundspeed])
+    run_hud_elements(
+        [AdsbTopViewScope, CompassAndHeadingTopElement, Groundspeed])

@@ -81,6 +81,9 @@ class PaginatedTextElement(AdsbElement):
 
     def __get_text_pages__(self, orientation: AhrsData) -> List[List[TextLine]]:
         return []
+    
+    def __final_render__(self, framebuffer, orientation: AhrsData):
+        pass
 
     def render(self, framebuffer, orientation: AhrsData):
         lines_by_page = self.__get_text_pages__(orientation)
@@ -121,6 +124,8 @@ class PaginatedTextElement(AdsbElement):
             colors.YELLOW,
             0.5,
         )
+
+        self.__final_render__(framebuffer, orientation)
 
     def __get_max_line_length__(self) -> int:
         report_start_x = self.__listing_text_start_x__ + (
