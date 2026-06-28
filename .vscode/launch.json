@@ -15,7 +15,7 @@
             ]
         },
         {
-            "name": "VIEW: Top View Scope",
+            "name": "VIEW: ADSB Top View Scope",
             "type": "debugpy",
             "request": "launch",
             "module": "views.adsb_top_view_scope",
