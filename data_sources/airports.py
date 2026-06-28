@@ -5,6 +5,7 @@ Handles fetching airports in proximity AND any known weather conditions.
 import json
 import threading
 from typing import Dict, List
+from datetime import datetime, timezone
 
 import requests
 
@@ -24,6 +25,14 @@ class AirportClient:
     __FLIGHT_RULES__ = {}
     __LOCK_OBJECT__ = threading.Lock()
     __LAST_KNOWN_POSITION__ = None
+    __EXPIRATION_DATE__ = datetime.now(timezone.utc)
+
+    @staticmethod
+    def is_airport_data_valid():
+        if AirportClient.__EXPIRATION_DATE__ is not None:
+            return AirportClient.__EXPIRATION_DATE__ >= datetime.now(timezone.utc)
+
+        return False
 
     @staticmethod
     def set_last_known_position(location: List[int]):
@@ -139,6 +148,11 @@ class AirportClient:
         AirportClient.__LOCK_OBJECT__.release()
 
     @staticmethod
+    def update_expiration(expiration_date: datetime):
+        if expiration_date is not None:
+            AirportClient.__EXPIRATION_DATE__ = expiration_date
+
+    @staticmethod
     def inject_flight_rules(flight_rules: Dict[str, str]):
         # sourcery skip: do-not-use-bare-except
         AirportClient.__LOCK_OBJECT__.acquire()
@@ -178,6 +192,10 @@ class AirportClient:
             self.__update_airport_frequencies_task__ = tasks.RecurringTask(
                 "UpdateAirportFrequencies", 30, self.__update_airport_frequencies__
             )
+
+            self.__update_airport_expiration_task__ = tasks.RecurringTask(
+                "UpdateAirportExpiration", 30, self.__update_airport_expiration__
+            )
         finally:
             AirportClient.__LOCK_OBJECT__.release()
 
@@ -201,6 +219,33 @@ class AirportClient:
             # If we are spamming the REST too quickly, then we may loose a single update.
             # Do no consider the service unavailable unless we are
             # way below the max target framerate.
+            return False
+
+    def __update_airport_expiration__(self):
+        try:
+            expiration_json = self.__airports_session__.get(
+                f"http://{self.rest_address}/airports/Status",
+                timeout=configuration.AHRS_TIMEOUT,
+            ).json()
+
+            if not expiration_json:
+                return False
+
+            expiration_date = datetime.strptime(
+                expiration_json.get("expiration"), "%Y-%m-%d").replace(tzinfo=timezone.utc)
+
+            AirportClient.update_expiration(expiration_date)
+
+            return True
+
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except Exception as ex:
+            # If we are spamming the REST too quickly, then we may loose a single update.
+            # Do no consider the service unavailable unless we are
+            # way below the max target framerate.
+            print(
+                f"Exception occurred while updating airport expiration: {ex}")
             return False
 
     def __update_airports__(self):
@@ -275,8 +320,10 @@ def load_example_flight_rules():
 
 
 def load_example_airports():
-    example_airport_json = load_test_data("../test_data/example_airport_response.json")
-    example_frequency_json = load_test_data("../test_data/example_freq_response.json")
+    example_airport_json = load_test_data(
+        "../test_data/example_airport_response.json")
+    example_frequency_json = load_test_data(
+        "../test_data/example_freq_response.json")
 
     AirportClient.inject_airports(example_airport_json)
     AirportClient.inject_airport_frequencies(example_frequency_json)
