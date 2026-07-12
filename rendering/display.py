@@ -135,7 +135,7 @@ class Display:
         # List of drivers:
         # https://wiki.libsdl.org/FAQUsingSDL
         if not __is_x_windows__() and not __is_mac__():
-            drivers = ['fbcon', 'directfb', 'svgalib', 'directx', 'windib', 'Quartz']
+            drivers = ['kmsdrm', 'fbcon', 'directfb', 'svgalib', 'directx', 'windib', 'Quartz']
             found = False
             for driver in drivers:
                 if not os.getenv('SDL_VIDEODRIVER'):
