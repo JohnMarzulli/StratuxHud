@@ -70,6 +70,17 @@
             ]
         },
         {
+            "name": "VIEW: Sytem Information",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "views.system_info",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "args": [
+                "software"
+            ]
+        },
+        {
             "name": "Python: Current File",
             "type": "debugpy",
             "request": "launch",
