@@ -132,6 +132,9 @@ class HeadsUpDisplay(object):
         while self.tick(clock):
             pass
 
+        if self.web_server is not None:
+            self.web_server.stop()
+
         pygame.display.quit()
 
         return 1

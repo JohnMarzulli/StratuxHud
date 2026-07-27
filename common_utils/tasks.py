@@ -134,7 +134,8 @@ class RecurringTask(object):
         self.__logger__ = logger
         self.__thread__ = threading.Thread(
             target=self.__run_loop__,
-            name=task_name
+            name=task_name,
+            daemon=True
         )
 
         if start_immediate:
