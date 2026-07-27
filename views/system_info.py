@@ -1,6 +1,8 @@
+import fcntl
 import math
 import socket
-import subprocess
+import struct
+from typing import List
 
 from common_utils import fast_math, local_debug
 from configuration import configuration
@@ -23,23 +25,56 @@ DISCONNECTED_TEXT = "DISCONNECTED"
 DISABLED_TEXT = "DISABLED"
 
 
-def get_ip_address() -> TextLine:
+def get_ip_addresses_windows() -> List[TextLine]:
+    host_name = socket.gethostname()
+
+    return [TextLine(colors.GREEN, socket.gethostbyname(host_name))]
+
+
+def get_ip_addresses_linux() -> List[TextLine]:
+    SIOCGIFADDR = 0x8915
+
+    addresses = []
+
+    for _, interface_name in socket.if_nameindex():
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+        try:
+            packed_name = struct.pack(
+                '256s',
+                interface_name.encode('utf-8')[:15])
+            packed_address = fcntl.ioctl(
+                sock.fileno(),
+                SIOCGIFADDR, packed_name)
+            addresses.append(socket.inet_ntoa(packed_address[20:24]))
+        except OSError:
+            # Interface has no IPv4 address assigned (e.g. it is down).
+            continue
+        finally:
+            sock.close()
+
+    if not addresses:
+        return [TextLine(colors.RED, "UNKNOWN")]
+
+    return [TextLine(colors.GREEN, ip) for ip in addresses]
+
+
+def get_ip_addresses() -> List[TextLine]:
     """
-    Returns the local IP address of this unit.
+    Returns the local IP addresses of this unit, one per active network interface.
 
     Returns:
-        tuple -- The IP address as a string and the color to render it in.
+        TextLine[] -- The list of TextLine objects containing the IP addresses.
     """
 
     try:
-        if local_debug.IS_LINUX and local_debug.IS_PI:
-            ip_addr = subprocess.getoutput("hostname -I").strip()
-            return TextLine(colors.GREEN, ip_addr)
+        if local_debug.IS_LINUX:
+            return get_ip_addresses_linux()
         else:
-            host_name = socket.gethostname()
-            return TextLine(colors.GREEN, socket.gethostbyname(host_name))
+            return get_ip_addresses_windows()
+
     except:
-        return TextLine(colors.RED, "UNKNOWN")
+        return [TextLine(colors.RED, "UNKNOWN")]
 
 
 def get_cpu_temp_text_color(temperature: int) -> list:
@@ -179,15 +214,15 @@ class SystemInfo(TwoColumnTextInfoView):
 
         self.__update_ip_timer__ = 0
         self.__update_temp_timer__ = 0
-        self.__ip_address__ = get_ip_address()
+        self.__ip_addresses__ = get_ip_addresses()
         self.__cpu_temp__ = None
         self.__line_spacing__ = 1.01
 
     def __get_info_text__(self):
         self.__update_ip_timer__ -= 1
         if self.__update_ip_timer__ <= 0:
-            self.__ip_address__ = get_ip_address()
-            self.__update_ip_timer__ = 120
+            self.__ip_addresses__ = get_ip_addresses()
+            self.__update_ip_timer__ = 15
 
         self.__update_temp_timer__ -= 1
         if self.__update_temp_timer__ <= 0:
@@ -230,12 +265,11 @@ class SystemInfo(TwoColumnTextInfoView):
             ],
         ]
 
-        addresses = self.__ip_address__.text.split(" ")
-        for addr in addresses:
+        for addr in self.__ip_addresses__:
             info_lines.append(
                 [
                     TextLine(TwoColumnTextInfoView.ROW_TITLE_COLOR, "IP"),
-                    TextLine(self.__ip_address__.color, addr),
+                    addr,
                 ]
             )
 
