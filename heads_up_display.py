@@ -121,7 +121,8 @@ class HeadsUpDisplay(object):
         Runs the update/render logic loop.
         """
 
-        self.log(f"Initialized screen size to {self.__width__}x{self.__height__}")
+        self.log(
+            f"Initialized screen size to {self.__width__}x{self.__height__}")
 
         # Make sure that the disclaimer is visible for long enough.
         sleep(5)
@@ -192,7 +193,8 @@ class HeadsUpDisplay(object):
 
         try:
             responses = self.__global_handle_input__()
-            is_loop_finished = True in (response.is_terminal for response in responses)
+            is_loop_finished = True in (
+                response.is_terminal for response in responses)
 
             if is_loop_finished:
                 return False
@@ -233,12 +235,14 @@ class HeadsUpDisplay(object):
             with TaskProfiler("Render::AllElements"):
                 try:
                     for hud_element in view:
-                        unhandled_events = hud_element.handle_events(unhandled_events)
+                        unhandled_events = hud_element.handle_events(
+                            unhandled_events)
                         self.__render_view_element__(hud_element, orientation)
                 except Exception as e:
                     self.warn(f"LOOP:{e}")
                 if show_unavailable:
-                    self.__ahrs_not_available_element__.render(surface, orientation)
+                    self.__ahrs_not_available_element__.render(
+                        surface, orientation)
 
             if self.__should_render_perf__:
                 debug_status_left = int(self.__width__ * 0.9)
@@ -359,7 +363,8 @@ class HeadsUpDisplay(object):
                 reduced_visuals,
             )
         except Exception as e:
-            self.warn("Unable to build element {0}:{1}".format(hud_element_class, e))
+            self.warn("Unable to build element {0}:{1}".format(
+                hud_element_class, e))
             return None
 
     def __load_view_elements__(self) -> str:
@@ -430,10 +435,12 @@ class HeadsUpDisplay(object):
                             )
                             existing_elements[element_hash_name] = new_element
 
-                        new_view_elements.append(existing_elements[element_hash_name])
+                        new_view_elements.append(
+                            existing_elements[element_hash_name])
 
                     is_ahrs_view = self.__is_ahrs_view__(new_view_elements)
-                    hud_views.append((view_name, new_view_elements, is_ahrs_view))
+                    hud_views.append(
+                        (view_name, new_view_elements, is_ahrs_view))
                 except Exception as ex:
                     self.log(f"While attempting to load view={view}, EX:{ex}")
         self.log(
@@ -531,7 +538,8 @@ class HeadsUpDisplay(object):
         self.__fps__.push(0)
 
         self.__display__ = display.Display(force_fullscreen, force_software)
-        pygame.display.set_caption(f"StratuxHUD ({drawing.renderer.RENDERER_NAME})")
+        pygame.display.set_caption(
+            f"StratuxHUD ({drawing.renderer.RENDERER_NAME})")
         self.__width__, self.__height__ = self.__display__.size
 
         pygame.mouse.set_visible(False)
@@ -547,10 +555,12 @@ class HeadsUpDisplay(object):
             configuration.get_absolute_file_path(STANDARD_FONT), font_size_std
         )
         self.__detail_font__ = pygame.font.Font(
-            configuration.get_absolute_file_path(STANDARD_FONT), font_size_detail
+            configuration.get_absolute_file_path(
+                STANDARD_FONT), font_size_detail
         )
         self.__loading_font__ = pygame.font.Font(
-            configuration.get_absolute_file_path(LOADING_FONT), font_size_loading
+            configuration.get_absolute_file_path(
+                LOADING_FONT), font_size_loading
         )
         self.__show_boot_screen__()
 
@@ -572,17 +582,20 @@ class HeadsUpDisplay(object):
         try:
             self.web_server = configuration_server.HudServer()
         except Exception as ex:
-            logger.get_logger().info(f"Unable to start the remote control server: {ex}")
+            logger.get_logger().info(
+                f"Unable to start the remote control server: {ex}")
             self.web_server = None
 
         if self.web_server is not None:
-            RecurringTask("rest_host", 0.1, self.web_server.run, logger.get_logger())
+            RecurringTask("rest_host", 0.1, self.web_server.run,
+                          logger.get_logger())
 
         RecurringTask(
             "update_traffic", 0.1, self.__update_traffic_reports__, logger.get_logger()
         )
 
-        RecurringTask("update_aithre", 5.0, self.__update_aithre__, logger.get_logger())
+        RecurringTask("update_aithre", 5.0,
+                      self.__update_aithre__, logger.get_logger())
 
         RecurringTask(
             "update_groundtrack",
@@ -612,7 +625,8 @@ class HeadsUpDisplay(object):
         text_renderer.render_cached_texture(
             surface,
             key,
-            [(self.__width__ >> 1) - (size[0] >> 1), self.__detail_font__.get_height()],
+            [(self.__width__ >> 1) - (size[0] >> 1),
+             self.__detail_font__.get_height()],
         )
 
         y_pos = (self.__height__ >> 2) + (self.__height__ >> 3)
@@ -624,7 +638,8 @@ class HeadsUpDisplay(object):
             text_width, text_height = size
 
             text_renderer.render_cached_texture(
-                surface, key, [(self.__width__ >> 1) - (text_width >> 1), y_pos]
+                surface, key, [(self.__width__ >> 1) -
+                               (text_width >> 1), y_pos]
             )
 
             y_pos += text_height + (text_height >> 3)
@@ -641,7 +656,8 @@ class HeadsUpDisplay(object):
         text_renderer.render_cached_texture(
             surface,
             key,
-            [(self.__width__ >> 1) - (text_width >> 1), self.__height__ - text_height],
+            [(self.__width__ >> 1) - (text_width >> 1),
+             self.__height__ - text_height],
         )
 
         flipped = pygame.transform.flip(
@@ -676,8 +692,7 @@ class HeadsUpDisplay(object):
         handled_event: InputResponse = InputResponse(True, False, event)
         unhandled_event: InputResponse = InputResponse(False, False, event)
 
-        if event.type == pygame.QUIT:
-            system_tools.shutdown()
+        if event.type == pygame.QUIT or (event.type == pygame.KEYUP and event.key in [pygame.K_q]):
 
             return terminal_event
 

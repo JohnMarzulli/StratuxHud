@@ -81,3 +81,4 @@ if __name__ == "__main__":
         __is_flag_present__(__USE_REDUCED_VISUALS_FLAG__),
     )
     hud.run()
+    sys.exit(0)
