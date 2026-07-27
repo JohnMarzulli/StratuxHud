@@ -1,13 +1,13 @@
 [Unit]
 Description=StratuxHud display service
-After=network-online.target splashscreen.service
+After=network-online.target
 Wants=network-online.target
-Conflicts=splashscreen.service
 
 [Service]
 Type=simple
 User=pi
 WorkingDirectory=/home/pi/StratuxHud
+ExecStartPre=-/usr/bin/plymouth quit
 ExecStart=/usr/bin/python3 /home/pi/StratuxHud/stratux_hud.py
 Restart=on-failure
 RestartSec=5

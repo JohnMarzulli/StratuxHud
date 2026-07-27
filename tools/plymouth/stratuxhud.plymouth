@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=StratuxHud
+Description=StratuxHud boot splash
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/stratuxhud
+ScriptFile=/usr/share/plymouth/themes/stratuxhud/stratuxhud.script
