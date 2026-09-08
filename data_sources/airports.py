@@ -47,6 +47,23 @@ class AirportClient:
         AirportClient.__LAST_KNOWN_POSITION__ = location
 
     @staticmethod
+    def get_station_coordinates(ident: str) -> List[float]:
+        AirportClient.__LOCK_OBJECT__.acquire()
+
+        coordinates = None
+        if ident in AirportClient.__AIRPORTS__:
+            airport = AirportClient.__AIRPORTS__[ident]
+            if "coordinates" in airport:
+                coordinates = [
+                    airport["coordinates"]["latitude"],
+                    airport["coordinates"]["longitude"],
+                ]
+
+        AirportClient.__LOCK_OBJECT__.release()
+
+        return coordinates
+
+    @staticmethod
     def get_nearby_airports() -> Dict[str, any]:
         """
         Get any known nearby airports.
@@ -296,7 +313,8 @@ class AirportClient:
             # If we are spamming the REST too quickly, then we may loose a single update.
             # Do no consider the service unavailable unless we are
             # way below the max target framerate.
-            print(f"Exception occurred while updating airport frequencies: {ex}")
+            print(
+                f"Exception occurred while updating airport frequencies: {ex}")
 
             return False
 
