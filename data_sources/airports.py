@@ -292,10 +292,12 @@ class AirportClient:
 
         except (KeyboardInterrupt, SystemExit):
             raise
-        except Exception:
+        except Exception as ex:
             # If we are spamming the REST too quickly, then we may loose a single update.
             # Do no consider the service unavailable unless we are
             # way below the max target framerate.
+            print(f"Exception occurred while updating airport frequencies: {ex}")
+
             return False
 
 
