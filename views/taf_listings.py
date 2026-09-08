@@ -50,7 +50,7 @@ class TafListing(TextReportListing):
         max_chars: int = self.__get_max_line_length__()
 
         reports: Dict[str, TextualReport] = self.__get_text_reports__()
-        sorted_stations = sorted(reports.keys())
+        sorted_stations = self.get_stations_sorted_by_proximity(reports.keys())
 
         lines: List[str] = []
         reports_as_own_page: List[List[TextLine]] = []

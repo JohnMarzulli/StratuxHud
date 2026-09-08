@@ -5,6 +5,7 @@ View that shows the list of nearby traffic
 import datetime
 from typing import Dict, List
 
+from common_utils import geo_math
 from common_utils.text_pagination import get_consolidated_pages, get_wrapped_lines
 from data_sources.ahrs_data import AhrsData
 from data_sources.airports import AirportClient, load_example_flight_rules
@@ -40,6 +41,7 @@ class TextReportListing(PaginatedTextElement):
 
         self.__last_updated__ = None
         self.__reports_by_page__: List[List[TextLine]] = None
+        self.__position__ = [0, 0]
 
     def __get_text_reports__(self) -> Dict[str, TextualReport]:
         return {}
@@ -49,12 +51,14 @@ class TextReportListing(PaginatedTextElement):
             self.__reports_by_page__ is not None
             and self.__last_updated__ is not None
             and (
-                datetime.datetime.now(datetime.timezone.utc) - self.__last_updated__
+                datetime.datetime.now(
+                    datetime.timezone.utc) - self.__last_updated__
             ).total_seconds()
             < 60
         ):
             return self.__reports_by_page__
 
+        self.__position__ = orientation.position
         reports_as_own_page = self.__get_reports_with_each_station_as_own_page__()
         self.__reports_by_page__ = get_consolidated_pages(
             reports_as_own_page,
@@ -72,7 +76,7 @@ class TextReportListing(PaginatedTextElement):
         reports: Dict[str, TextualReport] = self.__get_text_reports__()
         flight_rules = AirportClient.get_flight_rules()
 
-        sorted_stations = sorted(reports.keys())
+        sorted_stations = self.get_stations_sorted_by_proximity(reports.keys())
 
         lines: List[str] = []
         reports_as_own_page: List[List[TextLine]] = []
@@ -82,9 +86,11 @@ class TextReportListing(PaginatedTextElement):
                 flight_rules[station] if station in flight_rules else "UNKNOWN"
             )
 
-            color: List[int] = self.__get_flight_rule_color__(known_flight_rules)
+            color: List[int] = self.__get_flight_rule_color__(
+                known_flight_rules)
             lines = get_wrapped_lines(reports[station].report, max_chars)
-            justified_lines = self.__get_report_lines_with_station__(station, lines)
+            justified_lines = self.__get_report_lines_with_station__(
+                station, lines)
             report_lines = [
                 TextLine(color, justified_text) for justified_text in justified_lines
             ]
@@ -116,6 +122,35 @@ class TextReportListing(PaginatedTextElement):
             return colors.MAGENTA
 
         return colors.WHITE
+
+    def get_stations_sorted_by_proximity(
+        self,
+        stations: List[str]
+    ) -> List[str]:
+
+        if (
+            self.__position__ is None
+            or (len(self.__position__) != 2)
+            or self.__position__[0] is None
+            or self.__position__[1] is None
+        ):
+            return sorted(stations)
+
+        sorted_keys = list(stations)
+        sorted_keys = sorted_keys.sort(
+            key=lambda
+            station: __get_distance_from_station__(self.__position__, station))
+
+        return [] if sorted_keys is None else sorted_keys
+
+
+def __get_distance_from_station__(ourLatLon: List[float], ident: str) -> float:
+    station_latLon = AirportClient.get_station_coordinates(ident)
+
+    if station_latLon is None:
+        return float("inf")
+
+    return geo_math.get_distance(ourLatLon, station_latLon)
 
 
 if __name__ == "__main__":
