@@ -137,7 +137,8 @@ class TextReportListing(PaginatedTextElement):
             return sorted(stations)
 
         sorted_keys = list(stations)
-        sorted_keys = sorted_keys.sort(
+
+        sorted_keys.sort(
             key=lambda
             station: __get_distance_from_station__(self.__position__, station))
 
