@@ -1,4 +1,3 @@
-import fcntl
 import math
 import socket
 import struct
@@ -10,6 +9,9 @@ from data_sources.data_cache import HudDataCache
 from rendering import colors
 from views.abstract_elements.text_line import TextLine
 from views.abstract_elements.two_column_text_info_view import TwoColumnTextInfoView
+
+if local_debug.IS_LINUX:
+    import fcntl
 
 NORMAL_TEMP = 50
 REDLINE_TEMP = 80
@@ -36,22 +38,23 @@ def get_ip_addresses_linux() -> List[TextLine]:
 
     addresses = []
 
-    for _, interface_name in socket.if_nameindex():
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    if local_debug.IS_LINUX:
+        for _, interface_name in socket.if_nameindex():
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-        try:
-            packed_name = struct.pack(
-                '256s',
-                interface_name.encode('utf-8')[:15])
-            packed_address = fcntl.ioctl(
-                sock.fileno(),
-                SIOCGIFADDR, packed_name)
-            addresses.append(socket.inet_ntoa(packed_address[20:24]))
-        except OSError:
-            # Interface has no IPv4 address assigned (e.g. it is down).
-            continue
-        finally:
-            sock.close()
+            try:
+                packed_name = struct.pack(
+                    '256s',
+                    interface_name.encode('utf-8')[:15])
+                packed_address = fcntl.ioctl(
+                    sock.fileno(),
+                    SIOCGIFADDR, packed_name)
+                addresses.append(socket.inet_ntoa(packed_address[20:24]))
+            except OSError:
+                # Interface has no IPv4 address assigned (e.g. it is down).
+                continue
+            finally:
+                sock.close()
 
     if not addresses:
         return [TextLine(colors.RED, "UNKNOWN")]
