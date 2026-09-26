@@ -9,8 +9,15 @@ from typing import Dict, List
 
 import requests
 
+import logging
+
+from common_utils.logger import HudLogger
 from common_utils import tasks
 from configuration import configuration
+
+python_logger = logging.getLogger("textual_weather")
+python_logger.setLevel(logging.DEBUG)
+__LOGGER__ = HudLogger(python_logger)
 
 
 class TextualReport:
@@ -37,10 +44,14 @@ class TextualWeatherClient:
 
     def update_textual_weather(self):
         try:
-            text_reports_json = self.__textual_weather_session__.get(
+            raw_report = self.__textual_weather_session__.get(
                 f"http://{self.rest_address}/Weather/TextReports",
-                timeout=configuration.AHRS_TIMEOUT,
-            ).json()
+                timeout=configuration.TEXT_SERVICE_TIMEOUT,
+            )
+
+            text_reports_json = raw_report.json()
+
+            __LOGGER__.log_info_message(raw_report.text)
 
             TextualWeatherClient.inject_report(text_reports_json)
 
@@ -48,10 +59,13 @@ class TextualWeatherClient:
 
         except (KeyboardInterrupt, SystemExit):
             raise
-        except Exception:
+        except Exception as ex:
             # If we are spamming the REST too quickly, then we may loose a single update.
             # Do no consider the service unavailable unless we are
             # way below the max target framerate.
+            __LOGGER__.log_warning_message(
+                f"Failed to update textual weather: {ex}")
+
             return False
 
     @staticmethod
@@ -78,7 +92,8 @@ class TextualWeatherClient:
 
                 for raw_report in text_reports[report_type]:
                     report = TextualReport(raw_report)
-                    TextualWeatherClient.__REPORTS__[report_type].append(report)
+                    TextualWeatherClient.__REPORTS__[
+                        report_type].append(report)
         finally:
             TextualWeatherClient.__LOCK_OBJECT__.release()
 
