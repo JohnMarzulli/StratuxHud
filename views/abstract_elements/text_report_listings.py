@@ -14,6 +14,8 @@ from rendering import colors
 from views.abstract_elements.paginated_text_element import PaginatedTextElement
 from views.abstract_elements.text_line import TextLine
 
+__MAX_STATIONS_TO_PROCESS__: int = 100
+
 
 class TextReportListing(PaginatedTextElement):
     """
@@ -77,6 +79,14 @@ class TextReportListing(PaginatedTextElement):
         flight_rules = AirportClient.get_flight_rules()
 
         sorted_stations = self.get_stations_sorted_by_proximity(reports.keys())
+
+        number_of_stations: int = len(sorted_stations)
+
+        if (number_of_stations < 1):
+            return []
+
+        if (number_of_stations > __MAX_STATIONS_TO_PROCESS__):
+            sorted_stations = sorted_stations[:__MAX_STATIONS_TO_PROCESS__]
 
         lines: List[str] = []
         reports_as_own_page: List[List[TextLine]] = []

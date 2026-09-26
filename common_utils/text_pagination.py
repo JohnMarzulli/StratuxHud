@@ -193,7 +193,10 @@ def get_consolidated_pages(
         else:
             new_page = fresh_page.copy()
 
-    while pages_to_redistribute:
+    total_operations = 0;
+
+    while pages_to_redistribute and (total_operations < 1000):
+        total_operations += 1
         potential_additional_lines = pages_to_redistribute[0]
 
         if len(new_page) > max_lines_per_page:
