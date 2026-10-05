@@ -487,25 +487,16 @@ These instructions assume you are using Raspberry Pi OS (Trixie) or newer.
 1. `sudo apt-get install libgtk2.0-dev python3-pip` a. Choose `Y` if prompted
 1. `python --version`. Verify that your version is 3.13 or newer
 1. `python -m venv .venv`
-1. `source ~/StratuxHud/.venv/bin/activate`
+1. `source ~/StratuxHud/.venv/bin/activate` 
 1. `pip3 install pytest, pygame-ce, requests`
-1. `sudo raspi-config`
-1. Choose "WiFi" again, and enter `stratux` as the SSID. No password.
-1. `sudo vim /etc/wpa_supplicant/wpa_supplicant.conf`
-1. Delete the section that contains your WiFi network, leaving the section that contains the Stratux network.
-1. More info on configuring Linux WiFi: <https://www.raspberrypi.org/forums/viewtopic.php?t=160620>
-1. Save and quit.
-1. Type "crontab -e"
-1. Select "Nano" (Option 1)
-1. Enter the following text at the _bottom_ of the file:
+1. Install the unit file by executing `sudo cp StratuxHud.service /etc/systemd/system/StratuxHud.service`
+1. Reload systemd, enable on boot, start now
+    1. `sudo systemctl daemon-reload`
+    1. `sudo systemctl enable StratuxHud.service`
+1. `sudo nmtui`
+1. Add a new WiFi connection to "stratux". Make sure it is set to join automatically.
 
-```bash
-@reboot sudo python3 /home/pi/AithreToHud/aithre_manager.py &
-@reboot sudo python3 /home/pi/StratuxHud/stratux_hud.py &
-@reboot nodejs       /home/pi/HudConfig/build/index.js &
-```
-
-Note that there are instrucions for running at boot for TrafficToHud and DynonToHud in their respective repositories.
+Note that there are instrucions for running the TrafficToHud and DynonToHud service at boot in their respective repositories.
 
 1. Save and quit.
 
