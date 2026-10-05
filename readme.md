@@ -478,31 +478,34 @@ Make sure you are using a high-quality power cable if you are using a Pi 3B+
 
 ### 7.2 Install Software
 
+These instructions assume you are using Raspberry Pi OS (Trixie) or newer.
+
 1. Enter `ping google.com`. Press ctrl+c after a while. This will confirm that you have internet access. If you do not, then use rasp-config to re-enter your wi-fi
-2. `cd ~`
-3. `git clone https://github.com/JohnMarzulli/StratuxHud.git`
-4. `cd StratuxHud`
-5. `sudo apt-get install libgtk2.0-dev` a. Choose `Y` if prompted
-6. `cd tools; ./install_splash.sh`
-7. `python --version`. Verify that your version is 2.7.14
-8. `sudo python3 setup.py develop` For Linux systems where you wish to develop or debug: `sudo setcap 'cap_net_raw,cap_net_admin+eip' ~/.local/lib/python2.7/site-packages/bluepy/bluepy-helper`
-9. `sudo raspi-config`
-10. Choose "WiFi" again, and enter `stratux` as the SSID. No password.
-11. `sudo vim /etc/wpa_supplicant/wpa_supplicant.conf`
-12. Delete the section that contains your WiFi network, leaving the section that contains the Stratux network.
-13. More info on configuring Linux WiFi: <https://www.raspberrypi.org/forums/viewtopic.php?t=160620>
-14. Save and quit.
-15. Type "crontab -e"
-16. Select "Nano" (Option 1)
-17. Enter the following text at the _bottom_ of the file:
+1. `cd ~`
+1. `git clone https://github.com/JohnMarzulli/StratuxHud.git`
+1. `cd StratuxHud`
+1. `sudo apt-get install libgtk2.0-dev python3-pip` a. Choose `Y` if prompted
+1. `python --version`. Verify that your version is 3.13 or newer
+1. `python -m venv .venv`
+1. `source ~/StratuxHud/.venv/bin/activate`
+1. `pip3 install pytest, pygame-ce, requests`
+1. `sudo raspi-config`
+1. Choose "WiFi" again, and enter `stratux` as the SSID. No password.
+1. `sudo vim /etc/wpa_supplicant/wpa_supplicant.conf`
+1. Delete the section that contains your WiFi network, leaving the section that contains the Stratux network.
+1. More info on configuring Linux WiFi: <https://www.raspberrypi.org/forums/viewtopic.php?t=160620>
+1. Save and quit.
+1. Type "crontab -e"
+1. Select "Nano" (Option 1)
+1. Enter the following text at the _bottom_ of the file:
 
 ```bash
 @reboot sudo python3 /home/pi/AithreToHud/aithre_manager.py &
-@reboot nodejs       /home/pi/TrafficToHud/build/traffic_manager.js &
-@reboot python3      /home/pi/DynonToHud/dynon_to_hud.py &
 @reboot sudo python3 /home/pi/StratuxHud/stratux_hud.py &
 @reboot nodejs       /home/pi/HudConfig/build/index.js &
 ```
+
+Note that there are instrucions for running at boot for TrafficToHud and DynonToHud in their respective repositories.
 
 1. Save and quit.
 
@@ -640,7 +643,7 @@ You will find the solder pads on the bottom of the Raspberry Pi 3, near the Micr
 
 | Date       | Version | Major Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |------------|---------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2025-11-15 | 2.2     | Major refactor, addition of NEXRAD, weather products, radio frequencies, and more |
+| 2025-11-15 | 2.2     | Major refactor, addition of NEXRAD, weather products, radio frequencies, and more                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | 2020-10-31 | 2.0     | Migration to Python V3, with major refactoring of underlying code. New TopDownScope element and view.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | 2020-04-20 | 1.7     | Now able to cycle through views using the HudConfig page. Support for Illyrian by Aithre. Split Aithre data collection into a micro-service. Improve warning on some elements when GPS lock is lost. Fix user configuration files not always being used or saved. Support new V3 radio and Stratux 1.6\. Experimental support for Aithre in Stratux + HUD AIO configurations. Updates to distance conversion. Use the same naming strategy for aircraft as popular EFBs. Support data collected from Dynon serial output using the DynonToHud project. Indicate which speeds are IAS and groundspeed when GPS and Avionics data are both available. Update element positions. Added new indication when the Traffic service is not available. |
 | 2019-09-04 | 1.6     | Traffic manager moved to a stand-alone service in NodeJs/TypeScript.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
