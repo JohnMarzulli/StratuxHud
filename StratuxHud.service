@@ -1,14 +1,23 @@
 [Unit]
 Description=StratuxHud display service
-After=network-online.target
 Wants=network-online.target
+# Start after networking, the boot splash, and the console are up so the HUD
+# is the last thing to grab the framebuffer.
+After=network-online.target systemd-user-sessions.service plymouth-quit-wait.service getty@tty1.service
+# Add the units for the other HUD services here so they start first, e.g.:
+# After=TrafficToHud.service DynonToHud.service AithreToHud.service
+# Free tty1 so the login console does not draw over the HUD.
+Conflicts=getty@tty1.service
 
 [Service]
-Type=simple
+# "idle" delays start until all other boot jobs have been dispatched.
+Type=idle
 User=pi
 WorkingDirectory=/home/pi/StratuxHud
+Environment=PYTHONUNBUFFERED=1
 ExecStartPre=-/usr/bin/plymouth quit
-ExecStart=/usr/bin/python3 /home/pi/StratuxHud/stratux_hud.py
+# Use the venv's interpreter directly; no need to "activate" the venv.
+ExecStart=/home/pi/StratuxHud/.venv/bin/python3 /home/pi/StratuxHud/stratux_hud.py
 Restart=on-failure
 RestartSec=5
 
