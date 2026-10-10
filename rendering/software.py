@@ -62,6 +62,30 @@ def polygon(
             color)
 
 
+def strip(
+    framebuffer: pygame.Surface,
+    color: list,
+    top_points: list,
+    bottom_points: list
+):
+    """
+    Draws a filled strip between two parallel lines of points.
+    Unlike polygon(), the strip may be curved (non-convex).
+
+    Args:
+        framebuffer (pygame.Surface): The surface to render to.
+        color (list): The color to draw the strip.
+        top_points (list): The points along one edge of the strip.
+        bottom_points (list): The matching points along the other edge, in the same order.
+    """
+
+    pygame.draw.polygon(
+        framebuffer,
+        color,
+        top_points + bottom_points[::-1],
+        0)  # Make filled
+
+
 def circle(
     framebuffer: pygame.Surface,
     color: list,

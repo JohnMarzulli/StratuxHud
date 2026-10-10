@@ -93,6 +93,32 @@ def polygon(
     GL.glEnd()
 
 
+def strip(
+    framebuffer,
+    color: list,
+    top_points: list,
+    bottom_points: list
+):
+    """
+    Draws a filled strip between two parallel lines of points.
+    Unlike polygon(), the strip may be curved (non-convex).
+
+    Args:
+        framebuffer (pygame.Surface): The surface to render to.
+        color (list): The color to draw the strip.
+        top_points (list): The points along one edge of the strip.
+        bottom_points (list): The matching points along the other edge, in the same order.
+    """
+
+    __set_color__(color)
+
+    GL.glBegin(GL.GL_TRIANGLE_STRIP)
+    for top, bottom in zip(top_points, bottom_points):
+        GL.glVertex2f(top[0], top[1])
+        GL.glVertex2f(bottom[0], bottom[1])
+    GL.glEnd()
+
+
 def circle(
     framebuffer,
     color: list,

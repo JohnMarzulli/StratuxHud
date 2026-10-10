@@ -95,9 +95,10 @@ class AdsbTopViewScope(TopDownScope):
 
         pixels_from_center = self.__get_pixel_distance__(
             display_distance, scope_range)
+        bearing:float = traffic.bearing if traffic.bearing is not None else 0.0
 
-        delta_angle = orientation.get_onscreen_gps_heading()
-        delta_angle = traffic.bearing - delta_angle
+        delta_angle:float = orientation.get_precise_gps_heading()
+        delta_angle = bearing - delta_angle
         # We need to rotate by 270 to make sure that
         # the orientation is correct AND to correct the phase.
         delta_angle = AdsbTopViewScope.TRAFFIC_PHASE_SHIFT + delta_angle
@@ -119,7 +120,7 @@ class AdsbTopViewScope(TopDownScope):
         if traffic.track is not None:
             points = self.__get_traffic_indicator__(
                 [screen_x, screen_y],
-                orientation.get_onscreen_gps_heading(),
+                orientation.get_precise_gps_heading(),
                 traffic.track,
             )
             drawing.renderer.polygon(
@@ -191,7 +192,7 @@ class AdsbTopViewScope(TopDownScope):
         if breadcrumb_count < 2:
             return
 
-        current_heading = orientation.get_onscreen_gps_heading()
+        current_heading = orientation.get_precise_gps_heading()
 
         if current_heading is None or isinstance(current_heading, str):
             return

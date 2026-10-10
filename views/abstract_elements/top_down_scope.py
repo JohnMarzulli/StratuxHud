@@ -121,6 +121,32 @@ class TopDownScope(AdsbElement):
         proportion = distance_in_user_units / scope_range.max_ring_range
         return int(max_pixel_distance * proportion)
 
+    def __get_precise_screen_coordinates__(
+        self,
+        orientation: AhrsData,
+        current_heading: float,
+        scope_range: ScopeRange,
+        gps_coordinates,
+    ) -> Tuple[float, float]:
+        """
+        Same as __get_screen_coordinates__, but keeps sub-pixel precision.
+        Snapping each vertex to whole pixels makes large shapes
+        visibly wobble as our aircraft moves.
+        """
+        distance = geo_math.get_distance(orientation.position, gps_coordinates)
+        bearing = geo_math.get_bearing(orientation.position, gps_coordinates)
+        radians = math.radians(
+            TopDownScope.TRAFFIC_PHASE_SHIFT + bearing - current_heading)
+
+        max_pixel_distance = self.__scope_center__[1] - self.__top_border__
+        pixel_distance = max_pixel_distance * \
+            (distance / scope_range.max_ring_range)
+
+        return (
+            (math.cos(radians) * pixel_distance) + self.__scope_center__[0],
+            (math.sin(radians) * pixel_distance) + self.__scope_center__[1],
+        )
+
     def __get_screen_projection_from_center__(
         self, angle_degrees: float, distance_pixels: float
     ) -> Tuple[int, int]:
@@ -431,7 +457,7 @@ class TopDownScope(AdsbElement):
 
         screen_x, screen_y = self.__get_screen_coordinates__(
             orientation,
-            orientation.get_onscreen_gps_heading(),
+            orientation.get_precise_gps_heading(),
             scope_range,
             correct_airport_position,
         )

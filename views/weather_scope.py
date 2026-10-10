@@ -63,7 +63,7 @@ class WeatherTopViewScope(TopDownScope):
         )
 
         self.__time_of_last_block_fetch__ = datetime.datetime.now(datetime.timezone.utc)
-        self.__nexrad_cache__: List[ReflectivityBlock] = None
+        self.__nexrad_cache__: List[ReflectivityBlock] = []
         self.__zoom_manager__: ZoomManager = ZoomManager()
         self.__zoom_manager__.manual_zoom_out()
         self.__zoom_manager__.manual_zoom_out()
@@ -87,6 +87,7 @@ class WeatherTopViewScope(TopDownScope):
         self.__successful_bin_counts__ = 0
         self.__failed_bin_counts__ = 0
         self.__missing_bin_counts__ = 0
+        current_heading: int | str = 0
 
         scope_range = self.__zoom_manager__.get_current_zoom()
 
@@ -98,7 +99,7 @@ class WeatherTopViewScope(TopDownScope):
         )
 
         if is_valid_orientation:
-            current_heading = orientation.get_onscreen_gps_heading()
+            current_heading = orientation.get_precise_gps_heading()
             is_heading_valid = current_heading is not None and not isinstance(
                 current_heading, str
             )
@@ -172,12 +173,50 @@ class WeatherTopViewScope(TopDownScope):
         scope_range: ScopeRange,
         block: ReflectivityBlock,
     ):
+        # Screen coordinates of the bin grid corners, keyed by (lat_edge, lon_edge).
+        # Shared by every run in the block so neighboring polygons get
+        # identical vertices and no seams are left between them.
+        corner_cache = {}
+
         [
             self.__render_bin_row__(
-                framebuffer, orientation, current_heading, scope_range, block, lat_index
+                framebuffer,
+                orientation,
+                current_heading,
+                scope_range,
+                block,
+                lat_index,
+                corner_cache,
             )
             for lat_index in WeatherTopViewScope.BIN_ROWS
         ]
+
+    def __get_bin_corner__(
+        self,
+        orientation: AhrsData,
+        current_heading,
+        scope_range: ScopeRange,
+        block: ReflectivityBlock,
+        lat_edge: int,
+        lon_edge: int,
+        corner_cache: dict,
+    ):
+        key = (lat_edge, lon_edge)
+        corner = corner_cache.get(key)
+
+        if corner is None:
+            corner = self.__get_precise_screen_coordinates__(
+                orientation,
+                current_heading,
+                scope_range,
+                [
+                    block.north_western[0] - (lat_edge * block.lat_step),
+                    block.north_western[1] + (lon_edge * block.lon_step),
+                ],
+            )
+            corner_cache[key] = corner
+
+        return corner
 
     def __render_bin_row__(
         self,
@@ -187,13 +226,11 @@ class WeatherTopViewScope(TopDownScope):
         scope_range: ScopeRange,
         block: ReflectivityBlock,
         lat_index,
+        corner_cache: dict,
     ):
         if len(block.reflectivity) <= lat_index:
             self.__missing_bin_counts__ += len(WeatherTopViewScope.BIN_COLUMNS)
             return
-
-        n_edge_lat = block.north_western[0] - (lat_index * block.lat_step)
-        s_edge_lat = n_edge_lat - block.lat_step
 
         lon_start_index: int = 0
         rle = block.reflectivity[lat_index]
@@ -210,10 +247,10 @@ class WeatherTopViewScope(TopDownScope):
                     scope_range,
                     lon_start_index,
                     lon_start_index + (run_length - 1),
-                    n_edge_lat,
-                    s_edge_lat,
+                    lat_index,
                     block,
                     reflectivity,
+                    corner_cache,
                 )
                 lon_start_index += run_length
             except:
@@ -227,10 +264,10 @@ class WeatherTopViewScope(TopDownScope):
         scope_range: ScopeRange,
         lon_start_index,
         lon_end_index,
-        n_edge_lat,
-        s_edge_lat,
+        lat_index,
         block: ReflectivityBlock,
         reflectivity,
+        corner_cache: dict,
     ):
         if lon_end_index < lon_start_index:
             print(f"Invalid lon range: {lon_start_index} to {lon_end_index}")
@@ -242,20 +279,11 @@ class WeatherTopViewScope(TopDownScope):
 
             color = NexradClient.reflectivity_to_rgb(reflectivity)
 
-            w_edge_lon = block.north_western[1] + (lon_start_index * block.lon_step)
-            e_edge_lon = (
-                block.north_western[1]
-                + (lon_end_index * block.lon_step)
-                + block.lon_step
+            center_lat = block.north_western[0] - \
+                ((lat_index + 0.5) * block.lat_step)
+            center_lon = block.north_western[1] + (
+                ((lon_start_index + lon_end_index + 1) / 2.0) * block.lon_step
             )
-
-            nw = [n_edge_lat, w_edge_lon]
-            ne = [n_edge_lat, e_edge_lon]
-            se = [s_edge_lat, e_edge_lon]
-            sw = [s_edge_lat, w_edge_lon]
-
-            center_lat = (n_edge_lat + s_edge_lat) / 2.0
-            center_lon = (w_edge_lon + e_edge_lon) / 2.0
             distance = geo_math.get_distance(
                 orientation.position, [center_lat, center_lon]
             )
@@ -263,24 +291,42 @@ class WeatherTopViewScope(TopDownScope):
             if distance > scope_range.max_ring_range:
                 return
 
-            nw_corner = self.__get_screen_coordinates__(
-                orientation, current_heading, scope_range, nw
-            )
-            ne_corner = self.__get_screen_coordinates__(
-                orientation, current_heading, scope_range, ne
-            )
-            se_corner = self.__get_screen_coordinates__(
-                orientation, current_heading, scope_range, se
-            )
-            sw_corner = self.__get_screen_coordinates__(
-                orientation, current_heading, scope_range, sw
-            )
+            # Lines of constant latitude curve on the scope, so a run can not be
+            # drawn as a single quad. Place a vertex at every bin boundary along
+            # the northern and southern edges so the edges follow the curve and
+            # line up with the vertices of the rows above and below.
+            lon_edges = range(lon_start_index, lon_end_index + 2)
 
-            drawing.renderer.polygon(
+            north_points = [
+                self.__get_bin_corner__(
+                    orientation,
+                    current_heading,
+                    scope_range,
+                    block,
+                    lat_index,
+                    lon_edge,
+                    corner_cache,
+                )
+                for lon_edge in lon_edges
+            ]
+            south_points = [
+                self.__get_bin_corner__(
+                    orientation,
+                    current_heading,
+                    scope_range,
+                    block,
+                    lat_index + 1,
+                    lon_edge,
+                    corner_cache,
+                )
+                for lon_edge in lon_edges
+            ]
+
+            drawing.renderer.strip(
                 framebuffer,
                 color,
-                [nw_corner, ne_corner, se_corner, sw_corner],
-                False,
+                north_points,
+                south_points,
             )
         except Exception as ex:
             self.__failed_bin_counts__ += 1
@@ -343,6 +389,7 @@ if __name__ == "__main__":
         "../test_data/faa_sample_reflectivity.json",
         "../test_data/reflectivity_response.json",
         "../test_data/2025-03-14_incomplete_bins.json",
+        "../test_data/large_response.json"
     ]
 
     for test_data_file in test_data_files:

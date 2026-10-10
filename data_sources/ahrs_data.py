@@ -73,7 +73,19 @@ class AhrsData:
         Returns:
             Union[int, str]: The gps track to display.
         """
-        return int(fast_math.wrap_degrees(self.gps_heading)) if self.gps_online else NOT_AVAILABLE
+        return int(self.get_precise_gps_heading()) if self.gps_online else NOT_AVAILABLE
+
+    def get_precise_gps_heading(
+        self
+    ) -> float:
+        """
+        Returns the GPS heading without rounding to a whole degree.
+        Use for geometry that should rotate smoothly.
+
+        Returns:
+            float: The gps track, if known. Otherwise 0.0.
+        """
+        return fast_math.wrap_degrees(self.gps_heading) if self.gps_online else 0.0
 
     def get_compass_heading(
         self
