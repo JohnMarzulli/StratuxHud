@@ -71,7 +71,7 @@ class Display:
     def __is_fullscreen_target__(
         self
     ) -> bool:
-        return local_debug.IS_PI and not __is_x_windows__()
+        return local_debug.IS_PI and not __is_x_windows__() and not __is_mac__()
 
     def __get_target_screen_mode__(
         self,
