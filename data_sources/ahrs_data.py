@@ -101,19 +101,19 @@ class AhrsData:
     def __init__(
         self
     ):
-        self.roll = 0.0
-        self.pitch = 0.0
-        self.gps_heading = 0.0
-        self.compass_heading = 0.0
-        self.alt = 0.0
-        self.position = (0, 0)  # lat, lon
-        self.groundspeed = 0
-        self.airspeed = 0
-        self.vertical_speed = 0
-        self.g_load = 1.0
-        self.min_g = 1.0
-        self.max_g = 1.0
+        self.roll: float = 0.0
+        self.pitch: float = 0.0
+        self.gps_heading: float = 0.0
+        self.compass_heading: float = 0.0
+        self.alt: float = 0.0
+        self.position: list[float] = [0, 0]  # lat, lon
+        self.groundspeed: float = 0
+        self.airspeed: float = 0
+        self.vertical_speed: float = 0
+        self.g_load: float = 1.0
+        self.min_g: float = 1.0
+        self.max_g: float = 1.0
         self.utc_time = None
-        self.gps_online = True
-        self.is_avionics_source = False
+        self.gps_online: bool = True
+        self.is_avionics_source: bool = False
         self.slip_skid = None
