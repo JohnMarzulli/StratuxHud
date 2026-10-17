@@ -50,7 +50,7 @@ def apply_declination(heading: float) -> int:
 
 
 def get_reticle_size(
-    distance: float, min_reticle_size: float = 0.05, max_reticle_size: float = 0.20
+    distance: float | None, min_reticle_size: float = 0.05, max_reticle_size: float = 0.20
 ) -> float:
     """
     The the size of the reticle based on the distance of the target.
@@ -66,6 +66,8 @@ def get_reticle_size(
         float -- The size of the reticle (in proportion to the screen size.)
     """
 
+    if distance is None:
+        return min_reticle_size
     if distance <= IMPERIAL_SUPERCLOSE:
         return max_reticle_size
     elif distance >= IMPERIAL_FARAWAY:

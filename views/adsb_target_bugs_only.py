@@ -34,8 +34,8 @@ class AdsbTargetBugsOnly(AdsbElement):
     def __render_traffic_heading_bug__(
         self,
         traffic_report: Traffic,
-        heading: float,
-        ownship_altitude: int,
+        heading: int | float,
+        ownship_altitude: int | float,
         framebuffer,
     ):
         """
