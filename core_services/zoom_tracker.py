@@ -35,7 +35,8 @@ def get_groundspeed(display_units: str, orientation: AhrsData) -> float:
     )
 
     groundspeed = (
-        units.get_converted_units(units, orientation.groundspeed * units.yards_to_nm)
+        units.get_converted_units(
+            display_units, orientation.groundspeed * units.yards_to_nm)
         if is_valid_groundspeed
         else 0
     )
@@ -97,7 +98,7 @@ class ZoomTracker:
             seconds_into_zoom, self.__last_zoom__, self.__get_target_zoom__()
         )
 
-    def is_in_range(self, raw_distance: float) -> Tuple[bool, float]:
+    def is_in_range(self, raw_distance: float | None) -> Tuple[bool, float]:
         """
         Is the current distance within the threshold of displaying
         more data about?
@@ -109,7 +110,11 @@ class ZoomTracker:
             bool: TRUE is the target is within the inner scope range.
         """
 
-        display_distance = units.get_converted_units(self.__user_units__, raw_distance)
+        if raw_distance is None:
+            return (False, 0.0)
+
+        display_distance = units.get_converted_units(
+            self.__user_units__, raw_distance)
 
         scope_range = self.__get_target_zoom__().max_ring_range
 
@@ -127,7 +132,8 @@ class ZoomTracker:
             bool: TRUE is the target is within the inner scope range.
         """
 
-        display_distance = units.get_converted_units(self.__user_units__, raw_distance)
+        display_distance = units.get_converted_units(
+            self.__user_units__, raw_distance)
 
         scope_range = self.__get_target_zoom__().center_ring_range
 
