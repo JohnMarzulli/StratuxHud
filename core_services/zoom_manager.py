@@ -76,6 +76,14 @@ class ZoomManager(object):
     def get_current_zoom(self) -> ScopeRange:
         return __SCOPE_RANGES__[self.__index__]
 
+    def get_maximum_possible_zoom(self) -> ScopeRange:
+        """
+        Return the absolute furthest possible zoom range.
+
+        This should not be confused with max_ring_range
+        """
+        return __SCOPE_RANGES__[-1]
+
     def __get_closest_automatic_zoom_index__(self):
         # Find the index of the first item that meets the condition
         return next(
