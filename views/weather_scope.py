@@ -62,7 +62,8 @@ class WeatherTopViewScope(TopDownScope):
             reduced_visuals,
         )
 
-        self.__time_of_last_block_fetch__ = datetime.datetime.now(datetime.timezone.utc)
+        self.__time_of_last_block_fetch__ = datetime.datetime.now(
+            datetime.timezone.utc)
         self.__nexrad_cache__: List[ReflectivityBlock] = []
         self.__zoom_manager__: ZoomManager = ZoomManager()
         self.__zoom_manager__.manual_zoom_out()
@@ -77,6 +78,8 @@ class WeatherTopViewScope(TopDownScope):
         self.__log_bin_stats_task__ = IntermittentTask(
             "Render Failed Weather Counts", 15.0, self.__log_bin_counts__, None
         )
+
+        self.__maximum_radar_range__: int = self.__zoom_manager__.get_maximum_possible_zoom().max_ring_range
 
     def __render_reflectivity__(
         self,
@@ -106,7 +109,7 @@ class WeatherTopViewScope(TopDownScope):
 
             if is_heading_valid:
                 nexrad_blocks = self.__get_nexrad_blocks__(
-                    orientation.position, scope_range.max_ring_range
+                    orientation.position, self.__maximum_radar_range__
                 )
 
         [
@@ -128,7 +131,8 @@ class WeatherTopViewScope(TopDownScope):
             self.__left_border__,
             text_y_pos + (self.__font_height__ >> 1),
         ]
-        total_position = [self.__left_border__, text_y_pos + self.__font_height__]
+        total_position = [self.__left_border__,
+                          text_y_pos + self.__font_height__]
 
         if self.__cluter_visuals__:
             self.__nearby_blocks_count__ = len(nexrad_blocks)
@@ -160,7 +164,8 @@ class WeatherTopViewScope(TopDownScope):
         if self.__nexrad_cache__ != None and seconds_since < 15:
             return self.__nexrad_cache__
 
-        self.__nexrad_cache__ = NexradClient.get_nexrad_in_range(position, max_distance)
+        self.__nexrad_cache__ = NexradClient.get_nexrad_in_range(
+            position, max_distance)
         self.__time_of_last_block_fetch__ = now
 
         return self.__nexrad_cache__
@@ -358,8 +363,10 @@ class WeatherTopViewScope(TopDownScope):
             "views.weather_top_view_scope.WeatherTopViewScope.render_ring"
         ):
             self.__render_ownship__(framebuffer)
-            self.__draw_distance_rings__(framebuffer, scope_range, colors.WHITE)
-            self.__draw_all_compass_headings__(framebuffer, orientation, scope_range)
+            self.__draw_distance_rings__(
+                framebuffer, scope_range, colors.WHITE)
+            self.__draw_all_compass_headings__(
+                framebuffer, orientation, scope_range)
 
         with TaskProfiler(
             "views.weather_top_view_scope.WeatherTopViewScope.render_airports"
@@ -403,7 +410,8 @@ if __name__ == "__main__":
     load_example_flight_rules()
     load_example_airports()
 
-    run_hud_elements([WeatherTopViewScope, CompassAndHeadingTopElement, Groundspeed])
+    run_hud_elements(
+        [WeatherTopViewScope, CompassAndHeadingTopElement, Groundspeed])
 
 
 # Orgeon FAA sample data should look like this:
