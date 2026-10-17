@@ -64,7 +64,7 @@ class WeatherTopViewScope(TopDownScope):
 
         self.__time_of_last_block_fetch__ = datetime.datetime.now(
             datetime.timezone.utc)
-        self.__nexrad_cache__: List[ReflectivityBlock] = []
+        self.__nexrad_cache__: List[ReflectivityBlock] | None = None
         self.__zoom_manager__: ZoomManager = ZoomManager()
         self.__zoom_manager__.manual_zoom_out()
         self.__zoom_manager__.manual_zoom_out()
