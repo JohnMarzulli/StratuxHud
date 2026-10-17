@@ -23,7 +23,7 @@ The first is as a stand-alone unit. For the standalone configuration, the HUD co
 The second is in an "All-In-One" (AIO) configuration. With an AIO setup, the HUD code runs on the Stratux.
 
 | Feature                    | Stand Alone | AIO          |
-|----------------------------|-------------|--------------|
+| -------------------------- | ----------- | ------------ |
 | Keypad Control             | Yes         | No           |
 | Dynon D180 Support         | Yes         | No           |
 | Aithre CO Monitor          | Yes         | Experimental |
@@ -87,7 +87,7 @@ For more information on the setup, and installation of the DynonToHud service, p
 You may use a number pad as an input device. I used velcro to secure the number pad to my dashboard.
 
 | Key         | Action                                                                       |
-|-------------|------------------------------------------------------------------------------|
+| ----------- | ---------------------------------------------------------------------------- |
 | Backspace   | Tell the Stratux that you are in a level position. Resets the AHRS to level. |
 | +           | Next view                                                                    |
 | Right Arrow | Next view                                                                    |
@@ -478,7 +478,9 @@ Make sure you are using a high-quality power cable if you are using a Pi 3B+
 
 ### 7.2 Install Software
 
-These instructions assume you are using Raspberry Pi OS (Trixie) or newer.
+These instructions assume you are using Raspberry Pi OS (Trixie) or newer. You may be able to accomplish this with older versions (Buster or Walleye)
+
+For Trixie you may need to diable EDID if issues with the resolution appear. These would include the display at the wrong aspect ratio, flickering, double images, and more.
 
 1. Enter `ping google.com`. Press ctrl+c after a while. This will confirm that you have internet access. If you do not, then use rasp-config to re-enter your wi-fi
 1. `cd ~`
@@ -633,7 +635,7 @@ You will find the solder pads on the bottom of the Raspberry Pi 3, near the Micr
 ### 8.3 Revision History
 
 | Date       | Version | Major Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-|------------|---------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ---------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2025-11-15 | 2.2     | Major refactor, addition of NEXRAD, weather products, radio frequencies, and more                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | 2020-10-31 | 2.0     | Migration to Python V3, with major refactoring of underlying code. New TopDownScope element and view.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | 2020-04-20 | 1.7     | Now able to cycle through views using the HudConfig page. Support for Illyrian by Aithre. Split Aithre data collection into a micro-service. Improve warning on some elements when GPS lock is lost. Fix user configuration files not always being used or saved. Support new V3 radio and Stratux 1.6\. Experimental support for Aithre in Stratux + HUD AIO configurations. Updates to distance conversion. Use the same naming strategy for aircraft as popular EFBs. Support data collected from Dynon serial output using the DynonToHud project. Indicate which speeds are IAS and groundspeed when GPS and Avionics data are both available. Update element positions. Added new indication when the Traffic service is not available. |
@@ -650,7 +652,7 @@ You will find the solder pads on the bottom of the Raspberry Pi 3, near the Micr
 Please note that performance characteristics are only shown for displays that are currently available for purchase. The Hudly Classic is intentionally not listed.
 
 | Board                          | Screen         | Frames Per Second (AHRS View Only) | Notes              |
-|--------------------------------|----------------|------------------------------------|--------------------|
+| ------------------------------ | -------------- | ---------------------------------- | ------------------ |
 | Rasp Pi 2 (stand-alone)        | Sun Founder 5" | ~25FPS to ~30FPS                   | Not recommended    |
 | Rasp Pi 3 (stand-alone)        | Kivic          | 50FPS - 60FPS                      | Recommended        |
 | Rasp Pi 3 (stand-alone)        | Hudly Wireless | 30FPS - 50FPS                      | Recommended        |
