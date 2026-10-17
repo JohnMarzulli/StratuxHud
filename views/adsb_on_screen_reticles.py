@@ -3,7 +3,7 @@ Element to show targetting reticles for where traffic is.
 """
 
 import math
-
+from core_services.zoom_tracker import ZoomTracker
 from common_utils import fast_math
 from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
@@ -12,6 +12,7 @@ from data_sources.traffic import Traffic
 from rendering import colors, drawing
 from views import hud_elements
 from views.abstract_elements.adsb_element import AdsbElement
+from views.adsb_target_bugs_only import get_relevant_traffic
 
 
 class AdsbOnScreenReticles(AdsbElement):
@@ -35,8 +36,10 @@ class AdsbOnScreenReticles(AdsbElement):
             reduced_visuals,
         )
 
+        self.__zoom_tracker__: ZoomTracker = ZoomTracker()
         self.__listing_text_start_y__ = int(self.__font__.get_height() * 4)
-        self.__listing_text_start_x__ = int(self.__framebuffer_size__[0] * 0.01)
+        self.__listing_text_start_x__ = int(
+            self.__framebuffer_size__[0] * 0.01)
         self.__next_line_distance__ = int(font.get_height() * 1.5)
         reticle_cull_size = self.__width__ / 6
         self.__min_x__ = -reticle_cull_size
@@ -75,7 +78,7 @@ class AdsbOnScreenReticles(AdsbElement):
 
     def __get_reticle_render_element__(
         self, orientation: AhrsData, rotation_center: list, traffic: Traffic
-    ) -> drawing.HollowPolygon:
+    ) -> drawing.HollowPolygon | None:
         """
         Draws a single reticle on the screen.
 
@@ -86,13 +89,15 @@ class AdsbOnScreenReticles(AdsbElement):
         """
 
         # Find where to draw the reticle....
-        reticle_x, reticle_y = self.__get_traffic_projection__(orientation, traffic)
+        reticle_x, reticle_y = self.__get_traffic_projection__(
+            orientation, traffic)
 
         if reticle_x is None or reticle_y is None:
             return None
 
         # Render using the Above us bug
-        on_screen_reticle_scale = hud_elements.get_reticle_size(traffic.distance)
+        on_screen_reticle_scale = hud_elements.get_reticle_size(
+            traffic.distance)
         reticle = self.__get_onscreen_reticle__(
             on_screen_reticle_scale,
             orientation.roll,
@@ -119,8 +124,11 @@ class AdsbOnScreenReticles(AdsbElement):
         #     [reticle_x, reticle_y],
         #     rotation_center)
 
+        reticle_color = list(
+            colors.BLUE if traffic.is_on_ground() else colors.RED)
+
         return drawing.HollowPolygon(
-            reticle, colors.RED, self.__line_width__, not self.__reduced_visuals__
+            reticle, reticle_color, self.__line_width__, not self.__reduced_visuals__
         )
 
     def __get_rotation_point__(self, orientation: AhrsData) -> list:
@@ -157,24 +165,20 @@ class AdsbOnScreenReticles(AdsbElement):
         """
 
         with TaskProfiler("views.on_screen_reticles.AdsbOnScreenReticles.setup"):
+            self.__zoom_tracker__.update(orientation)
             our_heading = orientation.get_onscreen_projection_heading()
 
             if isinstance(our_heading, str):
                 return
 
             # Get the traffic, and bail out of we have none
-            traffic_reports = HudDataCache.get_reliable_traffic()
-
-            if traffic_reports is None:
-                return
-
+            traffic_reports = get_relevant_traffic(self.__zoom_tracker__)
             traffic_reports = list(
                 filter(
-                    lambda x: not x.is_on_ground()
-                    and (math.fabs(our_heading - x.bearing) < 45),
+                    lambda x: (math.fabs(our_heading - x.bearing) < 45),
                     traffic_reports,
                 )
-            )[: hud_elements.MAX_TARGET_BUGS]
+            )
 
             # find the position of the center of the 0 pitch indicator
             rotation_center = self.__get_rotation_point__(orientation)
@@ -188,7 +192,8 @@ class AdsbOnScreenReticles(AdsbElement):
 
         with TaskProfiler("views.on_screen_reticles.AdsbOnScreenReticles.rendering"):
             # pylint:disable=expression-not-assigned
-            [reticle.render(framebuffer) for reticle in reticles if reticle is not None]
+            [reticle.render(framebuffer)
+             for reticle in reticles if reticle is not None]
 
 
 if __name__ == "__main__":
