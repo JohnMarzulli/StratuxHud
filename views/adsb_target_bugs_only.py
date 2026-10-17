@@ -84,7 +84,7 @@ class AdsbTargetBugsOnly(AdsbElement):
             if isinstance(heading, str):
                 return
 
-            reports_to_show = get_relevant_traffic(self.__zoom_tracker__, MAX_TARGET_BUGS)
+            reports_to_show = get_relevant_traffic(self.__zoom_tracker__)
 
         # pylint:disable=expression-not-assigned
         with TaskProfiler("views.adsb_target_bugs_only.AdsbTargetBugsOnly.render"):
