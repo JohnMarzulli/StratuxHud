@@ -95,9 +95,9 @@ class AdsbTopViewScope(TopDownScope):
 
         pixels_from_center = self.__get_pixel_distance__(
             display_distance, scope_range)
-        bearing:float = traffic.bearing if traffic.bearing is not None else 0.0
+        bearing: float = traffic.bearing if traffic.bearing is not None else 0.0
 
-        delta_angle:float = orientation.get_precise_gps_heading()
+        delta_angle: float = orientation.get_precise_gps_heading()
         delta_angle = bearing - delta_angle
         # We need to rotate by 270 to make sure that
         # the orientation is correct AND to correct the phase.
@@ -115,7 +115,8 @@ class AdsbTopViewScope(TopDownScope):
         if screen_y < 0 or screen_y > self.__height__:
             return
 
-        target_color = colors.BLUE if traffic.is_on_ground() else colors.RED
+        target_color = list(
+            colors.BLUE if traffic.is_on_ground() else colors.RED)
 
         if traffic.track is not None:
             points = self.__get_traffic_indicator__(
@@ -148,8 +149,8 @@ class AdsbTopViewScope(TopDownScope):
                 identifier,
                 [screen_x, screen_y +
                     (self.__no_direction_target_size__ << 2)],
-                colors.YELLOW,
-                colors.BLACK,
+                list(colors.YELLOW),
+                list(colors.BLACK),
                 0.5,
                 0,
                 True,
@@ -166,8 +167,8 @@ class AdsbTopViewScope(TopDownScope):
                     + self.__font_half_height__
                     + (self.__no_direction_target_size__ << 2),
                 ],
-                colors.YELLOW,
-                colors.BLACK,
+                list(colors.YELLOW),
+                list(colors.BLACK),
                 0.5,
                 0,
                 True,
@@ -240,8 +241,8 @@ class AdsbTopViewScope(TopDownScope):
                 drawing.renderer.segment(
                     framebuffer,
                     color,
-                    previous_position,
-                    screen_coords,
+                    list(previous_position),
+                    list(screen_coords),
                     width=self.__line_width__,
                 )
 
@@ -251,9 +252,9 @@ class AdsbTopViewScope(TopDownScope):
         if previous_position is not None:
             drawing.renderer.segment(
                 framebuffer,
-                colors.GREEN,
-                previous_position,
-                self.__scope_center__,
+                list(colors.GREEN),
+                list(previous_position),
+                list(self.__scope_center__),
                 width=self.__line_width__,
             )
 
