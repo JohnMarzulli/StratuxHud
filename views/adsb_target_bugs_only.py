@@ -3,6 +3,7 @@ View element to show target bugs for nearby aircraft.
 """
 
 from common_utils.task_timer import TaskProfiler
+from core_services.zoom_tracker import ZoomTracker
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
@@ -27,6 +28,8 @@ class AdsbTargetBugsOnly(AdsbElement):
             framebuffer_size,
             reduced_visuals,
         )
+
+        self.__zoom_tracker__ = ZoomTracker()
 
     def __render_traffic_heading_bug__(
         self,
@@ -74,18 +77,14 @@ class AdsbTargetBugsOnly(AdsbElement):
 
     def render(self, framebuffer, orientation: AhrsData):
         with TaskProfiler("views.adsb_target_bugs_only.AdsbTargetBugsOnly.setup"):
+            self.__zoom_tracker__.update(orientation)
+
             heading = orientation.get_onscreen_projection_heading()
 
             if isinstance(heading, str):
                 return
 
-            # Get the traffic, and bail out of we have none
-            traffic_reports = HudDataCache.get_reliable_traffic()
-
-            if traffic_reports is None:
-                return
-
-            reports_to_show = traffic_reports[:MAX_TARGET_BUGS]
+            reports_to_show = get_relevant_traffic(self.__zoom_tracker__, MAX_TARGET_BUGS)
 
         # pylint:disable=expression-not-assigned
         with TaskProfiler("views.adsb_target_bugs_only.AdsbTargetBugsOnly.render"):
@@ -96,6 +95,26 @@ class AdsbTargetBugsOnly(AdsbElement):
                 for traffic_report in reports_to_show
             ]
 
+
+def get_relevant_traffic(
+    zoom_tracker: ZoomTracker
+) -> list:
+    traffic_reports: list = HudDataCache.get_reliable_traffic()
+    
+    if traffic_reports is None:
+        return []
+
+    # The idea here is to maximize the situatioal awareness by limiting the bugs displayed
+    # to only those that matter.
+    #
+    # First make sure that the bugs are only in the range the plane will be in soon.
+    # If we need to truncate the traffic bugs, make sure that we go in order of distance
+    # to prioritize the nmost imminent collision threats
+    reports_to_show = list(filter(lambda traffic: zoom_tracker.is_in_range(traffic.distance)[0], traffic_reports))
+    reports_to_show = sorted(reports_to_show, key=lambda traffic: traffic.distance)
+    reports_to_show = reports_to_show[:MAX_TARGET_BUGS]
+
+    return reports_to_show
 
 if __name__ == "__main__":
     from views.compass_and_heading_bottom_element import CompassAndHeadingBottomElement

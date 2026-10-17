@@ -5,9 +5,9 @@ Shows the "Info Cards" for ADSB information
 from common_utils.task_timer import TaskProfiler
 from core_services import zoom_tracker
 from data_sources.ahrs_data import AhrsData
-from data_sources.data_cache import HudDataCache
 from views.abstract_elements.adsb_element import AdsbElement
-from views.hud_elements import MAX_TARGET_BUGS, get_heading_bug_x
+from views.adsb_target_bugs_only import get_relevant_traffic
+from views.hud_elements import get_heading_bug_x
 
 
 class AdsbTargetBugs(AdsbElement):
@@ -77,25 +77,7 @@ class AdsbTargetBugs(AdsbElement):
             if not orientation.gps_online:
                 return
 
-            # Get the traffic, and bail out of we have none
-            traffic_reports = HudDataCache.get_reliable_traffic()
-
-            if traffic_reports is None:
-                return
-
-            reports_to_show = list(
-                filter(
-                    lambda x: self.__zoom_tracker__.is_in_inner_range(x.distance)[0],
-                    traffic_reports,
-                )
-            )
-
-            # Draw the heading bugs in reverse order so the traffic closest to
-            # us will be the most visible
-            reports_to_show.sort(key=lambda traffic: traffic.distance, reverse=True)
-
-            # Make sure only the closest bugs are rendered.
-            reports_to_show = reports_to_show[:MAX_TARGET_BUGS]
+            reports_to_show = get_relevant_traffic(self.__zoom_tracker__)
 
         with TaskProfiler("views.adsb_target_bugs.AdsbTargetBugs.render"):
             # pylint:disable=expression-not-assigned
