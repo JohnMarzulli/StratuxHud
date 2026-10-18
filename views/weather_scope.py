@@ -12,6 +12,7 @@ from common_utils.task_timer import TaskProfiler
 from common_utils.tasks import IntermittentTask
 from configuration import configuration
 from core_services.scope_range import ScopeRange
+from core_services.zoom_interpolation import get_actual_zoom
 from core_services.zoom_manager import ZoomManager
 from data_sources.ahrs_data import AhrsData
 from data_sources.airports import load_example_airports, load_example_flight_rules
@@ -36,9 +37,9 @@ class WeatherTopViewScope(TopDownScope):
                 continue
 
             if event.key in [pygame.K_UP, pygame.K_KP8]:
-                self.__zoom_manager__.manual_zoom_out()
+                self.__start_zoom__(self.__zoom_manager__.manual_zoom_out)
             elif event.key in [pygame.K_DOWN, pygame.K_KP2]:
-                self.__zoom_manager__.manual_zoom_in()
+                self.__start_zoom__(self.__zoom_manager__.manual_zoom_in)
             else:
                 remaining_unhandled_events.append(event)
 
@@ -70,6 +71,8 @@ class WeatherTopViewScope(TopDownScope):
         self.__zoom_manager__.manual_zoom_out()
         self.__zoom_manager__.manual_zoom_out()
         self.__zoom_manager__.manual_zoom_out()
+        self.__zoom_started__ = datetime.datetime.now(datetime.timezone.utc)
+        self.__zoom_starting_range__: ScopeRange = self.__zoom_manager__.get_current_zoom()
         self.__failed_bin_counts__ = 0
         self.__missing_bin_counts__ = 0
         self.__successful_bin_counts__ = 0
@@ -82,14 +85,36 @@ class WeatherTopViewScope(TopDownScope):
 
         self.__maximum_radar_range__: int = self.__zoom_manager__.get_maximum_possible_zoom().max_ring_range
 
+    def __get_displayed_zoom__(self) -> ScopeRange:
+        """
+        Returns the zoom to draw with, smoothly moving from where
+        the scope was when the zoom started to the zoom manager's range.
+        """
+        seconds_into_zoom = (
+            datetime.datetime.now(datetime.timezone.utc) -
+            self.__zoom_started__
+        ).total_seconds()
+
+        return get_actual_zoom(
+            seconds_into_zoom,
+            self.__zoom_starting_range__,
+            self.__zoom_manager__.get_current_zoom(),
+        )
+
+    def __start_zoom__(self, change_zoom):
+        # Start from what is on screen so a zoom that interrupts
+        # another one does not jump.
+        self.__zoom_starting_range__ = self.__get_displayed_zoom__()
+        change_zoom()
+        self.__zoom_started__ = datetime.datetime.now(datetime.timezone.utc)
+
     def __render_reflectivity__(
         self,
         framebuffer: pygame.Surface,
         orientation: AhrsData,
+        scope_range: ScopeRange,
     ):
         self.__log_bin_stats_task__.run()
-
-        scope_range = self.__zoom_manager__.get_current_zoom()
 
         nexrad_blocks = []
         is_valid_orientation = (
@@ -243,13 +268,14 @@ class WeatherTopViewScope(TopDownScope):
             orientation {Orientation} -- The orientation of the plane the HUD is in.
         """
 
-        scope_range = self.__zoom_manager__.get_current_zoom()
+        scope_range = self.__get_displayed_zoom__()
 
         with TaskProfiler(
             "views.weather_top_view_scope.WeatherTopViewScope.render_reflectivity"
         ):
             try:
-                self.__render_reflectivity__(framebuffer, orientation)
+                self.__render_reflectivity__(
+                    framebuffer, orientation, scope_range)
             except:
                 pass
 
@@ -301,11 +327,37 @@ if __name__ == "__main__":
             test_data_json = json.loads(json_config_text)
             nexrad_client.inject(test_data_json)
 
+    class AutoZoomingWeatherTopViewScope(WeatherTopViewScope):
+        """
+        Alternates between zooming out and zooming in every 10 seconds
+        by sending the same key presses that the user would.
+        """
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
+            self.__zoom_out_next__ = True
+            self.__auto_zoom_task__ = IntermittentTask(
+                "Debug Auto Zoom", 10.0, self.__send_zoom_command__, None
+            )
+
+        def __send_zoom_command__(self):
+            key = pygame.K_UP if self.__zoom_out_next__ else pygame.K_DOWN
+            print(f"Debug zoom {'out' if self.__zoom_out_next__ else 'in'}")
+
+            self.handle_events([pygame.event.Event(pygame.KEYUP, key=key)])
+            self.__zoom_out_next__ = not self.__zoom_out_next__
+
+        def render(self, framebuffer: pygame.Surface, orientation: AhrsData):
+            self.__auto_zoom_task__.run()
+
+            super().render(framebuffer, orientation)
+
     load_example_flight_rules()
     load_example_airports()
 
     run_hud_elements(
-        [WeatherTopViewScope, CompassAndHeadingTopElement, Groundspeed])
+        [AutoZoomingWeatherTopViewScope, CompassAndHeadingTopElement, Groundspeed])
 
 
 # Orgeon FAA sample data should look like this:
