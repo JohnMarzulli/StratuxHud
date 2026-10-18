@@ -30,21 +30,21 @@ class ReflectivityBitmap:
         self.lon_step: float = min(block.lon_step for block in blocks)
         self.north: float = max(block.north_western[0] for block in blocks)
         self.west: float = min(block.north_western[1] for block in blocks)
-        south = min(block.south_eastern[0] for block in blocks)
-        east = max(block.south_eastern[1] for block in blocks)
+        south: float = min(block.south_eastern[0] for block in blocks)
+        east: float = max(block.south_eastern[1] for block in blocks)
 
-        self.successful_bins = 0
-        self.failed_bins = 0
-        self.missing_bins = 0
+        self.successful_bins: int = 0
+        self.failed_bins: int = 0
+        self.missing_bins: int = 0
 
         # Leave an empty border so that the edge bins are not
         # stretched outwards when the bitmap is drawn.
-        size = (
+        size: tuple[int, int] = (
             int(round((east - self.west) / self.lon_step)) + 2,
             int(round((self.north - south) / self.lat_step)) + 2,
         )
 
-        self.surface = pygame.Surface(size)
+        self.surface: pygame.Surface = pygame.Surface(size)
         self.surface.fill(colors.BLACK)
         self.surface.set_colorkey(colors.BLACK)
 
@@ -60,7 +60,7 @@ class ReflectivityBitmap:
             ((self.north - position[0]) / self.lat_step) + 1,
         )
 
-    def __draw_block__(self, block: ReflectivityBlock):
+    def __draw_block__(self, block: ReflectivityBlock) -> None:
         left, top = self.get_bitmap_position(block.north_western)
         left = int(round(left))
         top = int(round(top))
