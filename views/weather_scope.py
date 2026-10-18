@@ -73,9 +73,6 @@ class WeatherTopViewScope(TopDownScope):
         self.__zoom_manager__.manual_zoom_out()
         self.__zoom_started__ = datetime.datetime.now(datetime.timezone.utc)
         self.__zoom_starting_range__: ScopeRange = self.__zoom_manager__.get_current_zoom()
-        self.__failed_bin_counts__ = 0
-        self.__missing_bin_counts__ = 0
-        self.__successful_bin_counts__ = 0
         self.__nearby_blocks_count__ = 0
         self.__total_blocks_count__ = 0
 
@@ -211,9 +208,6 @@ class WeatherTopViewScope(TopDownScope):
 
         self.__reflectivity_signature__ = signature
         self.__reflectivity_bitmap__ = None
-        self.__successful_bin_counts__ = 0
-        self.__failed_bin_counts__ = 0
-        self.__missing_bin_counts__ = 0
 
         if len(nexrad_blocks) > 0:
             with TaskProfiler(
@@ -221,10 +215,6 @@ class WeatherTopViewScope(TopDownScope):
             ):
                 self.__reflectivity_bitmap__ = ReflectivityBitmap(
                     nexrad_blocks)
-
-            self.__successful_bin_counts__ = self.__reflectivity_bitmap__.successful_bins
-            self.__failed_bin_counts__ = self.__reflectivity_bitmap__.failed_bins
-            self.__missing_bin_counts__ = self.__reflectivity_bitmap__.missing_bins
 
         return self.__reflectivity_bitmap__
 
@@ -294,9 +284,12 @@ class WeatherTopViewScope(TopDownScope):
             self.__draw_airports__(framebuffer, orientation, scope_range)
 
     def __log_bin_counts__(self):
-        print(f"Missing bins:{self.__missing_bin_counts__}")
-        print(f"Failed bins:{self.__failed_bin_counts__}")
-        print(f"Passed bins:{self.__successful_bin_counts__}")
+        if self.__reflectivity_bitmap__ is not None:
+            print(f"Missing bins:{self.__reflectivity_bitmap__.missing_bins}")
+            print(f"Failed bins:{self.__reflectivity_bitmap__.failed_bins}")
+            print(
+                f"Passed bins:{self.__reflectivity_bitmap__.successful_bins}")
+
         print(f"Nearby blocks:{self.__nearby_blocks_count__}")
         print(f"Total blocks:{self.__total_blocks_count__}")
 
