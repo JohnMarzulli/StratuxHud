@@ -19,7 +19,7 @@ AHRS_TIMEOUT = 10.0 * (1.0 / float(TARGET_AHRS_FRAMERATE))
 TEXT_SERVICE_TIMEOUT = 1.0
 DEFAULT_VIEW_KEY = "default_view"
 
-VERSION = "2.3"
+VERSION = "2.3 Beta"
 
 ########################
 # Default Config Files #
