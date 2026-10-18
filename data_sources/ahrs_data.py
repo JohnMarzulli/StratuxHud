@@ -116,4 +116,4 @@ class AhrsData:
         self.utc_time = None
         self.gps_online: bool = True
         self.is_avionics_source: bool = False
-        self.slip_skid = None
+        self.slip_skid: float = 0.0
