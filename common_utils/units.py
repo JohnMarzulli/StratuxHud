@@ -15,16 +15,16 @@ UNIT_LABELS = {
     METRIC: {SPEED: "KPH", DISTANCE: "KM"}
 }
 
-meters_to_sm = 1609.34
-yards_to_nm = 2025.37
-yards_to_sm = 1760.0
-yards_to_km = 1093.61
-yards_to_m = 1.09361
-feet_to_nm = 6076.12
-feet_to_sm = 5280.0
-feet_to_km = 3280.84
-feet_to_m = 3.28084
-mph_to_ms = 0.44704
+meters_to_sm: float = 1609.34
+yards_to_nm: float = 2025.37
+yards_to_sm: float = 1760.0
+yards_to_km: float = 1093.61
+yards_to_m: float = 1.09361
+feet_to_nm: float = 6076.12
+feet_to_sm: float = 5280.0
+feet_to_km: float = 3280.84
+feet_to_m: float = 3.28084
+mph_to_ms: float = 0.44704
 
 IMPERIAL_NEARBY = yards_to_sm / 4.0  # Quarter mile
 
@@ -231,7 +231,7 @@ def get_distance_unit_suffix(
 
 def get_converted_units_string(
     units: str,
-    raw_value: float,
+    raw_value: float | str,
     unit_type: str = DISTANCE,
     decimal_places: bool = True
 ) -> str:
@@ -300,6 +300,9 @@ def get_converted_units_string(
     if units is None:
         units = STATUTE
 
+    if isinstance(raw_value, str):
+        return raw_value
+
     formatter_string = "{0:.1f}"
     formatter_distance_no_decimals = "{0:.0f}"
     is_speed = unit_type is SPEED
@@ -324,6 +327,7 @@ def get_converted_units_string(
         return formatter_distance_no_decimals.format(raw_value) + " yards"
 
     return with_units_formatter.format(raw_value / yards_to_sm, UNIT_LABELS[STATUTE][unit_type])
+
 
 def get_converted_units_string_without_units(
     units: str,
