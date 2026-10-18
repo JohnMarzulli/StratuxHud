@@ -347,7 +347,7 @@ def load_example_airports():
 
     AirportClient.inject_airports(example_airport_json)
     AirportClient.inject_airport_frequencies(example_frequency_json)
-    AirportClient.set_last_known_position([-122.2, 47.5])
+    AirportClient.set_last_known_position([47.5, -122.2])
 
 
 def load_test_data(file_name: str):
