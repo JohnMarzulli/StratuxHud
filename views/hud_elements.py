@@ -23,7 +23,7 @@ IMPERIAL_SUPERCLOSE = units.yards_to_sm / 8.0
 # pylint:disable=bare-except
 
 
-def apply_declination(heading: float) -> int:
+def apply_declination(heading: float) -> int | str:
     """
     Returns a heading to display with the declination adjust to convert from true to magnetic.
 
@@ -160,7 +160,7 @@ def run_hud_elements(element_types: list, use_detail_font: bool = True):
         for test_data in simulated_traffic:
             test_data.simulate()
             traffic.AdsbTrafficClient.TRAFFIC_MANAGER.handle_traffic_report(
-                test_data.icao_address, test_data.to_json()
+                str(test_data.icao_address), test_data.to_json()
             )
 
         HudDataCache.update_traffic_reports()
@@ -168,7 +168,7 @@ def run_hud_elements(element_types: list, use_detail_font: bool = True):
         orientation = __aircraft__.get_ahrs()
         breadcrumbs.INSTANCE.update(orientation)
 
-        orientation.utc_time = str(datetime.utcnow())
+        orientation.utc_time = datetime.utcnow()
         __aircraft__.simulate()
         screen.clear()
         for hud_element in hud_elements:
