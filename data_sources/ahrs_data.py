@@ -113,7 +113,7 @@ class AhrsData:
         self.g_load: float = 1.0
         self.min_g: float = 1.0
         self.max_g: float = 1.0
-        self.utc_time = None
+        self.utc_time: datetime = datetime.utcnow()
         self.gps_online: bool = True
         self.is_avionics_source: bool = False
         self.slip_skid: float = 0.0
