@@ -119,6 +119,128 @@ def strip(
     GL.glEnd()
 
 
+# Holds (source surface, texture id, size) for the texture
+# drawn by textured_disc so it is only uploaded when it changes.
+__DISC_TEXTURE__ = None
+
+__DISC_SEGMENTS__ = 72
+
+
+def __get_disc_texture__(
+    texture: pygame.Surface
+):
+    global __DISC_TEXTURE__
+
+    if __DISC_TEXTURE__ is not None and __DISC_TEXTURE__[0] is texture:
+        return __DISC_TEXTURE__[1], __DISC_TEXTURE__[2]
+
+    if __DISC_TEXTURE__ is not None:
+        GL.glDeleteTextures([__DISC_TEXTURE__[1]])
+
+    # Turn the black (colorkey) pixels into transparent ones.
+    size = texture.get_size()
+    with_alpha = pygame.Surface(size, pygame.SRCALPHA, 32)
+    with_alpha.fill((0, 0, 0, 0))
+    keyed = texture.copy()
+    keyed.set_colorkey((0, 0, 0))
+    with_alpha.blit(keyed, (0, 0))
+    rgba_data = pygame.image.tostring(with_alpha, "RGBA", False)
+
+    texture_id = GL.glGenTextures(1)
+    GL.glBindTexture(GL.GL_TEXTURE_2D, texture_id)
+    GL.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1)
+    GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST)
+    GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST)
+    GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP_TO_EDGE)
+    GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP_TO_EDGE)
+    GL.glTexImage2D(
+        GL.GL_TEXTURE_2D,
+        0,
+        GL.GL_RGBA,
+        size[0],
+        size[1],
+        0,
+        GL.GL_RGBA,
+        GL.GL_UNSIGNED_BYTE,
+        rgba_data)
+
+    __DISC_TEXTURE__ = (texture, texture_id, size)
+
+    return texture_id, size
+
+
+def textured_disc(
+    framebuffer,
+    texture: pygame.Surface,
+    texture_center: list,
+    scale: list,
+    rotation_degrees: float,
+    screen_center: list,
+    radius: int
+):
+    """
+    Draws a circular section of a texture, scaled and rotated, onto the framebuffer.
+    Black pixels in the texture are treated as transparent.
+
+    Args:
+        framebuffer: Ignored
+        texture (pygame.Surface): The texture to draw from. Must not be modified after it is first drawn.
+        texture_center (list): The (x, y) position in the texture, in fractional pixels, to place at the screen center.
+        scale (list): The (x, y) number of screen pixels for each texture pixel.
+        rotation_degrees (float): How far to rotate the texture counter-clockwise.
+        screen_center (list): The center of the disc on screen.
+        radius (int): The radius of the disc on screen.
+    """
+    if radius <= 0 or scale[0] <= 0.0 or scale[1] <= 0.0:
+        return
+
+    texture_id, size = __get_disc_texture__(texture)
+
+    radians = math.radians(rotation_degrees)
+    rotation_sin = math.sin(radians)
+    rotation_cos = math.cos(radians)
+
+    def get_texture_coordinate(screen_x: float, screen_y: float):
+        # Undo the rotation, then the scale, to find the texture pixel.
+        delta_x = screen_x - screen_center[0]
+        delta_y = screen_y - screen_center[1]
+        unrotated_x = (delta_x * rotation_cos) - (delta_y * rotation_sin)
+        unrotated_y = (delta_x * rotation_sin) + (delta_y * rotation_cos)
+
+        return (
+            (texture_center[0] + (unrotated_x / scale[0])) / size[0],
+            (texture_center[1] + (unrotated_y / scale[1])) / size[1])
+
+    was_polygon_smooth = GL.glIsEnabled(GL.GL_POLYGON_SMOOTH)
+
+    # Smoothing would leave seams between the triangles of the fan.
+    GL.glDisable(GL.GL_POLYGON_SMOOTH)
+    GL.glEnable(GL.GL_TEXTURE_2D)
+    GL.glEnable(GL.GL_ALPHA_TEST)
+    GL.glAlphaFunc(GL.GL_GREATER, 0.5)
+    GL.glBindTexture(GL.GL_TEXTURE_2D, texture_id)
+    GL.glColor3f(1.0, 1.0, 1.0)
+
+    GL.glBegin(GL.GL_TRIANGLE_FAN)
+    GL.glTexCoord2f(*get_texture_coordinate(screen_center[0], screen_center[1]))
+    GL.glVertex2f(screen_center[0], screen_center[1])
+
+    for segment_index in range(__DISC_SEGMENTS__ + 1):
+        angle = (2.0 * math.pi * segment_index) / __DISC_SEGMENTS__
+        edge_x = screen_center[0] + (math.cos(angle) * radius)
+        edge_y = screen_center[1] + (math.sin(angle) * radius)
+        GL.glTexCoord2f(*get_texture_coordinate(edge_x, edge_y))
+        GL.glVertex2f(edge_x, edge_y)
+
+    GL.glEnd()
+
+    GL.glDisable(GL.GL_ALPHA_TEST)
+    GL.glDisable(GL.GL_TEXTURE_2D)
+
+    if was_polygon_smooth:
+        GL.glEnable(GL.GL_POLYGON_SMOOTH)
+
+
 def circle(
     framebuffer,
     color: list,

@@ -3,11 +3,11 @@ View element for a weather "radar" that looks from the top downwards.
 """
 
 import datetime
+import math
 from typing import List
 
 import pygame
 
-from common_utils import geo_math
 from common_utils.task_timer import TaskProfiler
 from common_utils.tasks import IntermittentTask
 from configuration import configuration
@@ -17,6 +17,7 @@ from data_sources.ahrs_data import AhrsData
 from data_sources.airports import load_example_airports, load_example_flight_rules
 from data_sources.nexrad import NexradClient, ReflectivityBlock
 from rendering import colors, drawing
+from views.reflectivity_bitmap import ReflectivityBitmap
 from views.abstract_elements.top_down_scope import TopDownScope
 
 
@@ -25,9 +26,6 @@ class WeatherTopViewScope(TopDownScope):
     A view element for the HUD that draws a radar style scope
     showing where traffic is relative to our current position.
     """
-
-    BIN_ROWS = [0, 1, 2, 3]
-    BIN_COLUMNS = list(range(32))
 
     def handle_events(self, unhandled_events) -> list:
 
@@ -65,6 +63,9 @@ class WeatherTopViewScope(TopDownScope):
         self.__time_of_last_block_fetch__ = datetime.datetime.now(
             datetime.timezone.utc)
         self.__nexrad_cache__: List[ReflectivityBlock] | None = None
+        self.__reflectivity_blocks__: List[ReflectivityBlock] | None = None
+        self.__reflectivity_signature__ = None
+        self.__reflectivity_bitmap__: ReflectivityBitmap | None = None
         self.__zoom_manager__: ZoomManager = ZoomManager()
         self.__zoom_manager__.manual_zoom_out()
         self.__zoom_manager__.manual_zoom_out()
@@ -87,10 +88,6 @@ class WeatherTopViewScope(TopDownScope):
         orientation: AhrsData,
     ):
         self.__log_bin_stats_task__.run()
-        self.__successful_bin_counts__ = 0
-        self.__failed_bin_counts__ = 0
-        self.__missing_bin_counts__ = 0
-        current_heading: int | str = 0
 
         scope_range = self.__zoom_manager__.get_current_zoom()
 
@@ -112,12 +109,12 @@ class WeatherTopViewScope(TopDownScope):
                     orientation.position, self.__maximum_radar_range__
                 )
 
-        [
-            self.__render_block__(
-                framebuffer, orientation, current_heading, scope_range, block
-            )
-            for block in nexrad_blocks
-        ]
+                bitmap = self.__get_reflectivity_bitmap__(nexrad_blocks)
+
+                if bitmap is not None:
+                    self.__draw_reflectivity_bitmap__(
+                        framebuffer, orientation, current_heading, scope_range, bitmap
+                    )
 
         self.__render_debug_visuals__(framebuffer, nexrad_blocks)
 
@@ -141,7 +138,7 @@ class WeatherTopViewScope(TopDownScope):
                 framebuffer,
                 f"Nearby: {self.__nearby_blocks_count__}",
                 nearby_position,
-                colors.YELLOW,
+                list(colors.YELLOW),
                 0.5,
             )
 
@@ -151,7 +148,7 @@ class WeatherTopViewScope(TopDownScope):
                 framebuffer,
                 f"Total: {self.__total_blocks_count__}",
                 total_position,
-                colors.YELLOW,
+                list(colors.YELLOW),
                 0.5,
             )
 
@@ -170,175 +167,72 @@ class WeatherTopViewScope(TopDownScope):
 
         return self.__nexrad_cache__
 
-    def __render_block__(
+    def __get_reflectivity_bitmap__(
+        self, nexrad_blocks: List[ReflectivityBlock]
+    ) -> "ReflectivityBitmap | None":
+        """
+        Returns the bitmap of the given blocks, only drawing it again
+        when the blocks, or their reports, have changed.
+        """
+        if nexrad_blocks is self.__reflectivity_blocks__:
+            return self.__reflectivity_bitmap__
+
+        self.__reflectivity_blocks__ = nexrad_blocks
+        signature = [(block.block_id, block.report_time)
+                     for block in nexrad_blocks]
+
+        if signature == self.__reflectivity_signature__:
+            return self.__reflectivity_bitmap__
+
+        self.__reflectivity_signature__ = signature
+        self.__reflectivity_bitmap__ = None
+        self.__successful_bin_counts__ = 0
+        self.__failed_bin_counts__ = 0
+        self.__missing_bin_counts__ = 0
+
+        if len(nexrad_blocks) > 0:
+            with TaskProfiler(
+                "views.weather_top_view_scope.WeatherTopViewScope.draw_reflectivity_bitmap"
+            ):
+                self.__reflectivity_bitmap__ = ReflectivityBitmap(
+                    nexrad_blocks)
+
+            self.__successful_bin_counts__ = self.__reflectivity_bitmap__.successful_bins
+            self.__failed_bin_counts__ = self.__reflectivity_bitmap__.failed_bins
+            self.__missing_bin_counts__ = self.__reflectivity_bitmap__.missing_bins
+
+        return self.__reflectivity_bitmap__
+
+    def __draw_reflectivity_bitmap__(
         self,
         framebuffer,
         orientation: AhrsData,
-        current_heading,
+        current_heading: float,
         scope_range: ScopeRange,
-        block: ReflectivityBlock,
+        bitmap: "ReflectivityBitmap",
     ):
-        # Screen coordinates of the bin grid corners, keyed by (lat_edge, lon_edge).
-        # Shared by every run in the block so neighboring polygons get
-        # identical vertices and no seams are left between them.
-        corner_cache = {}
+        max_pixel_distance = self.__scope_center__[1] - self.__top_border__
+        pixels_per_mile = max_pixel_distance / scope_range.max_ring_range
 
-        [
-            self.__render_bin_row__(
-                framebuffer,
-                orientation,
-                current_heading,
-                scope_range,
-                block,
-                lat_index,
-                corner_cache,
-            )
-            for lat_index in WeatherTopViewScope.BIN_ROWS
-        ]
+        # The bitmap is in lat/lon, so a bin gets narrower the further
+        # from the equator we are.
+        bin_width_miles = (
+            bitmap.lon_step
+            * ReflectivityBitmap.MILES_PER_DEGREE
+            * math.cos(math.radians(orientation.position[0]))
+        )
+        bin_height_miles = bitmap.lat_step * ReflectivityBitmap.MILES_PER_DEGREE
 
-    def __get_bin_corner__(
-        self,
-        orientation: AhrsData,
-        current_heading,
-        scope_range: ScopeRange,
-        block: ReflectivityBlock,
-        lat_edge: int,
-        lon_edge: int,
-        corner_cache: dict,
-    ):
-        key = (lat_edge, lon_edge)
-        corner = corner_cache.get(key)
-
-        if corner is None:
-            corner = self.__get_precise_screen_coordinates__(
-                orientation,
-                current_heading,
-                scope_range,
-                [
-                    block.north_western[0] - (lat_edge * block.lat_step),
-                    block.north_western[1] + (lon_edge * block.lon_step),
-                ],
-            )
-            corner_cache[key] = corner
-
-        return corner
-
-    def __render_bin_row__(
-        self,
-        framebuffer,
-        orientation: AhrsData,
-        current_heading,
-        scope_range: ScopeRange,
-        block: ReflectivityBlock,
-        lat_index,
-        corner_cache: dict,
-    ):
-        if len(block.reflectivity) <= lat_index:
-            self.__missing_bin_counts__ += len(WeatherTopViewScope.BIN_COLUMNS)
-            return
-
-        lon_start_index: int = 0
-        rle = block.reflectivity[lat_index]
-
-        for run in rle:
-            try:
-                run_length: int = run["runLength"]
-                reflectivity: int = run["reflectivity"]
-
-                self.__render_bin_lon_range__(
-                    framebuffer,
-                    orientation,
-                    current_heading,
-                    scope_range,
-                    lon_start_index,
-                    lon_start_index + (run_length - 1),
-                    lat_index,
-                    block,
-                    reflectivity,
-                    corner_cache,
-                )
-                lon_start_index += run_length
-            except:
-                pass
-
-    def __render_bin_lon_range__(
-        self,
-        framebuffer,
-        orientation,
-        current_heading,
-        scope_range: ScopeRange,
-        lon_start_index,
-        lon_end_index,
-        lat_index,
-        block: ReflectivityBlock,
-        reflectivity,
-        corner_cache: dict,
-    ):
-        if lon_end_index < lon_start_index:
-            print(f"Invalid lon range: {lon_start_index} to {lon_end_index}")
-
-        try:
-            if reflectivity == 0:
-                self.__successful_bin_counts__ += lon_end_index - lon_start_index
-                return
-
-            color = NexradClient.reflectivity_to_rgb(reflectivity)
-
-            center_lat = block.north_western[0] - \
-                ((lat_index + 0.5) * block.lat_step)
-            center_lon = block.north_western[1] + (
-                ((lon_start_index + lon_end_index + 1) / 2.0) * block.lon_step
-            )
-            distance = geo_math.get_distance(
-                orientation.position, [center_lat, center_lon]
-            )
-
-            if distance > scope_range.max_ring_range:
-                return
-
-            # Lines of constant latitude curve on the scope, so a run can not be
-            # drawn as a single quad. Place a vertex at every bin boundary along
-            # the northern and southern edges so the edges follow the curve and
-            # line up with the vertices of the rows above and below.
-            lon_edges = range(lon_start_index, lon_end_index + 2)
-
-            north_points = [
-                self.__get_bin_corner__(
-                    orientation,
-                    current_heading,
-                    scope_range,
-                    block,
-                    lat_index,
-                    lon_edge,
-                    corner_cache,
-                )
-                for lon_edge in lon_edges
-            ]
-            south_points = [
-                self.__get_bin_corner__(
-                    orientation,
-                    current_heading,
-                    scope_range,
-                    block,
-                    lat_index + 1,
-                    lon_edge,
-                    corner_cache,
-                )
-                for lon_edge in lon_edges
-            ]
-
-            drawing.renderer.strip(
-                framebuffer,
-                color,
-                north_points,
-                south_points,
-            )
-        except Exception as ex:
-            self.__failed_bin_counts__ += 1
-
-            return
-
-        self.__successful_bin_counts__ += lon_end_index - lon_start_index
+        drawing.renderer.textured_disc(
+            framebuffer,
+            bitmap.surface,
+            list(bitmap.get_bitmap_position(orientation.position)),
+            [bin_width_miles * pixels_per_mile,
+                bin_height_miles * pixels_per_mile],
+            current_heading,
+            self.__scope_center__,
+            max_pixel_distance,
+        )
 
     def render(self, framebuffer: pygame.Surface, orientation: AhrsData):
         """

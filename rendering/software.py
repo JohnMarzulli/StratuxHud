@@ -2,6 +2,8 @@
 Rendering routines for the default PyGame software renderer.
 """
 
+import math
+
 import pygame
 import pygame.gfxdraw
 from common_utils import generic_data_cache
@@ -84,6 +86,126 @@ def strip(
         color,
         top_points + bottom_points[::-1],
         0)  # Make filled
+
+
+# Only one map is drawn at a time, so a single entry is enough.
+# Holding a reference to the texture keeps its id from being reused.
+__TEXTURED_DISC_CACHE__ = {}
+
+# Used as the "see through" color of the disc mask.
+# Must not be a color that the textures use.
+__MASK_KEY_COLOR__ = (255, 0, 255)
+
+
+def __get_disc_mask__(
+    framebuffer: pygame.Surface,
+    radius: int
+):
+    """
+    Returns a working surface the size of the disc, and a mask
+    that is black outside of the disc and transparent inside.
+    """
+    cached = __TEXTURED_DISC_CACHE__.get("mask")
+
+    if cached is not None and cached[0] == radius:
+        return cached[1], cached[2]
+
+    size = (radius << 1, radius << 1)
+    working = pygame.Surface(size, 0, framebuffer)
+    working.set_colorkey((0, 0, 0))
+
+    mask = pygame.Surface(size, 0, framebuffer)
+    mask.fill((0, 0, 0))
+    pygame.draw.circle(mask, __MASK_KEY_COLOR__, (radius, radius), radius)
+    mask.set_colorkey(__MASK_KEY_COLOR__)
+
+    __TEXTURED_DISC_CACHE__["mask"] = (radius, working, mask)
+
+    return working, mask
+
+
+def textured_disc(
+    framebuffer: pygame.Surface,
+    texture: pygame.Surface,
+    texture_center: list,
+    scale: list,
+    rotation_degrees: float,
+    screen_center: list,
+    radius: int
+):
+    """
+    Draws a circular section of a texture, scaled and rotated, onto the framebuffer.
+    Black pixels in the texture are treated as transparent.
+
+    The expensive scale and rotate are cached, and only performed again
+    when the rotation (to the nearest degree), scale, or the texture pixel
+    under the center changes.
+
+    Args:
+        framebuffer (pygame.Surface): The surface to render to.
+        texture (pygame.Surface): The texture to draw from. Must not be modified after it is first drawn.
+        texture_center (list): The (x, y) position in the texture, in fractional pixels, to place at the screen center.
+        scale (list): The (x, y) number of screen pixels for each texture pixel.
+        rotation_degrees (float): How far to rotate the texture counter-clockwise.
+        screen_center (list): The center of the disc on screen.
+        radius (int): The radius of the disc on screen.
+    """
+    radius = int(radius)
+
+    if radius <= 0 or scale[0] <= 0.0 or scale[1] <= 0.0:
+        return
+
+    # The part of the texture that covers the disc, no matter the rotation.
+    crop_left = math.floor(texture_center[0] - (radius / scale[0]))
+    crop_top = math.floor(texture_center[1] - (radius / scale[1]))
+    crop_size = (
+        math.ceil(texture_center[0] + (radius / scale[0])) - crop_left + 1,
+        math.ceil(texture_center[1] + (radius / scale[1])) - crop_top + 1)
+    scaled_size = (
+        max(1, int(crop_size[0] * scale[0] + 0.5)),
+        max(1, int(crop_size[1] * scale[1] + 0.5)))
+    rotation_degrees = int(round(rotation_degrees)) % 360
+
+    key = (crop_left, crop_top, crop_size, scaled_size, rotation_degrees)
+    cached = __TEXTURED_DISC_CACHE__.get("map")
+
+    if cached is not None and cached[0] is texture and cached[1] == key:
+        rotated = cached[2]
+    else:
+        cropped = pygame.Surface(crop_size, 0, framebuffer)
+        cropped.fill((0, 0, 0))
+        cropped.blit(texture, (-crop_left, -crop_top))
+
+        # Nearest neighbor scaling keeps every texture pixel a crisp block.
+        scaled = pygame.transform.scale(cropped, scaled_size)
+        scaled.set_colorkey((0, 0, 0))
+        rotated = pygame.transform.rotate(scaled, rotation_degrees)
+
+        __TEXTURED_DISC_CACHE__["map"] = (texture, key, rotated)
+
+    # Find where the texture center ended up after scaling and rotating.
+    offset_x = (texture_center[0] - crop_left) * \
+        (scaled_size[0] / crop_size[0]) - (scaled_size[0] / 2.0)
+    offset_y = (texture_center[1] - crop_top) * \
+        (scaled_size[1] / crop_size[1]) - (scaled_size[1] / 2.0)
+    radians = math.radians(rotation_degrees)
+    rotation_sin = math.sin(radians)
+    rotation_cos = math.cos(radians)
+    rotated_center_x = (rotated.get_width() / 2.0) + \
+        (offset_x * rotation_cos) + (offset_y * rotation_sin)
+    rotated_center_y = (rotated.get_height() / 2.0) - \
+        (offset_x * rotation_sin) + (offset_y * rotation_cos)
+
+    working, mask = __get_disc_mask__(framebuffer, radius)
+    working.fill((0, 0, 0))
+    working.blit(
+        rotated,
+        (int(round(radius - rotated_center_x)), int(round(radius - rotated_center_y))))
+    working.blit(mask, (0, 0))
+
+    framebuffer.blit(
+        working,
+        (int(round(screen_center[0])) - radius, int(round(screen_center[1])) - radius))
 
 
 def circle(
