@@ -39,7 +39,8 @@ def get_position_sample_rate(
     clamped_roll = min(MAX_ROLL, absolute_roll)
     proportion = clamped_roll / MAX_ROLL
     exponential_proportion = math.sqrt(proportion)
-    sample_rate = (1.0 - exponential_proportion) * (MINIMUM_POSITION_SAMPLE_RATE - MAXIMUM_POSITION_SAMPLE_RATE)
+    sample_rate = (1.0 - exponential_proportion) * \
+        (MINIMUM_POSITION_SAMPLE_RATE - MAXIMUM_POSITION_SAMPLE_RATE)
     sample_rate = MAXIMUM_POSITION_SAMPLE_RATE + sample_rate
     return sample_rate
 
@@ -63,7 +64,7 @@ class Breadcrumbs:
     ) -> None:
         super().__init__()
 
-        self.__breadcrumbs__ = deque()
+        self.__breadcrumbs__: deque[BreadcrumbReport] = deque()
         self.speed = ahrs_data.NOT_AVAILABLE
         self.__max_reports__ = int(max_reports)
         self.__speed_calculation_period_seconds__ = speed_calculation_period_seconds
@@ -71,9 +72,10 @@ class Breadcrumbs:
 
     def __get_seconds_since_last_report_time__(
         self
-    ) -> datetime:
+    ) -> float:
         if (self.__breadcrumbs__ is not None) and (len(self.__breadcrumbs__) > 0):
-            time_since_last_report = datetime.utcnow() - self.__breadcrumbs__[-1].timestamp
+            time_since_last_report = datetime.utcnow(
+            ) - self.__breadcrumbs__[-1].timestamp
 
             return time_since_last_report.total_seconds()
 
@@ -92,7 +94,7 @@ class Breadcrumbs:
 
     def __get_speed_estimate__(
         self
-    ) -> float:
+    ) -> float | str:
         """
         Generates a guess at our REAL groundspeed based on where we have been.
         The idea is to take into account work in the pattern and keep our
@@ -113,22 +115,29 @@ class Breadcrumbs:
         if current_size < 5:
             return ahrs_data.NOT_AVAILABLE
 
-        oldest_timestamp_to_process = datetime.utcnow() - timedelta(seconds=self.__speed_calculation_period_seconds__)
-        reports = list(filter(lambda x: x.timestamp >= oldest_timestamp_to_process, self.__breadcrumbs__))
+        oldest_timestamp_to_process = datetime.utcnow(
+        ) - timedelta(seconds=self.__speed_calculation_period_seconds__)
+        reports = list(filter(lambda x: x.timestamp >=
+                       oldest_timestamp_to_process, self.__breadcrumbs__))
 
         oldest_report_to_process = reports[0]
         latest_report = reports[-1]
-        distance = geo_math.get_distance(oldest_report_to_process.position, latest_report.position)
+        distance = geo_math.get_distance(
+            oldest_report_to_process.position, latest_report.position)
 
         # This gives us Statue Miles per second
-        delta_time = (latest_report.timestamp - oldest_report_to_process.timestamp).total_seconds()
+        delta_time = (latest_report.timestamp -
+                      oldest_report_to_process.timestamp).total_seconds()
         speed = distance / delta_time if delta_time > 0.0 else ahrs_data.NOT_AVAILABLE
 
-        statute_miles_per_hour = speed * 3600
+        if isinstance(speed, float):
+            statute_miles_per_hour: float = speed * 3600
 
-        # Distance is always in yards with the Stratux,
-        # we will follow that pattern.
-        return statute_miles_per_hour * units.yards_to_sm
+            # Distance is always in yards with the Stratux,
+            # we will follow that pattern.
+            return statute_miles_per_hour * units.yards_to_sm
+
+        return ahrs_data.NOT_AVAILABLE
 
     def get_trail(
         self
@@ -153,8 +162,10 @@ class Breadcrumbs:
             return []
 
         now = datetime.utcnow()
-        oldest_trail_report = now - timedelta(seconds=self.__seconds_of_trail_to_show__)
-        reports = list(filter(lambda x: x.timestamp >= oldest_trail_report, self.__breadcrumbs__))
+        oldest_trail_report = now - \
+            timedelta(seconds=self.__seconds_of_trail_to_show__)
+        reports = list(filter(lambda x: x.timestamp >=
+                       oldest_trail_report, self.__breadcrumbs__))
 
         return [[report.position, 1.0 - ((now - report.timestamp).total_seconds() / self.__seconds_of_trail_to_show__)]
                 for report in reports]
@@ -174,15 +185,19 @@ class Breadcrumbs:
             bool: True if the position report was added to the breadcrumbs
         """
 
-        seconds_since_last_update = MINIMUM_POSITION_SAMPLE_RATE + MAXIMUM_POSITION_SAMPLE_RATE
-        sample_rate = get_position_sample_rate(orientation.roll) if orientation is not None else MINIMUM_POSITION_SAMPLE_RATE
+        seconds_since_last_update = MINIMUM_POSITION_SAMPLE_RATE + \
+            MAXIMUM_POSITION_SAMPLE_RATE
+        sample_rate = get_position_sample_rate(
+            orientation.roll) if orientation is not None else MINIMUM_POSITION_SAMPLE_RATE
         seconds_since_last_update = self.__get_seconds_since_last_report_time__()
 
         if seconds_since_last_update < sample_rate:
             return False
 
+        # This is intended to limit the number of stored breadcrumbs for
+        # memory and rendering performance.
         while len(self.__breadcrumbs__) > self.__max_reports__:
-            self.__breadcrumbs__.get()
+            self.__breadcrumbs__.pop()
 
         if self.__report__(orientation.position):
             self.speed = self.__get_speed_estimate__()
@@ -204,7 +219,7 @@ if __name__ == '__main__':
     # Run a simulated flight from Seattle to Oshkosh at about 91MPH.
     # Print out the speed when a new report has been updated.
 
-    kawo = [48.16075,-122.15902777]
+    kawo = [48.16075, -122.15902777]
     ksea = [47.6, -122.3]
     kosh = [44.0, -88.5]
 
@@ -221,11 +236,14 @@ if __name__ == '__main__':
     end_time = starting_time + timedelta(hours=17.5)
 
     while datetime.utcnow() < end_time:
-        hours_since_start = ((datetime.utcnow() - starting_time).total_seconds() / 60.0) / 60.0
+        hours_since_start = (
+            (datetime.utcnow() - starting_time).total_seconds() / 60.0) / 60.0
         proportion_into_simulation = hours_since_start / hours_to_destination
 
-        simulated_lat = fast_math.interpolatef(kawo[0], kosh[0], proportion_into_simulation)
-        simulated_long = fast_math.interpolatef(kawo[1], kosh[1], proportion_into_simulation)
+        simulated_lat = fast_math.interpolatef(
+            kawo[0], kosh[0], proportion_into_simulation)
+        simulated_long = fast_math.interpolatef(
+            kawo[1], kosh[1], proportion_into_simulation)
 
         simulated_ahrs = AhrsData()
         simulated_ahrs.position = [simulated_lat, simulated_long]
