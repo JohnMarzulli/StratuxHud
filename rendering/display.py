@@ -68,6 +68,12 @@ class Display:
 
     __DEFAULT_SCREEN_SIZE__ = 800, 480  # 1600, 960
 
+    # Largest fullscreen mode the HUD will use. Kept low on purpose:
+    # bigger modes cost frame rate for no visible gain on a HUD,
+    # and on a Pi 4 the pixel clock of 2560x1440@60 (241.5MHz)
+    # jams 2.4GHz WiFi channel 1.
+    __MAX_FULLSCREEN_SIZE__ = 1280, 720
+
     def __is_fullscreen_target__(
         self
     ) -> bool:
@@ -88,7 +94,8 @@ class Display:
             int: The combined bitflags of all of our screenmodes.
         """
         # DOUBLEBUF may be causing issues with FBCON and flickering.
-        screen_mode = pygame.HWACCEL | pygame.constants.RLEACCEL  # | pygame.constants.DOUBLEBUF
+        # | pygame.constants.DOUBLEBUF
+        screen_mode = pygame.HWACCEL | pygame.constants.RLEACCEL
         is_fullscreen = False
 
         if self.__is_fullscreen_target__() or force_fullscreen:
@@ -102,13 +109,62 @@ class Display:
 
         return screen_mode, is_fullscreen
 
-    def __get_target_screen_size__(
+    def __get_desktop_size__(
         self
-    ) -> list:
+    ) -> tuple:
         if pygame is not None and pygame.display is not None and pygame.display.get_init() != 0:
             return pygame.display.Info().current_w, pygame.display.Info().current_h
 
         return Display.__DEFAULT_SCREEN_SIZE__
+
+    def __get_target_screen_size__(
+        self
+    ) -> tuple:
+        """
+        Get the screen size to use. The current (desktop) mode is
+        kept whenever it is small enough, since changing modes makes
+        the display renegotiate the HDMI link. Otherwise the largest
+        mode the display lists that fits within the maximum is used,
+        preferring one with the same aspect ratio.
+
+        Returns:
+            tuple: The width and height to use.
+        """
+        desktop_size = self.__get_desktop_size__()
+        max_width, max_height = Display.__MAX_FULLSCREEN_SIZE__
+
+        if desktop_size[0] <= max_width and desktop_size[1] <= max_height:
+            return desktop_size
+
+        try:
+            modes = pygame.display.list_modes()
+        except pygame.error:
+            return desktop_size
+
+        # list_modes() returns -1 when any size is allowed.
+        if not isinstance(modes, list):
+            return desktop_size
+
+        fitting_modes = [
+            mode for mode in modes
+            if mode[0] <= max_width and mode[1] <= max_height]
+
+        if not fitting_modes:
+            return desktop_size
+
+        desktop_aspect = desktop_size[0] / desktop_size[1]
+        same_aspect_modes = [
+            mode for mode in fitting_modes
+            if abs((mode[0] / mode[1]) - desktop_aspect) < 0.01]
+
+        best_mode = max(
+            same_aspect_modes or fitting_modes,
+            key=lambda mode: mode[0] * mode[1])
+
+        print("Desktop mode {}x{} is too large, using {}x{}".format(
+            desktop_size[0], desktop_size[1], best_mode[0], best_mode[1]))
+
+        return tuple(best_mode)
 
     def __init__(
         self,
@@ -135,7 +191,8 @@ class Display:
         # List of drivers:
         # https://wiki.libsdl.org/FAQUsingSDL
         if not __is_x_windows__() and not __is_mac__():
-            drivers = ['kmsdrm', 'fbcon', 'directfb', 'svgalib', 'directx', 'windib', 'Quartz']
+            drivers = ['kmsdrm', 'fbcon', 'directfb',
+                       'svgalib', 'directx', 'windib', 'Quartz']
             found = False
             for driver in drivers:
                 if not os.getenv('SDL_VIDEODRIVER'):
@@ -164,7 +221,8 @@ class Display:
             self.size = self.__get_target_screen_size__()
             print("Detected fullscreen")
 
-        print("Now setting screensize to {}x{}".format(self.size[0], self.size[1]))
+        print("Now setting screensize to {}x{}".format(
+            self.size[0], self.size[1]))
         # A size of (0, 0) tells SDL to keep the mode the console is
         # already using, so KMS does not renegotiate the HDMI link.
         # This is important due to changes between Buster and Trixie
@@ -172,7 +230,9 @@ class Display:
         # is different.
         # A bad initialization can cause bad aspect rations,
         # doubled images, flickering, and other unsable states.
-        screen = pygame.display.set_mode((0, 0) if is_fullscreen else self.size, display_mode)
+        keep_desktop_mode = is_fullscreen and self.size == self.__get_desktop_size__()
+        screen = pygame.display.set_mode(
+            (0, 0) if keep_desktop_mode else self.size, display_mode)
         self.size = screen.get_size()
 
         if self.is_open_gl:
