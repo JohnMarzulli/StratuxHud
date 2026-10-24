@@ -23,7 +23,7 @@ The first is as a stand-alone unit. For the standalone configuration, the HUD co
 The second is in an "All-In-One" (AIO) configuration. With an AIO setup, the HUD code runs on the Stratux.
 
 | Feature                    | Stand Alone | AIO          |
-| -------------------------- | ----------- | ------------ |
+|----------------------------|-------------|--------------|
 | Keypad Control             | Yes         | No           |
 | Dynon D180 Support         | Yes         | No           |
 | Aithre CO Monitor          | Yes         | Experimental |
@@ -87,7 +87,7 @@ For more information on the setup, and installation of the DynonToHud service, p
 You may use a number pad as an input device. I used velcro to secure the number pad to my dashboard.
 
 | Key         | Action                                                                       |
-| ----------- | ---------------------------------------------------------------------------- |
+|-------------|------------------------------------------------------------------------------|
 | Backspace   | Tell the Stratux that you are in a level position. Resets the AHRS to level. |
 | +           | Next view                                                                    |
 | Right Arrow | Next view                                                                    |
@@ -483,6 +483,7 @@ These instructions assume you are using Raspberry Pi OS (Trixie) or newer. You m
 For Trixie you may need to diable EDID if issues with the resolution appear. These would include the display at the wrong aspect ratio, flickering, double images, and more.
 
 1. Enter `ping google.com`. Press ctrl+c after a while. This will confirm that you have internet access. If you do not, then use rasp-config to re-enter your wi-fi
+1. `sudo apt install vim`
 1. `cd ~`
 1. `git clone https://github.com/JohnMarzulli/StratuxHud.git`
 1. `cd StratuxHud`
@@ -491,6 +492,29 @@ For Trixie you may need to diable EDID if issues with the resolution appear. The
 1. `python -m venv .venv`
 1. `source ~/StratuxHud/.venv/bin/activate` 
 1. `pip3 install pytest, pygame-ce, requests`
+
+### HDMI Issues
+
+If you have strange visual artifacts on boot, you may need to modify the /boot/firmware/cmdline.txt file.
+
+This version helps prevent HDMI renegotiation and resolution changes.
+
+```
+console=serial0,115200 console=tty1 root=PARTUUID=6f8d6066-02 rootfstype=ext4 fsck.repair=yes rootwait cfg80211.ieee80211_regdom=US
+```
+
+### Running The HUD At Start Up
+
+There are two choices. Pick only one.
+
+#### Installing by Crontab 
+
+1. `crontab -e`
+1. Add the following entry to the crontab file: `@reboot /home/pi/StratuxHud/.venv/bin/python3 /home/pi/StratuxHud/stratux_hud.py &`
+1. Save and quit
+
+#### Installing as a Service
+
 1. Install the unit file by executing `sudo cp StratuxHud.service /etc/systemd/system/StratuxHud.service`
 1. Reload systemd, enable on boot, start now
     1. `sudo systemctl daemon-reload`
@@ -501,12 +525,6 @@ For Trixie you may need to diable EDID if issues with the resolution appear. The
 Note that there are instrucions for running the TrafficToHud and DynonToHud service at boot in their respective repositories.
 
 1. Save and quit.
-
-#### Alternative
-
-Use LXDE autostart:
-
-<https://www.raspberrypi.org/forums/viewtopic.php?t=275703>
 
 #### 7.2.1 Developer Note
 
@@ -635,7 +653,7 @@ You will find the solder pads on the bottom of the Raspberry Pi 3, near the Micr
 ### 8.3 Revision History
 
 | Date       | Version | Major Changes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| ---------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|------------|---------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 2025-11-15 | 2.2     | Major refactor, addition of NEXRAD, weather products, radio frequencies, and more                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | 2020-10-31 | 2.0     | Migration to Python V3, with major refactoring of underlying code. New TopDownScope element and view.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | 2020-04-20 | 1.7     | Now able to cycle through views using the HudConfig page. Support for Illyrian by Aithre. Split Aithre data collection into a micro-service. Improve warning on some elements when GPS lock is lost. Fix user configuration files not always being used or saved. Support new V3 radio and Stratux 1.6\. Experimental support for Aithre in Stratux + HUD AIO configurations. Updates to distance conversion. Use the same naming strategy for aircraft as popular EFBs. Support data collected from Dynon serial output using the DynonToHud project. Indicate which speeds are IAS and groundspeed when GPS and Avionics data are both available. Update element positions. Added new indication when the Traffic service is not available. |
@@ -652,7 +670,7 @@ You will find the solder pads on the bottom of the Raspberry Pi 3, near the Micr
 Please note that performance characteristics are only shown for displays that are currently available for purchase. The Hudly Classic is intentionally not listed.
 
 | Board                          | Screen         | Frames Per Second (AHRS View Only) | Notes              |
-| ------------------------------ | -------------- | ---------------------------------- | ------------------ |
+|--------------------------------|----------------|------------------------------------|--------------------|
 | Rasp Pi 2 (stand-alone)        | Sun Founder 5" | ~25FPS to ~30FPS                   | Not recommended    |
 | Rasp Pi 3 (stand-alone)        | Kivic          | 50FPS - 60FPS                      | Recommended        |
 | Rasp Pi 3 (stand-alone)        | Hudly Wireless | 30FPS - 50FPS                      | Recommended        |
