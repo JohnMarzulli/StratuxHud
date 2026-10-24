@@ -12,7 +12,23 @@ REQUIRED_PYTHON_VERSION = 3.5
 
 IS_LINUX = 'linux' in os_platform
 DETECTED_CPU = platform.machine()
-IS_PI = "arm" in DETECTED_CPU
+
+
+def __is_raspberry_pi__() -> bool:
+    # 64-bit Raspberry Pi OS (Bookworm, Trixie) reports "aarch64",
+    # so check the board model before falling back to the CPU name.
+    # 32-bit releases such as Buster report "armv7l" and match either way.
+    try:
+        with open("/proc/device-tree/model", "r") as model:
+            if "raspberry pi" in model.read().lower():
+                return True
+    except (OSError, ValueError):
+        pass
+
+    return "arm" in DETECTED_CPU
+
+
+IS_PI = __is_raspberry_pi__()
 IS_SLOW = IS_PI and "v7l" in DETECTED_CPU
 IS_MAC = "darwin" in os_platform
 

@@ -165,7 +165,15 @@ class Display:
             print("Detected fullscreen")
 
         print("Now setting screensize to {}x{}".format(self.size[0], self.size[1]))
-        pygame.display.set_mode(self.size, display_mode)
+        # A size of (0, 0) tells SDL to keep the mode the console is
+        # already using, so KMS does not renegotiate the HDMI link.
+        # This is important due to changes between Buster and Trixie
+        # on Raspberry Pi OS where the video initialization
+        # is different.
+        # A bad initialization can cause bad aspect rations,
+        # doubled images, flickering, and other unsable states.
+        screen = pygame.display.set_mode((0, 0) if is_fullscreen else self.size, display_mode)
+        self.size = screen.get_size()
 
         if self.is_open_gl:
             GL.glEnable(GL.GL_POLYGON_SMOOTH)
