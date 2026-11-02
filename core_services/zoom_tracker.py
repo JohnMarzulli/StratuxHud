@@ -2,6 +2,7 @@
 Handles determining how far out we care about traffic.
 """
 
+from common_utils.authoritative_time import get_system_time
 from core_services import breadcrumbs
 from datetime import datetime
 from numbers import Number
@@ -36,7 +37,8 @@ def get_groundspeed(display_units: str, orientation: AhrsData) -> float:
 
     groundspeed = (
         units.get_converted_units(
-            display_units, orientation.groundspeed * units.yards_to_nm)
+            display_units, orientation.groundspeed * units.yards_to_nm
+        )
         if is_valid_groundspeed
         else 0
     )
@@ -59,7 +61,7 @@ class ZoomTracker:
 
         self.__zoom_manager__ = ZoomManager()
 
-        self.__last_changed__ = datetime.now(timezone.utc)
+        self.__last_changed__: datetime = get_system_time()
         self.__last_zoom__: ScopeRange = self.__zoom_manager__.get_current_zoom()
         self.__user_units__ = configuration.CONFIGURATION.get_units()
         self.__update_units_task__ = tasks.IntermittentTask(
@@ -68,12 +70,12 @@ class ZoomTracker:
 
     def manual_zoom_in(self):
         self.__zoom_manager__.manual_zoom_in()
-        self.__last_changed__ = datetime.now(timezone.utc)
+        self.__last_changed__: datetime = get_system_time()
         self.__last_zoom__ = self.__get_target_zoom__()
 
     def manual_zoom_out(self):
         self.__zoom_manager__.manual_zoom_out()
-        self.__last_changed__ = datetime.now(timezone.utc)
+        self.__last_changed__: datetime = get_system_time()
         self.__last_zoom__ = self.__get_target_zoom__()
 
     def return_to_automatic(self):
@@ -90,9 +92,7 @@ class ZoomTracker:
         Returns:
             [Number, int]: The range and step of the scope rings
         """
-        seconds_into_zoom = (
-            datetime.now(timezone.utc) - self.__last_changed__
-        ).total_seconds()
+        seconds_into_zoom = (get_system_time() - self.__last_changed__).total_seconds()
 
         return get_actual_zoom(
             seconds_into_zoom, self.__last_zoom__, self.__get_target_zoom__()
@@ -113,8 +113,7 @@ class ZoomTracker:
         if raw_distance is None:
             return (False, 0.0)
 
-        display_distance = units.get_converted_units(
-            self.__user_units__, raw_distance)
+        display_distance = units.get_converted_units(self.__user_units__, raw_distance)
 
         scope_range = self.__get_target_zoom__().max_ring_range
 
@@ -132,8 +131,7 @@ class ZoomTracker:
             bool: TRUE is the target is within the inner scope range.
         """
 
-        display_distance = units.get_converted_units(
-            self.__user_units__, raw_distance)
+        display_distance = units.get_converted_units(self.__user_units__, raw_distance)
 
         scope_range = self.__get_target_zoom__().center_ring_range
 
@@ -188,7 +186,7 @@ class ZoomTracker:
             return
 
         delta_since_last_change = (
-            datetime.now(timezone.utc) - self.__last_changed__
+            get_system_time() - self.__last_changed__
         ).total_seconds()
 
         if delta_since_last_change < MINIMUM_SECONDS_BETWEEN_ZOOM_CHANGE:
@@ -197,7 +195,7 @@ class ZoomTracker:
         print(f"Setting new target zoom={new_target_zoom.max_ring_range}")
 
         self.__last_zoom__ = self.__get_target_zoom__()
-        self.__last_changed__ = datetime.now(timezone.utc)
+        self.__last_changed__: datetime = get_system_time
 
         if new_target_zoom.center_ring_range > self.__last_zoom__.center_ring_range:
             self.__zoom_manager__.automatic_zoom_out()

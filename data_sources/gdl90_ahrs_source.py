@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 
 import requests
 from common_utils import data_cache, logging_object
+from common_utils.authoritative_time import get_system_time
 from common_utils.logger import HudLogger
 from configuration import configuration
 
@@ -21,12 +22,7 @@ class AhrsStratux(logging_object.LoggingObject):
     Class to pull actual AHRS data from a Stratux (or Stratus)
     """
 
-    def __get_value_with_fallback__(
-        self,
-        ahrs_json: dict,
-        keys: list,
-        default
-    ):
+    def __get_value_with_fallback__(self, ahrs_json: dict, keys: list, default):
         if keys is None:
             return default
 
@@ -35,10 +31,7 @@ class AhrsStratux(logging_object.LoggingObject):
 
         return values[0] if values is not None and values else default
 
-    def __decode_situation__(
-        self,
-        ahrs_json: str
-    ) -> dict:
+    def __decode_situation__(self, ahrs_json: str) -> dict:
         """
         Decodes AHRS results from getSituation into a package that is
         usable by the HUD.
@@ -53,61 +46,52 @@ class AhrsStratux(logging_object.LoggingObject):
         """
         new_ahrs_data = ahrs_data.AhrsData()
 
-        system_utc_time = str(datetime.now(timezone.utc))
+        system_utc_time = str(get_system_time())
 
-        new_ahrs_data.is_avionics_source = ahrs_json is not None\
-            and "Service" in ahrs_json\
-            and "ToHud" in ahrs_json["Service"]\
+        new_ahrs_data.is_avionics_source = (
+            ahrs_json is not None
+            and "Service" in ahrs_json
+            and "ToHud" in ahrs_json["Service"]
             and len(ahrs_json) > 1
+        )
 
-        new_ahrs_data.gps_online = ahrs_json.get(
-            'GPSFixQuality',
-            0) > 0
+        new_ahrs_data.gps_online = ahrs_json.get("GPSFixQuality", 0) > 0
 
-        latitude = ahrs_json.get(
-            'GPSLatitude',
-            None) if new_ahrs_data.gps_online else None
-        longitude = ahrs_json.get(
-            'GPSLongitude',
-            None) if new_ahrs_data.gps_online else None
-        new_ahrs_data.roll = ahrs_json.get(
-            'AHRSRoll',
-            0.0)
-        new_ahrs_data.pitch = ahrs_json.get(
-            'AHRSPitch',
-            0.0)
+        latitude = (
+            ahrs_json.get("GPSLatitude", None) if new_ahrs_data.gps_online else None
+        )
+        longitude = (
+            ahrs_json.get("GPSLongitude", None) if new_ahrs_data.gps_online else None
+        )
+        new_ahrs_data.roll = ahrs_json.get("AHRSRoll", 0.0)
+        new_ahrs_data.pitch = ahrs_json.get("AHRSPitch", 0.0)
         new_ahrs_data.compass_heading = ahrs_json.get(
-            'AHRSGyroHeading',
-            1080)  # anything above 360 indicates "not available"
+            "AHRSGyroHeading", 1080
+        )  # anything above 360 indicates "not available"
         new_ahrs_data.gps_heading = ahrs_json.get(
-            'GPSTrueCourse',
-            ahrs_data.NOT_AVAILABLE)
+            "GPSTrueCourse", ahrs_data.NOT_AVAILABLE
+        )
         new_ahrs_data.alt = self.__get_value_with_fallback__(
             ahrs_json,
-            ['Altitude', 'GPSAltitudeMSL', 'BaroPressureAltitude'],
-            ahrs_data.NOT_AVAILABLE)
+            ["Altitude", "GPSAltitudeMSL", "BaroPressureAltitude"],
+            ahrs_data.NOT_AVAILABLE,
+        )
         new_ahrs_data.position = (latitude, longitude)
         new_ahrs_data.vertical_speed = self.__get_value_with_fallback__(
             ahrs_json,
-            ["BaroVerticalSpeed", 'GPSVerticalSpeed'],
-            ahrs_data.NOT_AVAILABLE)
-        new_ahrs_data.airspeed = ahrs_json.get(
-            'AHRSAirspeed',
-            ahrs_data.NOT_AVAILABLE)
-        new_ahrs_data.groundspeed = ahrs_json.get(
-            'GPSGroundSpeed',
-            ahrs_data.NOT_AVAILABLE) if new_ahrs_data.gps_online else ahrs_data.NOT_AVAILABLE
-        new_ahrs_data.g_load = ahrs_json.get(
-            'AHRSGLoad',
-            ahrs_data.NOT_AVAILABLE)
-        new_ahrs_data.utc_time = ahrs_json.get(
-            'GPSTime',
-            system_utc_time)
-
-        new_ahrs_data.slip_skid = ahrs_json.get(
-            'AHRSSlipSkid',
-            None
+            ["BaroVerticalSpeed", "GPSVerticalSpeed"],
+            ahrs_data.NOT_AVAILABLE,
         )
+        new_ahrs_data.airspeed = ahrs_json.get("AHRSAirspeed", ahrs_data.NOT_AVAILABLE)
+        new_ahrs_data.groundspeed = (
+            ahrs_json.get("GPSGroundSpeed", ahrs_data.NOT_AVAILABLE)
+            if new_ahrs_data.gps_online
+            else ahrs_data.NOT_AVAILABLE
+        )
+        new_ahrs_data.g_load = ahrs_json.get("AHRSGLoad", ahrs_data.NOT_AVAILABLE)
+        new_ahrs_data.utc_time = ahrs_json.get("GPSTime", system_utc_time)
+
+        new_ahrs_data.slip_skid = ahrs_json.get("AHRSSlipSkid", None)
 
         if new_ahrs_data.g_load is not ahrs_data.NOT_AVAILABLE:
             if new_ahrs_data.g_load > self.__max_gs__:
@@ -165,25 +149,19 @@ class AhrsStratux(logging_object.LoggingObject):
         #     "AHRSStatus": 7
         # }
 
-    def update(
-        self
-    ):
+    def update(self):
         """
         Attempts to get the AHRS data from the Stratux source.
         """
         self.__stratux_ahrs_cache__.update()
 
-    def update_avionics(
-        self
-    ):
+    def update_avionics(self):
         """
         Attempts to get the AHRS data from the avionics source.
         """
         self.__avionics_cache__.update()
 
-    def is_data_source_available(
-        self
-    ) -> bool:
+    def is_data_source_available(self) -> bool:
         """
         Checks if any AHRS source is available and recent.
 
@@ -191,14 +169,14 @@ class AhrsStratux(logging_object.LoggingObject):
             bool -- True if data is available and recent.
         """
         is_stratux_available = self.__stratux_ahrs_cache__.is_available()
-        is_avionics_available = self.__avionics_cache__.is_available() \
+        is_avionics_available = (
+            self.__avionics_cache__.is_available()
             and self.__avionics_cache__.get_item_count() > 1
+        )
 
         return is_stratux_available or is_avionics_available
 
-    def get_ahrs(
-        self
-    ) -> dict:
+    def get_ahrs(self) -> dict:
         """
         Returns a decoded AHRS object back. Attempts to combine ALL available
         AHRS data source.
@@ -223,10 +201,7 @@ class AhrsStratux(logging_object.LoggingObject):
 
         return self.__decode_situation__(package)
 
-    def __init__(
-        self,
-        logger: HudLogger
-    ):
+    def __init__(self, logger: HudLogger):
         super(AhrsStratux, self).__init__(logger)
 
         self.__stratux_session__ = requests.Session()
@@ -235,16 +210,20 @@ class AhrsStratux(logging_object.LoggingObject):
             "StratuxAhrsCache",
             self.__stratux_session__,
             "http://{0}/getSituation".format(
-                configuration.CONFIGURATION.stratux_address()),
+                configuration.CONFIGURATION.stratux_address()
+            ),
             MAX_STRATUX_AHRS_AGE,
-            configuration.AHRS_TIMEOUT)
+            configuration.AHRS_TIMEOUT,
+        )
         self.__avionics_cache__ = data_cache.RestfulDataCache(
             "AvionicsCache",
             self.__stratux_session__,
             "http://{0}/getSituation".format(
-                configuration.CONFIGURATION.avionics_address()),
+                configuration.CONFIGURATION.avionics_address()
+            ),
             MAX_AVIONICS_AGE,
-            AVIONICS_TIMEOUT)
+            AVIONICS_TIMEOUT,
+        )
 
         self.__max_gs__ = 1.0
         self.__min_gs__ = 1.0

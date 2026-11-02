@@ -11,6 +11,7 @@ import time
 import requests
 
 from common_utils import simulated_values, tasks
+from common_utils.authoritative_time import get_system_time
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
 
@@ -110,7 +111,7 @@ class Traffic(object):
         """
         Returns the age of this report in total seconds.
         """
-        delta = datetime.datetime.utcnow() - self.time_decoded
+        delta: datetime.timedelta = get_system_time() - self.time_decoded
         return delta.total_seconds()
 
     def get_display_name(self) -> str:
@@ -190,7 +191,7 @@ class Traffic(object):
         # Create all of the possible data
         self.icao_address = icao_address
         self.display_name = None
-        self.time_decoded = datetime.datetime.utcnow()
+        self.time_decoded: datetime.datetime = get_system_time()
         self.latitude = None
         self.longitude = None
         self.distance = None
@@ -247,7 +248,7 @@ class Traffic(object):
 
         try:
             self.display_name = self.__json__[Traffic.TAIL_NUMBER_KEY]
-            self.time_decoded = datetime.datetime.utcnow()
+            self.time_decoded: datetime.datetime = get_system_time()
 
             if Traffic.LATITUDE_KEY in self.__json__:
                 self.latitude = self.__json__[Traffic.LATITUDE_KEY]
@@ -306,7 +307,7 @@ class SimulatedTraffic(object):
         self.tail_number = "N{0}{1}{2}".format(
             random.randint(1, 9), random.randint(0, 9), random.randint(0, 9)
         )
-        self.time_decoded = datetime.datetime.utcnow()
+        self.time_decoded: datetime.datetime = get_system_time()
         self.latitude = simulated_values.SimulatedValue(
             0.01,
             0.1,
@@ -347,7 +348,7 @@ class SimulatedTraffic(object):
         Simulates the traffic for a 'tick'.
         """
 
-        self.time_decoded = datetime.datetime.utcnow()
+        self.time_decoded: datetime.datetime = get_system_time()
         self.latitude.simulate()
         self.longitude.simulate()
         self.distance.simulate()
@@ -413,7 +414,7 @@ class TrafficManager(object):
         """
         Record a heartbeat / response from the traffic manager.
         """
-        self.__last_report_time__ = datetime.datetime.utcnow()
+        self.__last_report_time__: datetime.datetime = get_system_time()
 
     def is_traffic_available(self):
         """
@@ -425,9 +426,7 @@ class TrafficManager(object):
         if self.__last_report_time__ is None:
             return False
 
-        return (
-            datetime.datetime.utcnow() - self.__last_report_time__
-        ).total_seconds() < 10
+        return (get_system_time() - self.__last_report_time__).total_seconds() < 10
 
     def clear(self):
         """

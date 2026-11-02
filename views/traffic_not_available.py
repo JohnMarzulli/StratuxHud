@@ -1,5 +1,4 @@
-from datetime import datetime
-
+from common_utils.authoritative_time import get_system_time
 from data_sources.ahrs_data import AhrsData
 from data_sources.data_cache import HudDataCache
 from rendering import colors
@@ -26,7 +25,7 @@ class TrafficNotAvailable(AhrsElement):
         if HudDataCache.IS_TRAFFIC_AVAILABLE:
             return
 
-        current_time = datetime.utcnow()
+        current_time = get_system_time()
         is_shown = (current_time.second % 2) == 0
 
         if not is_shown:

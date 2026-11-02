@@ -4,11 +4,12 @@ Common code for HUD view elements.
 
 from datetime import datetime
 
+from common_utils.authoritative_time import get_system_time
 import pygame
 
 from common_utils import fast_math, units
 from configuration import configuration
-from core_services import breadcrumbs, zoom_tracker
+from core_services import breadcrumbs
 from data_sources import ahrs_simulation, traffic
 from data_sources.data_cache import HudDataCache
 from rendering import display
@@ -50,7 +51,9 @@ def apply_declination(heading: float) -> int | str:
 
 
 def get_reticle_size(
-    distance: float | None, min_reticle_size: float = 0.05, max_reticle_size: float = 0.20
+    distance: float | None,
+    min_reticle_size: float = 0.05,
+    max_reticle_size: float = 0.20,
 ) -> float:
     """
     The the size of the reticle based on the distance of the target.
@@ -168,7 +171,7 @@ def run_hud_elements(element_types: list, use_detail_font: bool = True):
         orientation = __aircraft__.get_ahrs()
         breadcrumbs.INSTANCE.update(orientation)
 
-        orientation.utc_time = datetime.utcnow()
+        orientation.utc_time: datetime.datetime = get_system_time()
         __aircraft__.simulate()
         screen.clear()
         for hud_element in hud_elements:

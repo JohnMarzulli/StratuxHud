@@ -6,6 +6,7 @@ import json
 import threading
 from typing import Dict, List
 from datetime import datetime, timezone
+from common_utils.authoritative_time import get_system_time
 
 import requests
 
@@ -25,12 +26,12 @@ class AirportClient:
     __FLIGHT_RULES__ = {}
     __LOCK_OBJECT__ = threading.Lock()
     __LAST_KNOWN_POSITION__ = None
-    __EXPIRATION_DATE__ = datetime.now(timezone.utc)
+    __EXPIRATION_DATE__: datetime = get_system_time()
 
     @staticmethod
     def is_airport_data_valid():
         if AirportClient.__EXPIRATION_DATE__ is not None:
-            return AirportClient.__EXPIRATION_DATE__ >= datetime.now(timezone.utc)
+            return AirportClient.__EXPIRATION_DATE__ >= get_system_time()
 
         return False
 
@@ -249,7 +250,8 @@ class AirportClient:
                 return False
 
             expiration_date = datetime.strptime(
-                expiration_json.get("expiration"), "%Y-%m-%d").replace(tzinfo=timezone.utc)
+                expiration_json.get("expiration"), "%Y-%m-%d"
+            ).replace(tzinfo=timezone.utc)
 
             AirportClient.update_expiration(expiration_date)
 
@@ -261,8 +263,7 @@ class AirportClient:
             # If we are spamming the REST too quickly, then we may loose a single update.
             # Do no consider the service unavailable unless we are
             # way below the max target framerate.
-            print(
-                f"Exception occurred while updating airport expiration: {ex}")
+            print(f"Exception occurred while updating airport expiration: {ex}")
             return False
 
     def __update_airports__(self):
@@ -313,8 +314,7 @@ class AirportClient:
             # If we are spamming the REST too quickly, then we may loose a single update.
             # Do no consider the service unavailable unless we are
             # way below the max target framerate.
-            print(
-                f"Exception occurred while updating airport frequencies: {ex}")
+            print(f"Exception occurred while updating airport frequencies: {ex}")
 
             return False
 
@@ -340,10 +340,8 @@ def load_example_flight_rules():
 
 
 def load_example_airports():
-    example_airport_json = load_test_data(
-        "../test_data/example_airport_response.json")
-    example_frequency_json = load_test_data(
-        "../test_data/example_freq_response.json")
+    example_airport_json = load_test_data("../test_data/example_airport_response.json")
+    example_frequency_json = load_test_data("../test_data/example_freq_response.json")
 
     AirportClient.inject_airports(example_airport_json)
     AirportClient.inject_airport_frequencies(example_frequency_json)

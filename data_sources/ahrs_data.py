@@ -1,15 +1,17 @@
+from common_utils.authoritative_time import get_system_time
+
 """
 Data store to standardize AHRS data.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta
 from typing import Union
 
 from common_utils import fast_math
 
-NOT_AVAILABLE = '---'
+NOT_AVAILABLE: str = "---"
 
-FLIGHT_START = datetime.now(timezone.utc)
+FLIGHT_START: datetime = get_system_time()
 
 
 class AhrsData:
@@ -17,23 +19,19 @@ class AhrsData:
     Class to hold the AHRS data
     """
 
-    def get_flight_length(
-        self
-    ) -> float:
-        delta = datetime.now(timezone.utc) - FLIGHT_START
+    def get_flight_length(self) -> float:
+        delta: timedelta = get_system_time() - FLIGHT_START
         return (delta.total_seconds() / 60.0) / 60
 
-    def __is_compass_heading_valid__(
-        self
-    ) -> bool:
-        return self.compass_heading is not None \
-            and self.compass_heading != '' \
-            and self.compass_heading >= 0 \
+    def __is_compass_heading_valid__(self) -> bool:
+        return (
+            self.compass_heading is not None
+            and self.compass_heading != ""
+            and self.compass_heading >= 0
             and self.compass_heading <= 360
+        )
 
-    def get_onscreen_projection_heading(
-        self
-    ) -> Union[int, str]:
+    def get_onscreen_projection_heading(self) -> Union[int, str]:
         """
         Get the value to display for our heading.
         Uses a fall-back system so at least one
@@ -53,20 +51,20 @@ class AhrsData:
 
         return NOT_AVAILABLE
 
-    def get_onscreen_compass_heading(
-        self
-    ) -> Union[int, str]:
+    def get_onscreen_compass_heading(self) -> Union[int, str]:
         """
         Get the heading from the compass, if available.
 
         Returns:
             Union[int, str]: The compass heading to display.
         """
-        return int(fast_math.wrap_degrees(self.compass_heading)) if self.__is_compass_heading_valid__() else NOT_AVAILABLE
+        return (
+            int(fast_math.wrap_degrees(self.compass_heading))
+            if self.__is_compass_heading_valid__()
+            else NOT_AVAILABLE
+        )
 
-    def get_onscreen_gps_heading(
-        self
-    ) -> Union[int, str]:
+    def get_onscreen_gps_heading(self) -> Union[int, str]:
         """
         Returns a safe display version of the GPS heading
 
@@ -75,9 +73,7 @@ class AhrsData:
         """
         return int(self.get_precise_gps_heading()) if self.gps_online else NOT_AVAILABLE
 
-    def get_precise_gps_heading(
-        self
-    ) -> float:
+    def get_precise_gps_heading(self) -> float:
         """
         Returns the GPS heading without rounding to a whole degree.
         Use for geometry that should rotate smoothly.
@@ -87,20 +83,20 @@ class AhrsData:
         """
         return fast_math.wrap_degrees(self.gps_heading) if self.gps_online else 0.0
 
-    def get_compass_heading(
-        self
-    ) -> Union[int, str]:
+    def get_compass_heading(self) -> Union[int, str]:
         """
         Get the heading from the compass IF available.
 
         Returns:
             Union[int, str]: The compass heading, or indication it is not available.
         """
-        return int(fast_math.wrap_degrees(self.compass_heading)) if self.__is_compass_heading_valid__() else NOT_AVAILABLE
+        return (
+            int(fast_math.wrap_degrees(self.compass_heading))
+            if self.__is_compass_heading_valid__()
+            else NOT_AVAILABLE
+        )
 
-    def __init__(
-        self
-    ):
+    def __init__(self):
         self.roll: float = 0.0
         self.pitch: float = 0.0
         self.gps_heading: float = 0.0
@@ -113,7 +109,7 @@ class AhrsData:
         self.g_load: float = 1.0
         self.min_g: float = 1.0
         self.max_g: float = 1.0
-        self.utc_time: datetime = datetime.utcnow()
+        self.utc_time: datetime = get_system_time()
         self.gps_online: bool = True
         self.is_avionics_source: bool = False
         self.slip_skid: float = 0.0

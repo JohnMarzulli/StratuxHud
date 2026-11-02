@@ -3,6 +3,8 @@ import threading
 
 import requests
 
+from common_utils.authoritative_time import get_system_time
+
 
 class DataCache(object):
     """
@@ -11,11 +13,7 @@ class DataCache(object):
     Does not handle aging out of specific data entries.
     """
 
-    def __init__(
-        self,
-        cache_name: str,
-        max_age_seconds: float
-    ):
+    def __init__(self, cache_name: str, max_age_seconds: float):
         """
         Creates a new cache for a dictionary.
 
@@ -30,9 +28,7 @@ class DataCache(object):
         self.__last_updated__ = None
         self.__json_package__ = {}
 
-    def __get_data_age__(
-        self
-    ) -> float:
+    def __get_data_age__(self) -> float:
         """
         Returns the age of the data in seconds.
         INTENDED TO BE CALLED FROM INSIDE A LOCK.
@@ -42,13 +38,11 @@ class DataCache(object):
             float -- The age of the data in seconds.
         """
         if self.__json_package__ is not None and self.__last_updated__ is not None:
-            return (datetime.datetime.utcnow() - self.__last_updated__).total_seconds()
+            return (get_system_time() - self.__last_updated__).total_seconds()
 
         return self.__max_age_seconds__ * 1000.0
 
-    def garbage_collect(
-        self
-    ):
+    def garbage_collect(self):
         """
         Go through the old data and make sure that it is removed if it is too old.
         This prevents a scenario where contact is lost with a service, and then
@@ -57,17 +51,18 @@ class DataCache(object):
         self.__lock_object__.acquire()
 
         try:
-            data_age = self.__get_data_age__()
+            data_age: float = self.__get_data_age__()
 
-            if (data_age > self.__max_age_seconds__) and (self.__json_package__ is not None) and len(self.__json_package__) > 0:
+            if (
+                (data_age > self.__max_age_seconds__)
+                and (self.__json_package__ is not None)
+                and len(self.__json_package__) > 0
+            ):
                 self.__json_package__ = {}
         finally:
             self.__lock_object__.release()
 
-    def update(
-        self,
-        new_package: dict
-    ):
+    def update(self, new_package: dict):
         """
         Performs a data update. Marks the timestamp of the data having been updated.
         Thread safe.
@@ -82,14 +77,12 @@ class DataCache(object):
         self.__lock_object__.acquire()
 
         try:
-            self.__last_updated__ = datetime.datetime.utcnow()
+            self.__last_updated__: datetime.datetime = get_system_time()
             self.__json_package__.update(new_package)
         finally:
             self.__lock_object__.release()
 
-    def is_available(
-        self
-    ) -> bool:
+    def is_available(self) -> bool:
         try:
             self.__lock_object__.acquire()
 
@@ -104,9 +97,7 @@ class DataCache(object):
 
         return False
 
-    def get_item_count(
-        self
-    ) -> int:
+    def get_item_count(self) -> int:
         """
         Get how many items (key count) are in the package, regardless of age.
 
@@ -122,9 +113,7 @@ class DataCache(object):
 
         return 0
 
-    def get(
-        self
-    ) -> dict:
+    def get(self) -> dict:
         """
         Get the package if it has been updated recently enough.
         If the package has not been updated recently, then an empty
@@ -141,7 +130,7 @@ class DataCache(object):
             if self.__last_updated__ is None:
                 return {}
 
-            time_since = datetime.datetime.utcnow() - self.__last_updated__
+            time_since: datetime.timedelta = get_system_time() - self.__last_updated__
             if time_since.total_seconds() < self.__max_age_seconds__:
                 return self.__json_package__.copy()
         finally:
@@ -165,7 +154,7 @@ class RestfulDataCache(object):
         session: requests.Session,
         service_url: str,
         maximum_age_seconds: float,
-        get_timeout: float = 1.0
+        get_timeout: float = 1.0,
     ):
         """
         Create the new cached REST fetcher
@@ -187,9 +176,7 @@ class RestfulDataCache(object):
         self.__session__ = session
         self.__timeout__ = get_timeout
 
-    def update(
-        self
-    ) -> dict:
+    def update(self) -> dict:
         """
         Attempt to call the GET and update the cached value.
 
@@ -198,17 +185,15 @@ class RestfulDataCache(object):
         """
         try:
             report = self.__session__.get(
-                self.__service_url__,
-                timeout=self.__timeout__).json()
+                self.__service_url__, timeout=self.__timeout__
+            ).json()
 
             if report is not None:
                 self.__data_cache__.update(report)
         finally:
             return self.get()
 
-    def get(
-        self
-    ) -> dict:
+    def get(self) -> dict:
         """
         Get the value currently in the cache.
 
@@ -217,17 +202,13 @@ class RestfulDataCache(object):
         """
         return self.__data_cache__.get()
 
-    def garbage_collect(
-        self
-    ):
+    def garbage_collect(self):
         """
         Make sure the underlying data is garbage collected.
         """
         self.__data_cache__.garbage_collect()
 
-    def get_item_count(
-        self
-    ) -> int:
+    def get_item_count(self) -> int:
         """
         Get how many items (key count) are in the package, regardless of age.
 
@@ -236,9 +217,7 @@ class RestfulDataCache(object):
         """
         return self.__data_cache__.get_item_count()
 
-    def is_available(
-        self
-    ) -> bool:
+    def is_available(self) -> bool:
         """
         Is the data source available?
 

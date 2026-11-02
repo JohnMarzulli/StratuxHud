@@ -5,6 +5,7 @@ Class and module to handle caching of any data.
 import threading
 from datetime import datetime
 
+from common_utils.authoritative_time import get_system_time
 from common_utils.task_timer import TaskProfiler
 
 
@@ -17,17 +18,12 @@ class GenericDataCache:
 
     __CACHE_INVALIDATION_TIME__ = 60 * 5
 
-    def __init__(
-        self
-    ) -> None:
+    def __init__(self) -> None:
         self.__data_last_used__ = {}
         self.__data_cache__ = {}
         self.__lock__ = threading.Lock()
 
-    def __purge_data__(
-        self,
-        texture_to_purge
-    ):
+    def __purge_data__(self, texture_to_purge):
         """
         Attempts to remove a texture from the cache.
 
@@ -41,11 +37,7 @@ class GenericDataCache:
         finally:
             pass
 
-    def __get_purge_key__(
-        self,
-        now: datetime,
-        data_key: str
-    ):
+    def __get_purge_key__(self, now: datetime, data_key: str):
         """
         Returns the key of the traffic to purge if it should be, otherwise returns None.
 
@@ -60,11 +52,13 @@ class GenericDataCache:
         lsu = self.__data_last_used__[data_key]
         time_since_last_use = (now - lsu).total_seconds()
 
-        return data_key if time_since_last_use > GenericDataCache.__CACHE_INVALIDATION_TIME__ else None
+        return (
+            data_key
+            if time_since_last_use > GenericDataCache.__CACHE_INVALIDATION_TIME__
+            else None
+        )
 
-    def purge_old_data(
-        self
-    ):
+    def purge_old_data(self):
         """
         Works through the traffic reports and removes any traffic that is
         old, or the cache has timed out on.
@@ -75,24 +69,24 @@ class GenericDataCache:
 
             try:
                 self.__lock__.acquire()
-                now = datetime.utcnow()
-                textures_to_purge = [self.__get_purge_key__(
-                    now,
-                    data_key) for data_key in self.__data_last_used__]
-                textures_to_purge = list(filter(lambda x: x is not None,
-                                                textures_to_purge))
+                now: datetime = get_system_time()
+                textures_to_purge = [
+                    self.__get_purge_key__(now, data_key)
+                    for data_key in self.__data_last_used__
+                ]
+                textures_to_purge = list(
+                    filter(lambda x: x is not None, textures_to_purge)
+                )
 
                 # pylint:disable=expression-not-assigned
-                [self.__purge_data__(
-                    texture_to_purge) for texture_to_purge in textures_to_purge]
+                [
+                    self.__purge_data__(texture_to_purge)
+                    for texture_to_purge in textures_to_purge
+                ]
             finally:
                 self.__lock__.release()
 
-    def set_data(
-        self,
-        data_key: str,
-        value: any
-    ):
+    def set_data(self, data_key: str, value: any):
         """
         Works through the traffic reports and removes any traffic that is
         old, or the cache has timed out on.
@@ -104,19 +98,16 @@ class GenericDataCache:
                 self.__lock__.acquire()
                 self.__data_cache__[data_key] = value
 
-                self.__data_last_used__[data_key] = datetime.utcnow()
+                self.__data_last_used__[data_key] = get_system_time()
             finally:
                 self.__lock__.release()
 
-    def get_data(
-        self,
-        data_key: str
-    ) -> any:
+    def get_data(self, data_key: str) -> any:
         with TaskProfiler("GenericDataCache::get_data"):
             try:
                 self.__lock__.acquire()
                 if data_key in self.__data_cache__:
-                    self.__data_last_used__[data_key] = datetime.utcnow()
+                    self.__data_last_used__[data_key] = get_system_time()
 
                     return self.__data_cache__[data_key]
             finally:
@@ -124,11 +115,7 @@ class GenericDataCache:
 
             return None
 
-    def get_or_create_data(
-        self,
-        data_key: str,
-        data_creation_callback=None
-    ) -> any:
+    def get_or_create_data(self, data_key: str, data_creation_callback=None) -> any:
         """
         Attempts to get the data (if available)
 
@@ -149,7 +136,7 @@ class GenericDataCache:
                         return None
                     self.__data_cache__[data_key] = data_creation_callback()
 
-                self.__data_last_used__[data_key] = datetime.utcnow()
+                self.__data_last_used__[data_key] = get_system_time()
                 return self.__data_cache__[data_key]
             finally:
                 self.__lock__.release()
