@@ -28,7 +28,7 @@ def get_system_time() -> datetime.datetime:
     Returns:
         datetime.datetime: The UTC time from the system clock.
     """
-    return datetime.now(datetime.timezone.utc)
+    return datetime.datetime.now(datetime.timezone.utc)
 
 
 class AuthoritativeTime:
@@ -119,3 +119,5 @@ class AuthoritativeTime:
             mean_seconds_offset = 0.0
 
         return datetime.timedelta(seconds=mean_seconds_offset)
+
+DISPLAY_TIME:AuthoritativeTime = AuthoritativeTime()

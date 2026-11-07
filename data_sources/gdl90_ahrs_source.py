@@ -2,13 +2,14 @@
 Module to extract GDL-90 data and turn it into a common, usable form.
 """
 
-from datetime import datetime, timezone
-
+from datetime import datetime
 import requests
 from common_utils import data_cache, logging_object
 from common_utils.authoritative_time import get_system_time
 from common_utils.logger import HudLogger
 from configuration import configuration
+
+from common_utils.authoritative_time import DISPLAY_TIME
 
 from data_sources import ahrs_data
 
@@ -89,7 +90,13 @@ class AhrsStratux(logging_object.LoggingObject):
             else ahrs_data.NOT_AVAILABLE
         )
         new_ahrs_data.g_load = ahrs_json.get("AHRSGLoad", ahrs_data.NOT_AVAILABLE)
-        new_ahrs_data.utc_time = ahrs_json.get("GPSTime", system_utc_time)
+
+        incoming_time = ahrs_json.get("GPSTime", system_utc_time)
+        incoming_time = (
+            incoming_time
+            if incoming_time is datetime
+            else datetime.strptime(incoming_time, system_utc_time)
+        )
 
         new_ahrs_data.slip_skid = ahrs_json.get("AHRSSlipSkid", None)
 
@@ -199,7 +206,14 @@ class AhrsStratux(logging_object.LoggingObject):
         if avionics_ahrs is not None:
             package.update(avionics_ahrs)
 
-        return self.__decode_situation__(package)
+        combined_ahrs: dict = self.__decode_situation__(package)
+
+        # TODO - Make sure this is actually a datetime
+        # TODO - Start finding places where TAF or METAR are invalidated by time... use best guess REAL time
+        if combined_ahrs.utc_time:
+            DISPLAY_TIME.report(combined_ahrs.utc_time)
+
+        return combined_ahrs
 
     def __init__(self, logger: HudLogger):
         super(AhrsStratux, self).__init__(logger)

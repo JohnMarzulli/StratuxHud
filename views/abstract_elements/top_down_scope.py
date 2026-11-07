@@ -2,6 +2,8 @@
 View element for a weather "radar" that looks from the top downwards.
 """
 
+import pygame
+
 import math
 from typing import Dict, Tuple
 
