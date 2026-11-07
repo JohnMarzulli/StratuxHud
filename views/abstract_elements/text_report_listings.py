@@ -6,6 +6,7 @@ import datetime
 from typing import Dict, List
 
 from common_utils import geo_math
+from common_utils.authoritative_time import get_system_time
 from common_utils.text_pagination import get_consolidated_pages, get_wrapped_lines
 from data_sources.ahrs_data import AhrsData
 from data_sources.airports import AirportClient, load_example_flight_rules
@@ -52,11 +53,7 @@ class TextReportListing(PaginatedTextElement):
         if (
             self.__reports_by_page__ is not None
             and self.__last_updated__ is not None
-            and (
-                datetime.datetime.now(
-                    datetime.timezone.utc) - self.__last_updated__
-            ).total_seconds()
-            < 60
+            and (get_system_time() - self.__last_updated__).total_seconds() < 60
         ):
             return self.__reports_by_page__
 
@@ -68,7 +65,7 @@ class TextReportListing(PaginatedTextElement):
             self.__max_screen_lines__,
         )
 
-        self.__last_updated__ = datetime.datetime.now(datetime.timezone.utc)
+        self.__last_updated__ = get_system_time()
 
         return self.__reports_by_page__
 
@@ -82,10 +79,10 @@ class TextReportListing(PaginatedTextElement):
 
         number_of_stations: int = len(sorted_stations)
 
-        if (number_of_stations < 1):
+        if number_of_stations < 1:
             return []
 
-        if (number_of_stations > __MAX_STATIONS_TO_PROCESS__):
+        if number_of_stations > __MAX_STATIONS_TO_PROCESS__:
             sorted_stations = sorted_stations[:__MAX_STATIONS_TO_PROCESS__]
 
         lines: List[str] = []
@@ -96,11 +93,9 @@ class TextReportListing(PaginatedTextElement):
                 flight_rules[station] if station in flight_rules else "UNKNOWN"
             )
 
-            color: List[int] = self.__get_flight_rule_color__(
-                known_flight_rules)
+            color: List[int] = self.__get_flight_rule_color__(known_flight_rules)
             lines = get_wrapped_lines(reports[station].report, max_chars)
-            justified_lines = self.__get_report_lines_with_station__(
-                station, lines)
+            justified_lines = self.__get_report_lines_with_station__(station, lines)
             report_lines = [
                 TextLine(color, justified_text) for justified_text in justified_lines
             ]
@@ -133,10 +128,7 @@ class TextReportListing(PaginatedTextElement):
 
         return colors.WHITE
 
-    def get_stations_sorted_by_proximity(
-        self,
-        stations: List[str]
-    ) -> List[str]:
+    def get_stations_sorted_by_proximity(self, stations: List[str]) -> List[str]:
 
         if (
             self.__position__ is None
@@ -149,8 +141,10 @@ class TextReportListing(PaginatedTextElement):
         sorted_keys = list(stations)
 
         sorted_keys.sort(
-            key=lambda
-            station: __get_distance_from_station__(self.__position__, station))
+            key=lambda station: __get_distance_from_station__(
+                self.__position__, station
+            )
+        )
 
         return [] if sorted_keys is None else sorted_keys
 

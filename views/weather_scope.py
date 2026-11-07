@@ -6,6 +6,7 @@ import datetime
 import math
 from typing import List
 
+from common_utils.authoritative_time import get_system_time
 import pygame
 
 from common_utils.task_timer import TaskProfiler
@@ -61,8 +62,7 @@ class WeatherTopViewScope(TopDownScope):
             reduced_visuals,
         )
 
-        self.__time_of_last_block_fetch__ = datetime.datetime.now(
-            datetime.timezone.utc)
+        self.__time_of_last_block_fetch__ = get_system_time()
         self.__nexrad_cache__: List[ReflectivityBlock] | None = None
         self.__reflectivity_blocks__: List[ReflectivityBlock] | None = None
         self.__reflectivity_signature__ = None
@@ -71,8 +71,10 @@ class WeatherTopViewScope(TopDownScope):
         self.__zoom_manager__.manual_zoom_out()
         self.__zoom_manager__.manual_zoom_out()
         self.__zoom_manager__.manual_zoom_out()
-        self.__zoom_started__ = datetime.datetime.now(datetime.timezone.utc)
-        self.__zoom_starting_range__: ScopeRange = self.__zoom_manager__.get_current_zoom()
+        self.__zoom_started__ = get_system_time()
+        self.__zoom_starting_range__: ScopeRange = (
+            self.__zoom_manager__.get_current_zoom()
+        )
         self.__nearby_blocks_count__ = 0
         self.__total_blocks_count__ = 0
 
@@ -80,17 +82,16 @@ class WeatherTopViewScope(TopDownScope):
             "Render Failed Weather Counts", 15.0, self.__log_bin_counts__, None
         )
 
-        self.__maximum_radar_range__: int = self.__zoom_manager__.get_maximum_possible_zoom().max_ring_range
+        self.__maximum_radar_range__: int = (
+            self.__zoom_manager__.get_maximum_possible_zoom().max_ring_range
+        )
 
     def __get_displayed_zoom__(self) -> ScopeRange:
         """
         Returns the zoom to draw with, smoothly moving from where
         the scope was when the zoom started to the zoom manager's range.
         """
-        seconds_into_zoom = (
-            datetime.datetime.now(datetime.timezone.utc) -
-            self.__zoom_started__
-        ).total_seconds()
+        seconds_into_zoom = (get_system_time() - self.__zoom_started__).total_seconds()
 
         return get_actual_zoom(
             seconds_into_zoom,
@@ -103,7 +104,7 @@ class WeatherTopViewScope(TopDownScope):
         # another one does not jump.
         self.__zoom_starting_range__ = self.__get_displayed_zoom__()
         change_zoom()
-        self.__zoom_started__ = datetime.datetime.now(datetime.timezone.utc)
+        self.__zoom_started__ = get_system_time()
 
     def __render_reflectivity__(
         self,
@@ -150,8 +151,7 @@ class WeatherTopViewScope(TopDownScope):
             self.__left_border__,
             text_y_pos + (self.__font_height__ >> 1),
         ]
-        total_position = [self.__left_border__,
-                          text_y_pos + self.__font_height__]
+        total_position = [self.__left_border__, text_y_pos + self.__font_height__]
 
         if self.__cluter_visuals__:
             self.__nearby_blocks_count__ = len(nexrad_blocks)
@@ -177,14 +177,13 @@ class WeatherTopViewScope(TopDownScope):
     def __get_nexrad_blocks__(
         self, position, max_distance: float
     ) -> List[ReflectivityBlock]:
-        now = datetime.datetime.now(datetime.timezone.utc)
+        now = get_system_time()
         seconds_since = (now - self.__time_of_last_block_fetch__).seconds
 
         if self.__nexrad_cache__ != None and seconds_since < 15:
             return self.__nexrad_cache__
 
-        self.__nexrad_cache__ = NexradClient.get_nexrad_in_range(
-            position, max_distance)
+        self.__nexrad_cache__ = NexradClient.get_nexrad_in_range(position, max_distance)
         self.__time_of_last_block_fetch__ = now
 
         return self.__nexrad_cache__
@@ -200,8 +199,7 @@ class WeatherTopViewScope(TopDownScope):
             return self.__reflectivity_bitmap__
 
         self.__reflectivity_blocks__ = nexrad_blocks
-        signature = [(block.block_id, block.report_time)
-                     for block in nexrad_blocks]
+        signature = [(block.block_id, block.report_time) for block in nexrad_blocks]
 
         if signature == self.__reflectivity_signature__:
             return self.__reflectivity_bitmap__
@@ -213,8 +211,7 @@ class WeatherTopViewScope(TopDownScope):
             with TaskProfiler(
                 "views.weather_top_view_scope.WeatherTopViewScope.draw_reflectivity_bitmap"
             ):
-                self.__reflectivity_bitmap__ = ReflectivityBitmap(
-                    nexrad_blocks)
+                self.__reflectivity_bitmap__ = ReflectivityBitmap(nexrad_blocks)
 
         return self.__reflectivity_bitmap__
 
@@ -242,8 +239,7 @@ class WeatherTopViewScope(TopDownScope):
             framebuffer,
             bitmap.surface,
             list(bitmap.get_bitmap_position(orientation.position)),
-            [bin_width_miles * pixels_per_mile,
-                bin_height_miles * pixels_per_mile],
+            [bin_width_miles * pixels_per_mile, bin_height_miles * pixels_per_mile],
             current_heading,
             self.__scope_center__,
             max_pixel_distance,
@@ -264,8 +260,7 @@ class WeatherTopViewScope(TopDownScope):
             "views.weather_top_view_scope.WeatherTopViewScope.render_reflectivity"
         ):
             try:
-                self.__render_reflectivity__(
-                    framebuffer, orientation, scope_range)
+                self.__render_reflectivity__(framebuffer, orientation, scope_range)
             except:
                 pass
 
@@ -273,10 +268,8 @@ class WeatherTopViewScope(TopDownScope):
             "views.weather_top_view_scope.WeatherTopViewScope.render_ring"
         ):
             self.__render_ownship__(framebuffer)
-            self.__draw_distance_rings__(
-                framebuffer, scope_range, colors.WHITE)
-            self.__draw_all_compass_headings__(
-                framebuffer, orientation, scope_range)
+            self.__draw_distance_rings__(framebuffer, scope_range, colors.WHITE)
+            self.__draw_all_compass_headings__(framebuffer, orientation, scope_range)
 
         with TaskProfiler(
             "views.weather_top_view_scope.WeatherTopViewScope.render_airports"
@@ -287,8 +280,7 @@ class WeatherTopViewScope(TopDownScope):
         if self.__reflectivity_bitmap__ is not None:
             print(f"Missing bins:{self.__reflectivity_bitmap__.missing_bins}")
             print(f"Failed bins:{self.__reflectivity_bitmap__.failed_bins}")
-            print(
-                f"Passed bins:{self.__reflectivity_bitmap__.successful_bins}")
+            print(f"Passed bins:{self.__reflectivity_bitmap__.successful_bins}")
 
         print(f"Nearby blocks:{self.__nearby_blocks_count__}")
         print(f"Total blocks:{self.__total_blocks_count__}")
@@ -309,7 +301,7 @@ if __name__ == "__main__":
         "../test_data/faa_sample_reflectivity.json",
         "../test_data/reflectivity_response.json",
         "../test_data/2025-03-14_incomplete_bins.json",
-        "../test_data/large_response.json"
+        "../test_data/large_response.json",
     ]
 
     for test_data_file in test_data_files:
@@ -350,7 +342,8 @@ if __name__ == "__main__":
     load_example_airports()
 
     run_hud_elements(
-        [AutoZoomingWeatherTopViewScope, CompassAndHeadingTopElement, Groundspeed])
+        [AutoZoomingWeatherTopViewScope, CompassAndHeadingTopElement, Groundspeed]
+    )
 
 
 # Orgeon FAA sample data should look like this:
