@@ -6,7 +6,7 @@ import json
 import threading
 from typing import Dict, List
 from datetime import datetime
-from common_utils.authoritative_time import get_system_time, to_utc
+from common_utils.authoritative_time import to_utc, DISPLAY_TIME
 
 import requests
 
@@ -26,12 +26,12 @@ class AirportClient:
     __FLIGHT_RULES__ = {}
     __LOCK_OBJECT__ = threading.Lock()
     __LAST_KNOWN_POSITION__ = None
-    __EXPIRATION_DATE__: datetime = get_system_time()
+    __EXPIRATION_DATE__: datetime = DISPLAY_TIME.get_display_time_utc()
 
     @staticmethod
     def is_airport_data_valid():
         if AirportClient.__EXPIRATION_DATE__ is not None:
-            return AirportClient.__EXPIRATION_DATE__ >= get_system_time()
+            return AirportClient.__EXPIRATION_DATE__ >= DISPLAY_TIME.get_display_time_utc()
 
         return False
 
@@ -254,7 +254,6 @@ class AirportClient:
                     "expiration"), "%Y-%m-%d")
             )
 
-            # TODO - The expiration warnings should be calculated on DISPLAY time.
             AirportClient.update_expiration(expiration_date)
 
             return True
