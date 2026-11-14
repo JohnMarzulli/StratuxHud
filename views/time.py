@@ -1,3 +1,5 @@
+from datetime import timezone
+
 from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
@@ -23,12 +25,12 @@ class Time(AhrsElement):
             time_text = AhrsElement.GPS_UNAVAILABLE_TEXT
 
             if orientation.utc_time is not None:
-                raw_text = str(orientation.utc_time)
-                time_text = raw_text.split(".")[0]
+                utc_time = orientation.utc_time
 
-                last_char = time_text[-1]
-                if last_char.isdigit():
-                    time_text += "Z"
+                if utc_time.tzinfo is not None:
+                    utc_time = utc_time.astimezone(timezone.utc)
+
+                time_text = utc_time.strftime("%Y-%m-%d %H:%M:%SZ")
 
         flight_time = orientation.get_flight_length()
         flight_time_text = "DURATION: {0:00.1f} HOURS".format(flight_time)
