@@ -33,6 +33,28 @@ def get_system_time() -> datetime.datetime:
     return datetime.datetime.now(datetime.timezone.utc)
 
 
+def to_utc(incoming_time: datetime.datetime) -> datetime.datetime:
+    """
+    Normalizes a datetime from an EXTERNAL source into an aware UTC datetime.
+
+    Every datetime that enters the system from outside (receiver JSON, REST
+    responses, parsed strings) must pass through this at the boundary, so that
+    the rest of the code can assume all datetimes are timezone-aware UTC.
+
+    Timezone-naive values are interpreted as already being UTC.
+
+    Args:
+        incoming_time (datetime.datetime): The externally sourced time.
+
+    Returns:
+        datetime.datetime: The same instant as an aware UTC datetime.
+    """
+    if incoming_time.tzinfo is None:
+        return incoming_time.replace(tzinfo=datetime.timezone.utc)
+
+    return incoming_time.astimezone(datetime.timezone.utc)
+
+
 class AuthoritativeTime:
     """
     System designed to take reports of time from sources OTHER than the system clock
@@ -44,7 +66,8 @@ class AuthoritativeTime:
 
     def __init__(
         self,
-        minimum_report_interval: datetime.timedelta = datetime.timedelta(seconds=5),
+        minimum_report_interval: datetime.timedelta = datetime.timedelta(
+            seconds=5),
         maximum_report_count: int = 20,
     ):
         """
@@ -58,7 +81,8 @@ class AuthoritativeTime:
         self.__offset_reports__: List[__TimeOffsetReport__] = []
         self.__minimum_report_interval__ = minimum_report_interval
         self.__maximum_report_count__ = maximum_report_count
-        self.__minimum_reports_count_required__ = int((maximum_report_count / 4) * 0.5)
+        self.__minimum_reports_count_required__ = int(
+            (maximum_report_count / 4) * 0.5)
 
     def get_display_time_utc(self) -> datetime.datetime:
         """
@@ -71,14 +95,12 @@ class AuthoritativeTime:
         return get_system_time() - self.__get_offset__()
 
     def report(self, reported_time: datetime.datetime) -> None:
-        """Accept a datetime report, interpreting timezone-naive values as UTC."""
-        if not isinstance(reported_time, datetime.datetime):
-            raise TypeError("reported_time must be a datetime")
+        """
+        Accept a time report from an external source.
 
-        if reported_time.tzinfo is None:
-            reported_time = reported_time.replace(tzinfo=datetime.timezone.utc)
-
-        reported_time = reported_time.astimezone(datetime.timezone.utc)
+        Args:
+            reported_time (datetime.datetime): An aware UTC datetime, already normalized with to_utc().
+        """
         new_report: __TimeOffsetReport__ = __TimeOffsetReport__(
             reported_time, get_system_time()
         )

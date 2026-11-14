@@ -5,8 +5,8 @@ Handles fetching airports in proximity AND any known weather conditions.
 import json
 import threading
 from typing import Dict, List
-from datetime import datetime, timezone
-from common_utils.authoritative_time import get_system_time
+from datetime import datetime
+from common_utils.authoritative_time import get_system_time, to_utc
 
 import requests
 
@@ -249,10 +249,12 @@ class AirportClient:
             if not expiration_json:
                 return False
 
-            expiration_date = datetime.strptime(
-                expiration_json.get("expiration"), "%Y-%m-%d"
-            ).replace(tzinfo=timezone.utc)
+            expiration_date = to_utc(
+                datetime.strptime(expiration_json.get(
+                    "expiration"), "%Y-%m-%d")
+            )
 
+            # TODO - The expiration warnings should be calculated on DISPLAY time.
             AirportClient.update_expiration(expiration_date)
 
             return True
@@ -263,7 +265,8 @@ class AirportClient:
             # If we are spamming the REST too quickly, then we may loose a single update.
             # Do no consider the service unavailable unless we are
             # way below the max target framerate.
-            print(f"Exception occurred while updating airport expiration: {ex}")
+            print(
+                f"Exception occurred while updating airport expiration: {ex}")
             return False
 
     def __update_airports__(self):
@@ -314,7 +317,8 @@ class AirportClient:
             # If we are spamming the REST too quickly, then we may loose a single update.
             # Do no consider the service unavailable unless we are
             # way below the max target framerate.
-            print(f"Exception occurred while updating airport frequencies: {ex}")
+            print(
+                f"Exception occurred while updating airport frequencies: {ex}")
 
             return False
 
@@ -340,8 +344,10 @@ def load_example_flight_rules():
 
 
 def load_example_airports():
-    example_airport_json = load_test_data("../test_data/example_airport_response.json")
-    example_frequency_json = load_test_data("../test_data/example_freq_response.json")
+    example_airport_json = load_test_data(
+        "../test_data/example_airport_response.json")
+    example_frequency_json = load_test_data(
+        "../test_data/example_freq_response.json")
 
     AirportClient.inject_airports(example_airport_json)
     AirportClient.inject_airport_frequencies(example_frequency_json)

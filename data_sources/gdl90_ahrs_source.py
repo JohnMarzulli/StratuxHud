@@ -2,7 +2,7 @@
 Module to extract GDL-90 data and turn it into a common, usable form.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Optional
 import re
 import requests
@@ -10,7 +10,7 @@ from common_utils import data_cache, logging_object
 from common_utils.logger import HudLogger
 from configuration import configuration
 
-from common_utils.authoritative_time import DISPLAY_TIME
+from common_utils.authoritative_time import DISPLAY_TIME, to_utc
 
 from data_sources import ahrs_data
 
@@ -66,9 +66,8 @@ class AhrsStratux(logging_object.LoggingObject):
 
             if decoded_time.year == 1:
                 return None
-            if decoded_time.tzinfo is None:
-                decoded_time = decoded_time.replace(tzinfo=timezone.utc)
-            return decoded_time.astimezone(timezone.utc)
+
+            return to_utc(decoded_time)
         except (ValueError, OverflowError) as error:
             self.warn(f"Ignoring invalid GPSTime: {error}")
             return None
@@ -98,10 +97,12 @@ class AhrsStratux(logging_object.LoggingObject):
         new_ahrs_data.gps_online = ahrs_json.get("GPSFixQuality", 0) > 0
 
         latitude = (
-            ahrs_json.get("GPSLatitude", None) if new_ahrs_data.gps_online else None
+            ahrs_json.get(
+                "GPSLatitude", None) if new_ahrs_data.gps_online else None
         )
         longitude = (
-            ahrs_json.get("GPSLongitude", None) if new_ahrs_data.gps_online else None
+            ahrs_json.get("GPSLongitude",
+                          None) if new_ahrs_data.gps_online else None
         )
         new_ahrs_data.roll = ahrs_json.get("AHRSRoll", 0.0)
         new_ahrs_data.pitch = ahrs_json.get("AHRSPitch", 0.0)
@@ -122,13 +123,15 @@ class AhrsStratux(logging_object.LoggingObject):
             ["BaroVerticalSpeed", "GPSVerticalSpeed"],
             ahrs_data.NOT_AVAILABLE,
         )
-        new_ahrs_data.airspeed = ahrs_json.get("AHRSAirspeed", ahrs_data.NOT_AVAILABLE)
+        new_ahrs_data.airspeed = ahrs_json.get(
+            "AHRSAirspeed", ahrs_data.NOT_AVAILABLE)
         new_ahrs_data.groundspeed = (
             ahrs_json.get("GPSGroundSpeed", ahrs_data.NOT_AVAILABLE)
             if new_ahrs_data.gps_online
             else ahrs_data.NOT_AVAILABLE
         )
-        new_ahrs_data.g_load = ahrs_json.get("AHRSGLoad", ahrs_data.NOT_AVAILABLE)
+        new_ahrs_data.g_load = ahrs_json.get(
+            "AHRSGLoad", ahrs_data.NOT_AVAILABLE)
 
         new_ahrs_data.utc_time = self.__decode_time__(ahrs_json.get("GPSTime"))
 
