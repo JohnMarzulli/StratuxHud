@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 import unittest
 from unittest.mock import Mock, patch
 
-from common_utils.authoritative_time import AuthoritativeTime
+from common_utils.authoritative_time import AuthoritativeTime, to_utc
 from common_utils.logger import HudLogger
 
 # Configuration probes the receiver on import; keep these tests entirely offline.
@@ -81,7 +81,8 @@ class SituationTimeTests(unittest.TestCase):
 
     def test_empty_and_expired_caches_do_not_report_system_time_as_gps(self):
         self.assertIsNone(self.source.get_ahrs().utc_time)
-        self.source.__stratux_ahrs_cache__.__data_cache__.update({"GPSTime": NOW})
+        self.source.__stratux_ahrs_cache__.__data_cache__.update({
+                                                                 "GPSTime": NOW})
         self.source.__stratux_ahrs_cache__.__data_cache__.__last_updated__ -= timedelta(
             seconds=3
         )
@@ -131,23 +132,33 @@ class AuthoritativeTimeTests(unittest.TestCase):
         with patch("common_utils.authoritative_time.get_system_time", return_value=NOW):
             self.assertEqual(clock.get_display_time_utc(), NOW)
             clock.report(NOW - timedelta(hours=1))
-            self.assertEqual(clock.get_display_time_utc(), NOW - timedelta(hours=1))
+            self.assertEqual(clock.get_display_time_utc(),
+                             NOW - timedelta(hours=1))
 
-    def test_display_correction_and_naive_reports(self):
+    def test_display_correction(self):
         for seconds in (-3600, 3600):
-            for naive in (False, True):
-                with self.subTest(seconds=seconds, naive=naive):
-                    clock = AuthoritativeTime(minimum_report_interval=timedelta(0))
-                    expected = NOW + timedelta(seconds=seconds)
-                    reported = expected.replace(tzinfo=None) if naive else expected
-                    with patch(
-                        "common_utils.authoritative_time.get_system_time",
-                        return_value=NOW,
-                    ):
-                        self.assertEqual(clock.get_display_time_utc(), NOW)
-                        clock.report(reported)
-                        clock.report(reported)
-                        self.assertEqual(clock.get_display_time_utc(), expected)
+            with self.subTest(seconds=seconds):
+                clock = AuthoritativeTime(minimum_report_interval=timedelta(0))
+                expected = NOW + timedelta(seconds=seconds)
+                with patch(
+                    "common_utils.authoritative_time.get_system_time",
+                    return_value=NOW,
+                ):
+                    self.assertEqual(clock.get_display_time_utc(), NOW)
+                    clock.report(expected)
+                    clock.report(expected)
+                    self.assertEqual(clock.get_display_time_utc(), expected)
+
+    def test_to_utc_normalizes_external_times(self):
+        for value in (
+            NOW,
+            NOW.replace(tzinfo=None),
+            NOW.astimezone(timezone(timedelta(hours=-5))),
+        ):
+            with self.subTest(value=value):
+                result = to_utc(value)
+                self.assertEqual(result, NOW)
+                self.assertIs(result.tzinfo, timezone.utc)
 
     def test_report_interval_and_noise_threshold(self):
         for seconds, expected_seconds in ((14, 0), (15, 15), (-15, -15)):
