@@ -5,7 +5,7 @@ Data store to standardize AHRS data.
 """
 
 from datetime import datetime, timedelta
-from typing import Union
+from typing import Optional, Union
 
 from common_utils import fast_math
 
@@ -109,7 +109,7 @@ class AhrsData:
         self.g_load: float = 1.0
         self.min_g: float = 1.0
         self.max_g: float = 1.0
-        self.utc_time: datetime = get_system_time()
+        self.utc_time: Optional[datetime] = get_system_time()
         self.gps_online: bool = True
         self.is_avionics_source: bool = False
         self.slip_skid: float = 0.0

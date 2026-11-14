@@ -11,7 +11,9 @@ class __TimeOffsetReport__:
     This is mean for use internal to AuthoritativeTime only
     """
 
-    def __init__(self, reported_time: datetime, system_time: datetime):
+    def __init__(
+        self, reported_time: datetime.datetime, system_time: datetime.datetime
+    ):
         self.reported_time = reported_time
         self.system_time = system_time
 
@@ -58,7 +60,7 @@ class AuthoritativeTime:
         self.__maximum_report_count__ = maximum_report_count
         self.__minimum_reports_count_required__ = int((maximum_report_count / 4) * 0.5)
 
-    def get_world_time_utc(self) -> datetime.datetime:
+    def get_display_time_utc(self) -> datetime.datetime:
         """
         Returns the probable, correct, time in the world based on
         GPS reports or other reliable sources.
@@ -68,7 +70,15 @@ class AuthoritativeTime:
         """
         return get_system_time() - self.__get_offset__()
 
-    def report(self, reported_time: datetime) -> None:
+    def report(self, reported_time: datetime.datetime) -> None:
+        """Accept a datetime report, interpreting timezone-naive values as UTC."""
+        if not isinstance(reported_time, datetime.datetime):
+            raise TypeError("reported_time must be a datetime")
+
+        if reported_time.tzinfo is None:
+            reported_time = reported_time.replace(tzinfo=datetime.timezone.utc)
+
+        reported_time = reported_time.astimezone(datetime.timezone.utc)
         new_report: __TimeOffsetReport__ = __TimeOffsetReport__(
             reported_time, get_system_time()
         )
@@ -95,13 +105,13 @@ class AuthoritativeTime:
         self.__current_offset__ = self.__get_offset__()
 
     def __get_offset__(self) -> datetime.timedelta:
-        now: datetime.datetime = datetime.timedelta(seconds=0)
-        average_offset = self.__get_mean_offset__()
-
-        return now - average_offset
+        return self.__get_mean_offset__()
 
     def __get_mean_offset__(self) -> datetime.timedelta:
-        if len(self.__offset_reports__) < self.__minimum_reports_count_required__:
+        if (
+            not self.__offset_reports__
+            or len(self.__offset_reports__) < self.__minimum_reports_count_required__
+        ):
             return datetime.timedelta(seconds=0)
 
         report_count: int = len(self.__offset_reports__)
@@ -120,4 +130,5 @@ class AuthoritativeTime:
 
         return datetime.timedelta(seconds=mean_seconds_offset)
 
-DISPLAY_TIME:AuthoritativeTime = AuthoritativeTime()
+
+DISPLAY_TIME: AuthoritativeTime = AuthoritativeTime()

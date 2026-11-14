@@ -2,10 +2,11 @@
 Module to extract GDL-90 data and turn it into a common, usable form.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
+from typing import Optional
+import re
 import requests
 from common_utils import data_cache, logging_object
-from common_utils.authoritative_time import get_system_time
 from common_utils.logger import HudLogger
 from configuration import configuration
 
@@ -32,7 +33,47 @@ class AhrsStratux(logging_object.LoggingObject):
 
         return values[0] if values is not None and values else default
 
-    def __decode_situation__(self, ahrs_json: str) -> dict:
+    def __decode_time__(self, incoming_time: object) -> Optional[datetime]:
+        """Decode receiver UTC time; missing and Go zero times are unavailable."""
+        if incoming_time is None or (
+            isinstance(incoming_time, str) and not incoming_time
+        ):
+            return None
+
+        try:
+            if isinstance(incoming_time, datetime):
+                decoded_time = incoming_time
+            elif isinstance(incoming_time, str):
+                # Python 3.7's ISO parser requires an offset instead of Z.
+                iso_time = (
+                    incoming_time[:-1] + "+00:00"
+                    if incoming_time.endswith("Z")
+                    else incoming_time
+                )
+                # Older ISO parsers require 3 or 6 fractional digits; Go emits up to 9.
+                iso_time = re.sub(
+                    r"\.(\d+)",
+                    lambda match: "." + match.group(1)[:6].ljust(6, "0"),
+                    iso_time,
+                )
+                decoded_time = datetime.fromisoformat(iso_time)
+            else:
+                self.warn(
+                    "Ignoring GPSTime with unsupported type: "
+                    f"{type(incoming_time).__name__}"
+                )
+                return None
+
+            if decoded_time.year == 1:
+                return None
+            if decoded_time.tzinfo is None:
+                decoded_time = decoded_time.replace(tzinfo=timezone.utc)
+            return decoded_time.astimezone(timezone.utc)
+        except (ValueError, OverflowError) as error:
+            self.warn(f"Ignoring invalid GPSTime: {error}")
+            return None
+
+    def __decode_situation__(self, ahrs_json: dict) -> ahrs_data.AhrsData:
         """
         Decodes AHRS results from getSituation into a package that is
         usable by the HUD.
@@ -46,8 +87,6 @@ class AhrsStratux(logging_object.LoggingObject):
             AhrsData -- The decoded value (if it could be decoded), or otherwise a safe package.
         """
         new_ahrs_data = ahrs_data.AhrsData()
-
-        system_utc_time = str(get_system_time())
 
         new_ahrs_data.is_avionics_source = (
             ahrs_json is not None
@@ -91,12 +130,7 @@ class AhrsStratux(logging_object.LoggingObject):
         )
         new_ahrs_data.g_load = ahrs_json.get("AHRSGLoad", ahrs_data.NOT_AVAILABLE)
 
-        incoming_time = ahrs_json.get("GPSTime", system_utc_time)
-        incoming_time = (
-            incoming_time
-            if incoming_time is datetime
-            else datetime.strptime(incoming_time, system_utc_time)
-        )
+        new_ahrs_data.utc_time = self.__decode_time__(ahrs_json.get("GPSTime"))
 
         new_ahrs_data.slip_skid = ahrs_json.get("AHRSSlipSkid", None)
 
@@ -183,7 +217,7 @@ class AhrsStratux(logging_object.LoggingObject):
 
         return is_stratux_available or is_avionics_available
 
-    def get_ahrs(self) -> dict:
+    def get_ahrs(self) -> ahrs_data.AhrsData:
         """
         Returns a decoded AHRS object back. Attempts to combine ALL available
         AHRS data source.
@@ -206,11 +240,10 @@ class AhrsStratux(logging_object.LoggingObject):
         if avionics_ahrs is not None:
             package.update(avionics_ahrs)
 
-        combined_ahrs: dict = self.__decode_situation__(package)
+        combined_ahrs = self.__decode_situation__(package)
 
-        # TODO - Make sure this is actually a datetime
         # TODO - Start finding places where TAF or METAR are invalidated by time... use best guess REAL time
-        if combined_ahrs.utc_time:
+        if combined_ahrs.utc_time is not None:
             DISPLAY_TIME.report(combined_ahrs.utc_time)
 
         return combined_ahrs

@@ -195,7 +195,7 @@ class ZoomTracker:
         print(f"Setting new target zoom={new_target_zoom.max_ring_range}")
 
         self.__last_zoom__ = self.__get_target_zoom__()
-        self.__last_changed__: datetime = get_system_time
+        self.__last_changed__: datetime = get_system_time()
 
         if new_target_zoom.center_ring_range > self.__last_zoom__.center_ring_range:
             self.__zoom_manager__.automatic_zoom_out()
