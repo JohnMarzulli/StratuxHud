@@ -34,7 +34,7 @@ import sys
 from rendering import display
 
 import heads_up_display
-from common_utils.logger import HudLogger
+from common_utils.logger import DisplayTimeFormatter, HudLogger
 
 __PYTHON_LOGGGER__ = logging.getLogger("stratux_hud")
 __PYTHON_LOGGGER__.setLevel(logging.DEBUG)
@@ -42,9 +42,7 @@ __LOGGER__ = HudLogger(__PYTHON_LOGGGER__)
 __HANDLER__ = logging.handlers.RotatingFileHandler(
     "stratux_hud.log", maxBytes=1048576, backupCount=10
 )
-__HANDLER__.setFormatter(
-    logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-)
+__HANDLER__.setFormatter(DisplayTimeFormatter())
 __PYTHON_LOGGGER__.addHandler(__HANDLER__)
 
 

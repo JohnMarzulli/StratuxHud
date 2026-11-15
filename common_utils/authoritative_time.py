@@ -92,7 +92,31 @@ class AuthoritativeTime:
         Returns:
             datetime.datetime: The probable time in the real world.
         """
-        return get_system_time() - self.__get_offset__()
+        return self.to_display_time(get_system_time())
+
+    def to_display_time(self, system_time: datetime.datetime) -> datetime.datetime:
+        """
+        Converts a time stamp to one that we think represents the time of the user.
+        This is needed since the R-Pi's clock may drift and probably is not
+        set correctly. Accurate (enough) time is being reporting through GPS means.
+
+        Use this when the system time of an event was captured earlier
+        (for example, the creation time of a log record).
+
+        Generally, this should only be called in a few places.
+        - The logging formatter
+        - The test for the logging formatter
+s
+        Any other places should be using get_display_time_utc()
+        so we can be sure that we are not offsetting ALREADY offset times.
+
+        Args:
+            system_time (datetime.datetime): An aware UTC time from the system clock.
+
+        Returns:
+            datetime.datetime: The probable time in the real world for that instant.
+        """
+        return system_time - self.__current_offset__
 
     def report(self, reported_time: datetime.datetime) -> None:
         """
