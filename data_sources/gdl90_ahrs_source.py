@@ -3,7 +3,7 @@ Module to extract GDL-90 data and turn it into a common, usable form.
 """
 
 from datetime import datetime
-from typing import Optional
+from typing import Dict, Optional
 import re
 import requests
 from common_utils import data_cache, logging_object
@@ -17,6 +17,9 @@ from data_sources import ahrs_data
 MAX_AVIONICS_AGE = 0.3
 MAX_STRATUX_AHRS_AGE = 2.0
 AVIONICS_TIMEOUT = 0.2
+
+STRATUX_TIME_SOURCE = "stratux"
+AVIONICS_TIME_SOURCE = "avionics"
 
 
 class AhrsStratux(logging_object.LoggingObject):
@@ -197,13 +200,41 @@ class AhrsStratux(logging_object.LoggingObject):
         """
         Attempts to get the AHRS data from the Stratux source.
         """
-        self.__stratux_ahrs_cache__.update()
+        self.__report_fresh_time__(
+            STRATUX_TIME_SOURCE, self.__stratux_ahrs_cache__.fetch()
+        )
 
     def update_avionics(self):
         """
         Attempts to get the AHRS data from the avionics source.
         """
-        self.__avionics_cache__.update()
+        self.__report_fresh_time__(
+            AVIONICS_TIME_SOURCE, self.__avionics_cache__.fetch()
+        )
+
+    def __report_fresh_time__(self, source: str, report: Optional[dict]):
+        """
+        Reports the GPS time from a response that was JUST received,
+        so the shared clock pairs it with the system time of its arrival.
+
+        Only reports when the source's GPS time has changed since its last report.
+        A GPS that has lost its fix can keep returning the same time, and
+        reporting that again would drag the display time backwards.
+
+        Args:
+            source (str): Which source the response came from.
+            report (Optional[dict]): The response that was just received, not the merged cache.
+        """
+        if not report:
+            return
+
+        gps_time = self.__decode_time__(report.get("GPSTime"))
+
+        if gps_time is None or gps_time == self.__last_reported_gps_times__.get(source):
+            return
+
+        self.__last_reported_gps_times__[source] = gps_time
+        DISPLAY_TIME.report(gps_time)
 
     def is_data_source_available(self) -> bool:
         """
@@ -243,18 +274,13 @@ class AhrsStratux(logging_object.LoggingObject):
         if avionics_ahrs is not None:
             package.update(avionics_ahrs)
 
-        combined_ahrs = self.__decode_situation__(package)
-
-        # TODO - Start finding places where TAF or METAR are invalidated by time... use best guess REAL time
-        if combined_ahrs.utc_time is not None:
-            DISPLAY_TIME.report(combined_ahrs.utc_time)
-
-        return combined_ahrs
+        return self.__decode_situation__(package)
 
     def __init__(self, logger: HudLogger):
         super(AhrsStratux, self).__init__(logger)
 
         self.__stratux_session__ = requests.Session()
+        self.__last_reported_gps_times__: Dict[str, datetime] = {}
 
         self.__stratux_ahrs_cache__ = data_cache.RestfulDataCache(
             "StratuxAhrsCache",

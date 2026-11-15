@@ -1,5 +1,6 @@
 import datetime
 import threading
+from typing import Optional
 
 import requests
 
@@ -183,15 +184,33 @@ class RestfulDataCache(object):
         Returns:
             dict -- The value (if any, held in the cache.)
         """
+        self.fetch()
+
+        return self.get()
+
+    def fetch(self) -> Optional[dict]:
+        """
+        Attempt to call the GET and merge the response into the cache.
+
+        Unlike get(), the result is ONLY what this call received. Keys that
+        were omitted from the response are not filled in from earlier responses.
+
+        Returns:
+            Optional[dict] -- The response just received, or None if the call failed.
+        """
         try:
             report = self.__session__.get(
                 self.__service_url__, timeout=self.__timeout__
             ).json()
+        except Exception:
+            return None
 
-            if report is not None:
-                self.__data_cache__.update(report)
-        finally:
-            return self.get()
+        if not isinstance(report, dict):
+            return None
+
+        self.__data_cache__.update(report)
+
+        return report
 
     def get(self) -> dict:
         """

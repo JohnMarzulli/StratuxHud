@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta, timezone
+import json
+import pathlib
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, call, patch
 
 from common_utils.authoritative_time import AuthoritativeTime, to_utc
 from common_utils.logger import HudLogger
@@ -17,6 +19,12 @@ with patch("requests.Session.get", return_value=Mock(json=lambda: {})):
 
 NOW = datetime(2026, 11, 14, 12, tzinfo=timezone.utc)
 
+FRAMES_PATH = (
+    pathlib.Path(__file__).parent.parent
+    / "test_data"
+    / "stratux_get_situation_frames.json"
+)
+
 
 class SituationTimeTests(unittest.TestCase):
     def setUp(self):
@@ -25,6 +33,9 @@ class SituationTimeTests(unittest.TestCase):
         reporter = patch("data_sources.gdl90_ahrs_source.DISPLAY_TIME.report")
         self.report = reporter.start()
         self.addCleanup(reporter.stop)
+
+    def __respond__(self, update, *responses):
+        respond(self.source, update, *responses)
 
     def test_supported_times_are_decoded_and_reported_in_utc(self):
         expected = datetime(2019, 6, 3, 7, 25, 4, 600000, timezone.utc)
@@ -45,7 +56,6 @@ class SituationTimeTests(unittest.TestCase):
                 self.assertEqual(result.utc_time, expected)
                 self.assertEqual(result.utc_time.tzinfo, timezone.utc)
                 self.assertEqual(result.pitch, 2.5)
-                self.report.assert_called_with(expected)
 
     def test_unavailable_or_invalid_time_does_not_discard_attitude(self):
         for value in (
@@ -118,12 +128,109 @@ class SituationTimeTests(unittest.TestCase):
         with patch("data_sources.gdl90_ahrs_source.DISPLAY_TIME", clock), patch(
             "common_utils.authoritative_time.get_system_time", return_value=NOW
         ):
-            for value in ("2019-06-03T07:25:04.6Z", expected, None, "bad"):
-                self.source.__stratux_ahrs_cache__.__data_cache__.update(
-                    {"GPSTime": value}
-                )
-                self.source.get_ahrs()
-            self.assertEqual(clock.get_display_time_utc(), expected)
+            self.__respond__(
+                self.source.update,
+                {"GPSTime": "2019-06-03T07:25:04.6Z"},
+                {"GPSTime": expected + timedelta(seconds=1)},
+                {"GPSTime": None},
+                {"GPSTime": "bad"},
+            )
+            # Mean of the two valid reports; the invalid ones are ignored.
+            self.assertEqual(
+                clock.get_display_time_utc(), expected + timedelta(seconds=0.5)
+            )
+
+
+class FreshTimeReportingTests(unittest.TestCase):
+    """
+    Time is reported to DISPLAY_TIME only from responses as they arrive,
+    and only when that source's GPS time has changed.
+    """
+
+    def setUp(self):
+        self.source = AhrsStratux(Mock(spec=HudLogger))
+        self.addCleanup(self.source.__stratux_session__.close)
+        reporter = patch("data_sources.gdl90_ahrs_source.DISPLAY_TIME.report")
+        self.report = reporter.start()
+        self.addCleanup(reporter.stop)
+
+    def __respond__(self, update, *responses):
+        respond(self.source, update, *responses)
+
+    def test_get_ahrs_never_reports(self):
+        self.source.__stratux_ahrs_cache__.__data_cache__.update({
+                                                                 "GPSTime": NOW})
+        for _ in range(3):
+            self.assertEqual(self.source.get_ahrs().utc_time, NOW)
+        self.report.assert_not_called()
+
+    def test_frozen_gps_time_is_reported_once(self):
+        self.__respond__(self.source.update, *
+                         ([{"GPSTime": NOW, "AHRSPitch": 1.0}] * 5))
+        self.report.assert_called_once_with(NOW)
+
+    def test_attitude_only_response_does_not_report_retained_time(self):
+        self.__respond__(
+            self.source.update_avionics,
+            {"GPSTime": NOW, "AHRSPitch": 1.0},
+            {"AHRSPitch": 2.0},
+            {"AHRSPitch": 3.0},
+        )
+        self.report.assert_called_once_with(NOW)
+        # The merged cache still holds the old time, but it was not reported again.
+        self.assertEqual(self.source.get_ahrs().utc_time, NOW)
+
+    def test_stale_avionics_time_does_not_block_fresh_stratux_time(self):
+        later = NOW + timedelta(seconds=1)
+        self.__respond__(self.source.update_avionics, {"GPSTime": NOW})
+        self.__respond__(
+            self.source.update, {"GPSTime": NOW}, {"GPSTime": later}
+        )
+        self.__respond__(self.source.update_avionics, {"AHRSPitch": 1.0})
+        self.assertEqual(self.report.call_args_list, [
+                         call(NOW), call(NOW), call(later)])
+
+    def test_failed_fetch_does_not_report_or_raise(self):
+        with patch.object(
+            self.source.__stratux_session__, "get", side_effect=OSError("offline")
+        ):
+            self.source.update()
+            self.source.update_avionics()
+        self.report.assert_not_called()
+
+    def test_unavailable_or_invalid_times_are_not_reported(self):
+        self.__respond__(
+            self.source.update,
+            {"GPSTime": None},
+            {"GPSTime": ""},
+            {"GPSTime": "0001-01-01T00:00:00Z"},
+            {"GPSTime": "not a time"},
+            {"AHRSPitch": 1.0},
+            [],
+        )
+        self.report.assert_not_called()
+
+    def test_captured_frames_report_each_new_time_once(self):
+        frames = json.loads(FRAMES_PATH.read_text())
+        # Every frame twice, as if polled faster than GPS updates.
+        self.__respond__(self.source.update, *
+                         [f for f in frames for _ in range(2)])
+        self.assertEqual(
+            [c.args[0] for c in self.report.call_args_list],
+            [to_utc(datetime.fromisoformat(f["GPSTime"].replace("Z", "+00:00")))
+             for f in frames],
+        )
+
+
+def respond(source: AhrsStratux, update, *responses):
+    """Feed each response, in order, through one call of the given update method."""
+    with patch.object(
+        source.__stratux_session__,
+        "get",
+        side_effect=[Mock(json=Mock(return_value=r)) for r in responses],
+    ):
+        for _ in responses:
+            update()
 
 
 class AuthoritativeTimeTests(unittest.TestCase):
