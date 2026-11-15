@@ -1,6 +1,7 @@
 from typing import List
 import datetime
 import math
+import threading
 
 
 class __TimeOffsetReport__:
@@ -79,6 +80,7 @@ class AuthoritativeTime:
         """
         self.__current_offset__ = datetime.timedelta(seconds=0)
         self.__offset_reports__: List[__TimeOffsetReport__] = []
+        self.__report_lock__ = threading.Lock()
         self.__minimum_report_interval__ = minimum_report_interval
         self.__maximum_report_count__ = maximum_report_count
         self.__minimum_reports_count_required__ = int(
@@ -129,26 +131,28 @@ s
             reported_time, get_system_time()
         )
 
-        # Make sure that:
-        #  1. we don't crash if there are no reports yet
-        #  2. A "no reports" situation gets past the "too-soon" logic
-        time_since_last_report = (
-            new_report.system_time - self.__offset_reports__[-1].system_time
-            if len(self.__offset_reports__) > 0
-            else datetime.timedelta(
-                seconds=self.__minimum_report_interval__.total_seconds() * 2
+        with self.__report_lock__:
+            # Make sure that:
+            #  1. we don't crash if there are no reports yet
+            #  2. A "no reports" situation gets past the "too-soon" logic
+            time_since_last_report = (
+                new_report.system_time -
+                self.__offset_reports__[-1].system_time
+                if len(self.__offset_reports__) > 0
+                else datetime.timedelta(
+                    seconds=self.__minimum_report_interval__.total_seconds() * 2
+                )
             )
-        )
 
-        if time_since_last_report < self.__minimum_report_interval__:
-            return
+            if time_since_last_report < self.__minimum_report_interval__:
+                return
 
-        # Note to self: Some sort of iterable queue may be better
-        if len(self.__offset_reports__) >= (self.__maximum_report_count__ - 1):
-            self.__offset_reports__ = self.__offset_reports__[1:]
+            # Note to self: Some sort of iterable queue may be better
+            if len(self.__offset_reports__) >= (self.__maximum_report_count__ - 1):
+                self.__offset_reports__ = self.__offset_reports__[1:]
 
-        self.__offset_reports__.append(new_report)
-        self.__current_offset__ = self.__get_offset__()
+            self.__offset_reports__.append(new_report)
+            self.__current_offset__ = self.__get_offset__()
 
     def __get_offset__(self) -> datetime.timedelta:
         return self.__get_mean_offset__()
