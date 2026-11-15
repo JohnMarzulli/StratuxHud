@@ -91,7 +91,7 @@ class SituationTimeTests(unittest.TestCase):
         )
 
     def test_invalid_time_warnings_are_rate_limited_across_updates_and_reads(self):
-        with patch("common_utils.rate_limiter.monotonic", return_value=0) as monotonic, patch.object(
+        with patch("common_utils.rate_limited_task.monotonic", return_value=0) as monotonic, patch.object(
             self.source, "warn"
         ) as warn:
             for value in ("invalid", 123):
@@ -112,7 +112,7 @@ class SituationTimeTests(unittest.TestCase):
             self.assertEqual(warn.call_count, 4)
 
     def test_concurrent_invalid_times_emit_one_warning(self):
-        with patch("common_utils.rate_limiter.monotonic", return_value=0), patch.object(
+        with patch("common_utils.rate_limited_task.monotonic", return_value=0), patch.object(
             self.source, "warn"
         ) as warn:
             with ThreadPoolExecutor(max_workers=8) as executor:
