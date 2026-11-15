@@ -103,10 +103,15 @@ class AdsbElement(HudElement):
         # TODO - Double check ALL of this math...
         compass = orientation.get_onscreen_projection_heading()
 
-        if isinstance(compass, str):
+        if not isinstance(compass, (int, float)) or traffic.bearing is None:
             return None, None
 
-        horizontal_degrees_to_target = apply_declination(traffic.bearing) - compass
+        bearing = apply_declination(traffic.bearing)
+
+        if not isinstance(bearing, (int, float)):
+            return None, None
+
+        horizontal_degrees_to_target = (bearing - compass + 180) % 360 - 180
 
         screen_y = -vertical_degrees_to_target * self.__pixels_per_degree_y__
         screen_x = horizontal_degrees_to_target * self.__pixels_per_degree_y__
@@ -173,9 +178,11 @@ class AdsbElement(HudElement):
             [type] -- [description]
         """
 
-        altitude_delta_text = traffic_report.get_altitude_delta_text(orientation)
+        altitude_delta_text = traffic_report.get_altitude_delta_text(
+            orientation)
         distance_text = self.__get_distance_string__(traffic_report.distance)
-        bearing_text = "{0}".format(int(apply_declination(traffic_report.bearing)))
+        bearing_text = "{0}".format(
+            int(apply_declination(traffic_report.bearing)))
 
         return [bearing_text, distance_text, altitude_delta_text]
 
@@ -210,9 +217,11 @@ class AdsbElement(HudElement):
         text_height = all_textures_and_sizes[0][2][1]
 
         info_spacing = 1.2
-        texture_height = int((len(all_textures_and_sizes) * info_spacing) * text_height)
+        texture_height = int(
+            (len(all_textures_and_sizes) * info_spacing) * text_height)
 
-        info_position_y = (self.__height__ >> 1) - (texture_height >> 1) - text_height
+        info_position_y = (self.__height__ >> 1) - \
+            (texture_height >> 1) - text_height
 
         edge_left = center_x - (widest_texture >> 1)
         edge_right = center_x + (widest_texture >> 1)
@@ -235,7 +244,8 @@ class AdsbElement(HudElement):
             fill_top_right[0],
             info_position_y
             + self.__line_width__
-            + int((len(additional_info_text) + 1) * info_spacing * text_height),
+            + int((len(additional_info_text) + 1)
+                  * info_spacing * text_height),
         ]
         fill_bottom_left = [fill_top_left[0], fill_bottom_right[1]]
 

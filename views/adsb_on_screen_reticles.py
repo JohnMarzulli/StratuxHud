@@ -3,11 +3,12 @@ Element to show targetting reticles for where traffic is.
 """
 
 import math
+from types import SimpleNamespace
+import pygame
 from core_services.zoom_tracker import ZoomTracker
-from common_utils import fast_math
+from common_utils import fast_math, geo_math
 from common_utils.task_timer import TaskProfiler
 from data_sources.ahrs_data import AhrsData
-from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
 from rendering import colors, drawing
 from views import hud_elements
@@ -155,6 +156,67 @@ class AdsbOnScreenReticles(AdsbElement):
 
         return [center_x, center_y]
 
+    def __render_prediction__(self, framebuffer, orientation, rotation_center, traffic):
+        if not self.__zoom_tracker__.is_in_inner_range(traffic.distance)[0]:
+            return
+        if not orientation.position or None in orientation.position or not isinstance(orientation.alt, (int, float)):
+            return
+
+        screen = pygame.Rect(0, 0, self.__width__, self.__height__)
+        color = list(colors.BLUE if traffic.is_on_ground() else colors.RED)
+        previous = None
+        previous_angle = None
+        heading = orientation.get_onscreen_projection_heading()
+
+        for index, point in enumerate(traffic.get_prediction_points()):
+            if point is None:
+                previous = None
+                previous_angle = None
+                continue
+
+            latitude, longitude, altitude = point
+
+            if index == 0:
+                projected_traffic = traffic
+            else:
+                coordinates = [latitude, longitude]
+                projected_traffic = SimpleNamespace(
+                    distance=geo_math.get_distance(
+                        orientation.position, coordinates) * 5280,
+                    bearing=geo_math.get_bearing(
+                        orientation.position, coordinates),
+                    get_altitude_delta=lambda own_altitude: int(
+                        altitude - own_altitude),
+                )
+
+            bearing = hud_elements.apply_declination(projected_traffic.bearing)
+
+            if not isinstance(bearing, (int, float)) or not isinstance(heading, (int, float)):
+                previous = None
+                previous_angle = None
+                continue
+
+            angle = (bearing - heading + 180) % 360 - 180
+            x, y = self.__get_traffic_projection__(
+                orientation, projected_traffic)
+
+            if x is None or y is None:
+                previous = None
+                previous_angle = None
+                continue
+
+            position = fast_math.rotate_points(
+                [[x, y]], rotation_center, orientation.roll)[0]
+
+            if previous is not None and abs(angle - previous_angle) <= 180:
+                segment = screen.clipline(previous, position)
+
+                if segment:
+                    drawing.renderer.segment(framebuffer, color, list(
+                        segment[0]), list(segment[1]), width=max(2, self.__line_width__))
+            previous = position
+            previous_angle = angle
+
     def render(self, framebuffer, orientation: AhrsData):
         """
         Renders all of the on-screen reticles  for nearby traffic.
@@ -175,7 +237,8 @@ class AdsbOnScreenReticles(AdsbElement):
             traffic_reports = get_relevant_traffic(self.__zoom_tracker__)
             traffic_reports = list(
                 filter(
-                    lambda x: (math.fabs(our_heading - x.bearing) < 45),
+                    lambda target: target.bearing is not None
+                    and abs((hud_elements.apply_declination(target.bearing) - our_heading + 180) % 360 - 180) < 45,
                     traffic_reports,
                 )
             )
@@ -191,6 +254,9 @@ class AdsbOnScreenReticles(AdsbElement):
             ]
 
         with TaskProfiler("views.on_screen_reticles.AdsbOnScreenReticles.rendering"):
+            [self.__render_prediction__(framebuffer, orientation, rotation_center, traffic)
+             for traffic in traffic_reports]
+
             # pylint:disable=expression-not-assigned
             [reticle.render(framebuffer)
              for reticle in reticles if reticle is not None]

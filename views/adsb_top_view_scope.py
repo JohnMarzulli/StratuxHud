@@ -4,7 +4,7 @@ View element for a "radar scope" that looks from the top downwards.
 
 import pygame
 
-from common_utils import fast_math, geo_math
+from common_utils import fast_math, geo_math, units
 from common_utils.task_timer import TaskProfiler
 from core_services import breadcrumbs
 from core_services.scope_range import ScopeRange
@@ -82,15 +82,11 @@ class AdsbTopViewScope(TopDownScope):
         # TODO - Consider tail numbers to the side, with lines
         # that connect the number to the target.
 
-        distance = geo_math.get_distance(
-            orientation.position, [traffic.latitude, traffic.longitude]
-        )
-
         (is_within_threshold, display_distance) = self.__zoom_tracker__.is_in_range(
             traffic.distance
         )
 
-        if distance > scope_range.max_ring_range:
+        if traffic.distance is None or display_distance > scope_range.max_ring_range:
             return
 
         pixels_from_center = self.__get_pixel_distance__(
@@ -118,6 +114,12 @@ class AdsbTopViewScope(TopDownScope):
         target_color = list(
             colors.BLUE if traffic.is_on_ground() else colors.RED)
 
+        if display_distance <= scope_range.center_ring_range:
+            self.__render_prediction__(
+                framebuffer, orientation, traffic, scope_range,
+                (screen_x, screen_y), target_color,
+            )
+
         if traffic.track is not None:
             points = self.__get_traffic_indicator__(
                 [screen_x, screen_y],
@@ -138,7 +140,7 @@ class AdsbTopViewScope(TopDownScope):
 
         # Do not draw identifier text for any targets further than
         # the first scope ring.
-        if distance > scope_range.center_ring_range:
+        if display_distance > scope_range.center_ring_range:
             return
 
         if self.__draw_identifiers__:
@@ -173,6 +175,53 @@ class AdsbTopViewScope(TopDownScope):
                 0,
                 True,
             )
+
+    def __render_prediction__(
+        self, framebuffer, orientation, traffic, scope_range, target_position, color
+    ):
+        points = traffic.get_prediction_points()
+
+        if len(points) < 2:
+            return
+
+        heading = orientation.get_precise_gps_heading()
+        positions = [target_position if points[0] is not None else None]
+        positions.extend(
+            self.__project_prediction_point__(
+                point, orientation.position, heading, scope_range)
+            for point in points[1:]
+        )
+        screen = pygame.Rect(0, 0, self.__width__, self.__height__)
+
+        for start, end in zip(positions, positions[1:]):
+            if start is None or end is None:
+                continue
+
+            segment = screen.clipline(start, end)
+
+            if segment:
+                drawing.renderer.segment(
+                    framebuffer, color, list(segment[0]), list(segment[1]),
+                    width=max(2, self.__line_width__),
+                )
+
+    def __project_prediction_point__(self, point, ownship_position, heading, scope_range):
+        if point is None:
+            return None
+
+        coordinates = [point[0], point[1]]
+        distance = geo_math.get_distance(ownship_position, coordinates)
+        _, display_distance = self.__zoom_tracker__.is_in_range(
+            distance * units.yards_to_sm
+        )
+        angle = self.TRAFFIC_PHASE_SHIFT + geo_math.get_bearing(
+            ownship_position, coordinates
+        ) - heading
+
+        return self.__get_screen_projection_from_center__(
+            fast_math.wrap_degrees(angle),
+            self.__get_pixel_distance__(display_distance, scope_range),
+        )
 
     def __render_breadcrumbs__(
         self,

@@ -114,6 +114,33 @@ class Traffic(object):
         delta: datetime.timedelta = get_system_time() - self.time_decoded
         return delta.total_seconds()
 
+    def get_prediction_points(self):
+        prediction = self.prediction
+
+        if not isinstance(prediction, dict) or not isinstance(prediction.get("points"), list):
+            return []
+
+        points = []
+
+        for point in prediction["points"]:
+            if not isinstance(point, dict):
+                points.append(None)
+                continue
+
+            latitude, longitude, altitude = point.get(
+                "Lat"), point.get("Lng"), point.get("Alt")
+
+            if (
+                not all(isinstance(value, (int, float)) and math.isfinite(value)
+                        for value in (latitude, longitude, altitude))
+                or not (-90 <= latitude <= 90 and -180 <= longitude <= 180)
+            ):
+                points.append(None)
+                continue
+            points.append((latitude, longitude, altitude))
+
+        return points
+
     def get_display_name(self) -> str:
         """
         Returns the identifier to use of the traffic
@@ -136,7 +163,8 @@ class Traffic(object):
         bearing = math.atan2(
             math.sin(lon2 - starting_lon) * math.cos(lat2),
             math.cos(starting_lat) * math.sin(lat2)
-            - math.sin(starting_lat) * math.cos(lat2) * math.cos(lon2 - starting_lon),
+            - math.sin(starting_lat) * math.cos(lat2) *
+            math.cos(lon2 - starting_lon),
         )
         bearing = math.degrees(bearing)
         bearing = (bearing + 360) % 360
@@ -179,6 +207,7 @@ class Traffic(object):
 
         try:
             self.__json__.update(json_report)
+            self.prediction = json_report.get("Prediction")
             self.__update_from_json__()
         except:
             print("Issue in update()")
@@ -199,6 +228,7 @@ class Traffic(object):
         self.altitude = None
         self.track = None
         self.speed = None
+        self.prediction = json_from_stratux.get("Prediction")
 
         self.__json__ = json_from_stratux
         self.__update_from_json__()
@@ -333,7 +363,8 @@ class SimulatedTraffic(object):
         )
 
         max_altitude = 5000
-        starting_relative_altitude = random.randrange(-max_altitude, max_altitude)
+        starting_relative_altitude = random.randrange(
+            -max_altitude, max_altitude)
         self.altitude = simulated_values.SimulatedValue(
             10,
             max_altitude,
@@ -586,7 +617,8 @@ class AdsbTrafficClient:
 
             # Report each traffic based on the keys
             for icao_identifier in traffic_json.keys():
-                self.received_message(icao_identifier, traffic_json[icao_identifier])
+                self.received_message(
+                    icao_identifier, traffic_json[icao_identifier])
 
             return True
 
