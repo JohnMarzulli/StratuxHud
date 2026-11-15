@@ -65,8 +65,9 @@ class AuthoritativeTimeConcurrencyTests(unittest.TestCase):
                         second.result(timeout=5)
 
                 self.assertEqual(len(clock.__offset_reports__), expected_count)
-                self.assertEqual(clock.to_display_time(now),
-                                 now - expected_offset)
+                with patch("common_utils.authoritative_time.get_system_time", return_value=now):
+                    self.assertEqual(clock.to_display_time(now),
+                                     now - expected_offset)
 
 
 if __name__ == "__main__":

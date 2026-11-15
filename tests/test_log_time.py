@@ -81,7 +81,9 @@ class DisplayTimeFormatterTests(unittest.TestCase):
         python_logger.addHandler(handler)
         self.addCleanup(python_logger.removeHandler, handler)
 
-        with patch("time.time", return_value=last_system_time.timestamp()), patch(
+        with patch("common_utils.authoritative_time.get_system_time", return_value=last_system_time), patch(
+            "time.time", return_value=last_system_time.timestamp()
+        ), patch(
             "time.time_ns", return_value=int(last_system_time.timestamp() * 1e9)
         ):
             python_logger.warning("hello")
@@ -90,6 +92,23 @@ class DisplayTimeFormatterTests(unittest.TestCase):
             last_gps_time.microsecond // 1000
         )
         self.assertEqual(stream.getvalue().strip(), f"{expected} hello")
+
+    def test_log_timestamp_resets_stale_correction_after_clock_step(self):
+        now = datetime(2026, 11, 14, 12, tzinfo=timezone.utc)
+        clock = AuthoritativeTime(maximum_report_count=8)
+        formatter = DisplayTimeFormatter(clock=clock)
+        with patch("common_utils.authoritative_time.get_system_time") as wall, patch(
+            "common_utils.authoritative_time.monotonic"
+        ) as monotonic:
+            wall.return_value = now
+            monotonic.return_value = 0
+            clock.report(now - timedelta(hours=1))
+            wall.return_value = now - timedelta(hours=1) + timedelta(seconds=5)
+            monotonic.return_value = 5
+            self.assertEqual(
+                formatter.formatTime(make_record(wall.return_value)),
+                "2026-11-14 11:00:05.000Z",
+            )
 
     def test_default_clock_is_display_time(self):
         clock = AuthoritativeTime()

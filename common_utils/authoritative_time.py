@@ -101,7 +101,11 @@ class AuthoritativeTime:
         Returns:
             datetime.datetime: The probable time in the real world.
         """
-        return self.to_display_time(get_system_time())
+        with self.__report_lock__:
+            system_time = get_system_time()
+            self.__has_clock_discontinuity__(system_time, monotonic())
+
+            return system_time - self.__current_offset__
 
     def to_display_time(self, system_time: datetime.datetime) -> datetime.datetime:
         """
@@ -125,7 +129,55 @@ s
         Returns:
             datetime.datetime: The probable time in the real world for that instant.
         """
-        return system_time - self.__current_offset__
+        with self.__report_lock__:
+            self.__has_clock_discontinuity__(get_system_time(), monotonic())
+
+            return system_time - self.__current_offset__
+
+    def __has_clock_discontinuity__(
+        self, system_time: datetime.datetime, monotonic_time: float
+    ) -> bool:
+        """
+        The monotonic clock ALWAYS progresses forward.
+        "Wall Clock" is the system time and will change
+        if it is corrected by a time service or something else.
+        thus is *could* go backwacks, how ever un-likely in
+        our situation while fly an aircraft.
+
+        The goal here is to make sure that any reports
+        that happen when the difference between time
+        passage between both clocks greatly differs are ignored
+        since a system-clock correction probably happened.
+
+        Args:
+            system_time (datetime.datetime): The current system time.
+            monotonic_time (float): The current monotonic time.
+
+        Returns:
+            bool: True if a discontinuity was detected, False otherwise.
+        """
+
+        is_discontinuity = False
+
+        if (
+            self.__last_observed_system_time__ is not None
+            and self.__last_observed_monotonic__ is not None
+        ):
+            wall_elapsed = (
+                system_time - self.__last_observed_system_time__
+            ).total_seconds()
+            monotonic_elapsed = monotonic_time - self.__last_observed_monotonic__
+            is_discontinuity = abs(
+                wall_elapsed - monotonic_elapsed) > CLOCK_DISCONTINUITY_THRESHOLD_SECONDS
+
+            if is_discontinuity:
+                self.__offset_reports__.clear()
+                self.__current_offset__ = datetime.timedelta(0)
+
+        self.__last_observed_system_time__ = system_time
+        self.__last_observed_monotonic__ = monotonic_time
+
+        return is_discontinuity
 
     def report(self, reported_time: datetime.datetime) -> None:
         """
@@ -135,36 +187,12 @@ s
             reported_time (datetime.datetime): An aware UTC datetime, already normalized with to_utc().
         """
 
-        # The monotonic clock ALWAYS progresses forward.
-        # "Wall Clock" is the system time and will change
-        # if it is corrected by a time service or something else.
-        # thus is *could* go backwacks, how ever un-likely in
-        # our situation while fly an aircraft.
-        #
-        # The goal here is to make sure that any reports
-        # that happen when the difference between time
-        # passage between both clocks greatly differs are ignored
-        # since a system-clock correction probably happened.
         with self.__report_lock__:
             system_time = get_system_time()
             monotonic_time = monotonic()
-            if (
-                self.__last_observed_system_time__ is not None
-                and self.__last_observed_monotonic__ is not None
-            ):
-                wall_elapsed = (
-                    system_time - self.__last_observed_system_time__
-                ).total_seconds()
-                monotonic_elapsed = monotonic_time - self.__last_observed_monotonic__
-                if abs(wall_elapsed - monotonic_elapsed) > CLOCK_DISCONTINUITY_THRESHOLD_SECONDS:
-                    self.__offset_reports__.clear()
-                    self.__current_offset__ = datetime.timedelta(0)
-                    self.__last_observed_system_time__ = system_time
-                    self.__last_observed_monotonic__ = monotonic_time
-                    return
 
-            self.__last_observed_system_time__ = system_time
-            self.__last_observed_monotonic__ = monotonic_time
+            if self.__has_clock_discontinuity__(system_time, monotonic_time):
+                return
 
             if (
                 self.__last_report_monotonic__ is not None

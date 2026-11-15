@@ -6,6 +6,45 @@ from common_utils.authoritative_time import AuthoritativeTime
 
 
 class AuthoritativeTimeClockStepTests(unittest.TestCase):
+    def test_reads_clear_stale_correction_after_clock_step(self):
+        now = datetime(2026, 11, 14, tzinfo=timezone.utc)
+        for step in (timedelta(hours=-1), timedelta(hours=1)):
+            for historical in (False, True):
+                with self.subTest(step=step, historical=historical):
+                    clock = AuthoritativeTime(maximum_report_count=8)
+                    with patch("common_utils.authoritative_time.get_system_time") as wall, patch(
+                        "common_utils.authoritative_time.monotonic"
+                    ) as monotonic:
+                        wall.return_value = now
+                        monotonic.return_value = 0
+                        clock.report(now - timedelta(seconds=30))
+                        old_timestamp = now - timedelta(minutes=10)
+                        self.assertEqual(
+                            clock.to_display_time(old_timestamp),
+                            old_timestamp - timedelta(seconds=30),
+                        )
+                        self.assertEqual(len(clock.__offset_reports__), 1)
+
+                        wall.return_value = now + step + timedelta(seconds=5)
+                        monotonic.return_value = 5
+                        timestamp = wall.return_value - timedelta(seconds=10)
+                        if historical:
+                            self.assertEqual(
+                                clock.to_display_time(timestamp), timestamp)
+                        else:
+                            self.assertEqual(
+                                clock.get_display_time_utc(), wall.return_value)
+                        self.assertEqual(len(clock.__offset_reports__), 0)
+
+                        wall.return_value += timedelta(seconds=1)
+                        monotonic.return_value = 6
+                        clock.report(wall.return_value - timedelta(seconds=40))
+                        self.assertEqual(len(clock.__offset_reports__), 1)
+                        self.assertEqual(
+                            clock.get_display_time_utc(),
+                            wall.return_value - timedelta(seconds=40),
+                        )
+
     def test_clock_steps_clear_old_offsets(self):
         now = datetime(2026, 11, 14, tzinfo=timezone.utc)
         for step in (timedelta(hours=-1), timedelta(hours=1)):
@@ -59,7 +98,8 @@ class AuthoritativeTimeClockStepTests(unittest.TestCase):
                     monotonic.return_value = 5
                     clock.report(wall.return_value - timedelta(seconds=40))
                     self.assertEqual(len(clock.__offset_reports__), 0)
-                    self.assertEqual(clock.to_display_time(wall.return_value), wall.return_value)
+                    self.assertEqual(clock.to_display_time(
+                        wall.return_value), wall.return_value)
 
                     wall.return_value += timedelta(seconds=1)
                     monotonic.return_value = 6
