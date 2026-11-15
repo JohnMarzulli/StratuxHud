@@ -159,6 +159,9 @@ s
                 if abs(wall_elapsed - monotonic_elapsed) > CLOCK_DISCONTINUITY_THRESHOLD_SECONDS:
                     self.__offset_reports__.clear()
                     self.__current_offset__ = datetime.timedelta(0)
+                    self.__last_observed_system_time__ = system_time
+                    self.__last_observed_monotonic__ = monotonic_time
+                    return
 
             self.__last_observed_system_time__ = system_time
             self.__last_observed_monotonic__ = monotonic_time
