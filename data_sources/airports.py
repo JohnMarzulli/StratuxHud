@@ -6,12 +6,18 @@ import json
 import threading
 from typing import Dict, List
 from datetime import datetime, timezone
+from common_utils.authoritative_time import to_utc, DISPLAY_TIME
 
 import requests
 
 from common_utils import tasks
 from configuration import configuration
 from data_sources.airport_frequencies import AirportFrequency
+
+# Placeholder until the first /airports/Status response arrives.
+# It is earlier than any possible display time, so the airport data
+# reads as expired no matter how the display time gets corrected.
+UNKNOWN_EXPIRATION_DATE: datetime = datetime.min.replace(tzinfo=timezone.utc)
 
 
 class AirportClient:
@@ -25,14 +31,11 @@ class AirportClient:
     __FLIGHT_RULES__ = {}
     __LOCK_OBJECT__ = threading.Lock()
     __LAST_KNOWN_POSITION__ = None
-    __EXPIRATION_DATE__ = datetime.now(timezone.utc)
+    __EXPIRATION_DATE__: datetime = UNKNOWN_EXPIRATION_DATE
 
     @staticmethod
-    def is_airport_data_valid():
-        if AirportClient.__EXPIRATION_DATE__ is not None:
-            return AirportClient.__EXPIRATION_DATE__ >= datetime.now(timezone.utc)
-
-        return False
+    def is_airport_data_valid() -> bool:
+        return AirportClient.__EXPIRATION_DATE__ >= DISPLAY_TIME.get_display_time_utc()
 
     @staticmethod
     def set_last_known_position(location: List[int]):
@@ -248,8 +251,10 @@ class AirportClient:
             if not expiration_json:
                 return False
 
-            expiration_date = datetime.strptime(
-                expiration_json.get("expiration"), "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            expiration_date = to_utc(
+                datetime.strptime(expiration_json.get(
+                    "expiration"), "%Y-%m-%d")
+            )
 
             AirportClient.update_expiration(expiration_date)
 

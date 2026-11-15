@@ -2,16 +2,15 @@ import datetime
 import queue
 import threading
 
+from common_utils.authoritative_time import get_system_time
+
 
 class RollingStats(object):
     """
     Class to keep a rolling means.
     """
 
-    def __init__(
-        self,
-        name: str
-    ):
+    def __init__(self, name: str):
         """
         Creates a new mean tracker.
 
@@ -27,9 +26,7 @@ class RollingStats(object):
         self.last = None
         self.average = 0.0
 
-    def reset(
-        self
-    ):
+    def reset(self):
         """
         Resets the rolling mean and maximums.
         """
@@ -39,10 +36,7 @@ class RollingStats(object):
         self.__running_sum__ = 0.0
         self.__running_average_count__ = 0.0
 
-    def push(
-        self,
-        value: float
-    ):
+    def push(self, value: float):
         """
         Adds a new value to be tracked in the mean.
 
@@ -59,12 +53,9 @@ class RollingStats(object):
             self.__running_sum__ -= self.__running_average__.get()
             self.__running_average_count__ -= 1
 
-        self.average = float(self.__running_sum__ /
-                             self.__running_average_count__)
+        self.average = float(self.__running_sum__ / self.__running_average_count__)
 
-    def to_string(
-        self
-    ) -> str:
+    def to_string(self) -> str:
         """
         Returns a string representation of the rolling mean data.
 
@@ -76,40 +67,38 @@ class RollingStats(object):
             if self.last is None:
                 return "{0}: NO DATA".format(self.task_name)
 
-            slowest = max(
-                self.__running_average__.queue) if not self.__running_average__.empty() else None
+            slowest = (
+                max(self.__running_average__.queue)
+                if not self.__running_average__.empty()
+                else None
+            )
 
             if slowest is not None:
                 slowest_text = "{0:.1f}".format(slowest)
             else:
-                slowest_text = '---'
+                slowest_text = "---"
 
             slowest_length = len(slowest_text)
 
             last_text = "{0:.1f}".format(self.last).rjust(slowest_length)
 
             if self.average is not None:
-                average_text = "{0:.1f}".format(
-                    self.average).rjust(slowest_length)
+                average_text = "{0:.1f}".format(self.average).rjust(slowest_length)
             else:
-                average_text = '---'
+                average_text = "---"
 
             return "{0}, {1}, {2}, {3}".format(
-                self.task_name,
-                last_text,
-                average_text,
-                slowest_text)
+                self.task_name, last_text, average_text, slowest_text
+            )
         except:
-            return '---'
+            return "---"
 
 
 class TimerRegistry(object):
     __TIMERS__ = {}
 
     @staticmethod
-    def add_task_timer(
-        new_timer
-    ):
+    def add_task_timer(new_timer):
         if new_timer is None:
             return
 
@@ -127,10 +116,7 @@ class TaskTimer(object):
 
     __TIMER_STACK__ = {}
 
-    def __init__(
-        self,
-        task_name: str
-    ):
+    def __init__(self, task_name: str):
         self.__stats__ = RollingStats(task_name)
         self.__start_time__ = None
         self.is_running = False
@@ -138,9 +124,7 @@ class TaskTimer(object):
 
         TimerRegistry.add_task_timer(self)
 
-    def __push_timer_on_stack__(
-        self
-    ):
+    def __push_timer_on_stack__(self):
         """
         This is so we can eventually keep track of the call graph,
         and inclusive vs exclusive execution time.
@@ -152,9 +136,7 @@ class TaskTimer(object):
 
         TaskTimer.__TIMER_STACK__[tid].append(self.task_name)
 
-    def __pop_timer_from_stack__(
-        self
-    ):
+    def __pop_timer_from_stack__(self):
         tid = threading.get_ident()
 
         if tid not in TaskTimer.__TIMER_STACK__:
@@ -162,39 +144,30 @@ class TaskTimer(object):
 
         TaskTimer.__TIMER_STACK__[tid].pop()
 
-    def reset(
-        self
-    ):
+    def reset(self):
         self.stop()
         self.__stats__.reset()
 
-    def start(
-        self
-    ):
+    def start(self):
         self.stop()
 
-        self.__start_time__ = datetime.datetime.utcnow()
+        self.__start_time__: datetime.datetime = get_system_time()
         self.is_running = True
 
         self.__push_timer_on_stack__()
 
-    def stop(
-        self
-    ):
+    def stop(self):
         if not self.is_running:
             return
 
         self.is_running = False
 
-        value = (datetime.datetime.utcnow() -
-                 self.__start_time__).total_seconds() * 1000.0
+        value = (get_system_time() - self.__start_time__).total_seconds() * 1000.0
         self.__stats__.push(value)
 
         self.__pop_timer_from_stack__()
 
-    def to_string(
-        self
-    ) -> str:
+    def to_string(self) -> str:
         return self.__stats__.to_string()
 
 
@@ -237,9 +210,7 @@ class TaskProfiler(object):
         return exclusive_times
 
     @staticmethod
-    def log(
-        logger
-    ):
+    def log(logger):
         if logger is None:
             return
 
@@ -248,11 +219,11 @@ class TaskProfiler(object):
         expense_order = sorted(
             exclusive_times,
             key=lambda profile: TaskProfiler.__TOTAL_TIMES__[profile],
-            reverse=True)
+            reverse=True,
+        )
 
-        logger.log_info_message('------ PERF ------')
-        logger.log_info_message(
-            'Task, Calls, IncTotal, ExTotal, IncMean, ExMean')
+        logger.log_info_message("------ PERF ------")
+        logger.log_info_message("Task, Calls, IncTotal, ExTotal, IncMean, ExMean")
         for task_name in expense_order:
             inclusive_ms = TaskProfiler.__TOTAL_TIMES__[task_name]
             exclusive_ms = exclusive_times[task_name]
@@ -267,18 +238,17 @@ class TaskProfiler(object):
                 exclusive_mean = "{:.1f}".format(exclusive_ms / call_count)
 
             logger.log_info_message(
-                '{0}, {1}, {2:.1f}, {3:.1f}, {4}, {5}'.format(
+                "{0}, {1}, {2:.1f}, {3:.1f}, {4}, {5}".format(
                     task_name,
                     call_count,
                     inclusive_ms,
                     exclusive_ms,
                     inclusive_mean,
-                    exclusive_mean))
+                    exclusive_mean,
+                )
+            )
 
-    def __init__(
-        self,
-        task_name: str
-    ) -> None:
+    def __init__(self, task_name: str) -> None:
         super().__init__()
 
         if task_name not in TaskProfiler.__CHILD_TIMES__:
@@ -291,28 +261,24 @@ class TaskProfiler(object):
             TaskProfiler.__CALL_COUNTS__[task_name] = 0
 
         self.task_name = task_name
-        self.__timer__ = datetime.datetime.utcnow()
+        self.__timer__ = get_system_time()
         self.__is_running__ = False
 
-    def start(
-        self
-    ):
+    def start(self):
         if self.__is_running__:
             return
 
-        self.__timer__ = datetime.datetime.utcnow()
+        self.__timer__ = get_system_time()
         self.__is_running__ = True
         TaskProfiler.__CALLING_TIMERS__.append(self.task_name)
 
-    def stop(
-        self
-    ):
+    def stop(self):
         if not self.__is_running__:
             return
 
         self.__is_running__ = False
 
-        total_delta = datetime.datetime.utcnow() - self.__timer__
+        total_delta = get_system_time() - self.__timer__
         total_ms = total_delta.total_seconds() * 1000.0
 
         TaskProfiler.__CALL_COUNTS__[self.task_name] += 1
@@ -327,21 +293,14 @@ class TaskProfiler(object):
         parent_task_name = TaskProfiler.__CALLING_TIMERS__[-1]
         TaskProfiler.__CHILD_TIMES__[parent_task_name] += total_ms
 
-    def __enter__(
-        self
-    ):
+    def __enter__(self):
         self.start()
 
-    def __exit__(
-        self,
-        exc_type,
-        exc_val,
-        traceback
-    ):
+    def __exit__(self, exc_type, exc_val, traceback):
         self.stop()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import logging
     import time
 

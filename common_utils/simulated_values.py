@@ -2,9 +2,10 @@
 Package for simulating values for debugging and testing.
 """
 
-
 import datetime
 import math
+
+from common_utils.authoritative_time import get_system_time
 
 
 class SimulatedValue(object):
@@ -12,9 +13,7 @@ class SimulatedValue(object):
     Fluctuates a value.
     """
 
-    def direction(
-        self
-    ) -> float:
+    def direction(self) -> float:
         """
         Gets the direction of movement.
         """
@@ -23,13 +22,11 @@ class SimulatedValue(object):
 
         return -1.0
 
-    def simulate(
-        self
-    ) -> float:
+    def simulate(self) -> float:
         """
         Changes the value.
         """
-        current_time = datetime.datetime.utcnow()
+        current_time: datetime.datetime = get_system_time()
         self.__dt__ = (current_time - self.__last_sim__).total_seconds()
         self.__last_sim__ = current_time
         self.value += self.direction() * self.__rate__ * self.__dt__
@@ -46,9 +43,7 @@ class SimulatedValue(object):
 
         return self.__offset__ + self.value
 
-    def get_value(
-        self
-    ) -> float:
+    def get_value(self) -> float:
         return self.__offset__ + self.value
 
     def __init__(
@@ -57,12 +52,12 @@ class SimulatedValue(object):
         limit: float,
         initial_direction: float,
         initial_value: float = 0.0,
-        offset: float = 0.0
+        offset: float = 0.0,
     ):
-        self.__rate__ = rate
-        self.__limit__ = limit
-        self.__direction__ = initial_direction
-        self.__offset__ = offset
-        self.value = initial_value
-        self.__dt__ = 1.0 / 60.0
-        self.__last_sim__ = datetime.datetime.utcnow()
+        self.__rate__: float = rate
+        self.__limit__: float = limit
+        self.__direction__: float = initial_direction
+        self.__offset__: float = offset
+        self.value: float = initial_value
+        self.__dt__: float = 1.0 / 60.0
+        self.__last_sim__: datetime.datetime = get_system_time()

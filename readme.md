@@ -338,6 +338,11 @@ Tabular list of nearest aircraft showing up to eight closest targets with key in
 
 Displays current Zulu (UTC) time prominently. Useful for logging and flight planning.
 
+Receiver timestamps are normalized to UTC. Missing, zero, or invalid GPS times
+show as unavailable without discarding attitude data; invalid values are logged.
+Timezone-naive receiver timestamps are interpreted as UTC. GPS reports correct
+display time only; cache ages and elapsed-time calculations use the system clock.
+
 **Information Displayed:**
 
 - Current UTC time

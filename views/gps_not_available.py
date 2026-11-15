@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from common_utils.authoritative_time import get_system_time
 from data_sources.ahrs_data import AhrsData
 from rendering import colors
 from views import hud_elements
@@ -25,7 +26,7 @@ class GpsNotAvailable(AhrsElement):
         if orientation.gps_online:
             return
 
-        current_time = datetime.utcnow()
+        current_time = get_system_time()
         is_shown = (current_time.second % 2) != 0
 
         if not is_shown:
