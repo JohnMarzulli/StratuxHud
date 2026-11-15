@@ -273,14 +273,14 @@ class AuthoritativeTimeTests(unittest.TestCase):
                 clock = AuthoritativeTime()
                 with patch(
                     "common_utils.authoritative_time.get_system_time", return_value=NOW
-                ):
+                ), patch("common_utils.authoritative_time.monotonic", return_value=0):
                     clock.report(NOW + timedelta(seconds=seconds))
                     clock.report(NOW + timedelta(seconds=seconds))
                     self.assertEqual(clock.get_display_time_utc(), NOW)
                 with patch(
                     "common_utils.authoritative_time.get_system_time",
                     return_value=NOW + timedelta(seconds=5),
-                ):
+                ), patch("common_utils.authoritative_time.monotonic", return_value=5):
                     clock.report(NOW + timedelta(seconds=5 + seconds))
                     self.assertEqual(
                         clock.get_display_time_utc(),

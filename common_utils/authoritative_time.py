@@ -2,6 +2,10 @@ from typing import List
 import datetime
 import math
 import threading
+from time import monotonic
+
+
+CLOCK_DISCONTINUITY_THRESHOLD_SECONDS = 1.0
 
 
 class __TimeOffsetReport__:
@@ -81,6 +85,9 @@ class AuthoritativeTime:
         self.__current_offset__ = datetime.timedelta(seconds=0)
         self.__offset_reports__: List[__TimeOffsetReport__] = []
         self.__report_lock__ = threading.Lock()
+        self.__last_observed_system_time__ = None
+        self.__last_observed_monotonic__ = None
+        self.__last_report_monotonic__ = None
         self.__minimum_report_interval__ = minimum_report_interval
         self.__maximum_report_count__ = maximum_report_count
         self.__minimum_reports_count_required__ = int(
@@ -127,31 +134,52 @@ s
         Args:
             reported_time (datetime.datetime): An aware UTC datetime, already normalized with to_utc().
         """
-        new_report: __TimeOffsetReport__ = __TimeOffsetReport__(
-            reported_time, get_system_time()
-        )
 
+        # The monotonic clock ALWAYS progresses forward.
+        # "Wall Clock" is the system time and will change
+        # if it is corrected by a time service or something else.
+        # thus is *could* go backwacks, how ever un-likely in
+        # our situation while fly an aircraft.
+        #
+        # The goal here is to make sure that any reports
+        # that happen when the difference between time
+        # passage between both clocks greatly differs are ignored
+        # since a system-clock correction probably happened.
         with self.__report_lock__:
-            # Make sure that:
-            #  1. we don't crash if there are no reports yet
-            #  2. A "no reports" situation gets past the "too-soon" logic
-            time_since_last_report = (
-                new_report.system_time -
-                self.__offset_reports__[-1].system_time
-                if len(self.__offset_reports__) > 0
-                else datetime.timedelta(
-                    seconds=self.__minimum_report_interval__.total_seconds() * 2
-                )
-            )
+            system_time = get_system_time()
+            monotonic_time = monotonic()
+            if (
+                self.__last_observed_system_time__ is not None
+                and self.__last_observed_monotonic__ is not None
+            ):
+                wall_elapsed = (
+                    system_time - self.__last_observed_system_time__
+                ).total_seconds()
+                monotonic_elapsed = monotonic_time - self.__last_observed_monotonic__
+                if abs(wall_elapsed - monotonic_elapsed) > CLOCK_DISCONTINUITY_THRESHOLD_SECONDS:
+                    self.__offset_reports__.clear()
+                    self.__current_offset__ = datetime.timedelta(0)
 
-            if time_since_last_report < self.__minimum_report_interval__:
+            self.__last_observed_system_time__ = system_time
+            self.__last_observed_monotonic__ = monotonic_time
+
+            if (
+                self.__last_report_monotonic__ is not None
+                and monotonic_time - self.__last_report_monotonic__
+                < self.__minimum_report_interval__.total_seconds()
+            ):
                 return
+
+            new_report: __TimeOffsetReport__ = __TimeOffsetReport__(
+                reported_time, system_time
+            )
 
             # Note to self: Some sort of iterable queue may be better
             if len(self.__offset_reports__) >= (self.__maximum_report_count__ - 1):
                 self.__offset_reports__ = self.__offset_reports__[1:]
 
             self.__offset_reports__.append(new_report)
+            self.__last_report_monotonic__ = monotonic_time
             self.__current_offset__ = self.__get_offset__()
 
     def __get_offset__(self) -> datetime.timedelta:
