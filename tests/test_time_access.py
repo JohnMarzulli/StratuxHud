@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from concurrent.futures import ThreadPoolExecutor
 import json
 import pathlib
 import unittest
@@ -14,7 +15,7 @@ with patch("requests.Session.get", return_value=Mock(json=lambda: {})):
         MINIMUM_SECONDS_BETWEEN_ZOOM_CHANGE,
         ZoomTracker,
     )
-    from data_sources.gdl90_ahrs_source import AhrsStratux
+    from data_sources.gdl90_ahrs_source import AhrsStratux, GPS_TIME_WARNING_INTERVAL_SECONDS
 
 
 NOW = datetime(2026, 11, 14, 12, tzinfo=timezone.utc)
@@ -88,6 +89,37 @@ class SituationTimeTests(unittest.TestCase):
             self.source.get_ahrs().utc_time,
             datetime(2019, 6, 3, 7, 25, 4, tzinfo=timezone.utc),
         )
+
+    def test_invalid_time_warnings_are_rate_limited_across_updates_and_reads(self):
+        with patch("common_utils.rate_limiter.monotonic", return_value=0) as monotonic, patch.object(
+            self.source, "warn"
+        ) as warn:
+            for value in ("invalid", 123):
+                self.__respond__(self.source.update, {
+                                 "GPSTime": value, "AHRSPitch": 2.5})
+                for _ in range(5):
+                    result = self.source.get_ahrs()
+                    self.assertIsNone(result.utc_time)
+                    self.assertEqual(result.pitch, 2.5)
+            self.assertEqual(warn.call_count, 2)
+            self.assertIn("invalid GPSTime", warn.call_args_list[0].args[0])
+            self.assertIn("unsupported type", warn.call_args_list[1].args[0])
+            self.report.assert_not_called()
+
+            monotonic.return_value = GPS_TIME_WARNING_INTERVAL_SECONDS
+            for value in ("another invalid value", []):
+                self.__respond__(self.source.update, {"GPSTime": value})
+            self.assertEqual(warn.call_count, 4)
+
+    def test_concurrent_invalid_times_emit_one_warning(self):
+        with patch("common_utils.rate_limiter.monotonic", return_value=0), patch.object(
+            self.source, "warn"
+        ) as warn:
+            with ThreadPoolExecutor(max_workers=8) as executor:
+                results = list(executor.map(
+                    self.source.__decode_time__, ["invalid"] * 50))
+            self.assertEqual(results, [None] * 50)
+            warn.assert_called_once()
 
     def test_empty_and_expired_caches_do_not_report_system_time_as_gps(self):
         self.assertIsNone(self.source.get_ahrs().utc_time)

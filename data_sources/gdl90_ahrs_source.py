@@ -2,12 +2,13 @@
 Module to extract GDL-90 data and turn it into a common, usable form.
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, Optional
 import re
 import requests
 from common_utils import data_cache, logging_object
 from common_utils.logger import HudLogger
+from common_utils.rate_limited_task import RateLimitedTask
 from configuration import configuration
 
 from common_utils.authoritative_time import DISPLAY_TIME, to_utc
@@ -17,6 +18,7 @@ from data_sources import ahrs_data
 MAX_AVIONICS_AGE = 0.3
 MAX_STRATUX_AHRS_AGE = 2.0
 AVIONICS_TIMEOUT = 0.2
+GPS_TIME_WARNING_INTERVAL_SECONDS = 10.0
 
 STRATUX_TIME_SOURCE = "stratux"
 AVIONICS_TIME_SOURCE = "avionics"
@@ -61,7 +63,8 @@ class AhrsStratux(logging_object.LoggingObject):
                 )
                 decoded_time = datetime.fromisoformat(iso_time)
             else:
-                self.warn(
+                self.__warn_invalid_gps_time__(
+                    "unsupported_type",
                     "Ignoring GPSTime with unsupported type: "
                     f"{type(incoming_time).__name__}"
                 )
@@ -72,8 +75,13 @@ class AhrsStratux(logging_object.LoggingObject):
 
             return to_utc(decoded_time)
         except (ValueError, OverflowError) as error:
-            self.warn(f"Ignoring invalid GPSTime: {error}")
+            self.__warn_invalid_gps_time__(
+                "invalid_value", f"Ignoring invalid GPSTime: {error}")
             return None
+
+    def __warn_invalid_gps_time__(self, category: str, message: str) -> None:
+        self.__gps_time_warning_limiters__[
+            category].run(lambda: self.warn(message))
 
     def __decode_situation__(self, ahrs_json: dict) -> ahrs_data.AhrsData:
         """
@@ -281,6 +289,10 @@ class AhrsStratux(logging_object.LoggingObject):
 
         self.__stratux_session__ = requests.Session()
         self.__last_reported_gps_times__: Dict[str, datetime] = {}
+        self.__gps_time_warning_limiters__ = {
+            "unsupported_type": RateLimitedTask(timedelta(seconds=GPS_TIME_WARNING_INTERVAL_SECONDS)),
+            "invalid_value": RateLimitedTask(timedelta(seconds=GPS_TIME_WARNING_INTERVAL_SECONDS)),
+        }
 
         self.__stratux_ahrs_cache__ = data_cache.RestfulDataCache(
             "StratuxAhrsCache",
