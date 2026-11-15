@@ -206,7 +206,7 @@ s
             )
 
             # Note to self: Some sort of iterable queue may be better
-            if len(self.__offset_reports__) >= (self.__maximum_report_count__ - 1):
+            if len(self.__offset_reports__) >= self.__maximum_report_count__:
                 self.__offset_reports__ = self.__offset_reports__[1:]
 
             self.__offset_reports__.append(new_report)
