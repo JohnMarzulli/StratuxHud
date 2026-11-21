@@ -2,7 +2,6 @@
 View element for a weather "radar" that looks from the top downwards.
 """
 
-import datetime
 import math
 from typing import List
 
