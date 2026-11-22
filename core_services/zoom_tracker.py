@@ -69,18 +69,24 @@ class ZoomTracker:
         )
 
     def manual_zoom_in(self):
-        self.__zoom_manager__.manual_zoom_in()
-        self.__last_changed__: datetime = get_system_time()
-        self.__last_zoom__ = self.__get_target_zoom__()
+        self.__start_zoom__(self.__zoom_manager__.manual_zoom_in)
 
     def manual_zoom_out(self):
-        self.__zoom_manager__.manual_zoom_out()
-        self.__last_changed__: datetime = get_system_time()
-        self.__last_zoom__ = self.__get_target_zoom__()
+        self.__start_zoom__(self.__zoom_manager__.manual_zoom_out)
 
     def return_to_automatic(self):
-        self.__zoom_manager__.return_to_automatic()
-        self.__last_zoom__ = self.__get_target_zoom__()
+        self.__start_zoom__(self.__zoom_manager__.return_to_automatic)
+
+    def __start_zoom__(self, change_zoom):
+        """
+        Begins a smooth transition from whatever is currently
+        displayed to the zoom the change lands on.
+        Starting from the displayed range (rather than the old target)
+        means a zoom that interrupts another one does not jump.
+        """
+        self.__last_zoom__ = self.get_target_zoom()
+        change_zoom()
+        self.__last_changed__ = get_system_time()
 
     def get_target_zoom(self) -> ScopeRange:
         """
@@ -194,13 +200,12 @@ class ZoomTracker:
 
         print(f"Setting new target zoom={new_target_zoom.max_ring_range}")
 
-        self.__last_zoom__ = self.__get_target_zoom__()
-        self.__last_changed__: datetime = get_system_time()
+        current_target = self.__get_target_zoom__()
 
-        if new_target_zoom.center_ring_range > self.__last_zoom__.center_ring_range:
-            self.__zoom_manager__.automatic_zoom_out()
-        elif new_target_zoom.center_ring_range < self.__last_zoom__.center_ring_range:
-            self.__zoom_manager__.automatic_zoom_in()
+        if new_target_zoom.center_ring_range > current_target.center_ring_range:
+            self.__start_zoom__(self.__zoom_manager__.automatic_zoom_out)
+        elif new_target_zoom.center_ring_range < current_target.center_ring_range:
+            self.__start_zoom__(self.__zoom_manager__.automatic_zoom_in)
 
     def __update_units__(self) -> None:
         self.__user_units__ = configuration.CONFIGURATION.get_units()
