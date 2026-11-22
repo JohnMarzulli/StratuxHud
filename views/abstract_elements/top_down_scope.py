@@ -12,12 +12,51 @@ from common_utils.authoritative_time import get_system_time
 from common_utils import fast_math, geo_math, units
 from configuration import configuration
 from core_services.scope_range import ScopeRange
+from core_services.zoom_interpolation import SECONDS_FOR_ZOOM
 from core_services.zoom_tracker import ZoomTracker
 from data_sources.ahrs_data import AhrsData
 from data_sources.airports import AirportClient
 from rendering import colors, drawing
 from views.abstract_elements.adsb_element import AdsbElement
 from views.hud_elements import apply_declination
+
+# -= Gratuitous eye-candy =-
+##
+# These constants control the appearence of the zooming in and out pulse
+# effect. There are a lot of ways to tweak this for preferences and performance.
+
+# How many pulses are spread evenly between the rings at once.
+__ZOOM_PULSE_COUNT__ = 1
+# Pulse speed: seconds for one pulse to travel from one ring to
+# the other. Smaller is faster. Subclasses or instances may override.
+__ZOOM_PULSE_SECONDS_PER_SWEEP__ = SECONDS_FOR_ZOOM
+# Circles drawn per pulse, from the leading edge back to the tail.
+__ZOOM_PULSE_TRAIL_STEPS__ = 10
+# A "wave inside the wave": the strongest point travels through
+# the pulse, starting at the trailing circle (the last to leave the
+# starting ring) and moving forward to reach the leading circle as
+# it arrives at the target ring.
+# How many times that inner peak travels tail-to-head per sweep.
+__ZOOM_PULSE_INNER_WAVES__ = 1
+# How far the inner peak's glow spreads either side of it, as a
+# fraction of the pulse length. Larger is a softer, wider peak.
+__ZOOM_PULSE_PEAK_WIDTH__ = 0.35
+# Strength of circles outside the inner peak, relative to the
+# peak: 0.0 (invisible) to 1.0 (as strong as the peak).
+__ZOOM_PULSE_EDGE_STRENGTH__ = 0.15
+# Fraction of the zoom spent fading the whole effect in at the
+# start and out at the end. Kept short so the inner peak is still
+# bright when it arrives at the target ring.
+__ZOOM_PULSE_FADE__ = 0.1
+# Gap between the circles that make up a pulse, as a multiple of
+# the scope's thin line width.
+__ZOOM_PULSE_CIRCLE_SPACING__ = 4  # 3
+# Thickness of each circle in a pulse, as a multiple of the
+# scope's thin line width.
+__ZOOM_PULSE_CIRCLE_THICKNESS__ = 4  # 4 #2
+# Peak opacity of the pulse, 0.0 (invisible) to 1.0 (solid).
+# Lower values let the weather/traffic underneath show through.
+__ZOOM_PULSE_OPACITY__ = 0.6
 
 
 class TopDownScope(AdsbElement):
@@ -208,6 +247,150 @@ class TopDownScope(AdsbElement):
         pixel_distance = self.__get_pixel_distance__(distance_start, scope_range)
 
         return self.__get_screen_projection_from_center__(delta_angle, pixel_distance)
+
+    def __draw_zoom_pulse__(
+        self,
+        framebuffer: pygame.Surface,
+        scope_range: ScopeRange,
+        zoom_progress,
+        ring_color=colors.GREEN,
+    ):
+        """
+        Draws glowing bands that sweep between the center ring and the
+        outer ring while a zoom is in progress. Zooming in, the bands
+        start at the center ring and travel outward to the outer ring
+        (things are spreading apart); zooming out, they start at the
+        outer ring and travel inward to the center ring (things are
+        being pulled together).
+
+        Args:
+            framebuffer (pygame.Surface): The render target.
+            scope_range (ScopeRange): The range currently displayed.
+            zoom_progress: None, or (proportion complete, direction)
+                where direction is 1 for zooming out, -1 for zooming in.
+            ring_color: The base color of the glow.
+        """
+        if zoom_progress is None:
+            return
+
+        proportion, direction = zoom_progress
+
+        # Briefly fade the whole effect in and out so it does not pop
+        # on or off, while staying at full strength through the middle.
+        fade = max(0.001, __ZOOM_PULSE_FADE__)
+        envelope = fast_math.clamp(
+            0.0, min(proportion, 1.0 - proportion) / fade, 1.0
+        )
+
+        if envelope <= 0.0:
+            return
+
+        inner_radius = self.__get_pixel_distance__(
+            scope_range.center_ring_range, scope_range
+        )
+        outer_radius = self.__get_pixel_distance__(
+            scope_range.max_ring_range, scope_range
+        )
+        span = outer_radius - inner_radius
+
+        if span <= 0:
+            return
+
+        spacing = max(
+            1, int(self.__thin_line_width__ * __ZOOM_PULSE_CIRCLE_SPACING__)
+        )
+        width = max(
+            1, int(self.__thin_line_width__ * __ZOOM_PULSE_CIRCLE_THICKNESS__)
+        )
+        bright_color = colors.get_color_mix(ring_color, colors.WHITE, 0.5)
+        steps = __ZOOM_PULSE_TRAIL_STEPS__
+        max_alpha = 255 * fast_math.clamp(0.0, __ZOOM_PULSE_OPACITY__, 1.0)
+        # (rgba, radius, width) for each circle, drawn in order.
+        circles = []
+
+        sweeps_completed = (proportion * SECONDS_FOR_ZOOM) / max(
+            0.01, __ZOOM_PULSE_SECONDS_PER_SWEEP__
+        )
+
+        for pulse in range(__ZOOM_PULSE_COUNT__):
+            phase = (sweeps_completed + pulse / __ZOOM_PULSE_COUNT__) % 1.0
+
+            # Zooming in (direction -1): center ring -> outer ring.
+            # Zooming out (direction 1): outer ring -> center ring.
+            travel = phase if direction < 0 else 1.0 - phase
+            leading_radius = inner_radius + (travel * span)
+            step_strengths = self.__get_zoom_pulse_strengths__(steps, phase)
+
+            pulse_circles = []
+
+            for step in range(steps):
+                # The trail sits behind the leading edge, i.e. opposite
+                # the direction of travel. Clipping it to the rings makes
+                # the wave grow out of its starting ring and sink into
+                # its ending ring.
+                radius = leading_radius + (step * spacing * direction)
+
+                if radius < inner_radius or radius > outer_radius:
+                    continue
+
+                strength = step_strengths[step]
+                alpha = int(max_alpha * envelope * strength)
+
+                if alpha <= 0:
+                    continue
+
+                # The strongest circles also shift toward white.
+                base = colors.get_color_mix(ring_color, bright_color, strength)
+
+                pulse_circles.append(
+                    (strength, ([base[0], base[1], base[2], alpha], int(radius), width))
+                )
+
+            # Weakest first, strongest last, so the strongest circle
+            # wins wherever circles overlap.
+            pulse_circles.sort(key=lambda entry: entry[0])
+            circles.extend(circle for _, circle in pulse_circles)
+
+        drawing.renderer.translucent_circles(
+            framebuffer, self.__scope_center__, circles
+        )
+
+    def __get_zoom_pulse_strengths__(self, steps: int, phase: float) -> list:
+        """
+        Returns the relative strength [0.0, 1.0] of each circle in a
+        pulse, from the leading edge (index 0) to the trailing edge.
+
+        A smooth peak travels from the trailing circle to the leading
+        circle as the pulse sweeps (phase 0.0 -> 1.0), so the strongest
+        circle reaches the target ring first.
+
+        Args:
+            steps (int): How many circles are in the pulse.
+            phase (float): How far through its sweep the pulse is [0.0, 1.0).
+        """
+        if steps <= 0:
+            return []
+
+        edge = fast_math.clamp(0.0, __ZOOM_PULSE_EDGE_STRENGTH__, 1.0)
+        peak_width = max(0.01, __ZOOM_PULSE_PEAK_WIDTH__)
+        inner_phase = (phase * max(1, __ZOOM_PULSE_INNER_WAVES__)) % 1.0
+        # 1.0 is the trailing circle, 0.0 the leading circle.
+        peak = 1.0 - inner_phase
+        strengths = []
+
+        for step in range(steps):
+            position = step / (steps - 1) if steps > 1 else 0.0
+            distance = abs(position - peak) / peak_width
+
+            # Raised cosine bump: 1.0 at the peak, easing to 0.0
+            # at peak_width away.
+            shape = (
+                0.5 + (0.5 * math.cos(math.pi * distance)) if distance < 1.0 else 0.0
+            )
+
+            strengths.append(edge + ((1.0 - edge) * shape))
+
+        return strengths
 
     def __draw_distance_rings__(
         self,

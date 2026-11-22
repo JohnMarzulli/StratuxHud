@@ -21,8 +21,16 @@ def __set_color__(
     Converts byte color (0 - 255) to 0.0 - 1.0 floating point.
 
     Args:
-        color (list): List of colors (RGB) as bytes.
+        color (list): List of colors (RGB or RGBA) as bytes.
     """
+    if len(color) > 3:
+        GL.glColor4f(
+            color[0] / 255,
+            color[1] / 255,
+            color[2] / 255,
+            color[3] / 255)
+        return
+
     GL.glColor3f(
         color[0] / 255,
         color[1] / 255,
@@ -268,6 +276,33 @@ def circle(
         fast_math.get_circle_points(position[0], position[1], radius),
         width,
         is_antialiased)
+
+
+def translucent_circles(
+    framebuffer,
+    position: list,
+    circles: list
+):
+    """
+    Draws concentric circle outlines that are blended over what is
+    already drawn.
+
+    Args:
+        framebuffer: Ignored
+        position (list): The shared center of the circles.
+        circles (list): Tuples of ([r, g, b, a], radius, width), drawn in order.
+    """
+    if not circles:
+        return
+
+    GL.glEnable(GL.GL_BLEND)
+    GL.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA)
+
+    try:
+        for color, radius, width in circles:
+            circle(None, color, position, radius, width, False)
+    finally:
+        GL.glDisable(GL.GL_BLEND)
 
 
 def filled_circle(

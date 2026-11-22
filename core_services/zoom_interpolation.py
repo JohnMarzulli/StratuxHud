@@ -41,6 +41,38 @@ def get_actual_zoom(
     return ScopeRange(middle_ring_zoom, outter_ring_zoom, True)
 
 
+def get_zoom_progress(
+    seconds_into_zoom: float,
+    starting_zoom: ScopeRange,
+    target_zoom: ScopeRange,
+):
+    """
+    Describes the zoom animation that is in progress, if any.
+
+    Args:
+        seconds_into_zoom (float): How many seconds into the zoom are we?
+        starting_zoom (ScopeRange): What were the scope ranges when we started?
+        target_zoom (ScopeRange): What are the target scope ranges?
+
+    Returns:
+        None if the scope is not zooming, otherwise a tuple of
+        (proportion complete [0.0, 1.0), direction) where direction
+        is 1 when zooming out (range growing) and -1 when zooming in.
+    """
+    proportion = seconds_into_zoom / SECONDS_FOR_ZOOM
+
+    if proportion < 0.0 or proportion >= 1.0:
+        return None
+
+    start_range = starting_zoom.max_ring_range
+    end_range = target_zoom.max_ring_range
+
+    if end_range == start_range:
+        return None
+
+    return (proportion, 1 if end_range > start_range else -1)
+
+
 if __name__ == "__main__":
     close_in_zoom = ScopeRange(0.5, 1.0, True)
     far_out_zoom = ScopeRange(10, 20, True)

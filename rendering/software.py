@@ -12,6 +12,7 @@ from common_utils.local_debug import IS_PI
 RENDERER_NAME = "Rasterization"
 
 __TEXT_CACHE__ = generic_data_cache.GenericDataCache()
+__TRANSLUCENT_OVERLAY__: pygame.Surface | None = None
 
 
 def draw_sprite(
@@ -273,6 +274,59 @@ def circle(
         center_y,
         max(0, radius - width),
         color)
+
+
+def translucent_circles(
+    framebuffer: pygame.Surface,
+    position: list,
+    circles: list
+):
+    """
+    Draws concentric circle outlines that are blended over what is
+    already in the framebuffer.
+
+    The circles are drawn into a cached, per-pixel alpha overlay, and
+    only the area they cover is blended onto the framebuffer.
+
+    Args:
+        framebuffer (pygame.Surface): The target surface.
+        position (list): The shared center of the circles.
+        circles (list): Tuples of ([r, g, b, a], radius, width), drawn in order.
+            Later circles replace earlier ones where they overlap.
+    """
+    global __TRANSLUCENT_OVERLAY__
+
+    if framebuffer is None or not circles:
+        return
+
+    size = framebuffer.get_size()
+
+    if __TRANSLUCENT_OVERLAY__ is None or __TRANSLUCENT_OVERLAY__.get_size() != size:
+        __TRANSLUCENT_OVERLAY__ = pygame.Surface(size, pygame.SRCALPHA)
+
+    center_x = int(position[0])
+    center_y = int(position[1])
+    outer_radius = max(int(radius) for _, radius, _ in circles)
+    area = pygame.Rect(
+        center_x - outer_radius,
+        center_y - outer_radius,
+        (outer_radius << 1) + 1,
+        (outer_radius << 1) + 1).clip(framebuffer.get_rect())
+
+    if area.width <= 0 or area.height <= 0:
+        return
+
+    __TRANSLUCENT_OVERLAY__.fill((0, 0, 0, 0), area)
+
+    for color, radius, width in circles:
+        pygame.draw.circle(
+            __TRANSLUCENT_OVERLAY__,
+            color,
+            (center_x, center_y),
+            int(radius),
+            int(width))
+
+    framebuffer.blit(__TRANSLUCENT_OVERLAY__, area.topleft, area)
 
 
 def filled_circle(

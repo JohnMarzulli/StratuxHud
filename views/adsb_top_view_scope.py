@@ -341,6 +341,10 @@ class AdsbTopViewScope(TopDownScope):
             self.__render_breadcrumbs__(framebuffer, scope_range, orientation)
 
         with TaskProfiler("views.adsb_top_view_scope.AdsbTopViewScope.render_rings"):
+            # Drawn first so the rings and labels sit on top of the glow.
+            self.__draw_zoom_pulse__(
+                framebuffer, scope_range, self.__zoom_tracker__.get_zoom_progress()
+            )
 
             first_ring_pixel_radius = self.__draw_distance_rings__(
                 framebuffer, scope_range

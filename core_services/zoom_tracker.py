@@ -10,7 +10,11 @@ from typing import Tuple
 
 from common_utils import local_debug, tasks, units
 from configuration import configuration
-from core_services.zoom_interpolation import SECONDS_FOR_ZOOM, get_actual_zoom
+from core_services.zoom_interpolation import (
+    SECONDS_FOR_ZOOM,
+    get_actual_zoom,
+    get_zoom_progress,
+)
 from core_services.scope_range import ScopeRange
 from core_services.zoom_manager import ZoomManager, get_ideal_scope_range
 from data_sources.ahrs_data import AhrsData
@@ -102,6 +106,21 @@ class ZoomTracker:
 
         return get_actual_zoom(
             seconds_into_zoom, self.__last_zoom__, self.__get_target_zoom__()
+        )
+
+    def get_zoom_progress(self) -> Tuple[float, int] | None:
+        """
+        Describes the zoom animation that is in progress, if any.
+
+        Returns:
+            None if the scope is not zooming, otherwise a tuple of
+            (proportion complete [0.0, 1.0), direction) where direction
+            is 1 when zooming out (range growing) and -1 when zooming in.
+        """
+        return get_zoom_progress(
+            (get_system_time() - self.__last_changed__).total_seconds(),
+            self.__last_zoom__,
+            self.__get_target_zoom__(),
         )
 
     def is_in_range(self, raw_distance: float | None) -> Tuple[bool, float]:

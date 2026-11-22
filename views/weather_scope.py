@@ -12,7 +12,7 @@ from common_utils.task_timer import TaskProfiler
 from common_utils.tasks import IntermittentTask
 from configuration import configuration
 from core_services.scope_range import ScopeRange
-from core_services.zoom_interpolation import get_actual_zoom
+from core_services.zoom_interpolation import get_actual_zoom, get_zoom_progress
 from core_services.zoom_manager import ZoomManager
 from data_sources.ahrs_data import AhrsData
 from data_sources.airports import load_example_airports, load_example_flight_rules
@@ -94,6 +94,17 @@ class WeatherTopViewScope(TopDownScope):
 
         return get_actual_zoom(
             seconds_into_zoom,
+            self.__zoom_starting_range__,
+            self.__zoom_manager__.get_current_zoom(),
+        )
+
+    def __get_zoom_progress__(self):
+        """
+        Returns None when not zooming, otherwise
+        (proportion complete, direction) for the zoom pulse.
+        """
+        return get_zoom_progress(
+            (get_system_time() - self.__zoom_started__).total_seconds(),
             self.__zoom_starting_range__,
             self.__zoom_manager__.get_current_zoom(),
         )
@@ -266,6 +277,10 @@ class WeatherTopViewScope(TopDownScope):
         with TaskProfiler(
             "views.weather_top_view_scope.WeatherTopViewScope.render_ring"
         ):
+            # Drawn first so the rings and labels sit on top of the glow.
+            self.__draw_zoom_pulse__(
+                framebuffer, scope_range, self.__get_zoom_progress__(), colors.WHITE
+            )
             self.__render_ownship__(framebuffer)
             self.__draw_distance_rings__(framebuffer, scope_range, colors.WHITE)
             self.__draw_all_compass_headings__(framebuffer, orientation, scope_range)
