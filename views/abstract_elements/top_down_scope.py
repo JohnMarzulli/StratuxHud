@@ -26,6 +26,17 @@ from views.hud_elements import apply_declination
 # These constants control the appearence of the zooming in and out pulse
 # effect. There are a lot of ways to tweak this for preferences and performance.
 
+# Which way the pulse travels.
+#   True:  "push" - zooming out, the pulse starts at the center ring
+#          and travels outward, as if pushing the outer ring away;
+#          zooming in, it travels inward from the outer ring.
+#   False: "pull" - the reverse; zooming out, the pulse travels inward
+#          from the outer ring, as if the scene is being drawn in.
+#          When "Pull" is used, the pulse rings have a set distance and
+#          basically the track the movement an airport or traffic
+#          would have on the scope to. This is generally the
+#          more usable option.
+__ZOOM_PULSE_OUTWARD_ON_ZOOM_OUT__ = False
 # How many pulses are spread evenly between the rings at once.
 __ZOOM_PULSE_COUNT__ = 1
 # Pulse speed: seconds for one pulse to travel from one ring to
@@ -334,10 +345,8 @@ class TopDownScope(AdsbElement):
     ):
         """
         Draws glowing bands that sweep between the center ring and the
-        outer ring while a zoom is in progress. Zooming out, the bands
-        start at the center ring and travel outward, as if pushing the
-        outer ring further away; zooming in, they start at the outer
-        ring and travel inward, as if pulling it closer.
+        outer ring while a zoom is in progress. Which way they travel
+        for each zoom direction is set by __ZOOM_PULSE_OUTWARD_ON_ZOOM_OUT__.
 
         Args:
             framebuffer (pygame.Surface): The render target.
@@ -388,12 +397,16 @@ class TopDownScope(AdsbElement):
             0.01, __ZOOM_PULSE_SECONDS_PER_SWEEP__
         )
 
+        is_zooming_out = direction > 0
+        outward = is_zooming_out == __ZOOM_PULSE_OUTWARD_ON_ZOOM_OUT__
+        travel_sign = 1 if outward else -1
+
         for pulse in range(__ZOOM_PULSE_COUNT__):
             phase = (sweeps_completed + pulse / __ZOOM_PULSE_COUNT__) % 1.0
 
-            # Zooming out (direction 1): center ring -> outer ring.
-            # Zooming in (direction -1): outer ring -> center ring.
-            travel = phase if direction > 0 else 1.0 - phase
+            # Outward: center ring -> outer ring.
+            # Inward: outer ring -> center ring.
+            travel = phase if outward else 1.0 - phase
             leading_radius = inner_radius + (travel * span)
             step_strengths = self.__get_zoom_pulse_strengths__(steps, phase)
 
@@ -404,7 +417,7 @@ class TopDownScope(AdsbElement):
                 # the direction of travel. Clipping it to the rings makes
                 # the wave grow out of its starting ring and sink into
                 # its ending ring.
-                radius = leading_radius - (step * spacing * direction)
+                radius = leading_radius - (step * spacing * travel_sign)
 
                 if radius < inner_radius or radius > outer_radius:
                     continue
