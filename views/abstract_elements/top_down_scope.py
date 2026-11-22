@@ -473,7 +473,15 @@ class TopDownScope(AdsbElement):
         if gps_distance > scope_range.center_ring_range:
             return
 
-        if self.__draw_identifiers__:
+        angle_to_airport = geo_math.get_bearing(
+            orientation.position, correct_airport_position
+        )
+        relative_angle: float = angle_to_airport - orientation.get_precise_gps_heading()
+
+        should_draw_identifier: bool = self.__should_draw_identifier__(
+            relative_angle, gps_distance, scope_range)
+
+        if self.__draw_identifiers__ and should_draw_identifier:
             identifier = airport["ident"]
 
             self.__render_centered_text__(
@@ -486,6 +494,21 @@ class TopDownScope(AdsbElement):
                 0,
                 True,
             )
+
+    def __should_draw_identifier__(
+            self,
+            relative_angle: float,
+            distance_to_target: float,
+            scope_range: ScopeRange
+    ):
+        relative_angle = math.fabs(relative_angle)
+
+        # The intent is to still show airports and planes that are really close to us
+        # but then hide them if they are too far away and outside the forward view.
+        secret_inner_circle_range: float = scope_range.center_ring_range / 2.0
+        relative_angle = math.fabs(relative_angle)
+
+        return (relative_angle < 90.0) or (distance_to_target < secret_inner_circle_range)
 
     def __get_airport_color__(self, airport: Dict[str, any]):
         if "flightRules" not in airport:

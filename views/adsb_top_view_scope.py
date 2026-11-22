@@ -143,7 +143,14 @@ class AdsbTopViewScope(TopDownScope):
         if display_distance > scope_range.center_ring_range:
             return
 
-        if self.__draw_identifiers__:
+        our_heading: float = orientation.compass_heading if orientation and orientation.compass_heading is not None else 0
+        traffic_bearing = traffic.bearing if traffic and traffic.bearing is not None else 0
+        relative_angle = our_heading - traffic_bearing
+        should_draw_identifier: bool = self.__should_draw_identifier__(
+            relative_angle, display_distance, scope_range
+        )
+
+        if self.__draw_identifiers__ and should_draw_identifier:
             identifier = traffic.get_display_name()
 
             self.__render_centered_text__(
