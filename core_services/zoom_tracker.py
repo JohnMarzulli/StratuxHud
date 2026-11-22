@@ -16,7 +16,11 @@ from core_services.zoom_interpolation import (
     get_zoom_progress,
 )
 from core_services.scope_range import ScopeRange
-from core_services.zoom_manager import ZoomManager, get_ideal_scope_range
+from core_services.zoom_manager import (
+    DEFAULT_ZOOM_INDEX,
+    ZoomManager,
+    get_ideal_scope_range,
+)
 from data_sources.ahrs_data import AhrsData
 from datetime import timezone
 
@@ -60,10 +64,22 @@ class ZoomTracker:
     zoom distance, while providing flapping prevention.
     """
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        allow_automatic: bool = True,
+        starting_zoom_index: int = DEFAULT_ZOOM_INDEX,
+    ) -> None:
+        """
+        Args:
+            allow_automatic (bool): When False the zoom is manual only;
+                it never changes based on speed and cannot be returned
+                to automatic.
+            starting_zoom_index (int): Which scope range to start at.
+        """
         super().__init__()
 
-        self.__zoom_manager__ = ZoomManager()
+        self.__allow_automatic__ = allow_automatic
+        self.__zoom_manager__ = ZoomManager(starting_zoom_index, allow_automatic)
 
         self.__last_changed__: datetime = get_system_time()
         self.__last_zoom__: ScopeRange = self.__zoom_manager__.get_current_zoom()
@@ -79,7 +95,16 @@ class ZoomTracker:
         self.__start_zoom__(self.__zoom_manager__.manual_zoom_out)
 
     def return_to_automatic(self):
+        if not self.__allow_automatic__:
+            return
+
         self.__start_zoom__(self.__zoom_manager__.return_to_automatic)
+
+    def allows_automatic(self) -> bool:
+        return self.__allow_automatic__
+
+    def get_maximum_possible_zoom(self) -> ScopeRange:
+        return self.__zoom_manager__.get_maximum_possible_zoom()
 
     def __start_zoom__(self, change_zoom):
         """

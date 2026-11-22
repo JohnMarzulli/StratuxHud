@@ -12,8 +12,7 @@ from common_utils.task_timer import TaskProfiler
 from common_utils.tasks import IntermittentTask
 from configuration import configuration
 from core_services.scope_range import ScopeRange
-from core_services.zoom_interpolation import get_actual_zoom, get_zoom_progress
-from core_services.zoom_manager import ZoomManager
+from core_services.zoom_manager import DEFAULT_ZOOM_INDEX
 from data_sources.ahrs_data import AhrsData
 from data_sources.airports import load_example_airports, load_example_flight_rules
 from data_sources.nexrad import NexradClient, ReflectivityBlock
@@ -28,22 +27,11 @@ class WeatherTopViewScope(TopDownScope):
     showing where traffic is relative to our current position.
     """
 
-    def handle_events(self, unhandled_events) -> list:
-
-        remaining_unhandled_events = []
-
-        for event in unhandled_events:
-            if event.type != pygame.KEYUP:
-                continue
-
-            if event.key in [pygame.K_UP, pygame.K_KP8]:
-                self.__start_zoom__(self.__zoom_manager__.manual_zoom_out)
-            elif event.key in [pygame.K_DOWN, pygame.K_KP2]:
-                self.__start_zoom__(self.__zoom_manager__.manual_zoom_in)
-            else:
-                remaining_unhandled_events.append(event)
-
-        return remaining_unhandled_events
+    # White rings, manual zoom only, starting zoomed out to 20/50
+    # so there is more weather in view.
+    RING_COLOR = colors.WHITE
+    ALLOWS_AUTOMATIC_ZOOM = False
+    STARTING_ZOOM_INDEX = DEFAULT_ZOOM_INDEX + 3
 
     def __init__(
         self,
@@ -66,14 +54,6 @@ class WeatherTopViewScope(TopDownScope):
         self.__reflectivity_blocks__: List[ReflectivityBlock] | None = None
         self.__reflectivity_signature__ = None
         self.__reflectivity_bitmap__: ReflectivityBitmap | None = None
-        self.__zoom_manager__: ZoomManager = ZoomManager()
-        self.__zoom_manager__.manual_zoom_out()
-        self.__zoom_manager__.manual_zoom_out()
-        self.__zoom_manager__.manual_zoom_out()
-        self.__zoom_started__ = get_system_time()
-        self.__zoom_starting_range__: ScopeRange = (
-            self.__zoom_manager__.get_current_zoom()
-        )
         self.__nearby_blocks_count__ = 0
         self.__total_blocks_count__ = 0
 
@@ -82,39 +62,8 @@ class WeatherTopViewScope(TopDownScope):
         )
 
         self.__maximum_radar_range__: int = (
-            self.__zoom_manager__.get_maximum_possible_zoom().max_ring_range
+            self.__zoom_tracker__.get_maximum_possible_zoom().max_ring_range
         )
-
-    def __get_displayed_zoom__(self) -> ScopeRange:
-        """
-        Returns the zoom to draw with, smoothly moving from where
-        the scope was when the zoom started to the zoom manager's range.
-        """
-        seconds_into_zoom = (get_system_time() - self.__zoom_started__).total_seconds()
-
-        return get_actual_zoom(
-            seconds_into_zoom,
-            self.__zoom_starting_range__,
-            self.__zoom_manager__.get_current_zoom(),
-        )
-
-    def __get_zoom_progress__(self):
-        """
-        Returns None when not zooming, otherwise
-        (proportion complete, direction) for the zoom pulse.
-        """
-        return get_zoom_progress(
-            (get_system_time() - self.__zoom_started__).total_seconds(),
-            self.__zoom_starting_range__,
-            self.__zoom_manager__.get_current_zoom(),
-        )
-
-    def __start_zoom__(self, change_zoom):
-        # Start from what is on screen so a zoom that interrupts
-        # another one does not jump.
-        self.__zoom_starting_range__ = self.__get_displayed_zoom__()
-        change_zoom()
-        self.__zoom_started__ = get_system_time()
 
     def __render_reflectivity__(
         self,
@@ -264,7 +213,7 @@ class WeatherTopViewScope(TopDownScope):
             orientation {Orientation} -- The orientation of the plane the HUD is in.
         """
 
-        scope_range = self.__get_displayed_zoom__()
+        scope_range = self.__update_zoom__(orientation)
 
         with TaskProfiler(
             "views.weather_top_view_scope.WeatherTopViewScope.render_reflectivity"
@@ -277,13 +226,7 @@ class WeatherTopViewScope(TopDownScope):
         with TaskProfiler(
             "views.weather_top_view_scope.WeatherTopViewScope.render_ring"
         ):
-            # Drawn first so the rings and labels sit on top of the glow.
-            self.__draw_zoom_pulse__(
-                framebuffer, scope_range, self.__get_zoom_progress__(), colors.WHITE
-            )
-            self.__render_ownship__(framebuffer)
-            self.__draw_distance_rings__(framebuffer, scope_range, colors.WHITE)
-            self.__draw_all_compass_headings__(framebuffer, orientation, scope_range)
+            self.__draw_scope__(framebuffer, orientation, scope_range)
 
         with TaskProfiler(
             "views.weather_top_view_scope.WeatherTopViewScope.render_airports"

@@ -21,23 +21,10 @@ class AdsbTopViewScope(TopDownScope):
     showing where traffic is relative to our current position.
     """
 
-    def handle_events(self, unhandled_events) -> list:
-        remaining_unhandled_events = []
-
-        for event in unhandled_events:
-            if event.type != pygame.KEYUP:
-                continue
-
-            if event.key in [pygame.K_UP, pygame.K_KP8]:
-                self.__zoom_tracker__.manual_zoom_out()
-            elif event.key in [pygame.K_DOWN, pygame.K_KP2]:
-                self.__zoom_tracker__.manual_zoom_in()
-            elif event.key in [pygame.K_KP7, 55]:  # 55 is '7'
-                self.__zoom_tracker__.return_to_automatic()
-            else:
-                remaining_unhandled_events.append(event)
-
-        return remaining_unhandled_events
+    # Green rings, auto-zoom by speed, and '7' returns to auto-zoom.
+    # (These are the TopDownScope defaults.)
+    RING_COLOR = colors.GREEN
+    ALLOWS_AUTOMATIC_ZOOM = True
 
     def __init__(
         self,
@@ -327,10 +314,8 @@ class AdsbTopViewScope(TopDownScope):
         # TODO: Try listing identifiers on side with lines leading to the aircraft
         # TODO: MORE TESTING!!!
 
-        self.__zoom_tracker__.update(orientation)
-
         with TaskProfiler("views.adsb_top_view_scope.AdsbTopViewScope.setup"):
-            scope_range: ScopeRange = self.__zoom_tracker__.get_target_zoom()
+            scope_range: ScopeRange = self.__update_zoom__(orientation)
             traffic_reports = HudDataCache.get_reliable_traffic()
             traffic_reports.sort(
                 key=lambda traffic: traffic.distance, reverse=True)
@@ -341,19 +326,7 @@ class AdsbTopViewScope(TopDownScope):
             self.__render_breadcrumbs__(framebuffer, scope_range, orientation)
 
         with TaskProfiler("views.adsb_top_view_scope.AdsbTopViewScope.render_rings"):
-            # Drawn first so the rings and labels sit on top of the glow.
-            self.__draw_zoom_pulse__(
-                framebuffer, scope_range, self.__zoom_tracker__.get_zoom_progress()
-            )
-
-            first_ring_pixel_radius = self.__draw_distance_rings__(
-                framebuffer, scope_range
-            )
-
-            self.__draw_all_compass_headings__(
-                framebuffer, orientation, scope_range)
-
-            self.__render_ownship__(framebuffer)
+            self.__draw_scope__(framebuffer, orientation, scope_range)
 
         with TaskProfiler("views.adsb_top_view_scope.AdsbTopViewScope.render_airports"):
             self.__draw_airports__(framebuffer, orientation, scope_range)

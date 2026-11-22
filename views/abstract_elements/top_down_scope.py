@@ -13,6 +13,7 @@ from common_utils import fast_math, geo_math, units
 from configuration import configuration
 from core_services.scope_range import ScopeRange
 from core_services.zoom_interpolation import SECONDS_FOR_ZOOM
+from core_services.zoom_manager import DEFAULT_ZOOM_INDEX
 from core_services.zoom_tracker import ZoomTracker
 from data_sources.ahrs_data import AhrsData
 from data_sources.airports import AirportClient
@@ -75,6 +76,45 @@ class TopDownScope(AdsbElement):
     TRAFFIC_PHASE_SHIFT = -90
     TEXT_PHASE_SHIFT = 180
 
+    # What makes one scope's zooming differ from another's.
+    # Subclasses override these; everything else about zooming
+    # (keys, smooth transitions, the pulse) is shared.
+    RING_COLOR = colors.GREEN
+    ALLOWS_AUTOMATIC_ZOOM = True
+    STARTING_ZOOM_INDEX = DEFAULT_ZOOM_INDEX
+
+    def handle_events(self, unhandled_events) -> list:
+        """
+        Provides view specific keyboard event handling.
+        This provides zooming in, zooming out, and it
+        the view allows for it: return to automatic zooming.
+
+        Args:
+            unhandled_events (_type_): Any remaining events that were not handled on the global StratuxHUD scale
+
+        Returns:
+            list: The list of events that were not handled by this view element.
+        """
+        remaining_unhandled_events = []
+
+        for event in unhandled_events:
+            if event.type != pygame.KEYUP:
+                continue
+
+            if event.key in [pygame.K_UP, pygame.K_KP8]:
+                self.__zoom_tracker__.manual_zoom_out()
+            elif event.key in [pygame.K_DOWN, pygame.K_KP2]:
+                self.__zoom_tracker__.manual_zoom_in()
+            elif self.__zoom_tracker__.allows_automatic() and event.key in [
+                pygame.K_KP7,
+                55,  # 55 is '7'
+            ]:
+                self.__zoom_tracker__.return_to_automatic()
+            else:
+                remaining_unhandled_events.append(event)
+
+        return remaining_unhandled_events
+
     def __init__(
         self,
         degrees_of_pitch: float,
@@ -91,7 +131,7 @@ class TopDownScope(AdsbElement):
             reduced_visuals,
         )
 
-        self.__zoom_tracker__ = ZoomTracker()
+        self.__zoom_tracker__ = ZoomTracker(self.ALLOWS_AUTOMATIC_ZOOM, self.STARTING_ZOOM_INDEX)
         self.__draw_identifiers__ = True
 
         self.__adjustment__ = 0.0
@@ -247,6 +287,43 @@ class TopDownScope(AdsbElement):
         pixel_distance = self.__get_pixel_distance__(distance_start, scope_range)
 
         return self.__get_screen_projection_from_center__(delta_angle, pixel_distance)
+
+    def __update_zoom__(self, orientation: AhrsData) -> ScopeRange:
+        """
+        Advances the zoom (auto-zoom, if allowed) and returns the
+        range to draw with this frame, part way through any transition.
+        """
+        return self.__zoom_tracker__.update(orientation)
+
+    def __draw_scope__(
+        self,
+        framebuffer: pygame.Surface,
+        orientation: AhrsData,
+        scope_range: ScopeRange,
+    ) -> int:
+        """
+        Draws the parts every scope shares: the zoom pulse, the
+        distance rings, the compass headings, and our own aircraft.
+
+        Returns:
+            int: The distance (in pixels) from the center to the first ring.
+        """
+        # Drawn first so the rings and labels sit on top of the glow.
+        self.__draw_zoom_pulse__(
+            framebuffer,
+            scope_range,
+            self.__zoom_tracker__.get_zoom_progress(),
+            self.RING_COLOR,
+        )
+
+        first_ring_pixel_radius = self.__draw_distance_rings__(
+            framebuffer, scope_range, self.RING_COLOR
+        )
+
+        self.__draw_all_compass_headings__(framebuffer, orientation, scope_range)
+        self.__render_ownship__(framebuffer)
+
+        return first_ring_pixel_radius
 
     def __draw_zoom_pulse__(
         self,

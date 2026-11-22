@@ -19,10 +19,15 @@ __SCOPE_RANGES__ = [
 ]
 
 
+DEFAULT_ZOOM_INDEX = 2
+
+
 class ZoomManager(object):
-    def __init__(self):
-        self.__index__ = 2
-        self.__is_automatic__ = True
+    def __init__(
+        self, starting_index: int = DEFAULT_ZOOM_INDEX, is_automatic: bool = True
+    ):
+        self.__index__ = max(0, min(starting_index, len(__SCOPE_RANGES__) - 1))
+        self.__is_automatic__ = is_automatic
 
     def is_automatic(self) -> bool:
         return self.__is_automatic__
@@ -214,7 +219,7 @@ if __name__ == "__main__":
     assert zoom_manager.is_automatic() == True
     assert zoom_manager.get_current_zoom().center_ring_range == 20
 
-    ## Test 5
+    # Test 5
     #
     # Make sure we can zoom back in
     zoom_manager.automatic_zoom_in()
