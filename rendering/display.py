@@ -2,6 +2,7 @@
 Initializes the display, and holds common color values.
 """
 
+import logging
 import os
 import sys
 
@@ -20,6 +21,15 @@ except:
 from rendering import colors
 
 FORCE_SOFTWARE_FLAG = "software"
+
+# The HUD's file logger. stdout is not kept on the Pi (the journal is
+# RAM only), so display setup decisions need to go into the log file.
+__LOGGER__ = logging.getLogger("stratux_hud")
+
+
+def __log__(message: str):
+    print(message)
+    __LOGGER__.info("Display: " + message)
 
 
 def is_forced_software_rendering() -> bool:
@@ -99,15 +109,15 @@ class Display:
         is_fullscreen = False
 
         if self.__is_fullscreen_target__() or force_fullscreen:
-            print("Detecting or forcing fullscreen")
+            __log__("Detecting or forcing fullscreen")
             screen_mode |= pygame.FULLSCREEN
             is_fullscreen = True
 
         if is_opengl_target() and not force_software:
-            print("Detecting or forcing software rasterization")
+            __log__("Using OpenGL rendering")
             screen_mode |= pygame.constants.OPENGL | pygame.constants.OPENGLBLIT
 
-        return screen_mode, is_fullscreen
+        return [screen_mode, is_fullscreen]
 
     def __get_desktop_size__(
         self
@@ -161,7 +171,7 @@ class Display:
             same_aspect_modes or fitting_modes,
             key=lambda mode: mode[0] * mode[1])
 
-        print("Desktop mode {}x{} is too large, using {}x{}".format(
+        __log__("Desktop mode {}x{} is too large, using {}x{}".format(
             desktop_size[0], desktop_size[1], best_mode[0], best_mode[1]))
 
         return tuple(best_mode)
@@ -201,7 +211,7 @@ class Display:
                 try:
                     pygame.display.init()
                 except pygame.error as ex:
-                    print('Driver: {0} failed. EX={1}'.format(driver, ex))
+                    __log__('Driver: {0} failed. EX={1}'.format(driver, ex))
                     continue
 
                 found = True
@@ -219,9 +229,10 @@ class Display:
                 # pygame.display.toggle_fullscreen()
 
             self.size = self.__get_target_screen_size__()
-            print("Detected fullscreen")
+            __log__("Detected fullscreen; desktop mode is {}x{}".format(
+                *self.__get_desktop_size__()))
 
-        print("Now setting screensize to {}x{}".format(
+        __log__("Now setting screensize to {}x{}".format(
             self.size[0], self.size[1]))
         # A size of (0, 0) tells SDL to keep the mode the console is
         # already using, so KMS does not renegotiate the HDMI link.
@@ -234,6 +245,9 @@ class Display:
         screen = pygame.display.set_mode(
             (0, 0) if keep_desktop_mode else self.size, display_mode)
         self.size = screen.get_size()
+        __log__("Display created: driver={} size={}x{} kept desktop mode={} flags=0x{:X}".format(
+            pygame.display.get_driver(), self.size[0], self.size[1],
+            keep_desktop_mode, display_mode))
 
         if self.is_open_gl:
             GL.glEnable(GL.GL_POLYGON_SMOOTH)

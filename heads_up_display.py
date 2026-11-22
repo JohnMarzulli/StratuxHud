@@ -8,7 +8,8 @@ from time import sleep
 import pygame
 import requests
 
-from common_utils import local_debug, system_tools
+from common_utils import hdmi_diagnostics, local_debug, system_tools
+import common_utils.authoritative_time as authoritative_time
 from common_utils.logger import HudLogger
 from common_utils.task_timer import RollingStats, TaskProfiler
 from common_utils.tasks import IntermittentTask, RecurringTask
@@ -208,6 +209,7 @@ class HeadsUpDisplay(object):
 
             orientation: AhrsData = self.__aircraft__.get_orientation()
             self.__update_declination_task__.run()
+            self.__log_time_delta_task__.run()
 
             if orientation:
                 AirportClient.set_last_known_position(orientation.position)
@@ -476,6 +478,12 @@ class HeadsUpDisplay(object):
 
         breadcrumbs.INSTANCE.update(orientation)
 
+    def __log_time_delta__(self):
+        system_time = authoritative_time.get_system_time()
+        display_time = authoritative_time.DISPLAY_TIME.get_display_time_utc()
+
+        self.log(f"System Time: {system_time}, Display Time: {display_time}")
+
     def __update_declination__(self):
         updated_declination = None
         orientation = self.__aircraft__.get_orientation()
@@ -526,6 +534,10 @@ class HeadsUpDisplay(object):
             "Render Performance Data", 15.0, self.__render_perf__, logger
         )
 
+        self.__log_time_delta_task__ = IntermittentTask(
+            "Log Time Delta", 60.0, self.__log_time_delta__, logger
+        )
+
         self.__logger__ = logger
         self.__fps__ = RollingStats("FPS")
         self.__texture_cache_size__ = RollingStats("TextureCacheSize")
@@ -534,7 +546,22 @@ class HeadsUpDisplay(object):
 
         self.__fps__.push(0)
 
+        # Capture the HDMI state before and after SDL takes over the display,
+        # so a link problem can be pinned to boot/KMS init or to the HUD's
+        # own mode set. The monitor then logs any later hotplug/EDID change.
+        if local_debug.IS_PI:
+            hdmi_diagnostics.log_hdmi_snapshot(
+                logger, "before display init", edid_save_directory=".")
+
         self.__display__ = display.Display(force_fullscreen, force_software)
+
+        if local_debug.IS_PI:
+            hdmi_diagnostics.log_pygame_display_info(logger)
+            hdmi_diagnostics.log_hdmi_snapshot(
+                logger, "after display init", include_boot_config=False)
+            self.__hdmi_monitor__ = hdmi_diagnostics.HdmiMonitor(
+                logger, edid_save_directory=".")
+
         pygame.display.set_caption(f"StratuxHUD ({drawing.renderer.RENDERER_NAME})")
         self.__width__, self.__height__ = self.__display__.size
 
