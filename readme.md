@@ -504,8 +504,8 @@ If you have strange visual artifacts on boot, you may need to modify the /boot/f
 
 This version helps prevent HDMI renegotiation and resolution changes.
 
-```
-console=serial0,115200 console=tty1 root=PARTUUID=6f8d6066-02 rootfstype=ext4 fsck.repair=yes rootwait cfg80211.ieee80211_regdom=US
+```config
+console=serial0,115200 console=tty1 root=PARTUUID=6f8d6066-02 rootfstype=ext4 fsck.repair=yes rootwait cfg80211.ieee80211_regdom=US video=HDMI-A-1:1280x720@60D
 ```
 
 ### Running The HUD At Start Up
