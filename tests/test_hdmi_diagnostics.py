@@ -103,6 +103,18 @@ class TestEdidParsing(unittest.TestCase):
         self.assertIn("BAD", hdmi_diagnostics.describe_edid(b"\x12\x34")[0])
 
 
+class TestEdidHex(unittest.TestCase):
+    def test_round_trip(self):
+        edid = make_edid()
+        lines = hdmi_diagnostics.get_edid_hex_lines(edid)
+
+        self.assertEqual(len(lines), 8)
+        self.assertEqual(bytes.fromhex("".join(lines)), edid)
+
+    def test_no_edid(self):
+        self.assertEqual(hdmi_diagnostics.get_edid_hex_lines(b""), [])
+
+
 class TestThrottled(unittest.TestCase):
     def test_describe(self):
         self.assertEqual(hdmi_diagnostics.describe_throttled(0), "0x0 (ok)")

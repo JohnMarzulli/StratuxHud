@@ -34,6 +34,7 @@ import sys
 from rendering import display
 
 import heads_up_display
+from common_utils import hdmi_diagnostics
 from common_utils.logger import DisplayTimeFormatter, HudLogger
 
 __PYTHON_LOGGGER__ = logging.getLogger("stratux_hud")
@@ -68,6 +69,10 @@ def __is_flag_present__(flag_name: str) -> bool:
 
 if __name__ == "__main__":
     __LOGGER__.log_info_message("Starting HUD")
+    # Full HDMI diagnostics (boot config, firmware, connectors, decoded and
+    # raw EDID, kernel display messages) before anything touches the display.
+    hdmi_diagnostics.log_hdmi_snapshot(
+        __LOGGER__, "startup", edid_save_directory=".")
     __LOGGER__.log_info_message(
         "System, DateTime, Component, Instantaneous, Rolling Mean, Max"
     )

@@ -579,6 +579,22 @@ def is_supported() -> bool:
     return os.path.isdir(DRM_CLASS_PATH)
 
 
+def get_edid_hex_lines(
+    edid: bytes,
+    bytes_per_line: int = 32
+) -> list:
+    """
+    The raw EDID as hex, split into log sized lines. Joining the hex
+    back together and running `xxd -r -p` recreates the .bin file:
+
+        grep "EDID hex card1-HDMI-A-1" stratux_hud.log | tail -8 \\
+            | sed 's/.*: //' | xxd -r -p > edid.bin
+    """
+    return [
+        edid[offset:offset + bytes_per_line].hex()
+        for offset in range(0, len(edid), bytes_per_line)]
+
+
 def log_hdmi_snapshot(
     logger=None,
     stage: str = "",
@@ -617,8 +633,17 @@ def log_hdmi_snapshot(
         for connector in connectors:
             state = read_connector_state(connector)
             __log__(logger, __summarize_connector__(state))
+            __log__(logger, "  {} kernel preferred mode: {}".format(
+                state["name"], state["modes"][0] if state["modes"] else "none"))
             __log_lines__(logger, "  {} modes".format(state["name"]), state["modes"])
             __log_lines__(logger, "  {} EDID".format(state["name"]), describe_edid(state["edid"]))
+
+            # The raw EDID, so it can be recovered from the log alone.
+            hex_lines = get_edid_hex_lines(state["edid"])
+
+            for index, line in enumerate(hex_lines):
+                __log__(logger, "EDID hex {} [{}/{}]: {}".format(
+                    state["name"], index + 1, len(hex_lines), line))
 
             if edid_save_directory:
                 saved = save_edid(state, edid_save_directory)

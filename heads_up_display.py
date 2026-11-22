@@ -482,6 +482,7 @@ class HeadsUpDisplay(object):
         system_time = authoritative_time.get_system_time()
         display_time = authoritative_time.DISPLAY_TIME.get_display_time_utc()
 
+        self.log("------ TIME ------")
         self.log(f"System Time: {system_time}, Display Time: {display_time}")
 
     def __update_declination__(self):
@@ -546,13 +547,10 @@ class HeadsUpDisplay(object):
 
         self.__fps__.push(0)
 
-        # Capture the HDMI state before and after SDL takes over the display,
-        # so a link problem can be pinned to boot/KMS init or to the HUD's
-        # own mode set. The monitor then logs any later hotplug/EDID change.
-        if local_debug.IS_PI:
-            hdmi_diagnostics.log_hdmi_snapshot(
-                logger, "before display init", edid_save_directory=".")
-
+        # stratux_hud.py logs the HDMI state at startup, before the display
+        # is created. Log it again after SDL takes over, so a link problem
+        # can be pinned to boot/KMS init or to the HUD's own mode set.
+        # The monitor then logs any later hotplug/EDID change.
         self.__display__ = display.Display(force_fullscreen, force_software)
 
         if local_debug.IS_PI:
