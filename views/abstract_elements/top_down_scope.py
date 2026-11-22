@@ -334,11 +334,10 @@ class TopDownScope(AdsbElement):
     ):
         """
         Draws glowing bands that sweep between the center ring and the
-        outer ring while a zoom is in progress. Zooming in, the bands
-        start at the center ring and travel outward to the outer ring
-        (things are spreading apart); zooming out, they start at the
-        outer ring and travel inward to the center ring (things are
-        being pulled together).
+        outer ring while a zoom is in progress. Zooming out, the bands
+        start at the center ring and travel outward, as if pushing the
+        outer ring further away; zooming in, they start at the outer
+        ring and travel inward, as if pulling it closer.
 
         Args:
             framebuffer (pygame.Surface): The render target.
@@ -392,9 +391,9 @@ class TopDownScope(AdsbElement):
         for pulse in range(__ZOOM_PULSE_COUNT__):
             phase = (sweeps_completed + pulse / __ZOOM_PULSE_COUNT__) % 1.0
 
-            # Zooming in (direction -1): center ring -> outer ring.
-            # Zooming out (direction 1): outer ring -> center ring.
-            travel = phase if direction < 0 else 1.0 - phase
+            # Zooming out (direction 1): center ring -> outer ring.
+            # Zooming in (direction -1): outer ring -> center ring.
+            travel = phase if direction > 0 else 1.0 - phase
             leading_radius = inner_radius + (travel * span)
             step_strengths = self.__get_zoom_pulse_strengths__(steps, phase)
 
@@ -405,7 +404,7 @@ class TopDownScope(AdsbElement):
                 # the direction of travel. Clipping it to the rings makes
                 # the wave grow out of its starting ring and sink into
                 # its ending ring.
-                radius = leading_radius + (step * spacing * direction)
+                radius = leading_radius - (step * spacing * direction)
 
                 if radius < inner_radius or radius > outer_radius:
                     continue
@@ -761,12 +760,14 @@ class TopDownScope(AdsbElement):
             distance_to_target: float,
             scope_range: ScopeRange
     ):
+        # Fold into [-180, 180) so a target just across north
+        # (e.g. heading 350, bearing 010) counts as ahead, not behind.
+        relative_angle = ((relative_angle + 180.0) % 360.0) - 180.0
         relative_angle = math.fabs(relative_angle)
 
         # The intent is to still show airports and planes that are really close to us
         # but then hide them if they are too far away and outside the forward view.
         secret_inner_circle_range: float = scope_range.center_ring_range / 2.0
-        relative_angle = math.fabs(relative_angle)
 
         return (relative_angle < 90.0) or (distance_to_target < secret_inner_circle_range)
 

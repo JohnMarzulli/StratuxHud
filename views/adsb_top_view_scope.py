@@ -130,9 +130,9 @@ class AdsbTopViewScope(TopDownScope):
         if display_distance > scope_range.center_ring_range:
             return
 
-        our_heading: float = orientation.compass_heading if orientation and orientation.compass_heading is not None else 0
-        traffic_bearing = traffic.bearing if traffic and traffic.bearing is not None else 0
-        relative_angle = our_heading - traffic_bearing
+        # Use the same GPS track the target was placed with, so
+        # "ahead of us" matches where it is drawn on the scope.
+        relative_angle = bearing - orientation.get_precise_gps_heading()
         should_draw_identifier: bool = self.__should_draw_identifier__(
             relative_angle, display_distance, scope_range
         )
