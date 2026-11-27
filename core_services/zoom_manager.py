@@ -111,6 +111,13 @@ class ZoomManager(object):
         )
 
 
+def get_maximum_possible_zoom() -> ScopeRange:
+    """
+    The furthest any scope can zoom out to, in display units.
+    """
+    return __SCOPE_RANGES__[-1]
+
+
 def get_ideal_scope_range(groundspeed: float) -> ScopeRange:
     """
     Given a ground speed, figure out how far the scope should be.

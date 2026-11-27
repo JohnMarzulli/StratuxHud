@@ -39,6 +39,10 @@
     "class": "weather_scope.WeatherTopViewScope",
     "detail_font": true
   },
+  "ADSB + Weather Scope": {
+    "class": "adsb_and_weather_scope.AdsbAndWeatherScope",
+    "detail_font": true
+  },
   "Altitude": {
     "class": "altitude.Altitude",
     "detail_font": true

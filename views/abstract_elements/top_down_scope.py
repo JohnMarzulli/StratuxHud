@@ -5,21 +5,21 @@ View element for a weather "radar" that looks from the top downwards.
 import pygame
 
 import math
-from typing import Dict, Tuple
+from typing import Tuple
 
-from common_utils.authoritative_time import get_system_time
-
-from common_utils import fast_math, geo_math, units
+from common_utils import fast_math, units
+from common_utils.task_timer import TaskProfiler
 from configuration import configuration
 from core_services.scope_range import ScopeRange
 from core_services.zoom_interpolation import SECONDS_FOR_ZOOM
 from core_services.zoom_manager import DEFAULT_ZOOM_INDEX
 from core_services.zoom_tracker import ZoomTracker
 from data_sources.ahrs_data import AhrsData
-from data_sources.airports import AirportClient
 from rendering import colors, drawing
 from views.abstract_elements.adsb_element import AdsbElement
 from views.hud_elements import apply_declination
+from views.scope_layers.scope_canvas import ScopeCanvas
+from views.scope_layers.scope_frame import ScopeFrame
 
 # -= Gratuitous eye-candy =-
 ##
@@ -94,6 +94,11 @@ class TopDownScope(AdsbElement):
     ALLOWS_AUTOMATIC_ZOOM = True
     STARTING_ZOOM_INDEX = DEFAULT_ZOOM_INDEX
 
+    # What the scope shows: ScopeLayer types drawn under the rings
+    # (background) and over them (foreground), in order.
+    BACKGROUND_LAYERS: list = []
+    FOREGROUND_LAYERS: list = []
+
     def handle_events(self, unhandled_events) -> list:
         """
         Provides view specific keyboard event handling.
@@ -142,10 +147,9 @@ class TopDownScope(AdsbElement):
             reduced_visuals,
         )
 
-        self.__zoom_tracker__ = ZoomTracker(self.ALLOWS_AUTOMATIC_ZOOM, self.STARTING_ZOOM_INDEX)
-        self.__draw_identifiers__ = True
-
-        self.__adjustment__ = 0.0
+        self.__zoom_tracker__ = ZoomTracker(
+            self.ALLOWS_AUTOMATIC_ZOOM, self.STARTING_ZOOM_INDEX
+        )
 
         # Make the center of the scope towards the bottome of the screen
         # such that we can see aircraft sneeking up behind us, but not so much
@@ -155,87 +159,55 @@ class TopDownScope(AdsbElement):
             self.__center_y__ + int(self.__center_y__ >> 1),
         ]
 
-        size = self.__framebuffer_size__[1] * 0.04
-        half_size = int((size / 2.0) + 0.5)
-        quarter_size = int((size / 4.0) + 0.5)
-        self.__no_direction_target_size__ = quarter_size
         self.__line_width__ = max(1, self.__line_width__ >> 1)
 
-        # 1 - Come up with the 0,0 based line coordinates
-        self.__target_indicator__ = [
-            [-quarter_size, half_size],
-            [0, -half_size],
-            [quarter_size, half_size],
+        self.__canvas__ = ScopeCanvas(
+            self,
+            self.__scope_center__,
+            self.__scope_center__[1] - self.__top_border__,
+        )
+        self.__background_layers__ = [
+            layer_type(self.__canvas__) for layer_type in self.BACKGROUND_LAYERS
+        ]
+        self.__foreground_layers__ = [
+            layer_type(self.__canvas__) for layer_type in self.FOREGROUND_LAYERS
         ]
 
-    def __get_traffic_indicator__(
-        self, indicator_position: list, our_heading: float, traffic_heading: float
-    ) -> list:
-        """Generates the coordinates for a reticle indicating
-        traffic is above use.
+    def render(self, framebuffer: pygame.Surface, orientation: AhrsData):
+        """
+        Draws the scope: background layers, then the rings (with the
+        zoom pulse, compass, and ownship), then foreground layers.
 
         Arguments:
-            center_x {int} -- Center X screen position
-            center_y {int} -- Center Y screen position
-            scale {float} -- The scale of the reticle relative to the screen.
+            framebuffer {pygame.Surface} -- The render target.
+            orientation {Orientation} -- The orientation of the plane the HUD is in.
         """
+        scope_range = self.__update_zoom__(orientation)
+        frame = ScopeFrame(
+            self.__canvas__,
+            framebuffer,
+            orientation,
+            scope_range,
+            self.__zoom_tracker__.get_display_units(),
+        )
+        profile_prefix = f"views.{type(self).__name__}"
 
-        # 2 - determine the angle of rotation compared to our "up"
-        rotation = 360.0 - our_heading
-        rotation = rotation + traffic_heading
-        rotation_degrees = int(fast_math.wrap_degrees(rotation + self.__adjustment__))
+        for layer in self.__background_layers__:
+            with TaskProfiler(f"{profile_prefix}.{type(layer).__name__}"):
+                layer.render(frame)
 
-        # 3 - Rotate the zero-based points
-        radians = math.radians(rotation_degrees)
-        rotation_sin = math.sin(radians)
-        rotation_cos = math.cos(radians)
-        rotated_points = [
-            [
-                point[0] * rotation_cos - point[1] * rotation_sin,
-                point[0] * rotation_sin + point[1] * rotation_cos,
-            ]
-            for point in self.__target_indicator__
-        ]
+        with TaskProfiler(f"{profile_prefix}.rings"):
+            self.__draw_scope__(framebuffer, orientation, scope_range)
 
-        # 4 - Translate to the bug center point
-        return [
-            [point[0] + indicator_position[0], point[1] + indicator_position[1]]
-            for point in rotated_points
-        ]
+        for layer in self.__foreground_layers__:
+            with TaskProfiler(f"{profile_prefix}.{type(layer).__name__}"):
+                layer.render(frame)
 
     def __get_pixel_distance__(
         self, distance_in_user_units: float, scope_range: ScopeRange
     ) -> int:
-        max_pixel_distance = self.__scope_center__[1] - self.__top_border__
-
         proportion = distance_in_user_units / scope_range.max_ring_range
-        return int(max_pixel_distance * proportion)
-
-    def __get_precise_screen_coordinates__(
-        self,
-        orientation: AhrsData,
-        current_heading: float,
-        scope_range: ScopeRange,
-        gps_coordinates,
-    ) -> Tuple[float, float]:
-        """
-        Same as __get_screen_coordinates__, but keeps sub-pixel precision.
-        Snapping each vertex to whole pixels makes large shapes
-        visibly wobble as our aircraft moves.
-        """
-        distance = geo_math.get_distance(orientation.position, gps_coordinates)
-        bearing = geo_math.get_bearing(orientation.position, gps_coordinates)
-        radians = math.radians(
-            TopDownScope.TRAFFIC_PHASE_SHIFT + bearing - current_heading
-        )
-
-        max_pixel_distance = self.__scope_center__[1] - self.__top_border__
-        pixel_distance = max_pixel_distance * (distance / scope_range.max_ring_range)
-
-        return (
-            (math.cos(radians) * pixel_distance) + self.__scope_center__[0],
-            (math.sin(radians) * pixel_distance) + self.__scope_center__[1],
-        )
+        return int(self.__canvas__.max_pixel_radius * proportion)
 
     def __get_screen_projection_from_center__(
         self, angle_degrees: float, distance_pixels: float
@@ -274,30 +246,11 @@ class TopDownScope(AdsbElement):
         Args:
             framebuffer {pygame.Surface} -- The render target.
         """
-        points = self.__get_traffic_indicator__(self.__scope_center__, 0, 0)
+        points = self.__canvas__.get_traffic_indicator(self.__scope_center__, 0, 0)
 
         drawing.renderer.polygon(
             framebuffer, colors.GREEN, points, not self.__reduced_visuals__
         )
-
-    def __get_screen_coordinates__(
-        self,
-        orientation: AhrsData,
-        current_heading,
-        scope_range: ScopeRange,
-        gps_coordinates,
-    ):
-        distance_start = geo_math.get_distance(orientation.position, gps_coordinates)
-        bearing = geo_math.get_bearing(orientation.position, gps_coordinates)
-        delta_angle = bearing - current_heading
-        # We need to rotate by 270 to make sure that
-        # the orientation is correct AND to correct the phase.
-        delta_angle = TopDownScope.TRAFFIC_PHASE_SHIFT + delta_angle
-        delta_angle = fast_math.wrap_degrees(delta_angle)
-
-        pixel_distance = self.__get_pixel_distance__(distance_start, scope_range)
-
-        return self.__get_screen_projection_from_center__(delta_angle, pixel_distance)
 
     def __update_zoom__(self, orientation: AhrsData) -> ScopeRange:
         """
@@ -651,152 +604,3 @@ class TopDownScope(AdsbElement):
             self.__draw_compass_text__(
                 framebuffer, our_heading, heading_to_draw, scope_range
             )
-
-    def __draw_airports__(self, framebuffer, orientation, scope_range: ScopeRange):
-        is_airport_data_valid = AirportClient.is_airport_data_valid()
-
-        if not is_airport_data_valid and get_system_time().second % 2 == 0:
-            self.__render_text_right_justified__(
-                framebuffer,
-                "EXPIRED",
-                [self.__right_border__, self.__bottom_border__ - self.__font_height__],
-                colors.RED,
-            )
-
-        if (
-            orientation is None
-            or orientation.position is None
-            or orientation.position[0] is None
-            or orientation.position[1] is None
-        ):
-            return
-
-        nearby_airports = AirportClient.get_nearby_airports()
-
-        [
-            self.__render_airport_target__(
-                framebuffer, orientation, nearby_airports[airport_id], scope_range
-            )
-            for airport_id in nearby_airports
-        ]
-
-    def __render_airport_target__(
-        self,
-        framebuffer,
-        orientation: AhrsData,
-        airport: Dict[str, any],
-        scope_range: ScopeRange,
-    ):
-        """
-        Draws a single reticle on the screen.
-
-        Arguments:
-            framebuffer {pygame.Surface} -- Render target
-            orientation {Orientation} -- The orientation of the plane.
-            airport {Dict[str, any]} -- The airport to draw the reticle for.
-            first_ring_pixel_distance {int} -- The distance (in pixels) from the ownship to the first scope ring. Used for clutter control.
-        """
-
-        # Airport data format:
-        # {"coordinates":{"longitude":-122.149561389,"latitude":47.280656111},"ident":"WA84","name":"Auburn Academy","airportType":"AD","isPublic":false}
-
-        airport_position = [
-            airport["coordinates"]["longitude"],
-            airport["coordinates"]["latitude"],
-        ]
-
-        # This position comes as lon/lat
-        # All supporting code needs to be provided in lat/lon
-        correct_airport_position = [
-            airport_position[1],
-            airport_position[0],
-        ]
-
-        gps_distance = geo_math.get_distance(
-            orientation.position, correct_airport_position
-        )
-
-        if gps_distance > scope_range.max_ring_range:
-            return
-
-        screen_x, screen_y = self.__get_screen_coordinates__(
-            orientation,
-            orientation.get_precise_gps_heading(),
-            scope_range,
-            correct_airport_position,
-        )
-
-        if screen_x < 0 or screen_x > self.__width__:
-            return
-
-        if screen_y < 0 or screen_y > self.__height__:
-            return
-
-        target_color = self.__get_airport_color__(airport)
-
-        drawing.renderer.filled_circle(
-            framebuffer,
-            target_color,
-            [screen_x, screen_y],
-            self.__no_direction_target_size__,
-            not self.__reduced_visuals__,
-        )
-
-        if gps_distance > scope_range.center_ring_range:
-            return
-
-        angle_to_airport = geo_math.get_bearing(
-            orientation.position, correct_airport_position
-        )
-        relative_angle: float = angle_to_airport - orientation.get_precise_gps_heading()
-
-        should_draw_identifier: bool = self.__should_draw_identifier__(
-            relative_angle, gps_distance, scope_range)
-
-        if self.__draw_identifiers__ and should_draw_identifier:
-            identifier = airport["ident"]
-
-            self.__render_centered_text__(
-                framebuffer,
-                identifier,
-                [screen_x, screen_y + (self.__no_direction_target_size__ << 2)],
-                target_color,
-                colors.BLACK,
-                0.5,
-                0,
-                True,
-            )
-
-    def __should_draw_identifier__(
-            self,
-            relative_angle: float,
-            distance_to_target: float,
-            scope_range: ScopeRange
-    ):
-        # Fold into [-180, 180) so a target just across north
-        # (e.g. heading 350, bearing 010) counts as ahead, not behind.
-        relative_angle = ((relative_angle + 180.0) % 360.0) - 180.0
-        relative_angle = math.fabs(relative_angle)
-
-        # The intent is to still show airports and planes that are really close to us
-        # but then hide them if they are too far away and outside the forward view.
-        secret_inner_circle_range: float = scope_range.center_ring_range / 2.0
-
-        return (relative_angle < 90.0) or (distance_to_target < secret_inner_circle_range)
-
-    def __get_airport_color__(self, airport: Dict[str, any]):
-        if "flightRules" not in airport:
-            return colors.WHITE  # TODO - Find a way to determine if it has a tower
-
-        flight_rules = airport["flightRules"]
-
-        if flight_rules == "VFR":
-            return colors.GREEN
-        elif flight_rules == "MVFR":
-            return colors.BLUE
-        elif flight_rules == "IFR":
-            return colors.RED
-        elif flight_rules == "LIFR":
-            return colors.MAGENTA
-
-        return colors.GRAY

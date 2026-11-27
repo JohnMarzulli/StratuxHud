@@ -1,7 +1,7 @@
 from common_utils.fast_math import interpolatef
 from core_services.scope_range import ScopeRange
 
-SECONDS_FOR_ZOOM = 3.0
+SECONDS_FOR_ZOOM = 1.0
 
 
 def get_actual_zoom(

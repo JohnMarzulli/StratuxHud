@@ -22,6 +22,16 @@
       "elements": [
         "Groundspeed",
         "Altitude",
+        "ADSB + Weather Scope",
+        "Traffic Not Available",
+        "GPS Not Available"
+      ],
+      "name": "Full Radar"
+    },
+    {
+      "elements": [
+        "Groundspeed",
+        "Altitude",
         "ADSB Scope",
         "Traffic Not Available",
         "GPS Not Available"

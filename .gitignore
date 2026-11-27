@@ -55,3 +55,5 @@ stratux_hud.log.*
 
 # Stuff from TypeScript for Traffic Manager
 traffic_manager/node_modules
+# Golden-frame test output saved when a scope render does not match
+tests/golden_frames/*.actual.png

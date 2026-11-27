@@ -30,6 +30,7 @@ from rendering import colors, display, drawing, text_renderer
 # to be imported EVEN if the compiler tries to tell you
 # they are not needed.
 from views import (
+    adsb_and_weather_scope,
     adsb_on_screen_reticles,
     adsb_target_bugs,
     adsb_target_bugs_only,

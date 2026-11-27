@@ -48,6 +48,17 @@
             ]
         },
         {
+            "name": "VIEW: ADSB + Weather Scope",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "views.adsb_and_weather_scope",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "args": [
+                "software"
+            ]
+        },
+        {
             "name": "VIEW: Weather Scope",
             "type": "debugpy",
             "request": "launch",

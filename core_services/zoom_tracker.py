@@ -103,6 +103,12 @@ class ZoomTracker:
     def allows_automatic(self) -> bool:
         return self.__allow_automatic__
 
+    def get_display_units(self) -> str:
+        """
+        The distance units ranges are expressed in (statute, knots, metric).
+        """
+        return self.__user_units__
+
     def get_maximum_possible_zoom(self) -> ScopeRange:
         return self.__zoom_manager__.get_maximum_possible_zoom()
 

@@ -5,7 +5,6 @@ with patch("requests.Session.get", return_value=Mock(json=lambda: {})):
     from core_services.scope_range import ScopeRange
     from data_sources.traffic import AdsbTrafficClient, Traffic
     from views.abstract_elements.adsb_element import AdsbElement
-    from views.adsb_top_view_scope import AdsbTopViewScope
     from views.adsb_on_screen_reticles import AdsbOnScreenReticles
 
 
@@ -61,82 +60,6 @@ class TrafficPredictionTests(unittest.TestCase):
             traffic.update({"Prediction": prediction})
             self.assertEqual(traffic.get_prediction_points(), [])
 
-    def test_scope_clips_each_segment_of_turning_path(self):
-        scope = AdsbTopViewScope.__new__(AdsbTopViewScope)
-        scope.__width__, scope.__height__ = 100, 100
-        scope.__line_width__ = 3
-        scope.__zoom_tracker__ = Mock()
-        scope.__zoom_tracker__.is_in_range.return_value = (True, 1)
-        scope.__get_pixel_distance__ = Mock(return_value=1)
-        scope.__get_screen_projection_from_center__ = Mock(
-            side_effect=[(150, 50), (50, 80)])
-        traffic = make_traffic({"type": "turning", "points": [
-                               point(0.01, 0), point(0.02, 0.01), point(0.03, 0.02)]})
-        orientation = Mock(position=[0, 0])
-        orientation.get_precise_gps_heading.return_value = 0
-        with patch("views.adsb_top_view_scope.drawing.renderer.segment") as segment:
-            scope.__render_prediction__(
-                None, orientation, traffic, ScopeRange(1, 2, 1), (50, 50), [255, 0, 0])
-        self.assertEqual(segment.call_count, 2)
-        self.assertEqual(segment.call_args_list[0], call(
-            None, [255, 0, 0], [50, 50], [99, 50], width=3))
-        self.assertEqual(segment.call_args_list[1].args[2][0], 99)
-        orientation.get_precise_gps_heading.assert_called_once_with()
-
-    def test_scope_skips_predictions_without_a_segment(self):
-        scope = AdsbTopViewScope.__new__(AdsbTopViewScope)
-        orientation = Mock()
-        for points in ([], [point(0, 0)]):
-            with self.subTest(points=points):
-                traffic = make_traffic({"points": points})
-                with patch("views.adsb_top_view_scope.drawing.renderer.segment") as segment:
-                    scope.__render_prediction__(
-                        None, orientation, traffic, ScopeRange(
-                            1, 2, True), (50, 50), [255, 0, 0]
-                    )
-                segment.assert_not_called()
-                orientation.get_precise_gps_heading.assert_not_called()
-
-    def test_scope_does_not_connect_across_invalid_points(self):
-        scope = AdsbTopViewScope.__new__(AdsbTopViewScope)
-        scope.__width__, scope.__height__ = 100, 100
-        scope.__line_width__ = 1
-        scope.__zoom_tracker__ = Mock()
-        scope.__zoom_tracker__.is_in_range.return_value = (True, 1)
-        scope.__get_pixel_distance__ = Mock(return_value=1)
-        scope.__get_screen_projection_from_center__ = Mock(
-            side_effect=[(30, 30), (40, 40)])
-        traffic = make_traffic(
-            {"points": [point(0, 0), {}, point(1, 1), point(2, 2)]})
-        orientation = Mock(position=[0, 0])
-        orientation.get_precise_gps_heading.return_value = 0
-        with patch("views.adsb_top_view_scope.drawing.renderer.segment") as segment:
-            scope.__render_prediction__(
-                None, orientation, traffic, ScopeRange(1, 2, 1), (50, 50), [255, 0, 0])
-        segment.assert_called_once_with(
-            None, [255, 0, 0], [30, 30], [40, 40], width=2)
-
-    def test_scope_renders_closed_turn_with_offscreen_segments(self):
-        scope = AdsbTopViewScope.__new__(AdsbTopViewScope)
-        scope.__width__, scope.__height__ = 100, 100
-        scope.__line_width__ = 1
-        scope.__zoom_tracker__ = Mock()
-        scope.__zoom_tracker__.is_in_range.return_value = (True, 1)
-        scope.__get_pixel_distance__ = Mock(return_value=1)
-        scope.__get_screen_projection_from_center__ = Mock(
-            side_effect=[(-50, 50), (150, 50), (50, 50)])
-        traffic = make_traffic({"type": "turning", "secondsAhead": 20, "points": [
-            point(0, 0), point(0, 1), point(1, 1), point(0, 0)
-        ]})
-        orientation = Mock(position=[0, 0])
-        orientation.get_precise_gps_heading.return_value = 0
-        with patch("views.adsb_top_view_scope.drawing.renderer.segment") as segment:
-            scope.__render_prediction__(
-                None, orientation, traffic, ScopeRange(1, 2, 1), (50, 50), [255, 0, 0])
-        self.assertEqual(segment.call_count, 3)
-        self.assertEqual(segment.call_args_list[1], call(
-            None, [255, 0, 0], [0, 50], [99, 50], width=2))
-
     def test_forward_projection_wraps_across_north(self):
         view = AdsbElement.__new__(AdsbElement)
         view.__center__ = [50, 50]
@@ -148,33 +71,6 @@ class TrafficPredictionTests(unittest.TestCase):
         with patch("views.abstract_elements.adsb_element.apply_declination", side_effect=lambda bearing: bearing):
             self.assertEqual(view.__get_traffic_projection__(
                 orientation, traffic), (54, 50))
-
-    def test_scope_draws_predictions_only_inside_center_ring(self):
-        scope = AdsbTopViewScope.__new__(AdsbTopViewScope)
-        scope.__width__, scope.__height__ = 100, 100
-        scope.__zoom_tracker__ = Mock()
-        scope.__get_pixel_distance__ = Mock(return_value=5)
-        scope.__get_screen_projection_from_center__ = Mock(
-            return_value=(50, 50))
-        scope.__get_traffic_indicator__ = Mock(
-            return_value=[[50, 45], [45, 55], [55, 55]])
-        scope.__draw_identifiers__ = False
-        scope.__reduced_visuals__ = False
-        traffic = make_traffic({"points": [point(0.01, 0), point(0.02, 0)]})
-        orientation = Mock(position=[0, 0])
-        orientation.get_precise_gps_heading.return_value = 0
-        with patch.object(scope, "__render_prediction__") as render_path, patch(
-            "views.adsb_top_view_scope.drawing.renderer.polygon"
-        ):
-            scope.__zoom_tracker__.is_in_range.return_value = (True, 0.5)
-            scope.__render_on_screen_target__(
-                None, orientation, traffic, ScopeRange(1, 2, 1))
-            render_path.assert_called_once()
-            render_path.reset_mock()
-            scope.__zoom_tracker__.is_in_range.return_value = (True, 1.5)
-            scope.__render_on_screen_target__(
-                None, orientation, traffic, ScopeRange(1, 2, 1))
-            render_path.assert_not_called()
 
     def test_forward_path_uses_predicted_altitude_and_clips(self):
         view = AdsbOnScreenReticles.__new__(AdsbOnScreenReticles)
