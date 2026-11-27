@@ -14,14 +14,19 @@ from views.scope_layers.marker_layer import MarkerLayer
 from views.scope_layers.scope_frame import ScopeFrame
 
 # Which airports get their identifier.
-# Any (marker, frame) -> bool function works here, for example:
-#   AIRPORT_DETAIL_RULE = lambda marker, frame: marker.distance < 2.0
+#
+# The rule scores each one (higher deserves details more, 0.0 never);
+# the highest scores above the threshold get details, up to the cap.
+# Any (marker, frame) -> score function works as the rule, for example:
+#   AIRPORT_DETAIL_RULE = lambda marker, frame: 1.0 / (1.0 + marker.distance)
 # See views/scope_layers/detail_rule.py for what a formula can use.
 AIRPORT_DETAIL_RULE = DetailRule(
     max_distance_rings=1.0,  # Inside the center ring...
     ahead_half_angle=90.0,  # ...and ahead of us...
     always_within_rings=0.5,  # ...or within half the center ring.
 )
+AIRPORT_DETAIL_THRESHOLD = 0.0
+AIRPORT_MAX_DETAILED = 10
 
 
 def get_airport_color(airport: Dict[str, any]):
@@ -50,6 +55,8 @@ class AirportLayer(MarkerLayer):
     """
 
     DETAIL_RULE = AIRPORT_DETAIL_RULE
+    DETAIL_THRESHOLD = AIRPORT_DETAIL_THRESHOLD
+    MAX_DETAILED = AIRPORT_MAX_DETAILED
 
     def render(self, frame: ScopeFrame) -> None:
         if not AirportClient.is_airport_data_valid() and get_system_time().second % 2 == 0:

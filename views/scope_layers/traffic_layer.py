@@ -13,14 +13,19 @@ from views.scope_layers.scope_frame import ScopeFrame
 
 # Which traffic gets its identifier, altitude difference, and
 # predicted path.
-# Any (marker, frame) -> bool function works here, for example:
-#   TRAFFIC_DETAIL_RULE = lambda marker, frame: marker.distance < 2.0
+#
+# The rule scores each one (higher deserves details more, 0.0 never);
+# the highest scores above the threshold get details, up to the cap.
+# Any (marker, frame) -> score function works as the rule, for example:
+#   TRAFFIC_DETAIL_RULE = lambda marker, frame: 1.0 / (1.0 + marker.distance)
 # See views/scope_layers/detail_rule.py for what a formula can use.
 TRAFFIC_DETAIL_RULE = DetailRule(
     max_distance_rings=1.0,  # Inside the center ring...
     ahead_half_angle=90.0,  # ...and ahead of us...
     always_within_rings=0.5,  # ...or within half the center ring.
 )
+TRAFFIC_DETAIL_THRESHOLD = 0.0
+TRAFFIC_MAX_DETAILED = 20
 
 
 class TrafficLayer(MarkerLayer):
@@ -31,6 +36,8 @@ class TrafficLayer(MarkerLayer):
     """
 
     DETAIL_RULE = TRAFFIC_DETAIL_RULE
+    DETAIL_THRESHOLD = TRAFFIC_DETAIL_THRESHOLD
+    MAX_DETAILED = TRAFFIC_MAX_DETAILED
 
     def get_markers(self, frame: ScopeFrame) -> MarkerSet:
         if not frame.orientation.gps_online:

@@ -126,7 +126,7 @@ class DetailRuleTests(unittest.TestCase):
     def is_detailed(self, bearing, distance=FAR, heading=0.0, rule=DetailRule()):
         marker = ScopeMarker(distance=distance, bearing=bearing, color=[255, 0, 0])
 
-        return rule.is_detail_worthy(marker, make_frame(heading=heading))
+        return rule(marker, make_frame(heading=heading)) > 0.0
 
     def test_ahead_is_detailed(self):
         for bearing in (0, 45, 315, 89, 271):
@@ -198,7 +198,7 @@ class DetailRuleTests(unittest.TestCase):
 
 class DetailFormulaTests(unittest.TestCase):
     """
-    The whole rule can be swapped for any (marker, frame) -> bool.
+    The whole rule can be swapped for any (marker, frame) -> score.
     """
 
     def setUp(self):
@@ -212,11 +212,17 @@ class DetailFormulaTests(unittest.TestCase):
         return [marker.label for marker in marker_set.detailed]
 
     def test_detail_rule_is_callable(self):
-        self.assertTrue(DetailRule()(self.near, self.frame))
+        self.assertGreater(DetailRule()(self.near, self.frame), 0.0)
+
+    def test_true_and_false_still_work(self):
+        class Booleans(TrafficLayer):
+            def DETAIL_RULE(marker, frame): return marker.label == "FAR"
+
+        self.assertEqual(self.detailed_labels(Booleans(make_canvas())), ["FAR"])
 
     def test_lambda_on_a_subclass(self):
         class OnlyNear(TrafficLayer):
-            DETAIL_RULE = lambda marker, frame: marker.distance < 1.0
+            def DETAIL_RULE(marker, frame): return marker.distance < 1.0
 
         self.assertEqual(self.detailed_labels(OnlyNear(make_canvas())), ["NEAR"])
 
@@ -247,11 +253,87 @@ class DetailFormulaTests(unittest.TestCase):
         seen = []
 
         class Spy(TrafficLayer):
-            DETAIL_RULE = lambda marker, frame: seen.append((marker, frame)) or False
+            def DETAIL_RULE(marker, frame): return seen.append((marker, frame)) or False
 
         Spy(make_canvas()).split_by_detail([self.near], self.frame)
 
         self.assertEqual(seen, [(self.near, self.frame)])
+
+
+class DetailScoringTests(unittest.TestCase):
+    """
+    The standard rule scores by closeness; layers keep the highest
+    scores above their threshold, up to their cap.
+    """
+
+    def marker(self, distance, bearing=0, label=None):
+        return ScopeMarker(distance=distance, bearing=bearing, color=[255, 0, 0], label=label)
+
+    def test_closer_scores_higher(self):
+        rule, frame = DetailRule(), make_frame()
+        scores = [rule(self.marker(d), frame) for d in (0.1, 0.5, 1.0, 1.9)]
+
+        self.assertEqual(scores, sorted(scores, reverse=True))
+        self.assertAlmostEqual(scores[0], 1.0 - 0.1 / SCOPE_RANGE.center_ring_range)
+
+    def test_ineligible_scores_zero(self):
+        rule, frame = DetailRule(), make_frame()
+
+        self.assertEqual(rule(self.marker(FAR, bearing=180), frame), 0.0)
+        self.assertEqual(rule(self.marker(SCOPE_RANGE.center_ring_range + 0.1), frame), 0.0)
+
+    def test_caps_keep_the_highest_scores_in_drawing_order(self):
+        # Supplied far -> near, the way traffic is drawn.
+        markers = [self.marker(d, label=str(d)) for d in (1.8, 1.4, 1.0, 0.6, 0.2)]
+
+        class TopTwo(TrafficLayer):
+            MAX_DETAILED = 2
+
+        marker_set = TopTwo(make_canvas()).split_by_detail(markers, make_frame())
+
+        self.assertEqual([m.label for m in marker_set.detailed], ["0.6", "0.2"])
+        self.assertEqual([m.label for m in marker_set.simple], ["1.8", "1.4", "1.0"])
+
+    def test_threshold(self):
+        markers = [self.marker(d, label=str(d)) for d in (1.8, 1.0, 0.2)]
+
+        class OnlyStrong(TrafficLayer):
+            DETAIL_THRESHOLD = 0.5  # Closer than half the center ring
+
+        marker_set = OnlyStrong(make_canvas()).split_by_detail(markers, make_frame())
+
+        self.assertEqual([m.label for m in marker_set.detailed], ["0.2"])
+
+    def test_ties_go_to_the_first_supplied(self):
+        markers = [self.marker(1.0, label=label) for label in "ABC"]
+
+        class FlatTopTwo(TrafficLayer):
+            def DETAIL_RULE(marker, frame): return 0.5
+            MAX_DETAILED = 2
+
+        marker_set = FlatTopTwo(make_canvas()).split_by_detail(markers, make_frame())
+
+        self.assertEqual([m.label for m in marker_set.detailed], ["A", "B"])
+
+    def test_markers_that_will_not_be_drawn_do_not_use_up_the_cap(self):
+        off_scope = self.marker(SCOPE_RANGE.max_ring_range + 1, label="OFF")
+        on_scope = self.marker(1.0, label="ON")
+
+        class EverythingTopOne(TrafficLayer):
+            def DETAIL_RULE(marker, frame): return 1.0
+            MAX_DETAILED = 1
+
+        marker_set = EverythingTopOne(make_canvas()).split_by_detail(
+            [off_scope, on_scope], make_frame()
+        )
+
+        self.assertEqual([m.label for m in marker_set.detailed], ["ON"])
+
+    def test_layer_defaults(self):
+        self.assertEqual(TrafficLayer.MAX_DETAILED, 20)
+        self.assertEqual(AirportLayer.MAX_DETAILED, 10)
+        self.assertEqual(TrafficLayer.DETAIL_THRESHOLD, 0.0)
+        self.assertEqual(AirportLayer.DETAIL_THRESHOLD, 0.0)
 
 
 class MarkerDrawingTests(unittest.TestCase):

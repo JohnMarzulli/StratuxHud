@@ -14,7 +14,7 @@ for every source.
 """
 
 import inspect
-from typing import List
+from typing import List, Optional
 
 import pygame
 
@@ -32,17 +32,48 @@ MARKER_OUTLINE_COLOR = colors.GRAY
 MARKER_OUTLINE_WIDTH = 2
 
 
+def is_drawable(marker: ScopeMarker, frame: ScopeFrame) -> bool:
+    """
+    Will the marker actually be drawn: inside the outer ring and on screen?
+    """
+    if marker.distance is None or not frame.is_in_range(marker.distance):
+        return False
+
+    return frame.is_on_screen(*frame.project(marker.bearing, marker.distance))
+
+
 def split_by_detail(
-    markers: List[ScopeMarker], frame: ScopeFrame, rule: DetailFormula
+    markers: List[ScopeMarker],
+    frame: ScopeFrame,
+    rule: DetailFormula,
+    threshold: float = 0.0,
+    max_detailed: Optional[int] = None,
 ) -> MarkerSet:
     """
-    Sorts markers into detailed and simple using the rule, keeping
-    their order.
+    Scores every drawable marker with the rule, and gives details to
+    the highest scoring ones above the threshold, up to max_detailed
+    (None for no limit). Ties go to the marker supplied first.
+
+    Both lists keep the order the markers were supplied in, since that
+    is the order they are drawn in.
     """
+    scores = {}
+
+    for index, marker in enumerate(markers):
+        if is_drawable(marker, frame):
+            score = rule(marker, frame)
+
+            if score is not None and score > threshold:
+                scores[index] = score
+
+    # sorted() is stable, so equal scores keep their supplied order.
+    ranked = sorted(scores, key=lambda index: scores[index], reverse=True)
+    chosen = set(ranked if max_detailed is None else ranked[: max(0, max_detailed)])
+
     marker_set = MarkerSet()
 
-    for marker in markers:
-        if rule(marker, frame):
+    for index, marker in enumerate(markers):
+        if index in chosen:
             marker_set.detailed.append(marker)
         else:
             marker_set.simple.append(marker)
@@ -54,10 +85,15 @@ class MarkerLayer(ScopeLayer):
     """
     Draws the markers a subclass supplies.
 
-    DETAIL_RULE decides which markers get labels. It is any
-    DetailFormula: a DetailRule, a function, or a lambda taking
-    (marker, frame). Each layer type sets its own, and it can be
-    replaced on a subclass or a single instance.
+    Which markers get labels:
+        DETAIL_RULE       Scores each marker. Any DetailFormula: a
+                          DetailRule, a function, or a lambda taking
+                          (marker, frame).
+        DETAIL_THRESHOLD  Only scores above this qualify.
+        MAX_DETAILED      At most this many, highest scores first
+                          (None for no limit).
+    Each layer type sets its own, and any of them can be replaced on a
+    subclass or a single instance.
 
     Simple markers are drawn first, then detailed ones, so the
     markers that matter most end up on top. Within each list markers
@@ -65,15 +101,24 @@ class MarkerLayer(ScopeLayer):
     """
 
     DETAIL_RULE: DetailFormula = DetailRule()
+    DETAIL_THRESHOLD: float = 0.0
+    MAX_DETAILED: Optional[int] = None
 
     def get_markers(self, frame: ScopeFrame) -> MarkerSet:
         raise NotImplementedError
 
     def split_by_detail(self, markers: List[ScopeMarker], frame: ScopeFrame) -> MarkerSet:
         """
-        Sorts markers into detailed and simple using this layer's DETAIL_RULE.
+        Sorts markers into detailed and simple using this layer's
+        DETAIL_RULE, DETAIL_THRESHOLD, and MAX_DETAILED.
         """
-        return split_by_detail(markers, frame, self.__get_detail_rule__())
+        return split_by_detail(
+            markers,
+            frame,
+            self.__get_detail_rule__(),
+            self.DETAIL_THRESHOLD,
+            self.MAX_DETAILED,
+        )
 
     def __get_detail_rule__(self) -> DetailFormula:
         """
