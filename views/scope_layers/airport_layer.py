@@ -9,11 +9,19 @@ from data_sources.airports import AirportClient
 from rendering import colors
 from views.scope_layers.marker_set import MarkerSet
 from views.scope_layers.scope_marker import ScopeMarker
-from views.scope_layers.marker_layer import (
-    MarkerLayer,
-    split_by_detail,
-)
+from views.scope_layers.detail_rule import DetailRule
+from views.scope_layers.marker_layer import MarkerLayer
 from views.scope_layers.scope_frame import ScopeFrame
+
+# Which airports get their identifier.
+# Any (marker, frame) -> bool function works here, for example:
+#   AIRPORT_DETAIL_RULE = lambda marker, frame: marker.distance < 2.0
+# See views/scope_layers/detail_rule.py for what a formula can use.
+AIRPORT_DETAIL_RULE = DetailRule(
+    max_distance_rings=1.0,  # Inside the center ring...
+    ahead_half_angle=90.0,  # ...and ahead of us...
+    always_within_rings=0.5,  # ...or within half the center ring.
+)
 
 
 def get_airport_color(airport: Dict[str, any]):
@@ -41,6 +49,8 @@ class AirportLayer(MarkerLayer):
     is out of date.
     """
 
+    DETAIL_RULE = AIRPORT_DETAIL_RULE
+
     def render(self, frame: ScopeFrame) -> None:
         if not AirportClient.is_airport_data_valid() and get_system_time().second % 2 == 0:
             canvas = self.canvas
@@ -59,7 +69,7 @@ class AirportLayer(MarkerLayer):
 
         nearby_airports = AirportClient.get_nearby_airports()
 
-        return split_by_detail(
+        return self.split_by_detail(
             [
                 self.__to_marker__(frame, nearby_airports[airport_id])
                 for airport_id in nearby_airports

@@ -23,7 +23,7 @@ with patch("requests.Session.get", return_value=Mock(json=lambda: {})):
         WeatherLayer,
     )
     from views.scope_layers import breadcrumb_layer, weather_layer
-    from views.scope_layers.marker_layer import is_detail_worthy
+    from views.scope_layers import DetailRule, airport_layer, traffic_layer
 
 ORIGIN = [47.0, -122.0]
 SCOPE_RANGE = ScopeRange(2, 5, True)
@@ -123,10 +123,10 @@ class DetailRuleTests(unittest.TestCase):
     or really close.
     """
 
-    def is_detailed(self, bearing, distance=FAR, heading=0.0):
+    def is_detailed(self, bearing, distance=FAR, heading=0.0, rule=DetailRule()):
         marker = ScopeMarker(distance=distance, bearing=bearing, color=[255, 0, 0])
 
-        return is_detail_worthy(marker, make_frame(heading=heading))
+        return rule.is_detail_worthy(marker, make_frame(heading=heading))
 
     def test_ahead_is_detailed(self):
         for bearing in (0, 45, 315, 89, 271):
@@ -149,6 +149,109 @@ class DetailRuleTests(unittest.TestCase):
 
     def test_outside_the_center_ring_is_simple(self):
         self.assertFalse(self.is_detailed(0, SCOPE_RANGE.center_ring_range + 0.1))
+
+    def test_defaults_match_the_original_rule(self):
+        for rule in (DetailRule(), traffic_layer.TRAFFIC_DETAIL_RULE,
+                     airport_layer.AIRPORT_DETAIL_RULE):
+            self.assertEqual(
+                (rule.max_distance_rings, rule.ahead_half_angle, rule.always_within_rings),
+                (1.0, 90.0, 0.5),
+            )
+
+    def test_wider_ahead_angle(self):
+        everywhere = DetailRule(ahead_half_angle=180.0)
+        for bearing in (90, 135, 180, 270):
+            self.assertTrue(self.is_detailed(bearing, rule=everywhere), bearing)
+
+    def test_narrower_ahead_angle(self):
+        narrow = DetailRule(ahead_half_angle=45.0)
+        self.assertTrue(self.is_detailed(30, rule=narrow))
+        self.assertFalse(self.is_detailed(60, rule=narrow))
+
+    def test_max_distance(self):
+        out_to_outer_ring = DetailRule(max_distance_rings=2.0)
+        beyond_center_ring = SCOPE_RANGE.center_ring_range + 1
+        self.assertTrue(self.is_detailed(0, beyond_center_ring, rule=out_to_outer_ring))
+        self.assertFalse(self.is_detailed(0, rule=DetailRule(max_distance_rings=0.0)))
+
+    def test_always_within(self):
+        none_close = DetailRule(always_within_rings=0.0)
+        self.assertFalse(self.is_detailed(180, NEAR, rule=none_close))
+
+        wide = DetailRule(always_within_rings=1.0)
+        self.assertTrue(self.is_detailed(180, FAR, rule=wide))
+
+    def test_each_layer_uses_its_own_rule(self):
+        self.assertIs(TrafficLayer.DETAIL_RULE, traffic_layer.TRAFFIC_DETAIL_RULE)
+        self.assertIs(AirportLayer.DETAIL_RULE, airport_layer.AIRPORT_DETAIL_RULE)
+
+        layer = TrafficLayer(make_canvas())
+        layer.DETAIL_RULE = DetailRule(max_distance_rings=0.0)
+        frame = make_frame()
+        marker = ScopeMarker(distance=NEAR, bearing=0, color=[255, 0, 0])
+
+        marker_set = layer.split_by_detail([marker], frame)
+
+        self.assertEqual(marker_set.detailed, [])
+        self.assertEqual(marker_set.simple, [marker])
+
+
+class DetailFormulaTests(unittest.TestCase):
+    """
+    The whole rule can be swapped for any (marker, frame) -> bool.
+    """
+
+    def setUp(self):
+        self.frame = make_frame()
+        self.near = ScopeMarker(distance=NEAR, bearing=0, color=[255, 0, 0], label="NEAR")
+        self.far = ScopeMarker(distance=FAR, bearing=0, color=[255, 0, 0], label="FAR")
+
+    def detailed_labels(self, layer):
+        marker_set = layer.split_by_detail([self.near, self.far], self.frame)
+
+        return [marker.label for marker in marker_set.detailed]
+
+    def test_detail_rule_is_callable(self):
+        self.assertTrue(DetailRule()(self.near, self.frame))
+
+    def test_lambda_on_a_subclass(self):
+        class OnlyNear(TrafficLayer):
+            DETAIL_RULE = lambda marker, frame: marker.distance < 1.0
+
+        self.assertEqual(self.detailed_labels(OnlyNear(make_canvas())), ["NEAR"])
+
+    def test_function_on_a_subclass(self):
+        def only_far(marker, frame):
+            return marker.distance > 1.0
+
+        class OnlyFar(AirportLayer):
+            DETAIL_RULE = only_far
+
+        self.assertEqual(self.detailed_labels(OnlyFar(make_canvas())), ["FAR"])
+
+    def test_staticmethod_on_a_subclass(self):
+        class Everything(TrafficLayer):
+            DETAIL_RULE = staticmethod(lambda marker, frame: True)
+
+        self.assertEqual(self.detailed_labels(Everything(make_canvas())), ["NEAR", "FAR"])
+
+    def test_lambda_on_one_instance(self):
+        layer = TrafficLayer(make_canvas())
+        layer.DETAIL_RULE = lambda marker, frame: False
+
+        self.assertEqual(self.detailed_labels(layer), [])
+        # Other layers keep the standard rule.
+        self.assertEqual(self.detailed_labels(TrafficLayer(make_canvas())), ["NEAR", "FAR"])
+
+    def test_formula_gets_marker_and_frame(self):
+        seen = []
+
+        class Spy(TrafficLayer):
+            DETAIL_RULE = lambda marker, frame: seen.append((marker, frame)) or False
+
+        Spy(make_canvas()).split_by_detail([self.near], self.frame)
+
+        self.assertEqual(seen, [(self.near, self.frame)])
 
 
 class MarkerDrawingTests(unittest.TestCase):

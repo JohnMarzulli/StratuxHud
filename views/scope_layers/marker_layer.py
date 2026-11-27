@@ -13,11 +13,13 @@ and MarkerLayer does the drawing, culling, and layout the same way
 for every source.
 """
 
+import inspect
 from typing import List
 
 import pygame
 
 from rendering import colors, drawing
+from views.scope_layers.detail_rule import DetailFormula, DetailRule
 from views.scope_layers.marker_set import MarkerSet
 from views.scope_layers.scope_marker import ScopeMarker
 from views.scope_layers.scope_frame import ScopeFrame
@@ -30,32 +32,17 @@ MARKER_OUTLINE_COLOR = colors.GRAY
 MARKER_OUTLINE_WIDTH = 2
 
 
-def is_detail_worthy(marker: ScopeMarker, frame: ScopeFrame) -> bool:
+def split_by_detail(
+    markers: List[ScopeMarker], frame: ScopeFrame, rule: DetailFormula
+) -> MarkerSet:
     """
-    The clutter rule both traffic and airports use: only things inside
-    the center ring get details, and of those only things ahead of us
-    (within 90 degrees of our track) or really close.
-    """
-    center_ring = frame.scope_range.center_ring_range
-
-    if marker.distance > center_ring:
-        return False
-
-    is_ahead = abs(frame.relative_angle(marker.bearing)) < 90.0
-    is_really_close = marker.distance < (center_ring / 2.0)
-
-    return is_ahead or is_really_close
-
-
-def split_by_detail(markers: List[ScopeMarker], frame: ScopeFrame) -> MarkerSet:
-    """
-    Sorts markers into detailed and simple using is_detail_worthy,
-    keeping their order.
+    Sorts markers into detailed and simple using the rule, keeping
+    their order.
     """
     marker_set = MarkerSet()
 
     for marker in markers:
-        if is_detail_worthy(marker, frame):
+        if rule(marker, frame):
             marker_set.detailed.append(marker)
         else:
             marker_set.simple.append(marker)
@@ -67,13 +54,36 @@ class MarkerLayer(ScopeLayer):
     """
     Draws the markers a subclass supplies.
 
+    DETAIL_RULE decides which markers get labels. It is any
+    DetailFormula: a DetailRule, a function, or a lambda taking
+    (marker, frame). Each layer type sets its own, and it can be
+    replaced on a subclass or a single instance.
+
     Simple markers are drawn first, then detailed ones, so the
     markers that matter most end up on top. Within each list markers
     are drawn in the order given.
     """
 
+    DETAIL_RULE: DetailFormula = DetailRule()
+
     def get_markers(self, frame: ScopeFrame) -> MarkerSet:
         raise NotImplementedError
+
+    def split_by_detail(self, markers: List[ScopeMarker], frame: ScopeFrame) -> MarkerSet:
+        """
+        Sorts markers into detailed and simple using this layer's DETAIL_RULE.
+        """
+        return split_by_detail(markers, frame, self.__get_detail_rule__())
+
+    def __get_detail_rule__(self) -> DetailFormula:
+        """
+        The rule, as written. A plain function or lambda stored on the
+        class would otherwise be bound as a method and handed this
+        layer as its "marker".
+        """
+        rule = inspect.getattr_static(self, "DETAIL_RULE")
+
+        return rule.__func__ if isinstance(rule, staticmethod) else rule
 
     def render(self, frame: ScopeFrame) -> None:
         marker_set = self.get_markers(frame)
