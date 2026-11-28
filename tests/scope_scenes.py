@@ -21,6 +21,7 @@ import pygame  # noqa: E402
 with patch("requests.Session.get", return_value=Mock(json=lambda: {})):
     from common_utils import authoritative_time, geo_math, units  # noqa: E402
     from configuration import configuration  # noqa: E402
+    from core_services import traffic_threat  # noqa: E402
     from core_services import breadcrumbs  # noqa: E402
     from data_sources.ahrs_data import AhrsData  # noqa: E402
     from data_sources.airports import (  # noqa: E402
@@ -214,6 +215,10 @@ def scene(display_units: str = units.STATUTE, airports_valid: bool = True):
         load_example_flight_rules()
         load_example_airports()
         load_reflectivity()
+
+        # Threat levels are held per aircraft between renders; start
+        # every scene fresh.
+        traffic_threat.INSTANCE.clear()
 
         yield clock
 

@@ -20,8 +20,7 @@
 
 import math
 
-from common_utils import units
-from configuration import configuration
+from common_utils import geo_math, units
 
 terminal_velocity = 60  # m/s
 gravity = 9.80665  # m/s^2
@@ -91,7 +90,7 @@ def get_distance(
         math.cos(lat2) * math.sin(delta_lon / 2) ** 2
     c = 2 * math.asin(math.sqrt(a))
     # Radius of earth. Can change with units
-    r = configuration.EARTH_RADIUS_STATUTE_MILES
+    r = geo_math.EARTH_RADIUS_STATUTE_MILES
 
     return c * r
 

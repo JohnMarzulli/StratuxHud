@@ -9,9 +9,6 @@ from common_utils import tasks, units
 from configuration.video_flip_modes import VideoFlipModes
 from data_sources import receiver_capabilities, receiver_status
 
-EARTH_RADIUS_NAUTICAL_MILES = 3440
-EARTH_RADIUS_STATUTE_MILES = 3956
-EARTH_RADIUS_KILOMETERS_MILES = 6371
 MAX_MINUTES_BEFORE_REMOVING_TRAFFIC_REPORT = 2
 MAX_FRAMERATE = 60
 TARGET_AHRS_FRAMERATE = 30
@@ -437,7 +434,7 @@ class Configuration(object):
 
         if (self.__view_index__ >= len(self.__hud_views__)):
             self.__view_index__ = len(self.__hud_views__) - 1
-        
+
         if (self.__view_index__ < 0):
             self.__view_index__ = 0
 
@@ -547,7 +544,7 @@ class Configuration(object):
         escaped_contents = unescaped_contents.decode("string_escape")
 
         escaped_contents = escaped_contents[
-            escaped_contents.startswith(quotation_mark) and len(quotation_mark) :
+            escaped_contents.startswith(quotation_mark) and len(quotation_mark):
         ]
 
         if escaped_contents.endswith(quotation_mark):

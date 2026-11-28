@@ -10,7 +10,7 @@ just a list of layers drawn under and over its range rings:
     TrafficLayer     ADS-B traffic (a MarkerLayer)
 """
 
-from views.scope_layers.detail_rule import DetailRule
+from views.scope_layers.detail_rule import DetailRule, ThreatsFirst
 from views.scope_layers.marker_set import MarkerSet
 from views.scope_layers.scope_canvas import ScopeCanvas
 from views.scope_layers.scope_marker import ScopeMarker
@@ -32,6 +32,7 @@ __all__ = [
     "ScopeFrame",
     "ScopeLayer",
     "ScopeMarker",
+    "ThreatsFirst",
     "TrafficLayer",
     "WeatherLayer",
 ]

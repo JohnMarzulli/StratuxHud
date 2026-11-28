@@ -70,6 +70,17 @@
             ]
         },
         {
+            "name": "VIEW: Collision Alerts",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "views.traffic_threat_debug",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "args": [
+                "software"
+            ]
+        },
+        {
             "name": "VIEW: Frequencies",
             "type": "debugpy",
             "request": "launch",

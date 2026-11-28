@@ -14,10 +14,14 @@ for every source.
 """
 
 import inspect
+import math
+from dataclasses import dataclass
 from typing import List, Optional
 
 import pygame
 
+from common_utils.authoritative_time import get_system_time
+from core_services.traffic_threat import ThreatLevel
 from rendering import colors, drawing
 from views.scope_layers.detail_rule import DetailFormula, DetailRule
 from views.scope_layers.marker_set import MarkerSet
@@ -30,6 +34,208 @@ from views.scope_layers.scope_layer import ScopeLayer
 MARKER_OUTLINE_COLOR = colors.GRAY
 # Width of the visible rim, as a multiple of the scope's thin line width.
 MARKER_OUTLINE_WIDTH = 2
+
+
+@dataclass(frozen=True)
+class ThreatStyle:
+    """
+    How a marker is drawn at one threat level.
+    """
+
+    # Rim color; None for no rim.
+    outline_color: Optional[tuple]
+    # Rim width, as a multiple of MARKER_OUTLINE_WIDTH.
+    outline_width: float = 1.0
+    # Symbol size, as a multiple of its normal size.
+    scale: float = 1.0
+    # Blinks per second, 0 for none. For the second half of each
+    # blink the whole symbol and its rim are dropped, leaving only a
+    # hairline outline (blink_outline_width) so it can still be found.
+    flash_hz: float = 0.0
+    # Width of that hairline, as a multiple of the scope's thin line
+    # width; 0 makes the symbol vanish completely.
+    blink_outline_width: float = 1.0
+    # Pulses per second, 0 for none. A pulse grows the symbol by up to
+    # pulse_scale (on top of scale) and back again.
+    pulse_hz: float = 0.0
+    pulse_scale: float = 0.0
+    # At the peak of each pulse a ring leaves the symbol, expanding to
+    # ring_scale times the symbol's normal size as it fades out. It is
+    # drawn through blinks. 0 for no ring.
+    ring_scale: float = 0.0
+    # Width of the ring, as a multiple of the scope's thin line width.
+    ring_width: float = 2.0
+
+
+# How traffic looks at each traffic_threat.ThreatLevel. Level NONE,
+# and everything that isn't traffic, keeps the plain
+# MARKER_OUTLINE_COLOR rim.
+THREAT_STYLES = {
+    ThreatLevel.WARNING: ThreatStyle(colors.YELLOW),
+    ThreatLevel.ALERT: ThreatStyle(colors.RED, scale=1.5, flash_hz=4.0),
+    ThreatLevel.CRITICAL: ThreatStyle(
+        colors.RED, scale=1.5, flash_hz=4.0,
+        pulse_hz=1.5, pulse_scale=1.0, ring_scale=5.0,
+    ),
+}
+
+
+# How far a rim's corner may reach past the symbol's corner, as a
+# multiple of the rim width, before it is cut flat. Keeps the narrow
+# tip of the traffic arrow from growing a long spike.
+OUTLINE_MITER_LIMIT = 2.0
+# An arrow's rim is pushed out by this fraction of the outline width.
+# Matches the weight of the rim before it was drawn as a polygon (as
+# thick lines centered on the edges, so about half showed).
+ARROW_OUTLINE_FRACTION = 0.5
+# Extra pixels pushed out beyond that. Filling rounds corner positions
+# down to whole pixels and the symbol's smoothed edge covers another,
+# which would otherwise leave some edges with almost no rim depending
+# on which way the arrow points.
+OUTLINE_PIXEL_ALLOWANCE = 1.0
+
+
+def get_outline_polygon(points: list, width: float, miter_limit: float = OUTLINE_MITER_LIMIT) -> list:
+    """
+    The points of a convex polygon pushed out by width on every side,
+    for drawing a solid rim behind it with no gaps at the corners.
+
+    Each corner is where its two pushed-out edges meet, unless that is
+    more than miter_limit * width from the original corner; then the
+    spike is cut off square, miter_limit * width beyond the corner, so
+    a sharp tip still gets a full rim.
+    """
+    count = len(points)
+
+    if count < 3 or width <= 0:
+        return [list(point) for point in points]
+
+    center_x = sum(point[0] for point in points) / count
+    center_y = sum(point[1] for point in points) / count
+
+    def outward_normal(start, end):
+        dx, dy = end[0] - start[0], end[1] - start[1]
+        length = math.hypot(dx, dy)
+
+        if length == 0.0:
+            return None
+
+        normal_x, normal_y = dy / length, -dx / length
+        middle_x, middle_y = (start[0] + end[0]) / 2.0, (start[1] + end[1]) / 2.0
+
+        # Flip it if it points back toward the middle of the polygon.
+        if (middle_x - center_x) * normal_x + (middle_y - center_y) * normal_y < 0.0:
+            normal_x, normal_y = -normal_x, -normal_y
+
+        return normal_x, normal_y
+
+    outline = []
+
+    for index, corner in enumerate(points):
+        before = outward_normal(points[index - 1], corner)
+        after = outward_normal(corner, points[(index + 1) % count])
+
+        if before is None or after is None:
+            outline.append(list(corner))
+            continue
+
+        miter_x, miter_y = before[0] + after[0], before[1] + after[1]
+        miter_length = math.hypot(miter_x, miter_y)
+        # How much further the corner reaches than the edges do.
+        cosine = 0.0 if miter_length == 0.0 else (
+            (miter_x * before[0] + miter_y * before[1]) / miter_length
+        )
+
+        if cosine <= 0.0 or 1.0 / cosine > miter_limit:
+            outline.extend(__clip_miter__(
+                corner, points[index - 1], points[(index + 1) % count],
+                before, after, width, miter_limit,
+            ))
+        else:
+            reach = width / cosine
+            outline.append([
+                corner[0] + miter_x / miter_length * reach,
+                corner[1] + miter_y / miter_length * reach,
+            ])
+
+    return outline
+
+
+def __clip_miter__(corner, previous, following, before, after, width, miter_limit):
+    """
+    The two points where the pushed-out edges either side of a sharp
+    corner cross a line square to the corner's bisector, miter_limit
+    * width out from the corner.
+    """
+    bisector_x, bisector_y = before[0] + after[0], before[1] + after[1]
+    bisector_length = math.hypot(bisector_x, bisector_y)
+
+    if bisector_length == 0.0:
+        return [
+            [corner[0] + before[0] * width, corner[1] + before[1] * width],
+            [corner[0] + after[0] * width, corner[1] + after[1] * width],
+        ]
+
+    bisector_x, bisector_y = bisector_x / bisector_length, bisector_y / bisector_length
+    clip_distance = miter_limit * width
+    clipped = []
+
+    for normal, toward in ((before, previous), (after, following)):
+        # Along this pushed-out edge, heading away from the corner...
+        edge_x, edge_y = corner[0] - toward[0], corner[1] - toward[1]
+        edge_length = math.hypot(edge_x, edge_y) or 1.0
+        edge_x, edge_y = edge_x / edge_length, edge_y / edge_length
+        start_x, start_y = corner[0] + normal[0] * width, corner[1] + normal[1] * width
+        # ...to where it reaches the clip line.
+        start_reach = (start_x - corner[0]) * bisector_x + (start_y - corner[1]) * bisector_y
+        step_reach = edge_x * bisector_x + edge_y * bisector_y
+        travel = 0.0 if step_reach == 0.0 else (clip_distance - start_reach) / step_reach
+        clipped.append([start_x + edge_x * travel, start_y + edge_y * travel])
+
+    return clipped
+
+
+def get_threat_style(threat_level: int) -> ThreatStyle:
+    style = THREAT_STYLES.get(threat_level)
+
+    return style if style is not None else ThreatStyle(MARKER_OUTLINE_COLOR)
+
+
+def get_symbol_scale(style: ThreatStyle, seconds: float) -> float:
+    """
+    The style's size at this moment, pulse included.
+    """
+    if style.pulse_hz <= 0.0 or style.pulse_scale == 0.0:
+        return style.scale
+
+    # 0 -> 1 -> 0 once per pulse, starting at normal size.
+    pulse = 0.5 - 0.5 * math.cos(2.0 * math.pi * style.pulse_hz * seconds)
+
+    return style.scale + style.pulse_scale * pulse
+
+
+def get_ring_progress(style: ThreatStyle, seconds: float) -> Optional[float]:
+    """
+    How far the pulse ring has travelled, 0.0 (just leaving the
+    symbol, at the peak of a pulse) to 1.0 (fully out and faded), or
+    None when the style has no ring.
+    """
+    if style.pulse_hz <= 0.0 or style.ring_scale <= 0.0:
+        return None
+
+    # The pulse peaks half way through each cycle.
+    return (seconds * style.pulse_hz - 0.5) % 1.0
+
+
+def is_blink_on(style: ThreatStyle, seconds: float) -> bool:
+    """
+    Blinking symbols are drawn in full for the first half of each
+    blink, and as just a hairline outline for the second.
+    """
+    if style.flash_hz <= 0.0:
+        return True
+
+    return (seconds * style.flash_hz) % 1.0 < 0.5
 
 
 def is_drawable(marker: ScopeMarker, frame: ScopeFrame) -> bool:
@@ -162,23 +368,52 @@ class MarkerLayer(ScopeLayer):
 
     def __draw_symbol__(self, frame: ScopeFrame, marker: ScopeMarker, position):
         canvas = self.canvas
-        outline_width = max(1, int(canvas.thin_line_width * MARKER_OUTLINE_WIDTH))
-        has_outline = MARKER_OUTLINE_COLOR is not None
+        style = get_threat_style(marker.threat_level)
+        seconds = get_system_time().timestamp()
+        scale = get_symbol_scale(style, seconds)
+        outline_color = style.outline_color
+        # The rim stays the same width as the symbol grows, so a large
+        # symbol still reads as an arrow, not a blob.
+        outline_width = max(
+            1, int(canvas.thin_line_width * MARKER_OUTLINE_WIDTH * style.outline_width)
+        )
 
-        # The outline goes down first and the symbol is filled over
-        # it, so only the rim outside the symbol shows.
         if marker.track is not None:
             points = canvas.get_traffic_indicator(
                 list(position), frame.heading, marker.track
             )
 
-            if has_outline:
-                drawing.renderer.segments(
+            if scale != 1.0:
+                points = [
+                    [
+                        position[0] + (point[0] - position[0]) * scale,
+                        position[1] + (point[1] - position[1]) * scale,
+                    ]
+                    for point in points
+                ]
+        else:
+            points = None
+            radius = max(1, int(canvas.no_direction_target_size * scale))
+
+        self.__draw_pulse_ring__(frame, style, position, seconds)
+
+        if not is_blink_on(style, seconds):
+            self.__draw_blink_off__(frame, marker, style, position, points,
+                                    radius if points is None else 0)
+
+            return
+
+        # The outline goes down first and the symbol is filled over
+        # it, so only the rim outside the symbol shows.
+        if points is not None:
+            if outline_color is not None:
+                drawing.renderer.polygon(
                     frame.framebuffer,
-                    list(MARKER_OUTLINE_COLOR),
-                    True,
-                    points,
-                    outline_width << 1,  # Centered on the edge; half shows
+                    list(outline_color),
+                    get_outline_polygon(
+                        points,
+                        outline_width * ARROW_OUTLINE_FRACTION + OUTLINE_PIXEL_ALLOWANCE,
+                    ),
                     False,
                 )
 
@@ -189,12 +424,12 @@ class MarkerLayer(ScopeLayer):
                 not canvas.reduced_visuals,
             )
         else:
-            if has_outline:
+            if outline_color is not None:
                 drawing.renderer.filled_circle(
                     frame.framebuffer,
-                    list(MARKER_OUTLINE_COLOR),
+                    list(outline_color),
                     list(position),
-                    canvas.no_direction_target_size + outline_width,
+                    radius + outline_width,
                     False,
                 )
 
@@ -202,14 +437,55 @@ class MarkerLayer(ScopeLayer):
                 frame.framebuffer,
                 marker.color,
                 list(position),
-                canvas.no_direction_target_size,
+                radius,
                 not canvas.reduced_visuals,
             )
+
+    def __draw_pulse_ring__(self, frame, style, position, seconds):
+        """
+        A ring that leaves the symbol at the peak of each pulse,
+        expanding and fading to black as it goes.
+        """
+        progress = get_ring_progress(style, seconds)
+
+        if progress is None or style.outline_color is None:
+            return
+
+        # The arrow's half length; the dot is half that.
+        symbol_size = self.canvas.no_direction_target_size * 2
+        peak_size = symbol_size * (style.scale + style.pulse_scale)
+        radius = int(peak_size + (symbol_size * style.ring_scale - peak_size) * progress)
+        fade = 1.0 - progress
+        color = [int(channel * fade) for channel in style.outline_color[:3]]
+        width = max(1, int(self.canvas.thin_line_width * style.ring_width))
+
+        if radius > width:
+            drawing.renderer.circle(frame.framebuffer, color, list(position), radius, width, False)
+
+    def __draw_blink_off__(self, frame, marker, style, position, points, radius):
+        """
+        The "off" half of a blink: just a hairline outline of the
+        symbol, or nothing at all.
+        """
+        if style.blink_outline_width <= 0.0:
+            return
+
+        color = list(style.outline_color or marker.color)
+        width = max(1, int(self.canvas.thin_line_width * style.blink_outline_width))
+
+        if points is not None:
+            drawing.renderer.segments(frame.framebuffer, color, True, points, width, False)
+        else:
+            drawing.renderer.circle(frame.framebuffer, color, list(position), radius, width, False)
 
     def __draw_labels__(self, frame: ScopeFrame, marker: ScopeMarker, position):
         canvas = self.canvas
         label_color = list(marker.label_color or marker.color)
-        label_y = position[1] + (canvas.no_direction_target_size << 2)
+        # Below the symbol at its largest, so a pulsing symbol doesn't
+        # run into its own labels.
+        style = get_threat_style(marker.threat_level)
+        largest = style.scale + max(0.0, style.pulse_scale)
+        label_y = position[1] + int((canvas.no_direction_target_size << 2) * largest)
 
         for text in (marker.label, marker.sublabel):
             if text is not None:

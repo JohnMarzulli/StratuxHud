@@ -36,6 +36,9 @@ things a formula can read:
     frame.scope_range.center_ring_range    Center ring, in display units
     frame.scope_range.max_ring_range       Outer ring, in display units
     frame.orientation      Our own AHRS/GPS data (altitude, speed, ...)
+    marker.threat_level    Collision threat, 0 (none) to 3 (critical)
+
+ThreatsFirst wraps any rule so collision threats always get details.
 """
 
 from dataclasses import dataclass
@@ -100,3 +103,23 @@ class DetailRule:
             return 0.0
 
         return 1.0 - (marker.distance / max_distance)
+
+
+@dataclass(frozen=True)
+class ThreatsFirst:
+    """
+    Traffic that is a collision threat always gets details, ranked
+    above everything else (worst first), wherever it is. Everything
+    else is scored by the wrapped rule.
+
+        ThreatsFirst(DetailRule(ahead_half_angle=45.0))
+    """
+
+    rule: DetailFormula = DetailRule()
+
+    def __call__(self, marker: ScopeMarker, frame: ScopeFrame) -> float:
+        if marker.threat_level > 0:
+            # Above any 0..1 score, and higher for worse threats.
+            return 1.0 + marker.threat_level
+
+        return self.rule(marker, frame)

@@ -10,7 +10,7 @@ import time
 
 import requests
 
-from common_utils import simulated_values, tasks
+from common_utils import geo_math, simulated_values, tasks
 from common_utils.authoritative_time import get_system_time
 from configuration import configuration
 from data_sources.ahrs_data import AhrsData
@@ -29,6 +29,9 @@ class Traffic(object):
     TRACK_KEY = "Track"
     SPEED_KEY = "Speed"
     ALTITUDE_KEY = "Alt"
+    VERTICAL_SPEED_KEY = "Vvel"
+    ALTITUDE_IS_GNSS_KEY = "AltIsGNSS"
+    GNSS_DIFFERENCE_KEY = "GnssDiffFromBaroAlt"
     # We need to key off the ICAO address due to 'Anonymous Mode'...
     ICAO_ADDR_KEY = "Icao_addr"
 
@@ -82,7 +85,7 @@ class Traffic(object):
         return int(self.altitude - own_altitude)
 
     def get_altitude_delta_text(self, orientation: AhrsData) -> str:
-        if orientation is None:
+        if orientation is None or self.altitude is None:
             return "UNK"
 
         altitude_delta = self.get_altitude_delta(orientation.alt)
@@ -141,6 +144,55 @@ class Traffic(object):
 
         return points
 
+    def get_timed_prediction_points(self) -> list:
+        """
+        The predicted path as (seconds ahead, latitude, longitude),
+        skipping any point that is invalid or has no time.
+        """
+        prediction = self.prediction
+
+        if not isinstance(prediction, dict) or not isinstance(prediction.get("points"), list):
+            return []
+
+        points = []
+
+        for point in prediction["points"]:
+            if not isinstance(point, dict):
+                continue
+
+            seconds, latitude, longitude = (
+                point.get("secondsAhead"), point.get("Lat"), point.get("Lng"))
+
+            if (
+                all(isinstance(value, (int, float)) and math.isfinite(value)
+                    for value in (seconds, latitude, longitude))
+                and -90 <= latitude <= 90 and -180 <= longitude <= 180
+            ):
+                points.append((float(seconds), latitude, longitude))
+
+        return points
+
+    def is_turning_prediction(self) -> bool:
+        return isinstance(self.prediction, dict) and self.prediction.get("type") == "turning"
+
+    def get_gnss_altitude(self):
+        """
+        The altitude as GPS (GNSS) altitude, when it is known or can be
+        worked out from the pressure altitude; otherwise None.
+        """
+        if self.altitude is None:
+            return None
+
+        if self.__json__.get(Traffic.ALTITUDE_IS_GNSS_KEY) is True:
+            return self.altitude
+
+        difference = self.__json__.get(Traffic.GNSS_DIFFERENCE_KEY)
+
+        if isinstance(difference, (int, float)) and math.isfinite(difference):
+            return self.altitude + difference
+
+        return None
+
     def get_display_name(self) -> str:
         """
         Returns the identifier to use of the traffic
@@ -197,7 +249,7 @@ class Traffic(object):
         )
         c = 2 * math.asin(math.sqrt(a))
         # Radius of earth. Can change with units
-        r = configuration.EARTH_RADIUS_STATUTE_MILES
+        r = geo_math.EARTH_RADIUS_STATUTE_MILES
         return c * r
 
     def update(self, json_report: dict):
@@ -228,6 +280,7 @@ class Traffic(object):
         self.altitude = None
         self.track = None
         self.speed = None
+        self.vertical_speed = None
         self.prediction = json_from_stratux.get("Prediction")
 
         self.__json__ = json_from_stratux
@@ -314,6 +367,11 @@ class Traffic(object):
                 self.altitude = float(self.__json__[Traffic.ALTITUDE_KEY])
             else:
                 self.altitude = None
+
+            if Traffic.VERTICAL_SPEED_KEY in self.__json__:
+                self.vertical_speed = float(self.__json__[Traffic.VERTICAL_SPEED_KEY])
+            else:
+                self.vertical_speed = None
         except Exception as ex:
             print("Exception while updating:{}".format(ex))
 

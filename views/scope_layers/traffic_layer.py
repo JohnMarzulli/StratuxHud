@@ -2,12 +2,13 @@
 ADS-B traffic on the scope.
 """
 
+from core_services import traffic_threat
 from data_sources.data_cache import HudDataCache
 from data_sources.traffic import Traffic
 from rendering import colors
 from views.scope_layers.marker_set import MarkerSet
 from views.scope_layers.scope_marker import ScopeMarker
-from views.scope_layers.detail_rule import DetailRule
+from views.scope_layers.detail_rule import DetailRule, ThreatsFirst
 from views.scope_layers.marker_layer import MarkerLayer
 from views.scope_layers.scope_frame import ScopeFrame
 
@@ -19,11 +20,12 @@ from views.scope_layers.scope_frame import ScopeFrame
 # Any (marker, frame) -> score function works as the rule, for example:
 #   TRAFFIC_DETAIL_RULE = lambda marker, frame: 1.0 / (1.0 + marker.distance)
 # See views/scope_layers/detail_rule.py for what a formula can use.
-TRAFFIC_DETAIL_RULE = DetailRule(
+# Collision threats always get details (ThreatsFirst), ahead of the rest.
+TRAFFIC_DETAIL_RULE = ThreatsFirst(DetailRule(
     max_distance_rings=1.0,  # Inside the center ring...
     ahead_half_angle=90.0,  # ...and ahead of us...
     always_within_rings=0.5,  # ...or within half the center ring.
-)
+))
 TRAFFIC_DETAIL_THRESHOLD = 0.0
 TRAFFIC_MAX_DETAILED = 20
 
@@ -33,6 +35,10 @@ class TrafficLayer(MarkerLayer):
     Red arrows for airborne traffic, blue for traffic on the ground.
     Close traffic ahead also gets its identifier, altitude difference,
     and predicted path.
+
+    Collision threats (see core_services/traffic_threat.py) are drawn
+    by threat level (see THREAT_STYLES in marker_layer.py) and always
+    get details.
     """
 
     DETAIL_RULE = TRAFFIC_DETAIL_RULE
@@ -68,4 +74,7 @@ class TrafficLayer(MarkerLayer):
             sublabel=traffic.get_altitude_delta_text(frame.orientation),
             label_color=list(colors.YELLOW),
             prediction_points=traffic.get_prediction_points(),
+            threat_level=int(
+                traffic_threat.INSTANCE.assess(traffic, frame.orientation).level
+            ),
         )

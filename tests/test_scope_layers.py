@@ -9,6 +9,7 @@ from views.scope_layers import marker_layer
 
 with patch("requests.Session.get", return_value=Mock(json=lambda: {})):
     from common_utils import geo_math, units
+    from core_services import traffic_threat
     from core_services.scope_range import ScopeRange
     from data_sources.ahrs_data import AhrsData
     from data_sources.airports import AirportClient
@@ -151,7 +152,7 @@ class DetailRuleTests(unittest.TestCase):
         self.assertFalse(self.is_detailed(0, SCOPE_RANGE.center_ring_range + 0.1))
 
     def test_defaults_match_the_original_rule(self):
-        for rule in (DetailRule(), traffic_layer.TRAFFIC_DETAIL_RULE,
+        for rule in (DetailRule(), traffic_layer.TRAFFIC_DETAIL_RULE.rule,
                      airport_layer.AIRPORT_DETAIL_RULE):
             self.assertEqual(
                 (rule.max_distance_rings, rule.ahead_half_angle, rule.always_within_rings),
@@ -375,8 +376,19 @@ class MarkerDrawingTests(unittest.TestCase):
         layer.__draw_symbol__(make_frame(canvas), ScopeMarker(
             1, 0, [255, 0, 0], track=90), (10, 10))
 
-        self.assertEqual(self.segments.call_args.args[1], outline)
-        self.assertEqual(self.segments.call_args.args[3], self.polygon.call_args.args[2])
+        # A solid rim polygon around the arrow, then the arrow over it.
+        rim, arrow = self.polygon.call_args_list
+        self.assertEqual(rim.args[1], outline)
+        self.assertEqual(arrow.args[1], [255, 0, 0])
+        self.assertEqual(
+            rim.args[2],
+            marker_layer.get_outline_polygon(
+                arrow.args[2],
+                canvas.thin_line_width * marker_layer.MARKER_OUTLINE_WIDTH
+                * marker_layer.ARROW_OUTLINE_FRACTION
+                + marker_layer.OUTLINE_PIXEL_ALLOWANCE,
+            ),
+        )
 
     def test_rim_can_be_turned_off(self):
         with patch.object(marker_layer, "MARKER_OUTLINE_COLOR", None):
@@ -384,7 +396,8 @@ class MarkerDrawingTests(unittest.TestCase):
                 make_frame(), ScopeMarker(1, 0, [255, 0, 0], track=90), (10, 10)
             )
 
-        self.segments.assert_not_called()
+        # Just the arrow; no rim.
+        self.assertEqual([c.args[1] for c in self.polygon.call_args_list], [[255, 0, 0]])
 
     def test_markers_out_of_range_are_not_drawn(self):
         class FarLayer(MarkerLayer):
@@ -465,6 +478,9 @@ class PredictionTests(unittest.TestCase):
 
 class TrafficLayerTests(unittest.TestCase):
     def render(self, traffic, heading=0.0, **frame_options):
+        # Threat levels are held for a few seconds per aircraft, and
+        # every render's aircraft is "N123"; start each one fresh.
+        traffic_threat.INSTANCE.clear()
         canvas = make_canvas()
 
         with patch.object(HudDataCache, "RELIABLE_TRAFFIC", traffic), patch.object(
@@ -488,7 +504,8 @@ class TrafficLayerTests(unittest.TestCase):
     def test_traffic_behind_is_not_labeled(self):
         drawn = self.render([traffic_at(offset(ORIGIN, 190, FAR))], heading=10)
 
-        drawn.polygon.assert_called_once()
+        # Drawn (its rim, then the arrow)...
+        self.assertEqual(drawn.polygon.call_count, 2)
         self.assertEqual(drawn.labels, [])
 
     def test_missing_compass_does_not_crash(self):

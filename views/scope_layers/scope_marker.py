@@ -13,3 +13,6 @@ class ScopeMarker:
     label_color: Optional[list] = None  # Defaults to color
     # [(lat, lon, alt) | None, ...]; the first point is the marker itself.
     prediction_points: Optional[list] = None
+    # How much of a collision hazard it is (a traffic_threat.ThreatLevel);
+    # 0 is none, and is what everything that isn't traffic uses.
+    threat_level: int = 0

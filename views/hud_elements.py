@@ -103,6 +103,39 @@ def get_heading_bug_x(heading: float, bearing: float, degrees_per_pixel: float) 
     return int(delta * degrees_per_pixel)
 
 
+def create_hud_elements(
+    element_types: list, screen_size, use_detail_font: bool = True
+) -> list:
+    """
+    Creates HUD elements the way the HUD does, for running elements
+    outside of the HUD (testing, debugging).
+
+    Args:
+        element_types (list): The classes of the elements to create.
+        screen_size: The (width, height) of the display.
+        use_detail_font (bool, optional): Should the detail font be used. Defaults to True.
+
+    Returns:
+        list: The created elements, in the same order.
+    """
+    width, height = screen_size
+
+    pygame.font.init()
+
+    font_size = int(height / 12.0) if use_detail_font else int(height / 10.0)
+    font = pygame.font.Font(DEFAULT_FONT, font_size)
+
+    degrees_of_pitch = configuration.CONFIGURATION.get_degrees_of_pitch()
+    pixels_per_degree_y = (
+        height / degrees_of_pitch
+    ) * configuration.CONFIGURATION.get_pitch_degrees_display_scaler()
+
+    return [
+        element_type(degrees_of_pitch, pixels_per_degree_y, font, (width, height))
+        for element_type in element_types
+    ]
+
+
 def run_hud_element(element_type, use_detail_font: bool = True):
     """
     Runs an AHRS based HUD element alone for testing purposes
@@ -131,33 +164,11 @@ def run_hud_elements(element_types: list, use_detail_font: bool = True):
     clock = pygame.time.Clock()
 
     screen = display.Display()  # args.debug)
-    __width__, __height__ = screen.size
     pygame.mouse.set_visible(False)
 
-    pygame.font.init()
-
-    font_size_std = int(__height__ / 10.0)
-    font_size_detail = int(__height__ / 12.0)
-
-    __font__ = pygame.font.Font(DEFAULT_FONT, font_size_std)
-    __detail_font__ = pygame.font.Font(DEFAULT_FONT, font_size_detail)
-
-    font = __detail_font__ if use_detail_font else __font__
     __aircraft__ = ahrs_simulation.AhrsSimulation()
 
-    __pixels_per_degree_y__ = (
-        __height__ / configuration.CONFIGURATION.get_degrees_of_pitch()
-    ) * configuration.CONFIGURATION.get_pitch_degrees_display_scaler()
-
-    hud_elements = [
-        element_type(
-            configuration.CONFIGURATION.get_degrees_of_pitch(),
-            __pixels_per_degree_y__,
-            font,
-            (__width__, __height__),
-        )
-        for element_type in element_types
-    ]
+    hud_elements = create_hud_elements(element_types, screen.size, use_detail_font)
 
     while True:
         for test_data in simulated_traffic:
